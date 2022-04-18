@@ -10,6 +10,7 @@ guildId="<redacted>" # Discord ID
 clientId="<redacted>" # Bot ID
 auctionChannelId="<redacted>"
 bankerRoleId="<redacted>"
+DATABASE_URL="<redacted>" # Heroku castle-banker-prod-test postgreSQL URI
 ```
 
 Then run,
