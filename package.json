@@ -10,7 +10,8 @@
     "start": "ts-node .",
     "dev": "nodemon",
     "build": "tsc",
-    "deploy": "git push heroku main"
+    "deploy": "git push heroku-test main",
+    "release": "git push heroku-prod main"
   },
   "dependencies": {
     "@discordjs/builders": "^0.12.0",

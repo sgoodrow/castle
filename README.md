@@ -2,25 +2,52 @@
 
 ## Development
 
-Create a Discord bot and identify a test server. Set these local environment variables in `.env`:
+Create a [Discord Application](https://discord.com/developers/applications), bot and test server. Set these local environment variables in `.env`:
 
 ```sh
 token="<redacted>" # Bot token
 guildId="<redacted>" # Discord ID
-clientId="<redacted>" # Bot id
+clientId="<redacted>" # Bot ID
 auctionChannelId="<redacted>"
 bankerRoleId="<redacted>"
 ```
 
-Alternatively, check out [the Heroku project settings](https://dashboard.heroku.com/apps/castle-banker-bot/settings) which are used in production.
+Then run,
 
 ```sh
 yarn install
-yarn build
+yarn dev
 ```
 
-## Deploy
+## Release
+
+This bot is deployed to two environments with Heroku:
+
+- [castle-banker-bot-test](https://dashboard.heroku.com/apps/castle-banker-bot-test/settings) - Pumped's test server
+- [castle-banker-bot-prod](https://dashboard.heroku.com/apps/castle-banker-bot-prod/settings) - Castle's server
+
+```sh
+# Connect git to test environment
+heroku git:remote -a castle-banker-bot-test
+git remote rename heroku heroku-test
+
+# Connect git to prod environment
+heroku git:remote -a castle-banker-bot-prod
+git remote rename heroku heroku-prod
+```
+
+### UAT
+
+Push the latest app to the test environment for UAT.
 
 ```sh
 yarn deploy
+```
+
+### Release
+
+Push the latest app to the production environment.
+
+```sh
+yarn release
 ```
