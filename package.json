@@ -9,7 +9,8 @@
   "scripts": {
     "start": "ts-node .",
     "dev": "nodemon",
-    "build": "tsc"
+    "build": "tsc",
+    "deploy": "git push heroku main"
   },
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
