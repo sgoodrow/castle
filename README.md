@@ -12,7 +12,7 @@ auctionChannelId="<redacted>"
 bankerRoleId="<redacted>"
 ```
 
-Alternatively, check out [the Heroku project settings](https://dashboard.heroku.com/apps/castle-banker-bot/settings).
+Alternatively, check out [the Heroku project settings](https://dashboard.heroku.com/apps/castle-banker-bot/settings) which are used in production.
 
 ```sh
 yarn install

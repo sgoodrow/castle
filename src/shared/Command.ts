@@ -1,4 +1,5 @@
 import {
+  AutocompleteInteraction,
   CacheType,
   CommandInteraction,
   GuildMemberRoleManager,
@@ -6,6 +7,9 @@ import {
 
 export abstract class Command {
   public constructor(public readonly name: string) {}
+  public abstract autocomplete(
+    interaction: AutocompleteInteraction<CacheType>
+  ): Promise<void>;
   public abstract listen(
     interaction: CommandInteraction<CacheType>
   ): Promise<boolean>;

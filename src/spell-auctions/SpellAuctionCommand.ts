@@ -1,9 +1,14 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CacheType, CommandInteraction } from "discord.js";
+import {
+  AutocompleteInteraction,
+  CacheType,
+  CommandInteraction,
+} from "discord.js";
 import { getAuctionChannel } from "../shared/channels";
 import { Command } from "../shared/Command";
 import { bankerRoleId } from "../config";
 import { SpellAuctionThreadBuilder } from "./SpellAuctionThreadBuilder";
+import { ForbiddenSpells } from "../shared/forbidden-spells";
 
 export enum Option {
   Player = "player",
@@ -14,6 +19,15 @@ export enum Option {
 }
 
 class SpellAuctionCommand extends Command {
+  public async autocomplete(interaction: AutocompleteInteraction<CacheType>) {
+    const search = String(interaction.options.getFocused()).toLowerCase();
+    const matches = ForbiddenSpells.map((spell) => ({
+      name: `[${spell.className}] ${spell.name} (${spell.level})`,
+      value: spell.name,
+    })).filter(({ name }) => name.toLowerCase().includes(search));
+    return interaction.respond(matches.slice(0, 25));
+  }
+
   public async listen(interaction: CommandInteraction<CacheType>) {
     try {
       const auctionChannel = await this.authorize(interaction);
@@ -47,27 +61,17 @@ class SpellAuctionCommand extends Command {
           .setDescription("The name of the player who requested the auction")
           .setRequired(true)
       )
-      .addRoleOption((o) =>
-        o
-          .setName(Option.ClassRole)
-          .setDescription("The class required for the spell")
-          .setRequired(true)
-      )
       .addStringOption((o) =>
         o
           .setName(Option.Name)
           .setDescription("The name of the spell")
-          .setRequired(true)
-      )
-      .addStringOption((o) =>
-        o
-          .setName(Option.Level)
-          .setDescription("The level required to scribe the spell")
+          .setAutocomplete(true)
           .setRequired(true)
       )
       .addIntegerOption((o) =>
         o
           .setName(Option.Count)
+          .setMinValue(1)
           .setDescription("The number of scrolls available")
       );
   }

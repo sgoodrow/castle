@@ -17,11 +17,17 @@ export const registerCommands = () => {
 };
 
 export const commandListener = async (interaction: Interaction<CacheType>) => {
+  const match = commands.find((c) => c.name);
+
+  if (interaction.isAutocomplete()) {
+    match?.autocomplete(interaction).catch(console.error);
+    return;
+  }
+
   if (!interaction.isCommand()) return;
 
   const { commandName } = interaction;
 
-  const match = commands.find((c) => c.name);
   if (!match) {
     console.error(`${commandName} has no command listener!`);
     return;
@@ -30,7 +36,7 @@ export const commandListener = async (interaction: Interaction<CacheType>) => {
   match
     .listen(interaction)
     .then((success) =>
-      console.log(`Handled /${commandName} (${success ? "success" : "failed"})`)
+      console.log(`Received /${commandName}: ${success ? "success" : "failed"}`)
     )
     .catch(console.error);
 };

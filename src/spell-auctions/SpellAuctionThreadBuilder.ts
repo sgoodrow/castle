@@ -4,6 +4,7 @@ import moment from "moment";
 import { Option } from "./SpellAuctionCommand";
 import { getClassAbreviation } from "../shared/roles";
 import { ThreadBuilder } from "../shared/ThreadBuilder";
+import { ForbiddenSpells } from "../shared/forbidden-spells";
 
 export class SpellAuctionThreadBuilder extends ThreadBuilder {
   public get options() {
@@ -15,8 +16,12 @@ export class SpellAuctionThreadBuilder extends ThreadBuilder {
   }
 
   public get message() {
-    return `${this.classRole}s, ${this.player} can scribe **${this.name}** and has initiated a DKP auction which will end ${this.endDate}, ${this.endDifference}.
-    ${this.multiCountScrolls}
+    return `${this.classRole}s, ${this.player} can scribe **${this.spellName}** and has initiated a DKP auction which will end ${this.endDate}, ${this.endDifference}.
+
+${this.spell?.url}
+
+${this.scrollCount}
+
 **Rules:**${this.multiCountRules}
 • You must be able to scribe spell.
 • Bids in the last 12 hours extend the auction by another 12 hours.`;
@@ -34,12 +39,10 @@ export class SpellAuctionThreadBuilder extends ThreadBuilder {
     return moment().add("2", "days").unix();
   }
 
-  private get multiCountScrolls() {
-    return this.count > 1
-      ? `\n**Scrolls:**\n${range(this.count)
-          .map((i: number) => `• ${this.name} #${i + 1}`)
-          .join("\n")}\n`
-      : "";
+  private get scrollCount() {
+    return `**Scrolls:**\n${range(this.count)
+      .map((i: number) => `• ${this.spellName} #${i + 1}`)
+      .join("\n")}`;
   }
 
   private get multiCountRules() {
@@ -51,28 +54,39 @@ export class SpellAuctionThreadBuilder extends ThreadBuilder {
   }
 
   private get threadName() {
-    return `${this.classAbrev} ${this.name} ${this.level}`;
+    return `${this.spellName} (${this.classAbrev} ${this.level})`;
   }
 
   private get reason() {
-    return `${this.player} can scribe ${this.name}`;
+    return `${this.player} can scribe ${this.spellName}`;
   }
 
-  private get name() {
+  private get spellName() {
     return this.getOption(Option.Name)?.value;
   }
 
-  private get level() {
-    const l = Number(this.getOption(Option.Level)?.value);
-    if (l < 1 || l > 60) {
-      throw new Error(`Invalid level (${l})`);
+  private get spell() {
+    const s = ForbiddenSpells.find((s) => s.name === this.spellName);
+    if (!s) {
+      throw new Error(`Could not find spell named ${this.spellName}`);
     }
-    return l;
+    return s;
+  }
+
+  private get level() {
+    return this.spell?.level;
   }
 
   private get classRole() {
-    const c = this.getOption(Option.ClassRole)?.role;
-    return c;
+    const role = this.interaction.guild?.roles.cache.find(
+      (r) => r.name === this.spell?.className
+    );
+    if (!role) {
+      throw new Error(
+        `Could not find Discord role named ${this.spell?.className}`
+      );
+    }
+    return role;
   }
 
   private get player() {
@@ -80,18 +94,10 @@ export class SpellAuctionThreadBuilder extends ThreadBuilder {
   }
 
   private get count() {
-    const c = Number(this.getOption(Option.Count)?.value || 1);
-    if (c < 1 || Number.isNaN(c)) {
-      throw new Error(`Invalid count (${c})`);
-    }
-    return c;
+    return Number(this.getOption(Option.Count)?.value) || 1;
   }
 
   private get classAbrev() {
-    const c = getClassAbreviation(this.classRole?.name);
-    if (!c) {
-      throw new Error(`Invalid class (${this.classRole?.name} not recognized)`);
-    }
-    return c;
+    return getClassAbreviation(this.classRole?.name);
   }
 }
