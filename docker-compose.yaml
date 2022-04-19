@@ -1,0 +1,11 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:latest
+    command: postgres -c 'max_connections=200'
+    environment:
+      POSTGRES_PASSWORD: root
+    ports:
+      - 5432:5432/tcp
+    volumes:
+      - ./postgres-db:/var/lib/postgresql/data

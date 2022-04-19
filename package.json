@@ -8,6 +8,7 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node .",
+    "predev": "docker-compose up -d",
     "dev": "nodemon",
     "build": "tsc",
     "deploy": "git push heroku-test main",

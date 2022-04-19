@@ -15,15 +15,17 @@ export const readyListener = async (client: Client) => {
   }
 
   const id = await store.get(Item.BankRequestEmbedId);
-  const embed = channel.messages.cache.get(id);
+  const embed = await channel.messages.fetch(id);
   if (!embed) {
-    // make it
     const message = await channel.send({
       embeds: [new MessageEmbed().setTitle("Test")],
     });
+    console.log(typeof message.id);
     await store.set(Item.BankRequestEmbedId, message.id);
     return;
   } else {
-    // update it;
+    embed.edit({
+      embeds: [new MessageEmbed().setTitle("Edited")],
+    });
   }
 };

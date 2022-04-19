@@ -1,6 +1,13 @@
 # Castle Discord Bot
 
-## Development
+## Develop
+
+### Requirements
+
+1. docker
+2. yarn
+3. git
+4. heroku
 
 Create a [Discord Application](https://discord.com/developers/applications), bot and test server. Set these local environment variables in `.env`:
 
@@ -10,17 +17,17 @@ guildId="<redacted>" # Discord ID
 clientId="<redacted>" # Bot ID
 auctionChannelId="<redacted>"
 bankerRoleId="<redacted>"
-DATABASE_URL="<redacted>" # Heroku castle-banker-prod-test postgreSQL URI
+DATABASE_URL="postgresql://postgres:root@localhost:5432/postgres"
 ```
 
-Then run,
+### Run
 
 ```sh
 yarn install
 yarn dev
 ```
 
-## Release
+## Deploy
 
 This bot is deployed to two environments with Heroku:
 
