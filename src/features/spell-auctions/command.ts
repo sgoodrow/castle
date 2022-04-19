@@ -4,11 +4,11 @@ import {
   CacheType,
   CommandInteraction,
 } from "discord.js";
-import { getAuctionChannel } from "../shared/channels";
-import { Command } from "../shared/Command";
-import { bankerRoleId } from "../config";
-import { SpellAuctionThreadBuilder } from "./SpellAuctionThreadBuilder";
-import { ForbiddenSpells } from "../shared/forbidden-spells";
+import { getAuctionChannel } from "../../shared/channels";
+import { bankerRoleId } from "../../config";
+import { SpellAuctionThreadBuilder } from "./thread-builder";
+import { ForbiddenSpells } from "../../shared/forbidden-spells";
+import { Command } from "../../listeners/command";
 
 export enum Option {
   Player = "player",

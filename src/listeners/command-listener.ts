@@ -1,8 +1,8 @@
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { CacheType, Interaction } from "discord.js";
-import { auctionCommand } from "./spell-auctions/SpellAuctionCommand";
-import { clientId, guildId, token } from "./config";
+import { auctionCommand } from "../features/spell-auctions/command";
+import { clientId, guildId, token } from "../config";
 
 const commands = [auctionCommand];
 

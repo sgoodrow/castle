@@ -7,8 +7,9 @@
   "author": "Scott Goodrow <sgoodrow@gmail.com>",
   "license": "MIT",
   "scripts": {
+    "clean": "docker-compose down && rimraf postgres-db",
     "start": "ts-node .",
-    "predev": "docker-compose up -d",
+    "predev": "docker-compose up -d --wait",
     "dev": "nodemon",
     "build": "tsc",
     "deploy": "git push heroku-test main",
@@ -23,7 +24,8 @@
     "dotenv": "^16.0.0",
     "keyv": "^4.2.2",
     "lodash": "^4.17.21",
-    "moment": "^2.29.2"
+    "moment": "^2.29.2",
+    "rimraf": "^3.0.2"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.181",

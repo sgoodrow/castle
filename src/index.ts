@@ -1,7 +1,10 @@
 import { Client, Intents } from "discord.js";
-import { commandListener, registerCommands } from "./commands";
+import {
+  commandListener,
+  registerCommands,
+} from "./listeners/command-listener";
 import { token } from "./config";
-import { readyListener } from "./ready";
+import { readyListener } from "./listeners/ready-listener";
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 client.login(token);
