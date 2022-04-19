@@ -1,5 +1,6 @@
 import { Icon, Service } from "./types";
 
+// todo: store this in database, populate and remove with command
 export const services: Service[] = [
   {
     title: "Bounties (bank buys)",

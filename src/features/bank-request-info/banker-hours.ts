@@ -1,5 +1,6 @@
 import { BankerHour } from "./types";
 
+// todo: store this in database, populate and remove with command
 export const bankerHours: BankerHour[] = [
   {
     banker: "403050155965939713", // Kindarien
