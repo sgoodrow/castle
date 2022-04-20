@@ -6,14 +6,18 @@ export const services: Service[] = [
     title: "Bounties (bank buys)",
     icon: Icon.Bought,
     requestFormats: ["Bounty: Item name, Item count"],
-    bulletContent: ["Alligator Skin (200p)", "Blue Diamond (950p)"],
+    bullets: [
+      "At North Freeport Bank",
+      "Alligator Skin (200p)",
+      "Blue Diamond (950p)",
+    ],
   },
   {
     title: "Misc Items",
     icon: Icon.Sold,
     requestFormats: ["Misc item: Item name"],
     inventoryUrl: "https://tinyurl.com/castle-misc-items",
-    bulletContent: [
+    bullets: [
       "Leatherfoot Raiders Skullcap (500p Rivervale Bank)",
       "Mind Melt (500p Thurgadin Bank)",
       "Puppet Strings Charge (1750p The Overthere)",
@@ -24,7 +28,7 @@ export const services: Service[] = [
     icon: Icon.Sold,
     requestFormats: ["Sky item: Name (Mule name, Quantity available)"],
     inventoryUrl: "https://tinyurl.com/castle-sky-items",
-    bulletContent: [
+    bullets: [
       "At East Freeport Docks (250p)",
       "You must have won the related DKP items",
     ],
@@ -36,7 +40,7 @@ export const services: Service[] = [
       "Dropped spell: Class, Level, Spell name (Mule name, Quantity available)",
     ],
     inventoryUrl: "https://tinyurl.com/castle-spell-spreadsheet",
-    bulletContent: [
+    bullets: [
       "At North Freeport Bank",
       "You must be able to scribe the spell",
       "You must check the spreadsheet and post the quantity availabile",
@@ -53,15 +57,15 @@ export const services: Service[] = [
       "Research component: Component name",
     ],
     inventoryUrl: "https://tinyurl.com/castle-research",
-    bulletContent: ["At North Freeport Bank (free)"],
+    bullets: ["At North Freeport Bank (free)"],
   },
   {
     title: "Resistance Jewelry",
     icon: Icon.Sold,
     requestFormats: ["Jewelry: Item name, Item quantity"],
-    bulletContent: [
-      "Request in #💎han's-jewelry-store (read pins)",
+    bullets: [
       "At North Freeport Bank",
+      "Request in #💎han's-jewelry-store (read pins)",
     ],
   },
 ];

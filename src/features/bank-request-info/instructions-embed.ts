@@ -1,60 +1,45 @@
 import { MessageEmbed } from "discord.js";
-import moment from "moment";
 import { services } from "./bank-services";
 import { bankerHours } from "./banker-hours";
-import { Day, Icon, Service } from "./types";
+import { Icon, Service } from "./types";
 
 const maybeUrl = (text: string, url?: string) =>
   url ? `[${text}](${url})` : text;
 
-const nextDay = (day: Day) => {
-  const dayIndex =
-    [
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday",
-    ].indexOf(day) + 1;
-  return moment().isoWeekday() <= dayIndex
-    ? moment().isoWeekday(dayIndex)
-    : moment().add(1, "weeks").isoWeekday(dayIndex);
-};
+export const BankRequestInstructionsEmbeds = [
+  new MessageEmbed({
+    title: "Instructions",
+    description: `Always be courteous and patient with your bankers. If you are willing to help staff the bank, please reach out to an officer.
 
-const getNextBankerHour = (day: Day, hour: number, pm = false) =>
-  nextDay(day)
-    .hour(hour + (pm ? 0 : 12))
-    .minute(0)
-    .second(0)
-    .unix();
+  • Make bank requests when you are available and state how long you will be available.
+  • If you are no longer available, please delete your request and repost it later.
+  • Use the ${Icon.Request} request format`,
+    color: "RED",
+  }),
+  new MessageEmbed({
+    title: "Services",
+    description: `${services
+      .map(
+        ({ title, icon, requestFormats, inventoryUrl, bullets }: Service) => `
+  ${icon} **${maybeUrl(title, inventoryUrl)}**
+  ${requestFormats.map((r) => `${Icon.Request} \`${r}\``).join("\n")}
+  ${bullets.map((b) => `• ${b}`).join("\n")}`
+      )
+      .join("\n")}`,
+  }),
+  new MessageEmbed({
+    title: "🕐 Availability",
+    description: `Bankers may be available upon request, however they also hold regularly hours. The times are listed in your timezone.
 
-export const BankRequestInstructionsEmbed = new MessageEmbed()
-  .setTitle("Guild Bank Instructions")
-  .setDescription(
-    `
-• Be available when making requests and state for how long, or use daily banking hours
-• Use the proper ${Icon.Request} request format
-
-${services
-  .map(
-    ({ title, icon, requestFormats, inventoryUrl, bulletContent }: Service) => `
-${icon} **${maybeUrl(title, inventoryUrl)}**
-${requestFormats.map((r) => `${Icon.Request} \`${r}\``).join("\n")}
-${bulletContent.map((bulletContent) => `• ${bulletContent}`).join("\n")}`
-  )
-  .join("\n")}
-
-🕐 **Daily Banking Hour** (in your timezone)
-${bankerHours
-  .map(({ banker, day, hour, pm }) => ({
-    banker,
-    date: getNextBankerHour(day, hour, pm),
-  }))
-  .sort((a, b) => (a.date > b.date ? 1 : -1))
-  .map(({ banker, date }) => `• <t:${date}:R> <@${banker}> (<t:${date}:F>)`)
-  .join("\n")}
-  
-⚠️ **TL;DR** Make requests when you're available. Follow the instructions. Bankers will only process requests made in #🏦bank-requests (not PMs). Requests are deleted after processing or if old or invalid."`
-  );
+  ${bankerHours
+    .map(({ banker, date }) => `• <t:${date}:R> <@${banker}> <t:${date}:F>`)
+    .join("\n")}`,
+    color: "PURPLE",
+  }),
+  new MessageEmbed({
+    title: "⚠️ TL;DR",
+    description:
+      "Make requests when you're available. Follow the instructions. Bankers will only process requests made in #🏦bank-requests (not PMs). Requests are deleted after processing or if old or invalid.",
+    color: "ORANGE",
+  }),
+];

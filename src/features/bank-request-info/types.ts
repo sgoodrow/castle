@@ -9,14 +9,12 @@ export interface Service {
   icon: string;
   requestFormats: string[];
   inventoryUrl?: string;
-  bulletContent: string[];
+  bullets: string[];
 }
 
 export interface BankerHour {
   banker: string;
-  day: Day;
-  hour: number;
-  pm?: boolean;
+  date: number;
 }
 
 export declare type Day =

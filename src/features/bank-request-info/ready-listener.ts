@@ -1,7 +1,8 @@
+import { DiscordAPIError, MessageOptions } from "discord.js";
 import { bankRequestsChannelId } from "../../config";
 import { Ready } from "../../listeners/ready";
 import { Item, store } from "../../shared/store";
-import { BankRequestInstructionsEmbed } from "./instructions-embed";
+import { BankRequestInstructionsEmbeds } from "./instructions-embed";
 
 export class BankRequestReadyListener extends Ready {
   public async fire() {
@@ -16,8 +17,10 @@ export class BankRequestReadyListener extends Ready {
     await store.set(Item.BankRequestEmbedId, message.id);
   }
 
-  private get messagePayload() {
-    return { embeds: [BankRequestInstructionsEmbed] };
+  private get messagePayload(): MessageOptions {
+    return {
+      embeds: BankRequestInstructionsEmbeds,
+    };
   }
 
   private async getEmbed() {
@@ -26,7 +29,14 @@ export class BankRequestReadyListener extends Ready {
       return;
     }
 
-    return await this.channel.messages.fetch(id);
+    try {
+      return await this.channel.messages.fetch(id);
+    } catch (error) {
+      if (error instanceof DiscordAPIError && error.httpStatus === 404) {
+        return;
+      }
+      throw error;
+    }
   }
 
   private get channel() {
