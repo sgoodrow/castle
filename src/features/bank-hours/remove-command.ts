@@ -27,7 +27,7 @@ class RemoveBankHourCommand extends Command {
     await dataSource.manager.save(banker);
 
     interaction.reply({
-      content: `<@${banker.userId}>'s bank hour is canceled.`,
+      content: `Removed <@${banker.userId}>'s bank hour.`,
       ephemeral: true,
     });
 
