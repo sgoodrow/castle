@@ -28,27 +28,18 @@ class SpellAuctionCommand extends Command {
     return interaction.respond(matches.slice(0, 25));
   }
 
-  public async listen(interaction: CommandInteraction<CacheType>) {
-    try {
-      const auctionChannel = await this.authorize(interaction);
+  public async execute(interaction: CommandInteraction<CacheType>) {
+    const auctionChannel = await this.authorize(interaction);
 
-      const builder = new SpellAuctionThreadBuilder(interaction);
-      const thread = await auctionChannel.threads.create(builder.options);
+    const builder = new SpellAuctionThreadBuilder(interaction);
+    const thread = await auctionChannel.threads.create(builder.options);
 
-      thread.send(builder.message);
+    thread.send(builder.message);
 
-      interaction.reply({
-        content: `Started spell auction thread: ${thread}`,
-        ephemeral: true,
-      });
-      return true;
-    } catch (error) {
-      await interaction.reply({
-        content: String(error),
-        ephemeral: true,
-      });
-      return false;
-    }
+    interaction.reply({
+      content: `Started spell auction thread: ${thread}`,
+      ephemeral: true,
+    });
   }
 
   public get builder() {

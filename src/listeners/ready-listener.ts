@@ -1,6 +1,6 @@
 import { Client } from "discord.js";
-import { bankRequestReadyListener } from "../features/bank-request-info/ready-listener";
+import { updateBankRequestInfo } from "../features/bank-request-info/update-action";
 
 export const readyListener = async (client: Client) => {
-  [bankRequestReadyListener(client)];
+  [updateBankRequestInfo(client)];
 };

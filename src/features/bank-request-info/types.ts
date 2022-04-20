@@ -12,11 +12,6 @@ export interface Service {
   bullets: string[];
 }
 
-export interface BankerHour {
-  banker: string;
-  date: number;
-}
-
 export enum Day {
   Monday = "Monday",
   Tuesday = "Tuesday",
@@ -26,3 +21,5 @@ export enum Day {
   Saturday = "Saturday",
   Sunday = "Sunday",
 }
+
+export const Days = Object.values(Day);

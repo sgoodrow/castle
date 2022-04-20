@@ -17,9 +17,22 @@ export abstract class Command {
     interaction: AutocompleteInteraction<CacheType>
   ): Promise<void>;
 
-  public abstract listen(
+  protected abstract execute(
     interaction: CommandInteraction<CacheType>
-  ): Promise<boolean>;
+  ): Promise<void>;
+
+  public async listen(interaction: CommandInteraction<CacheType>) {
+    try {
+      this.execute(interaction);
+      return true;
+    } catch (error) {
+      await interaction.reply({
+        content: String(error),
+        ephemeral: true,
+      });
+      return false;
+    }
+  }
 
   public abstract get builder(): any;
 
