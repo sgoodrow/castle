@@ -5,14 +5,22 @@ import {
   GuildMemberRoleManager,
 } from "discord.js";
 
+export const getOption = (
+  name: string,
+  interaction: CommandInteraction<CacheType>
+) => interaction.options.data.find((d) => d.name === name);
+
 export abstract class Command {
   public constructor(public readonly name: string) {}
+
   public abstract autocomplete(
     interaction: AutocompleteInteraction<CacheType>
   ): Promise<void>;
+
   public abstract listen(
     interaction: CommandInteraction<CacheType>
   ): Promise<boolean>;
+
   public abstract get builder(): any;
 
   protected requireRole(
@@ -24,7 +32,7 @@ export abstract class Command {
       throw new Error("Could not determine your roles.");
     }
     if (!roles.cache.get(roleId)) {
-      throw new Error("Only bankers are authorized to start spell auctions.");
+      throw new Error(`Must have ${roleId} to use this command.`);
     }
   }
 }

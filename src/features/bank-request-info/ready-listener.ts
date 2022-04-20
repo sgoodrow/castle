@@ -1,25 +1,30 @@
-import { DiscordAPIError, MessageOptions } from "discord.js";
+import { Client, DiscordAPIError } from "discord.js";
 import { bankRequestsChannelId } from "../../config";
-import { Ready } from "../../listeners/ready";
-import { Item, store } from "../../shared/store";
-import { BankRequestInstructionsEmbeds } from "./instructions-embed";
+import { Ready, readyListener } from "../../listeners/ready";
+import { Item, store } from "../../db/store";
+import { getBankRequestInstructionsEmbeds } from "./instructions-embed";
 
-export class BankRequestReadyListener extends Ready {
+export const bankRequestReadyListener = (client: Client) =>
+  readyListener(new BankRequestReadyListener(client));
+
+class BankRequestReadyListener extends Ready {
   public async fire() {
     const embed = await this.getEmbed();
 
+    const payload = await this.getMessagePayload();
+
     if (embed) {
-      embed.edit(this.messagePayload);
+      embed.edit(payload);
       return;
     }
 
-    const message = await this.channel.send(this.messagePayload);
+    const message = await this.channel.send(payload);
     await store.set(Item.BankRequestEmbedId, message.id);
   }
 
-  private get messagePayload(): MessageOptions {
+  private async getMessagePayload() {
     return {
-      embeds: BankRequestInstructionsEmbeds,
+      embeds: await getBankRequestInstructionsEmbeds(),
     };
   }
 
