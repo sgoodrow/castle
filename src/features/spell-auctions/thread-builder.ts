@@ -1,10 +1,10 @@
 import { ThreadAutoArchiveDuration } from "discord-api-types/v9";
 import { range } from "lodash";
 import moment from "moment";
-import { Option } from "./SpellAuctionCommand";
-import { getClassAbreviation } from "../shared/roles";
-import { ThreadBuilder } from "../shared/ThreadBuilder";
-import { ForbiddenSpells } from "../shared/forbidden-spells";
+import { Option } from "./command";
+import { getClassAbreviation } from "../../shared/roles";
+import { ThreadBuilder } from "../../shared/thread-builder";
+import { ForbiddenSpells } from "../../shared/forbidden-spells";
 
 export class SpellAuctionThreadBuilder extends ThreadBuilder {
   public get options() {
