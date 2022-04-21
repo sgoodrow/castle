@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { auctionCommand } from "../features/spell-auctions/command";
 import { clientId, guildId, token } from "../config";
-import { setBankHourCommand } from "../features/bank-hours/set-command";
+import { setBankHourCommand } from "../features/bank-hours/add-command";
 import { removeBankHour } from "../features/bank-hours/remove-command";
 
 const commands = [auctionCommand, setBankHourCommand, removeBankHour];
@@ -30,16 +30,19 @@ export const commandListener = async (interaction: Interaction<CacheType>) => {
   }
 
   if (interaction.isCommand()) {
-    getCommand(interaction)
-      ?.listen(interaction)
-      .then((success) =>
-        console.log(
-          `Received /${interaction.commandName}: ${
-            success ? "success" : "failed"
-          }`
-        )
-      )
-      .catch(console.error);
+    let success = false;
+    try {
+      await getCommand(interaction)?.execute(interaction);
+      success = true;
+    } catch (error) {
+      await interaction.reply({
+        content: String(error),
+        ephemeral: true,
+      });
+    }
+    console.log(
+      `Received /${interaction.commandName}: ${success ? "success" : "failed"}`
+    );
   }
 };
 

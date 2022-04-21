@@ -1,11 +1,11 @@
 import { DataSource } from "typeorm";
 import { databaseUrl } from "../config";
-import { Banker } from "./banker";
+import { BankHour } from "./bank-hour";
 
 export const dataSource = new DataSource({
   url: databaseUrl,
   type: "postgres",
-  entities: [Banker],
+  entities: [BankHour],
   synchronize: true,
   logging: false,
 });

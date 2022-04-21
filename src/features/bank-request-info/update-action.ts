@@ -3,10 +3,9 @@ import { bankRequestsChannelId } from "../../config";
 import { Action, actionExecutor } from "../../listeners/action";
 import { Item, store } from "../../db/store";
 import { dataSource } from "../../db/data-source";
-import { Banker } from "../../db/banker";
-import { Day, Days, Icon, Service } from "./types";
+import { Icon, Service } from "./types";
 import { services } from "./bank-services";
-import moment from "moment";
+import { BankHour } from "../../db/bank-hour";
 
 export const updateBankRequestInfo = (client: Client) =>
   actionExecutor(new UpdateBankRequestInfoAction(client));
@@ -60,15 +59,16 @@ class UpdateBankRequestInfoAction extends Action {
   }
 
   private async getAvailabilityEmbed() {
-    const bankerRepository = dataSource.getRepository(Banker);
-    const bankers = await bankerRepository.findBy({ canceled: false });
-    const bankerHours = this.getBankerHours(bankers);
+    const bankHour = await dataSource
+      .getRepository(BankHour)
+      .findBy({ canceled: false });
     return new MessageEmbed({
       title: "🕐 Availability",
       description: `Bankers may be available upon request, however they also hold regularly hours. The times are listed in your timezone.
 
-  ${bankerHours
-    .map(({ banker, date }) => `• <t:${date}:R> <@${banker}> <t:${date}:F>`)
+  ${bankHour
+    .map((a) => a.richLabel)
+    .sort((a, b) => (a > b ? 1 : -1))
     .join("\n")}`,
       color: "PURPLE",
     });
@@ -115,29 +115,5 @@ class UpdateBankRequestInfoAction extends Action {
       throw new Error("Bank requests channel is not a text channel");
     }
     return c;
-  }
-
-  private getBankerHours(rawBankerHours: Banker[]) {
-    return rawBankerHours
-      .map(({ userId, day, hour, pm }) => ({
-        banker: userId,
-        date: this.getNextBankerHour(day, hour, pm),
-      }))
-      .sort((a, b) => (a.date > b.date ? 1 : -1));
-  }
-
-  private getNextBankerHour(day: Day, hour: number, pm = false) {
-    return this.nextDay(day)
-      .hour(hour + (pm ? 0 : 12))
-      .minute(0)
-      .second(0)
-      .unix();
-  }
-
-  private nextDay(day: Day) {
-    const dayIndex = Days.indexOf(day) + 1;
-    return moment().isoWeekday() <= dayIndex
-      ? moment().isoWeekday(dayIndex)
-      : moment().add(1, "weeks").isoWeekday(dayIndex);
   }
 }

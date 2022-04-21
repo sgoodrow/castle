@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import {
-  AutocompleteInteraction,
+  ApplicationCommandOptionChoice,
   CacheType,
   CommandInteraction,
 } from "discord.js";
@@ -19,15 +19,6 @@ export enum Option {
 }
 
 class SpellAuctionCommand extends Command {
-  public async autocomplete(interaction: AutocompleteInteraction<CacheType>) {
-    const search = String(interaction.options.getFocused()).toLowerCase();
-    const matches = ForbiddenSpells.map((spell) => ({
-      name: `[${spell.className}] ${spell.name} (${spell.level})`,
-      value: spell.name,
-    })).filter(({ name }) => name.toLowerCase().includes(search));
-    return interaction.respond(matches.slice(0, 25));
-  }
-
   public async execute(interaction: CommandInteraction<CacheType>) {
     const auctionChannel = await this.authorize(interaction);
 
@@ -67,13 +58,31 @@ class SpellAuctionCommand extends Command {
       );
   }
 
+  protected async getOptionAutocomplete(
+    option: string
+  ): Promise<ApplicationCommandOptionChoice[] | undefined> {
+    switch (option) {
+      case Option.Name:
+        return await this.autocompleteName();
+      default:
+        return;
+    }
+  }
+
+  private async autocompleteName() {
+    return ForbiddenSpells.map((spell) => ({
+      name: `[${spell.className}] ${spell.name} (${spell.level})`,
+      value: spell.name,
+    }));
+  }
+
   private async authorize(interaction: CommandInteraction<CacheType>) {
     const auctionChannel = await getAuctionChannel(interaction);
     if (!auctionChannel?.isText()) {
       throw new Error("The auction channel is not a text channel.");
     }
 
-    this.requireRole(bankerRoleId, interaction);
+    this.requireInteractionMemberRole(bankerRoleId, interaction);
 
     return auctionChannel;
   }

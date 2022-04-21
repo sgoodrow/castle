@@ -12,12 +12,14 @@
 Create a [Discord Application](https://discord.com/developers/applications), bot and test server. You can reuse an existing test server if you are an admin there. Set these local environment variables in `.env`:
 
 ```sh
-token="<redacted>" # Bot token
-guildId="<redacted>" # Discord ID
-clientId="<redacted>" # Bot ID
-auctionChannelId="<redacted>" # Choose a channel for spell auctions
-bankerRoleId="<redacted>" # Choose a role for bankers
-DATABASE_URL="postgresql://postgres:root@localhost:5432/postgres"
+token="BOT_TOKEN"
+clientId="OAUTH2_CLIENT_ID"
+# Pinned in Pumped's test server
+guildId="DISCORD_SERVER_ID"
+auctionChannelId="DISCORD_AUCTION_CHANNEL_ID"
+bankerRoleId="DISCORD_BANKER_ROLE_ID"
+bankRequestsChannelId="DISCORD_BANK_REQUESTS_CHANNEL_ID"
+DATABASE_URL="postgresql://admin:password@localhost:5432/castle"
 ```
 
 ### Run
