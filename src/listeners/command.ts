@@ -18,7 +18,7 @@ export abstract class Command {
   public constructor(private readonly _name: string) {}
 
   public get name() {
-    return `${this._name}${commandSuffix}`;
+    return `${this._name}${commandSuffix ? commandSuffix : ""}`;
   }
 
   public async autocomplete(interaction: AutocompleteInteraction<CacheType>) {
