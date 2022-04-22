@@ -15,7 +15,7 @@ export class ItemAuctionThreadBuilder extends ThreadBuilder {
   }
 
   public get message() {
-    return `**${this.item.name}** DKP auction will end ${this.endDate}, ${this.endDifference}. ${this.location}.
+    return `Auction ends ${this.endDifference} on ${this.endDate}. ${this.location}.
 
 ${this.item?.url}
 

@@ -11,7 +11,6 @@ import { updateBankRequestInfo } from "../bank-request-info/update-action";
 import { BankHour } from "../../db/bank-hour";
 
 enum Option {
-  Banker = "banker",
   BankHourID = "hourid",
 }
 
@@ -19,11 +18,6 @@ class RemoveBankHourCommand extends Command {
   public async execute(interaction: CommandInteraction<CacheType>) {
     await this.authorize(interaction);
 
-    const banker = getOption(Option.Banker, interaction)?.user;
-    if (!banker) {
-      throw new Error(`Banker not found.`);
-    }
-    this.requireUserRole(banker.id, bankerRoleId, interaction);
     const bankHourId = Number(getOption(Option.BankHourID, interaction)?.value);
 
     const bankHour = await dataSource
@@ -72,10 +66,8 @@ class RemoveBankHourCommand extends Command {
   private async autocompleteBankHourIdOption(
     interaction: AutocompleteInteraction<CacheType>
   ) {
-    const banker = getOption(Option.Banker, interaction)?.user?.id;
     const weeklyBankAvailabilities = dataSource.getRepository(BankHour);
     const bankHour = await weeklyBankAvailabilities.findBy({
-      userId: banker,
       canceled: false,
     });
     await Promise.all(

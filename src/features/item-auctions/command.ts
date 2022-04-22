@@ -75,7 +75,6 @@ class ItemAuctionCommand extends Command {
     return filteredRoles;
   }
 
-  // this is very noisey currently
   private async addClassRaidersToThread(
     message: Message<boolean>,
     messageContent: string,
@@ -93,7 +92,11 @@ class ItemAuctionCommand extends Command {
     }
 
     const ids = filteredMembers.map((f) => f.id);
-    const batchSize = 99;
+    const remaining = 2000 - messageContent.length;
+    const each = 22;
+    const buffer = 4;
+    const charPerUser = each + buffer;
+    const batchSize = Math.floor(remaining / charPerUser);
     for (let i = 0; i < ids.length; i += batchSize) {
       const userIds = ids
         .slice(i, i + batchSize)

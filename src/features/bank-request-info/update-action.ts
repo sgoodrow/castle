@@ -54,9 +54,9 @@ class UpdateBankRequestInfoAction extends Action {
       description: `${services
         .map(
           ({ title, icon, requestFormats, inventoryUrl, bullets }: Service) => `
-  ${icon} **${this.maybeUrl(title, inventoryUrl)}**
-  ${requestFormats.map((r) => `${Icon.Request} \`${r}\``).join("\n")}
-  ${bullets.map((b) => `• ${b}`).join("\n")}`
+${icon} **${this.maybeUrl(title, inventoryUrl)}**
+${requestFormats.map((r) => `${Icon.Request} \`${r}\``).join("\n")}
+${bullets.map((b) => `• ${b}`).join("\n")}`
         )
         .join("\n")}`,
     });
@@ -70,10 +70,10 @@ class UpdateBankRequestInfoAction extends Action {
       title: "🕐 Availability",
       description: `Bankers may be available upon request, however they also hold regular hours. The start times are listed below (in your timezone).
 
-  ${bankHour
-    .map((a) => a.richLabel)
-    .sort((a, b) => (a > b ? 1 : -1))
-    .join("\n")}`,
+${bankHour
+  .map((a) => a.richLabel)
+  .sort((a, b) => (a > b ? 1 : -1))
+  .join("\n")}`,
       color: "PURPLE",
     });
   }
