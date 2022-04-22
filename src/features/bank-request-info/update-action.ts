@@ -1,11 +1,11 @@
 import { Client, DiscordAPIError, MessageEmbed } from "discord.js";
 import { bankRequestsChannelId } from "../../config";
 import { Action, actionExecutor } from "../../listeners/action";
-import { Item, store } from "../../db/store";
 import { dataSource } from "../../db/data-source";
 import { Icon, Service } from "./types";
 import { services } from "./bank-services";
 import { BankHour } from "../../db/bank-hour";
+import { Instructions, Name } from "../../db/instructions";
 
 export const updateBankRequestInfo = (client: Client) =>
   actionExecutor(new UpdateBankRequestInfoAction(client));
@@ -29,7 +29,11 @@ class UpdateBankRequestInfoAction extends Action {
     }
 
     const message = await this.channel.send(payload);
-    await store.set(Item.BankRequestEmbedId, message.id);
+    const instructions = new Instructions();
+    instructions.id = message.id;
+    instructions.name = Name.BankRequestInstructions;
+
+    await dataSource.manager.save(instructions);
   }
 
   private async getInstructionsEmbed() {
@@ -88,18 +92,22 @@ class UpdateBankRequestInfoAction extends Action {
   }
 
   private async getEmbed() {
-    const id = await store.get(Item.BankRequestEmbedId);
-    if (!id) {
+    const instructions = await dataSource
+      .getRepository(Instructions)
+      .findOneBy({ name: Name.BankRequestInstructions, canceled: false });
+    if (!instructions) {
       return;
     }
 
     try {
-      return await this.channel.messages.fetch(id);
+      return await this.channel.messages.fetch(instructions.id);
     } catch (error) {
       if (error instanceof DiscordAPIError && error.httpStatus === 404) {
         console.error(
-          "Could not find bank request info message. Was it deleted?"
+          "Could not find bank request instructions. Was it deleted?"
         );
+        instructions.canceled = true;
+        await dataSource.manager.save(instructions);
         return;
       }
       throw error;

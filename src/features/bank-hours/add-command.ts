@@ -38,7 +38,6 @@ class AddBankHourCommand extends Command {
       Number(getOption(Option.Hour, interaction)?.value) +
       (pm ? 12 : 0) +
       EST_UTC_TIMEZONE_OFFSET;
-    bankHour.canceled = false;
 
     await dataSource.manager.save(bankHour);
 

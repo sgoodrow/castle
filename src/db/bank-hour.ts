@@ -15,7 +15,7 @@ export class BankHour {
   @Column()
   hour!: number;
 
-  @Column()
+  @Column({ default: false })
   canceled!: boolean;
 
   public get richLabel() {

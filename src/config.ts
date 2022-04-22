@@ -11,6 +11,7 @@ export const {
   bankRequestsChannelId,
   commandSuffix,
   DATABASE_URL: databaseUrl,
+  ENVIRONMENT: environment,
 } = process.env as unknown as {
   token: string;
   guildId: string;
@@ -20,4 +21,5 @@ export const {
   bankRequestsChannelId: string;
   commandSuffix: string;
   DATABASE_URL: string;
+  ENVIRONMENT: string;
 };
