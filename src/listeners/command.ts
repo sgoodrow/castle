@@ -50,7 +50,7 @@ export abstract class Command {
   ) {
     const role = this.role(roleId, interaction);
     if (!role?.members.get(userId)) {
-      throw new Error(`User "userId" is not a ${role}.`);
+      throw new Error(`<@${userId}> is not a ${role}.`);
     }
   }
 
@@ -73,9 +73,8 @@ export abstract class Command {
     if (!roles) {
       throw new Error("Could not determine your roles.");
     }
-    const role = this.role(roleId, interaction);
     if (!roles.cache.get(roleId)) {
-      throw new Error(`Must have ${role} to use this command.`);
+      throw new Error(`Must have <#${roleId}> to use this command.`);
     }
   }
 }

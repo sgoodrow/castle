@@ -26,12 +26,15 @@ class AddBankHourCommand extends Command {
   public async execute(interaction: CommandInteraction<CacheType>) {
     await this.authorize(interaction);
 
-    const userId = String(getOption(Option.Banker, interaction)?.value);
+    const banker = getOption(Option.Banker, interaction)?.user;
+    if (!banker) {
+      throw new Error(`Banker not found.`);
+    }
 
-    this.requireUserRole(userId, bankerRoleId, interaction);
+    this.requireUserRole(banker.id, bankerRoleId, interaction);
 
     const bankHour = new BankHour();
-    bankHour.userId = userId;
+    bankHour.userId = banker.id;
     bankHour.day = String(getOption(Option.Day, interaction)?.value) as Day;
     const pm = Boolean(getOption(Option.PM, interaction)?.value);
     bankHour.hour =
@@ -53,11 +56,10 @@ class AddBankHourCommand extends Command {
     return new SlashCommandBuilder()
       .setName(this.name)
       .setDescription("Creates or updates a banker hour. Specify time in EST.")
-      .addStringOption((o) =>
+      .addUserOption((o) =>
         o
           .setName(Option.Banker)
           .setDescription("The name of the banker fulfilling the hour")
-          .setAutocomplete(true)
           .setRequired(true)
       )
       .addStringOption((o) =>
@@ -83,26 +85,8 @@ class AddBankHourCommand extends Command {
       );
   }
 
-  protected async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
-  ) {
-    switch (option) {
-      case Option.Banker:
-        return await this.autocompleteBankerOption(interaction);
-      default:
-        return;
-    }
-  }
-
-  // todo: not dry, see remove-commands.ts
-  private async autocompleteBankerOption(
-    interaction: AutocompleteInteraction<CacheType>
-  ) {
-    return this.role(bankerRoleId, interaction)?.members.map((b) => ({
-      name: b.displayName,
-      value: b.user.id,
-    }));
+  protected async getOptionAutocomplete() {
+    return [];
   }
 
   private async authorize(interaction: CommandInteraction<CacheType>) {

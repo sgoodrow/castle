@@ -6,7 +6,10 @@ import {
 import { token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+export const client = new Client({
+  intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MEMBERS],
+});
+
 client.login(token);
 client.on("interactionCreate", commandListener);
 client.on("ready", readyListener);

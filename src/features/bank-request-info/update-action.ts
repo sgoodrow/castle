@@ -1,5 +1,5 @@
 import { Client, DiscordAPIError, MessageEmbed } from "discord.js";
-import { bankRequestsChannelId } from "../../config";
+import { bankRequestsChannelId, guildId } from "../../config";
 import { Action, actionExecutor } from "../../listeners/action";
 import { dataSource } from "../../db/data-source";
 import { Icon, Service } from "./types";
@@ -12,6 +12,11 @@ export const updateBankRequestInfo = (client: Client) =>
 
 class UpdateBankRequestInfoAction extends Action {
   public async execute() {
+    console.log("starting to execute update bank req");
+    // todo: remove this and instead populate cache with a polling worker
+    const guild = this.client.guilds.cache.get(guildId);
+    const members = await guild?.members.fetch();
+    console.log(members?.size);
     const embed = await this.getEmbed();
 
     const payload = {
