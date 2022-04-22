@@ -45,7 +45,7 @@ class AddBankHourCommand extends Command {
     await dataSource.manager.save(bankHour);
 
     interaction.reply({
-      content: `Added **banker bankHour** ${bankHour.richLabel}`,
+      content: `Added **bank hour** ${bankHour.richLabel}`,
       ephemeral: true,
     });
 

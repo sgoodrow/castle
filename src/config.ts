@@ -8,6 +8,7 @@ export const {
   clientId,
   auctionChannelId,
   bankerRoleId,
+  raiderRoleId,
   bankRequestsChannelId,
   jewelryChannelId,
   commandSuffix,
@@ -19,6 +20,7 @@ export const {
   clientId: string;
   auctionChannelId: string;
   bankerRoleId: string;
+  raiderRoleId: string;
   bankRequestsChannelId: string;
   jewelryChannelId: string;
   commandSuffix: string;

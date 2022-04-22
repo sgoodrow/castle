@@ -1,5 +1,4 @@
-const replaceAll = (str: string, find: string, replace: string) =>
-  str.replace(new RegExp(find, "g"), replace);
+import { replaceAll } from "./string-util";
 
 const encode = (name: string) =>
   replaceAll(replaceAll(name, " ", "_"), "'", "%60");

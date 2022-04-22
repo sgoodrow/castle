@@ -88,4 +88,4 @@ class SpellAuctionCommand extends Command {
   }
 }
 
-export const auctionCommand = new SpellAuctionCommand("spellauc");
+export const spellAuctionCommand = new SpellAuctionCommand("spellauc");

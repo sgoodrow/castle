@@ -35,7 +35,7 @@ class RemoveBankHourCommand extends Command {
     await dataSource.manager.save(bankHour);
 
     interaction.reply({
-      content: `Removed bank hour: ${bankHour.richLabel}.`,
+      content: `Removed **bank hour**: ${bankHour.richLabel}.`,
       ephemeral: true,
     });
 
@@ -78,6 +78,9 @@ class RemoveBankHourCommand extends Command {
       userId: banker,
       canceled: false,
     });
+    await Promise.all(
+      bankHour.map(async (h) => interaction.guild?.members.fetch(h.userId))
+    );
     return bankHour?.map((h) => ({
       name: `${
         interaction.guild?.members.cache.get(h.userId)?.displayName

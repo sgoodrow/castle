@@ -11,7 +11,7 @@ export class SpellAuctionThreadBuilder extends ThreadBuilder {
     return {
       name: this.threadName,
       reason: this.reason,
-      autoArchiveDuration: ThreadAutoArchiveDuration.OneDay,
+      autoArchiveDuration: ThreadAutoArchiveDuration.ThreeDays,
     };
   }
 

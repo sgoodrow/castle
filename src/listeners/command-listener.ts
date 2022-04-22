@@ -6,12 +6,18 @@ import {
   CommandInteraction,
   Interaction,
 } from "discord.js";
-import { auctionCommand } from "../features/spell-auctions/command";
+import { spellAuctionCommand } from "../features/spell-auctions/command";
 import { clientId, guildId, token } from "../config";
 import { setBankHourCommand } from "../features/bank-hours/add-command";
 import { removeBankHour } from "../features/bank-hours/remove-command";
+import { itemAuctionCommand } from "../features/item-auctions/command";
 
-const commands = [auctionCommand, setBankHourCommand, removeBankHour];
+const commands = [
+  spellAuctionCommand,
+  itemAuctionCommand,
+  setBankHourCommand,
+  removeBankHour,
+];
 
 export const registerCommands = () => {
   const rest = new REST({ version: "9" }).setToken(token);
