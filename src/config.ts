@@ -9,6 +9,7 @@ export const {
   auctionChannelId,
   bankerRoleId,
   bankRequestsChannelId,
+  jewelryChannelId,
   commandSuffix,
   DATABASE_URL: databaseUrl,
   ENVIRONMENT: environment,
@@ -19,6 +20,7 @@ export const {
   auctionChannelId: string;
   bankerRoleId: string;
   bankRequestsChannelId: string;
+  jewelryChannelId: string;
   commandSuffix: string;
   DATABASE_URL: string;
   ENVIRONMENT: string;

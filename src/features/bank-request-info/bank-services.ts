@@ -1,3 +1,4 @@
+import { jewelryChannelId } from "../../config";
 import { Icon, Service } from "./types";
 
 // todo: store this in database, populate and remove with command
@@ -10,6 +11,9 @@ export const services: Service[] = [
       "At North Freeport Bank",
       "Alligator Skin (200p)",
       "Blue Diamond (950p)",
+      "Thin Boned Wand (100p)",
+      "NOT Diamonds",
+      "NOT Black Sapphires",
     ],
   },
   {
@@ -65,7 +69,7 @@ export const services: Service[] = [
     requestFormats: ["Jewelry: Item name, Item quantity"],
     bullets: [
       "At North Freeport Bank",
-      "Request in #💎han's-jewelry-store (read pins)",
+      `Request in <#${jewelryChannelId}> (read pins)`,
     ],
   },
 ];

@@ -28,7 +28,7 @@ class UpdateBankRequestInfoAction extends Action {
       return;
     }
 
-    const message = await this.channel.send(payload);
+    const message = await this.bankRequestChannel.send(payload);
     const instructions = new Instructions();
     instructions.id = message.id;
     instructions.name = Name.BankRequestInstructions;
@@ -68,7 +68,7 @@ class UpdateBankRequestInfoAction extends Action {
       .findBy({ canceled: false });
     return new MessageEmbed({
       title: "🕐 Availability",
-      description: `Bankers may be available upon request, however they also hold regularly hours. The times are listed in your timezone.
+      description: `Bankers may be available upon request, however they also hold regular hours. The start times are listed below (in your timezone).
 
   ${bankHour
     .map((a) => a.richLabel)
@@ -81,8 +81,7 @@ class UpdateBankRequestInfoAction extends Action {
   private async getTldrEmbed() {
     return new MessageEmbed({
       title: "⚠️ TL;DR",
-      description:
-        "Make requests when you're available. Follow the instructions. Bankers will only process requests made in #🏦bank-requests (not PMs). Requests are deleted after processing or if old or invalid.",
+      description: `Make requests when you're available. Follow the instructions. Bankers will only process requests made in ${this.bankRequestChannel} (not PMs). Requests are deleted after processing (or if old or invalid).`,
       color: "ORANGE",
     });
   }
@@ -100,7 +99,7 @@ class UpdateBankRequestInfoAction extends Action {
     }
 
     try {
-      return await this.channel.messages.fetch(instructions.id);
+      return await this.bankRequestChannel.messages.fetch(instructions.id);
     } catch (error) {
       if (error instanceof DiscordAPIError && error.httpStatus === 404) {
         console.error(
@@ -114,7 +113,7 @@ class UpdateBankRequestInfoAction extends Action {
     }
   }
 
-  private get channel() {
+  private get bankRequestChannel() {
     const c = this.client.channels.cache.get(bankRequestsChannelId);
     if (!c) {
       throw new Error("Could not find bank requests channel");
