@@ -3,6 +3,7 @@ import {
   ApplicationCommandOptionChoice,
   CacheType,
   CommandInteraction,
+  Message,
   ThreadChannel,
 } from "discord.js";
 import { getAuctionChannel } from "../../shared/channels";
@@ -29,8 +30,14 @@ class ItemAuctionCommand extends Command {
     const messageContent = `${filteredRoles}`;
     const message = await auctionChannel.send(messageContent);
     const thread = await message.startThread(builder.options);
-    await thread.send(builder.message);
+    const auctionMessageContent = builder.message;
+    const auctionMessage = await thread.send(auctionMessageContent);
     await message.edit(`${messageContent}: ${thread}`);
+    await this.addClassRaidersToThread(
+      auctionMessage,
+      auctionMessageContent,
+      interaction
+    );
 
     interaction.reply({
       content: `Started item auction thread: ${thread}`,
@@ -70,7 +77,8 @@ class ItemAuctionCommand extends Command {
 
   // this is very noisey currently
   private async addClassRaidersToThread(
-    thread: ThreadChannel,
+    message: Message<boolean>,
+    messageContent: string,
     interaction: CommandInteraction<CacheType>
   ) {
     const filteredRoles = await this.getFilteredRoles(interaction);
@@ -80,7 +88,20 @@ class ItemAuctionCommand extends Command {
       ?.filter((m) => m.roles.cache.has(raiderRoleId))
       .filter((m) => m.roles.cache.hasAny(...filteredRoles.map((r) => r.id)));
 
-    filteredMembers?.forEach((m) => thread.members.add(m.id));
+    if (!filteredMembers) {
+      return;
+    }
+
+    const ids = filteredMembers.map((f) => f.id);
+    const batchSize = 99;
+    for (let i = 0; i < ids.length; i += batchSize) {
+      const userIds = ids
+        .slice(i, i + batchSize)
+        .map((userId) => `<@${userId}>`);
+      await message.edit(`${messageContent}
+${userIds.join(" ")}`);
+    }
+    await message.edit(messageContent);
   }
 
   public get builder() {
