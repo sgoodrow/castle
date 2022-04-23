@@ -1,13 +1,19 @@
+import { Item } from "./items";
 import { replaceAll } from "./string-util";
 
+export interface Spell extends Item {
+  level: number;
+  className: string;
+}
 const encode = (name: string) =>
   replaceAll(replaceAll(name, " ", "_"), "'", "%60");
 
 const forClass = (
   className: string,
   ...spells: { name: string; level: number }[]
-) =>
+): Spell[] =>
   spells.map(({ name, level }) => ({
+    id: name,
     name,
     level,
     className,

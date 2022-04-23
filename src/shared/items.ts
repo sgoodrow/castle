@@ -10879,7 +10879,7 @@ const itemsData = {
   "ZOMBIE SKIN": "/Zombie_Skin",
 };
 
-interface Item {
+export interface Item {
   id: string;
   url: string;
   name: string;

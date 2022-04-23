@@ -8,29 +8,43 @@ import { getAuctionChannel } from "../../shared/channels";
 import { bankerRoleId } from "../../config";
 import { SpellAuctionThreadBuilder } from "./thread-builder";
 import { ForbiddenSpells } from "../../shared/forbidden-spells";
-import { Command } from "../../listeners/command";
+import { AuctionCommand, AuctionOption } from "../../listeners/auction-command";
 
-export enum Option {
+enum SpellOption {
   Player = "player",
-  Name = "name",
   Level = "level",
   ClassRole = "class",
-  Count = "count",
 }
 
-class SpellAuctionCommand extends Command {
+export const Option = { ...SpellOption, ...AuctionOption };
+
+class SpellAuctionCommand extends AuctionCommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
+    await interaction.deferReply({ ephemeral: true });
     const auctionChannel = await this.authorize(interaction);
 
+    // send message to notify role
     const builder = new SpellAuctionThreadBuilder(interaction);
-    const thread = await auctionChannel.threads.create(builder.options);
+    const message = await auctionChannel.send(
+      builder.classRole.map((r) => String(r)).join(" ")
+    );
 
-    thread.send(builder.message);
+    // turn message into a thread
+    const thread = await message.startThread(builder.options);
+    await message.edit(`${message.content} ${thread}`);
 
-    interaction.reply({
-      content: `Started spell auction thread: ${thread}`,
-      ephemeral: true,
-    });
+    // add auction message to thread
+    const threadMessage = await thread.send(builder.message);
+
+    // add members to thread
+    await this.addRoleMembersToThread(
+      threadMessage,
+      interaction,
+      builder.classRole,
+      false
+    );
+
+    await interaction.editReply(`Started spell auction thread: ${thread}`);
   }
 
   public get builder() {
