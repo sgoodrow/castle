@@ -1,97 +1,32 @@
-import { ThreadAutoArchiveDuration } from "discord-api-types/v9";
-import { range } from "lodash";
-import moment from "moment";
 import { Option } from "./command";
-import { ThreadBuilder } from "../../shared/thread-builder";
 import { itemsMap } from "../../shared/items";
-import { Embed } from "@discordjs/builders";
+import { AuctionThreadBuilder } from "../../shared/auction-thread-builder";
+import { CacheType, CommandInteraction } from "discord.js";
 
-export class ItemAuctionThreadBuilder extends ThreadBuilder {
-  public get options() {
-    return {
-      name: this.threadName,
-      reason: this.reason,
-      autoArchiveDuration: ThreadAutoArchiveDuration.ThreeDays,
-    };
+export class ItemAuctionThreadBuilder extends AuctionThreadBuilder {
+  public constructor(interaction: CommandInteraction<CacheType>) {
+    super("Items", interaction);
   }
 
-  public get message() {
-    return {
-      content: `Ends ${this.endDifference} on ${this.endDate}.`,
-      embeds: [this.embed],
-    };
-  }
-
-  private get embed() {
-    return new Embed({
-      title: this.item.name,
-      url: this.item.url,
-      description: `${this.location}.
-
-      ${this.itemCount}
-
-      **Rules:**${this.multiCountRules}
-      • Bids in the last 12 hours extend the auction by 12 hours.
-      • Reply to the bidder you are raising.`,
-    });
-  }
-
-  private get endDate() {
-    return `<t:${this.endTime}:F>`;
-  }
-
-  private get endDifference() {
-    return `<t:${this.endTime}:R>`;
-  }
-
-  private get endTime() {
-    return moment().add("2", "days").unix();
-  }
-
-  private get itemCount() {
-    return `**Items:**\n${range(this.count)
-      .map((i: number) => `• ${this.item.name} #${i + 1}`)
-      .join("\n")}`;
-  }
-
-  private get multiCountRules() {
-    return this.count > 1
-      ? `
-• Include the item number (e.g. #1).`
-      : "";
-  }
-
-  private get threadName() {
-    return `${this.item.name} (${this.count})`;
-  }
-
-  private get reason() {
-    return `Guild bank has ${this.count} ${this.item.name}`;
-  }
-
-  private get location() {
+  protected override getLocation() {
     const user = this.getOption(Option.HeldBy)?.user;
-    if (this.count > 1) {
-      return user
+    if (user) {
+      return this.count > 1
         ? `These items are on ${user}`
-        : "These items are in the guild bank";
+        : `This item is on ${user}`;
     }
-    return user ? `This item is on ${user}` : "This item is in the guild bank";
+    return super.getLocation();
   }
 
   private get itemId() {
     return String(this.getOption(Option.ItemId)?.value);
   }
 
-  private get item() {
+  protected getItem() {
     const s = itemsMap[this.itemId];
     if (!s) {
       throw new Error(`Could not find item with ID ${this.itemId}`);
     }
     return s;
-  }
-
-  private get count() {
-    return Number(this.getOption(Option.Count)?.value) || 1;
   }
 }

@@ -1,87 +1,44 @@
-import { ThreadAutoArchiveDuration } from "discord-api-types/v9";
-import { range } from "lodash";
-import moment from "moment";
-import { Option } from "./command";
 import { getClassAbreviation } from "../../shared/roles";
-import { ThreadBuilder } from "../../shared/thread-builder";
 import { ForbiddenSpells } from "../../shared/forbidden-spells";
+import { AuctionThreadBuilder } from "../../shared/auction-thread-builder";
+import { CacheType, CommandInteraction } from "discord.js";
+import { Option } from "./command";
 
-export class SpellAuctionThreadBuilder extends ThreadBuilder {
-  public get options() {
-    return {
-      name: this.threadName,
-      reason: this.reason,
-      autoArchiveDuration: ThreadAutoArchiveDuration.ThreeDays,
-    };
+export class SpellAuctionThreadBuilder extends AuctionThreadBuilder {
+  public constructor(interaction: CommandInteraction<CacheType>) {
+    super("Scrolls", interaction);
   }
 
-  public get message() {
-    return `${this.classRole}s, ${this.player} can scribe **${this.spellName}** and has initiated a DKP auction which will end ${this.endDate}, ${this.endDifference}.
-
-${this.spell?.url}
-
-${this.scrollCount}
-
-**Rules:**${this.multiCountRules}
-• You must be able to scribe spell.
-• Bids in the last 12 hours extend the auction by another 12 hours.`;
+  protected getReason() {
+    return `${this.player} can scribe ${this.name}`;
   }
 
-  private get endDate() {
-    return `<t:${this.endTime}:F>`;
+  protected getThreadName(): string {
+    return `${this.spell.name} (${this.classAbrev} ${this.level})`;
   }
 
-  private get endDifference() {
-    return `<t:${this.endTime}:R>`;
+  protected getExtraDescription(): string {
+    return `${this.player} can scribe this spell. `;
   }
 
-  private get endTime() {
-    return moment().add("2", "days").unix();
+  protected getExtraRules() {
+    return `
+• You must be able to scribe spell.`;
   }
 
-  private get scrollCount() {
-    return `**Scrolls:**\n${range(this.count)
-      .map((i: number) => `• ${this.spellName} #${i + 1}`)
-      .join("\n")}`;
-  }
-
-  private get multiCountRules() {
-    return this.count > 1
-      ? `
-• Include the scroll number (e.g. #1)
-• Reply to the bidder you are raising.`
-      : "";
-  }
-
-  private get threadName() {
-    return `${this.spellName} (${this.classAbrev} ${this.level})`;
-  }
-
-  private get reason() {
-    return `${this.player} can scribe ${this.spellName}`;
-  }
-
-  private get spellName() {
-    return this.getOption(Option.Name)?.value;
-  }
-
-  private get spell() {
-    const s = ForbiddenSpells.find((s) => s.name === this.spellName);
+  protected getItem() {
+    const s = ForbiddenSpells.find((s) => s.name === this.name);
     if (!s) {
-      throw new Error(`Could not find spell named ${this.spellName}`);
+      throw new Error(`Could not find spell named ${this.name}`);
     }
     return s;
   }
 
-  private get level() {
-    return this.spell?.level;
-  }
-
-  private get classRole() {
-    const role = this.interaction.guild?.roles.cache.find(
+  public get classRole() {
+    const role = this.interaction.guild?.roles.cache.filter(
       (r) => r.name === this.spell?.className
     );
-    if (!role) {
+    if (!role?.size) {
       throw new Error(
         `Could not find Discord role named ${this.spell?.className}`
       );
@@ -89,15 +46,19 @@ ${this.scrollCount}
     return role;
   }
 
+  private get spell() {
+    return this.getItem();
+  }
+
+  private get level() {
+    return this.spell?.level;
+  }
+
   private get player() {
     return this.getOption(Option.Player)?.user;
   }
 
-  private get count() {
-    return Number(this.getOption(Option.Count)?.value) || 1;
-  }
-
   private get classAbrev() {
-    return getClassAbreviation(this.classRole?.name);
+    return getClassAbreviation(this.classRole?.first()?.name);
   }
 }

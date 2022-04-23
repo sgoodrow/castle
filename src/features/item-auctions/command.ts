@@ -2,32 +2,24 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import {
   ApplicationCommandOptionChoice,
   CacheType,
-  Collection,
   CommandInteraction,
-  Message,
-  Role,
 } from "discord.js";
 import { getAuctionChannel } from "../../shared/channels";
 import { bankerRoleId, raiderRoleId } from "../../config";
 import { ItemAuctionThreadBuilder } from "./thread-builder";
-import { Command, getOption } from "../../listeners/command";
+import { getOption } from "../../listeners/command";
 import { itemsList } from "../../shared/items";
 import { classes } from "../../shared/roles";
+import { AuctionCommand, AuctionOption } from "../../listeners/auction-command";
 
-export enum Option {
+enum ItemOption {
   ItemId = "itemid",
-  Count = "count",
   HeldBy = "heldby",
 }
 
-const EMBED_CHAR_LIMIT = 6000;
-const USER_ID_CHAR_SIZE = 18;
-const SPACE_CHAR_SIZE = 1;
-const BUFFER_CHAR_SIZE = 4;
-const USER_MENTION_CHAR_SIZE =
-  USER_ID_CHAR_SIZE + SPACE_CHAR_SIZE + BUFFER_CHAR_SIZE;
+export const Option = { ...ItemOption, ...AuctionOption };
 
-class ItemAuctionCommand extends Command {
+class ItemAuctionCommand extends AuctionCommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     await interaction.deferReply({ ephemeral: true });
     const auctionChannel = await this.authorize(interaction);
@@ -46,64 +38,10 @@ class ItemAuctionCommand extends Command {
     // add auction message to thread
     const threadMessage = await thread.send(builder.message);
 
-    // add raiders to thread
-    await this.addRoleMembersToThread(threadMessage, interaction, roles);
+    // add members to thread
+    await this.addRoleMembersToThread(threadMessage, interaction, roles, true);
 
     await interaction.editReply(`Started item auction thread: ${thread}`);
-  }
-
-  private async getNotifyRoles(interaction: CommandInteraction<CacheType>) {
-    const roles = await interaction.guild?.roles.fetch();
-
-    const classRoleNames = classes.filter(
-      (c) => getOption(c.toLowerCase(), interaction)?.value
-    );
-
-    const notifyRoles = roles
-      ?.filter((r) => classRoleNames.includes(r.name))
-      .filter(Boolean);
-    if (notifyRoles?.size) {
-      return notifyRoles;
-    }
-
-    const raiderRole = roles?.filter((r) => r.id === raiderRoleId);
-    if (!raiderRole) {
-      throw new Error("No roles ");
-    }
-    return raiderRole;
-  }
-
-  private async addRoleMembersToThread(
-    message: Message<boolean>,
-    interaction: CommandInteraction<CacheType>,
-    roles: Collection<string, Role>
-  ) {
-    const content = message.content;
-    const everyone = await interaction.guild?.members.fetch();
-    const members = everyone
-      ?.filter((m) => m.roles.cache.has(raiderRoleId))
-      .filter((m) => m.roles.cache.hasAny(...roles.map((r) => r.id)));
-
-    if (!members) {
-      return;
-    }
-
-    // Iteratively edit user mentions into the thread in batches that do
-    // not exceed the embed character limit.
-    const ids = members.map((f) => f.id);
-    const batchSize = Math.floor(
-      EMBED_CHAR_LIMIT - content.length / USER_MENTION_CHAR_SIZE
-    );
-    for (let i = 0; i < ids.length; i += batchSize) {
-      await message.edit(`${content}
-${ids
-  .slice(i, i + batchSize)
-  .map((userId) => `<@${userId}>`)
-  .join(" ")}`);
-    }
-
-    // Edit the message back to normal
-    await message.edit(content);
   }
 
   public get builder() {
@@ -142,11 +80,32 @@ ${ids
     return command;
   }
 
+  private async getNotifyRoles(interaction: CommandInteraction<CacheType>) {
+    const roles = await interaction.guild?.roles.fetch();
+
+    const classRoleNames = classes.filter(
+      (c) => getOption(c.toLowerCase(), interaction)?.value
+    );
+
+    const notifyRoles = roles
+      ?.filter((r) => classRoleNames.includes(r.name))
+      .filter(Boolean);
+    if (notifyRoles?.size) {
+      return notifyRoles;
+    }
+
+    const raiderRole = roles?.filter((r) => r.id === raiderRoleId);
+    if (!raiderRole) {
+      throw new Error("No roles ");
+    }
+    return raiderRole;
+  }
+
   protected async getOptionAutocomplete(
     option: string
   ): Promise<ApplicationCommandOptionChoice[] | undefined> {
     switch (option) {
-      case Option.ItemId:
+      case ItemOption.ItemId:
         return await this.autocompleteName();
       default:
         return;
