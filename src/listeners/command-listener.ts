@@ -41,10 +41,12 @@ export const commandListener = async (interaction: Interaction<CacheType>) => {
       await getCommand(interaction)?.execute(interaction);
       success = true;
     } catch (error) {
-      await interaction.reply({
-        content: String(error),
-        ephemeral: true,
-      });
+      interaction.replied
+        ? await interaction.editReply(String(error))
+        : await interaction.reply({
+            content: String(error),
+            ephemeral: true,
+          });
     }
     console.log(
       `Received /${interaction.commandName}: ${success ? "success" : "failed"}`

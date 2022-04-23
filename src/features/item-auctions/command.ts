@@ -2,9 +2,10 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import {
   ApplicationCommandOptionChoice,
   CacheType,
+  Collection,
   CommandInteraction,
   Message,
-  ThreadChannel,
+  Role,
 } from "discord.js";
 import { getAuctionChannel } from "../../shared/channels";
 import { bankerRoleId, raiderRoleId } from "../../config";
@@ -19,92 +20,90 @@ export enum Option {
   HeldBy = "heldby",
 }
 
+const EMBED_CHAR_LIMIT = 6000;
+const USER_ID_CHAR_SIZE = 18;
+const SPACE_CHAR_SIZE = 1;
+const BUFFER_CHAR_SIZE = 4;
+const USER_MENTION_CHAR_SIZE =
+  USER_ID_CHAR_SIZE + SPACE_CHAR_SIZE + BUFFER_CHAR_SIZE;
+
 class ItemAuctionCommand extends Command {
   public async execute(interaction: CommandInteraction<CacheType>) {
+    await interaction.deferReply({ ephemeral: true });
     const auctionChannel = await this.authorize(interaction);
 
-    const builder = new ItemAuctionThreadBuilder(interaction);
-
-    // this could go in the builder
-    const filteredRoles = await this.getFilteredRolesString(interaction);
-    const messageContent = `${filteredRoles}`;
-    const message = await auctionChannel.send(messageContent);
-    const thread = await message.startThread(builder.options);
-    const auctionMessageContent = builder.message;
-    const auctionMessage = await thread.send(auctionMessageContent);
-    await message.edit(`${messageContent}: ${thread}`);
-    await this.addClassRaidersToThread(
-      auctionMessage,
-      auctionMessageContent,
-      interaction
+    // send message to notify roles
+    const roles = await this.getNotifyRoles(interaction);
+    const message = await auctionChannel.send(
+      roles.map((r) => String(r)).join(" ")
     );
 
-    interaction.reply({
-      content: `Started item auction thread: ${thread}`,
-      ephemeral: true,
-    });
+    // turn message into a thread
+    const builder = new ItemAuctionThreadBuilder(interaction);
+    const thread = await message.startThread(builder.options);
+    await message.edit(`${message.content} ${thread}`);
+
+    // add auction message to thread
+    const threadMessage = await thread.send(builder.message);
+
+    // add raiders to thread
+    await this.addRoleMembersToThread(threadMessage, interaction, roles);
+
+    await interaction.editReply(`Started item auction thread: ${thread}`);
   }
 
-  private async getFilteredRolesString(
-    interaction: CommandInteraction<CacheType>
-  ) {
-    const roles = await this.getFilteredRoles(interaction);
-    return roles
-      .map((r) => r.id)
-      .filter(Boolean)
-      .map((r) => `<@&${r}>`)
-      .join(" ");
-  }
+  private async getNotifyRoles(interaction: CommandInteraction<CacheType>) {
+    const roles = await interaction.guild?.roles.fetch();
 
-  private async getFilteredRoles(interaction: CommandInteraction<CacheType>) {
-    const classRoleNames = classes.reduce((included, c) => {
-      if (getOption(c.toLowerCase(), interaction)?.value) {
-        included.push(c);
-      }
-      return included;
-    }, [] as string[]);
+    const classRoleNames = classes.filter(
+      (c) => getOption(c.toLowerCase(), interaction)?.value
+    );
 
-    const allRoles = await interaction.guild?.roles.fetch();
-    const filteredRoles = allRoles
+    const notifyRoles = roles
       ?.filter((r) => classRoleNames.includes(r.name))
       .filter(Boolean);
-
-    if (!filteredRoles) {
-      throw new Error("No class roles were found");
+    if (notifyRoles?.size) {
+      return notifyRoles;
     }
-    return filteredRoles;
+
+    const raiderRole = roles?.filter((r) => r.id === raiderRoleId);
+    if (!raiderRole) {
+      throw new Error("No roles ");
+    }
+    return raiderRole;
   }
 
-  private async addClassRaidersToThread(
+  private async addRoleMembersToThread(
     message: Message<boolean>,
-    messageContent: string,
-    interaction: CommandInteraction<CacheType>
+    interaction: CommandInteraction<CacheType>,
+    roles: Collection<string, Role>
   ) {
-    const filteredRoles = await this.getFilteredRoles(interaction);
-
+    const content = message.content;
     const everyone = await interaction.guild?.members.fetch();
-    const filteredMembers = everyone
+    const members = everyone
       ?.filter((m) => m.roles.cache.has(raiderRoleId))
-      .filter((m) => m.roles.cache.hasAny(...filteredRoles.map((r) => r.id)));
+      .filter((m) => m.roles.cache.hasAny(...roles.map((r) => r.id)));
 
-    if (!filteredMembers) {
+    if (!members) {
       return;
     }
 
-    const ids = filteredMembers.map((f) => f.id);
-    const remaining = 2000 - messageContent.length;
-    const each = 22;
-    const buffer = 4;
-    const charPerUser = each + buffer;
-    const batchSize = Math.floor(remaining / charPerUser);
+    // Iteratively edit user mentions into the thread in batches that do
+    // not exceed the embed character limit.
+    const ids = members.map((f) => f.id);
+    const batchSize = Math.floor(
+      EMBED_CHAR_LIMIT - content.length / USER_MENTION_CHAR_SIZE
+    );
     for (let i = 0; i < ids.length; i += batchSize) {
-      const userIds = ids
-        .slice(i, i + batchSize)
-        .map((userId) => `<@${userId}>`);
-      await message.edit(`${messageContent}
-${userIds.join(" ")}`);
+      await message.edit(`${content}
+${ids
+  .slice(i, i + batchSize)
+  .map((userId) => `<@${userId}>`)
+  .join(" ")}`);
     }
-    await message.edit(messageContent);
+
+    // Edit the message back to normal
+    await message.edit(content);
   }
 
   public get builder() {
@@ -122,7 +121,7 @@ ${userIds.join(" ")}`);
         o
           .setName(Option.HeldBy)
           .setDescription(
-            "The player holding the item(s). If empty, they are assumed to be in the guild bank"
+            "The player holding the item(s). If empty, item(s) are assumed to be in the guild bank"
           )
       )
       .addIntegerOption((o) =>
@@ -133,7 +132,11 @@ ${userIds.join(" ")}`);
       );
     classes.map((c) =>
       command.addBooleanOption((o) =>
-        o.setName(c.toLowerCase()).setDescription(`Add ${c}s to the thread`)
+        o
+          .setName(c.toLowerCase())
+          .setDescription(
+            `Add ${c}s to the thread. If no classes are specified, all raiders are added.`
+          )
       )
     );
     return command;

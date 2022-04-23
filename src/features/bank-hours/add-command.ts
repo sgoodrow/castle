@@ -1,9 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import {
-  AutocompleteInteraction,
-  CacheType,
-  CommandInteraction,
-} from "discord.js";
+import { CacheType, CommandInteraction } from "discord.js";
 import { bankerRoleId } from "../../config";
 import { Command, getOption } from "../../listeners/command";
 import { dataSource } from "../../db/data-source";

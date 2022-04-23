@@ -4,6 +4,7 @@ import moment from "moment";
 import { Option } from "./command";
 import { ThreadBuilder } from "../../shared/thread-builder";
 import { itemsMap } from "../../shared/items";
+import { Embed } from "@discordjs/builders";
 
 export class ItemAuctionThreadBuilder extends ThreadBuilder {
   public get options() {
@@ -15,14 +16,24 @@ export class ItemAuctionThreadBuilder extends ThreadBuilder {
   }
 
   public get message() {
-    return `Auction ends ${this.endDifference} on ${this.endDate}. ${this.location}.
+    return {
+      content: `Ends ${this.endDifference} on ${this.endDate}.`,
+      embeds: [this.embed],
+    };
+  }
 
-${this.item?.url}
+  private get embed() {
+    return new Embed({
+      title: this.item.name,
+      url: this.item.url,
+      description: `${this.location}.
 
-${this.itemCount}
+      ${this.itemCount}
 
-**Rules:**${this.multiCountRules}
-• Bids in the last 12 hours extend the auction by another 12 hours.`;
+      **Rules:**${this.multiCountRules}
+      • Bids in the last 12 hours extend the auction by 12 hours.
+      • Reply to the bidder you are raising.`,
+    });
   }
 
   private get endDate() {
@@ -46,8 +57,7 @@ ${this.itemCount}
   private get multiCountRules() {
     return this.count > 1
       ? `
-• Include the item number (e.g. #1)
-• Reply to the bidder you are raising.`
+• Include the item number (e.g. #1).`
       : "";
   }
 
