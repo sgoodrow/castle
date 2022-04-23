@@ -1,6 +1,9 @@
 import { Client, DiscordAPIError, MessageEmbed } from "discord.js";
 import { bankRequestsChannelId } from "../../config";
-import { ReadyAction, readyActionExecutor } from "../../listeners/ready-action";
+import {
+  ReadyAction,
+  readyActionExecutor,
+} from "../../shared/action/ready-action";
 import { dataSource } from "../../db/data-source";
 import { Icon, Service } from "./types";
 import { services } from "./bank-services";

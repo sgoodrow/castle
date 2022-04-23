@@ -1,6 +1,6 @@
 import { Option } from "./command";
 import { itemsMap } from "../../shared/items";
-import { AuctionThreadBuilder } from "../../shared/auction-thread-builder";
+import { AuctionThreadBuilder } from "../../shared/thread/auction-thread-builder";
 import { CacheType, CommandInteraction } from "discord.js";
 
 export class ItemAuctionThreadBuilder extends AuctionThreadBuilder {

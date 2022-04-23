@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CacheType, CommandInteraction } from "discord.js";
 import { bankerRoleId } from "../../config";
-import { Command, getOption } from "../../listeners/command";
+import { Command, getOption } from "../../shared/command/command";
 import { dataSource } from "../../db/data-source";
 import { updateBankRequestInfo } from "../bank-request-info/update-action";
 import { Day, Days } from "../bank-request-info/types";

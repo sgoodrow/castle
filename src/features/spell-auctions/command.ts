@@ -4,11 +4,13 @@ import {
   CacheType,
   CommandInteraction,
 } from "discord.js";
-import { getAuctionChannel } from "../../shared/channels";
 import { bankerRoleId } from "../../config";
 import { SpellAuctionThreadBuilder } from "./thread-builder";
 import { ForbiddenSpells } from "../../shared/forbidden-spells";
-import { AuctionCommand, AuctionOption } from "../../listeners/auction-command";
+import {
+  AuctionCommand,
+  AuctionOption,
+} from "../../shared/command/auction-command";
 
 enum SpellOption {
   Player = "player",
@@ -91,7 +93,7 @@ class SpellAuctionCommand extends AuctionCommand {
   }
 
   private async authorize(interaction: CommandInteraction<CacheType>) {
-    const auctionChannel = await getAuctionChannel(interaction);
+    const auctionChannel = await this.getAuctionChannel(interaction);
     if (!auctionChannel?.isText()) {
       throw new Error("The auction channel is not a text channel.");
     }

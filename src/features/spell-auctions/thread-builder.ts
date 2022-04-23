@@ -1,6 +1,6 @@
-import { getClassAbreviation } from "../../shared/roles";
+import { getClassAbreviation } from "../../shared/classes";
 import { ForbiddenSpells } from "../../shared/forbidden-spells";
-import { AuctionThreadBuilder } from "../../shared/auction-thread-builder";
+import { AuctionThreadBuilder } from "../../shared/thread/auction-thread-builder";
 import { CacheType, CommandInteraction } from "discord.js";
 import { Option } from "./command";
 

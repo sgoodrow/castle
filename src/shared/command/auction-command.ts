@@ -5,7 +5,7 @@ import {
   Message,
   Role,
 } from "discord.js";
-import { raiderRoleId } from "../config";
+import { auctionChannelId, raiderRoleId } from "../../config";
 import { Command } from "./command";
 
 const EMBED_CHAR_LIMIT = 6000;
@@ -21,6 +21,12 @@ export enum AuctionOption {
 }
 
 export abstract class AuctionCommand extends Command {
+  protected async getAuctionChannel(
+    interaction: CommandInteraction<CacheType>
+  ) {
+    return await interaction.guild?.channels.fetch(auctionChannelId);
+  }
+
   protected async addRoleMembersToThread(
     message: Message<boolean>,
     interaction: CommandInteraction<CacheType>,

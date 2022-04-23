@@ -5,7 +5,7 @@ import {
   CommandInteraction,
   GuildMemberRoleManager,
 } from "discord.js";
-import { commandSuffix } from "../config";
+import { commandSuffix } from "../../config";
 
 export const getOption = (
   name: string,

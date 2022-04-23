@@ -4,8 +4,8 @@ import moment from "moment";
 import { CacheType, CommandInteraction } from "discord.js";
 import { Embed } from "@discordjs/builders";
 import { ThreadBuilder } from "./thread-builder";
-import { Item } from "./items";
-import { AuctionOption } from "../listeners/auction-command";
+import { Item } from "../items";
+import { AuctionOption } from "../command/auction-command";
 
 export abstract class AuctionThreadBuilder extends ThreadBuilder {
   public constructor(

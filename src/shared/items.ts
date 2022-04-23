@@ -1,4 +1,3 @@
-import { spellsData } from "./spells";
 import { replaceAll } from "./string-util";
 
 const itemsData = {
@@ -10885,14 +10884,16 @@ export interface Item {
   name: string;
 }
 
-export const itemsMap = Object.entries(itemsData).reduce((map, [id, url]) => {
-  const item: Item = {
-    id,
-    url: `https://wiki.project1999.com${url}`,
-    name: replaceAll(decodeURI(url), "_", " ").substring(1),
-  };
-  map[item.id] = item;
-  return map;
-}, {} as { [id: string]: Item });
+export const mapFromData = (data: { [id: string]: string }) =>
+  Object.entries(data).reduce((map, [id, url]) => {
+    const item: Item = {
+      id,
+      url: `https://wiki.project1999.com${url}`,
+      name: replaceAll(decodeURI(url), "_", " ").substring(1),
+    };
+    map[item.id] = item;
+    return map;
+  }, {} as { [id: string]: Item });
 
+export const itemsMap = mapFromData(itemsData);
 export const itemsList = Object.values(itemsMap);

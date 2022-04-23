@@ -1,8 +1,8 @@
 import { Client, Intents } from "discord.js";
 import {
-  interactionListener,
+  interactionCreateListener,
   registerCommands,
-} from "./listeners/interaction-listener";
+} from "./listeners/interaction-create-listener";
 import { token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
 import { messageReactionAddListener } from "./listeners/message-reaction-add-listener";
@@ -19,7 +19,7 @@ export const client = new Client({
 });
 
 client.login(token);
-client.on("interactionCreate", interactionListener);
+client.on("interactionCreate", interactionCreateListener);
 client.on("messageReactionAdd", messageReactionAddListener);
 client.on("ready", readyListener);
 

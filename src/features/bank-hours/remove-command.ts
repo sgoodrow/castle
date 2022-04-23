@@ -5,7 +5,7 @@ import {
   CommandInteraction,
 } from "discord.js";
 import { bankerRoleId } from "../../config";
-import { Command, getOption } from "../../listeners/command";
+import { Command, getOption } from "../../shared/command/command";
 import { dataSource } from "../../db/data-source";
 import { updateBankRequestInfo } from "../bank-request-info/update-action";
 import { BankHour } from "../../db/bank-hour";

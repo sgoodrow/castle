@@ -1,3 +1,5 @@
+import { mapFromData } from "./items";
+
 export const spellsData = {
   "AANYA'S ANIMATION": "/Aanya%27s_Animation",
   "AANYA'S QUICKENING": "/Aanya%27s_Quickening",
@@ -1481,3 +1483,6 @@ export const spellsData = {
   YONDER: "/Yonder",
   "ZUMAIK`S ANIMATION": "/Zumaik%60s_Animation",
 };
+
+export const spellsMap = mapFromData(spellsData);
+export const spellsList = Object.values(spellsMap);

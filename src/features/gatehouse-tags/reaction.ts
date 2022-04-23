@@ -14,7 +14,7 @@ import {
 import {
   ReactionAction,
   reactionActionExecutor,
-} from "../../listeners/reaction-action";
+} from "../../shared/action/reaction-action";
 import { actionConfigByReaction, Emoji, ActionType } from "./emoji";
 
 export const tryGatehouseReactionAction = (

@@ -4,13 +4,15 @@ import {
   CacheType,
   CommandInteraction,
 } from "discord.js";
-import { getAuctionChannel } from "../../shared/channels";
 import { bankerRoleId, raiderRoleId } from "../../config";
 import { ItemAuctionThreadBuilder } from "./thread-builder";
-import { getOption } from "../../listeners/command";
+import { getOption } from "../../shared/command/command";
 import { itemsList } from "../../shared/items";
-import { classes } from "../../shared/roles";
-import { AuctionCommand, AuctionOption } from "../../listeners/auction-command";
+import { classes } from "../../shared/classes";
+import {
+  AuctionCommand,
+  AuctionOption,
+} from "../../shared/command/auction-command";
 
 enum ItemOption {
   ItemId = "itemid",
@@ -120,7 +122,7 @@ class ItemAuctionCommand extends AuctionCommand {
   }
 
   private async authorize(interaction: CommandInteraction<CacheType>) {
-    const auctionChannel = await getAuctionChannel(interaction);
+    const auctionChannel = await this.getAuctionChannel(interaction);
     if (!auctionChannel?.isText()) {
       throw new Error("The auction channel is not a text channel.");
     }
