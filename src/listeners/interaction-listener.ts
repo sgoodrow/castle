@@ -29,7 +29,9 @@ export const registerCommands = () => {
     .catch(console.error);
 };
 
-export const commandListener = async (interaction: Interaction<CacheType>) => {
+export const interactionListener = async (
+  interaction: Interaction<CacheType>
+) => {
   if (interaction.isAutocomplete()) {
     getCommand(interaction)?.autocomplete(interaction).catch(console.error);
     return;

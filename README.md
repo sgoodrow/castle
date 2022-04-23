@@ -9,18 +9,12 @@
 3. git
 4. heroku
 
-Create a [Discord Application](https://discord.com/developers/applications), bot and test server. You can reuse an existing test server if you are an admin there. Set these local environment variables in `.env`:
+### Discord Setup
 
-```sh
-token="BOT_TOKEN"
-clientId="OAUTH2_CLIENT_ID"
-# Pinned in Pumped's test server
-guildId="DISCORD_SERVER_ID"
-auctionChannelId="DISCORD_AUCTION_CHANNEL_ID"
-bankerRoleId="DISCORD_BANKER_ROLE_ID"
-bankRequestsChannelId="DISCORD_BANK_REQUESTS_CHANNEL_ID"
-DATABASE_URL="postgresql://admin:password@localhost:5432/castle"
-```
+To develop or deploy, you will need a Discord application, bot, and test server.
+
+1. Follow Discord's [Developer Portal - Getting Started](https://discord.com/developers/docs/getting-started) guide to provision and connect a development bot to a test server.
+2. Set the local environment variables described in [`./src/config.ts`](src/config.ts). If you are using Pumped's Test Server, many of the channel and role IDs are pinned in #general.
 
 ### Run
 

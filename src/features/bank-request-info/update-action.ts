@@ -1,6 +1,6 @@
 import { Client, DiscordAPIError, MessageEmbed } from "discord.js";
 import { bankRequestsChannelId } from "../../config";
-import { Action, actionExecutor } from "../../listeners/action";
+import { ReadyAction, readyActionExecutor } from "../../listeners/ready-action";
 import { dataSource } from "../../db/data-source";
 import { Icon, Service } from "./types";
 import { services } from "./bank-services";
@@ -8,9 +8,9 @@ import { BankHour } from "../../db/bank-hour";
 import { Instructions, Name } from "../../db/instructions";
 
 export const updateBankRequestInfo = (client: Client) =>
-  actionExecutor(new UpdateBankRequestInfoAction(client));
+  readyActionExecutor(new UpdateBankRequestInfoAction(client));
 
-class UpdateBankRequestInfoAction extends Action {
+class UpdateBankRequestInfoAction extends ReadyAction {
   public async execute() {
     const embed = await this.getEmbed();
 
