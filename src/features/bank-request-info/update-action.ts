@@ -3,15 +3,19 @@ import { bankRequestsChannelId } from "../../config";
 import {
   ReadyAction,
   readyActionExecutor,
+  ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
 import { dataSource } from "../../db/data-source";
 import { Icon, Service } from "./types";
 import { services } from "./bank-services";
 import { BankHour } from "../../db/bank-hour";
 import { Instructions, Name } from "../../db/instructions";
+import moment from "moment";
 
-export const updateBankRequestInfo = (client: Client) =>
-  readyActionExecutor(new UpdateBankRequestInfoAction(client));
+export const updateBankRequestInfo = (
+  client: Client,
+  options?: ReadyActionExecutorOptions
+) => readyActionExecutor(new UpdateBankRequestInfoAction(client), options);
 
 class UpdateBankRequestInfoAction extends ReadyAction {
   public async execute() {
@@ -43,7 +47,6 @@ class UpdateBankRequestInfoAction extends ReadyAction {
     return new MessageEmbed({
       title: "Instructions",
       description: `Always be courteous and patient with your bankers. If you are willing to help staff the bank, please reach out to an officer.
-
 • Make bank requests when you are available and state how long you will be available.
 • If you are no longer available, please delete your request and repost it later.
 • Use the ${Icon.Request} request format`,
@@ -74,9 +77,11 @@ ${bullets.map((b) => `• ${b}`).join("\n")}`
       description: `Bankers may be available upon request, however they also hold regular hours. The start times are listed below (in your timezone).
 
 ${bankHour
-  .map((a) => a.richLabel)
+  .map((a) => `• ${a.richLabel}`)
   .sort((a, b) => (a > b ? 1 : -1))
-  .join("\n")}`,
+  .join("\n")}
+
+_last updated <t:${moment().unix()}:R>_`,
       color: "PURPLE",
     });
   }

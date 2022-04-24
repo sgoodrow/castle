@@ -15,7 +15,7 @@ import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../shared/action/reaction-action";
-import { actionConfigByReaction, Emoji, ActionType } from "./emoji";
+import { actionConfigByReaction, Emoji, ActionType } from "./config";
 
 export const tryGatehouseReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,

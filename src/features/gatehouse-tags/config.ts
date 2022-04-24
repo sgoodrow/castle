@@ -47,7 +47,7 @@ export const actionConfigByReaction: { [emoji: string]: ReactionConfig } = {
     action: ActionType.Tag,
   },
   [Emoji.BlueCalvary]: {
-    roles: [visitorRoleId, blueRoleId, calvaryRoleId],
+    roles: [visitorRoleId, calvaryRoleId],
     action: ActionType.Tag,
   },
   [Emoji.Instruct]: {
