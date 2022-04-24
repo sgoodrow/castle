@@ -27,7 +27,7 @@ class WhoButtonCommand extends ButtonCommand {
 
     const whos = pending
       .sort(sortInvites)
-      .map((p) => `/who ${p.name}`)
+      .map((p) => `/who all ${p.name}`)
       .join("\n");
 
     await interaction.reply({

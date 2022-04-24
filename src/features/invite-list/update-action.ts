@@ -90,6 +90,10 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
       color: "DARK_GREEN",
     }).addFields([
       {
+        name: `/${inviteCommand.name}`,
+        value: inviteCommand.description,
+      },
+      {
         name: `/${interviewedCommand.name}`,
         value: interviewedCommand.description,
       },
@@ -129,7 +133,7 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
   private async getTldrEmbed() {
     return new MessageEmbed({
       title: "⚠️ TL;DR",
-      description: `Use the commands to add or remove someone from the interview or invite list. A guard will follow up with the player.
+      description: `Use the commands to add a player to the interview list or an alt to the invite list. A guard or officer will follow up.
 
 _last updated <t:${moment().unix()}:R>_`,
       color: "ORANGE",

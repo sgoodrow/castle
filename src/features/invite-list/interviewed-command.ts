@@ -1,4 +1,4 @@
-import { CacheType, CommandInteraction } from "discord.js";
+import { CacheType, CommandInteraction, Permissions } from "discord.js";
 import { Command, getOption } from "../../shared/command/command";
 import { dataSource } from "../../db/data-source";
 import { Invite } from "../../db/invite";
@@ -11,6 +11,11 @@ enum Option {
 // dry this up, see remove and invited command
 class InterviewedCommand extends Command {
   public async execute(interaction: CommandInteraction<CacheType>) {
+    this.requireInteractionMemberPermission(
+      Permissions.FLAGS.MANAGE_ROLES,
+      interaction
+    );
+
     const id = Number(getOption(Option.InviteId, interaction)?.value);
 
     const invite = await dataSource.getRepository(Invite).findOneBy({

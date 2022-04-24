@@ -1,4 +1,4 @@
-import { CacheType, CommandInteraction } from "discord.js";
+import { CacheType, CommandInteraction, Permissions } from "discord.js";
 import { Command, getOption } from "../../shared/command/command";
 import { dataSource } from "../../db/data-source";
 import { Invite } from "../../db/invite";
@@ -10,8 +10,12 @@ enum Option {
 
 class InvitedCommand extends Command {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const id = Number(getOption(Option.InviteId, interaction)?.value);
+    this.requireInteractionMemberPermission(
+      Permissions.FLAGS.MANAGE_ROLES,
+      interaction
+    );
 
+    const id = Number(getOption(Option.InviteId, interaction)?.value);
     const invite = await dataSource.getRepository(Invite).findOneBy({
       id,
     });
@@ -20,6 +24,7 @@ class InvitedCommand extends Command {
     }
 
     invite.invited = true;
+    invite.interviewed = true;
 
     await dataSource.manager.save(invite);
 
@@ -40,7 +45,6 @@ class InvitedCommand extends Command {
 
   protected async getOptionAutocomplete() {
     const invites = await dataSource.getRepository(Invite).findBy({
-      interviewed: true,
       invited: false,
       canceled: false,
     });

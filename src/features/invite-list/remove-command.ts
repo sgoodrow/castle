@@ -39,8 +39,17 @@ class RemoveCommand extends Command {
   }
 
   protected async getOptionAutocomplete() {
-    const invites = await dataSource.getRepository(Invite).findBy({
-      canceled: false,
+    const invites = await dataSource.getRepository(Invite).find({
+      where: [
+        {
+          interviewed: false,
+          canceled: false,
+        },
+        {
+          invited: false,
+          canceled: false,
+        },
+      ],
     });
     return invites.map((i) => ({
       name: i.capitalizedName,

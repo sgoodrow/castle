@@ -1,4 +1,4 @@
-import { CacheType, CommandInteraction, Permissions } from "discord.js";
+import { CacheType, CommandInteraction } from "discord.js";
 import { Command, getOption } from "../../shared/command/command";
 import { dataSource } from "../../db/data-source";
 import { Class, classes } from "../../shared/classes";
@@ -26,11 +26,6 @@ class InviteCommand extends Command {
     super(name, description);
   }
   public async execute(interaction: CommandInteraction<CacheType>) {
-    this.requireInteractionMemberPermission(
-      Permissions.FLAGS.MANAGE_ROLES,
-      interaction
-    );
-
     const name = String(
       getOption(Option.Name, interaction)?.value
     ).toLowerCase();
@@ -108,12 +103,12 @@ class InviteCommand extends Command {
 
 export const inviteCommand = new InviteCommand(
   "invite",
-  "Add a character who needs an invite. Player should already have been interviewed.",
+  "Add a player who has already been interviewed but needs an invite.",
   false
 );
 
 export const altCommand = new InviteCommand(
   "alt",
-  "Adds an alt who needs an invite.",
+  "Add an alt who needs an invite.",
   true
 );

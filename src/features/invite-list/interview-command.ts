@@ -1,4 +1,4 @@
-import { CacheType, CommandInteraction, Permissions } from "discord.js";
+import { CacheType, CommandInteraction } from "discord.js";
 import { Command, getOption } from "../../shared/command/command";
 import { dataSource } from "../../db/data-source";
 import { Class, classes } from "../../shared/classes";
@@ -19,11 +19,6 @@ const classChoices: [name: string, value: string][] = classes.map((c) => [
 // todo: dry this up; see invite-command
 class InterviewCommand extends Command {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    this.requireInteractionMemberPermission(
-      Permissions.FLAGS.MANAGE_ROLES,
-      interaction
-    );
-
     const name = String(
       getOption(Option.Name, interaction)?.value
     ).toLowerCase();

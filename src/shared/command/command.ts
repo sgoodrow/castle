@@ -96,7 +96,7 @@ export abstract class Command {
       | AutocompleteInteraction<CacheType>
   ) {
     if (!interaction.memberPermissions?.has(permission)) {
-      throw new Error("You do not have permission to do this..");
+      throw new Error("You do not have permission to do this.");
     }
   }
 }
