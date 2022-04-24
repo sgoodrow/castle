@@ -1,4 +1,3 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
 import { CacheType, CommandInteraction } from "discord.js";
 import { bankerRoleId } from "../../config";
 import { Command, getOption } from "../../shared/command/command";
@@ -40,18 +39,13 @@ class AddBankHourCommand extends Command {
 
     await dataSource.manager.save(bankHour);
 
-    interaction.reply({
-      content: `Added **bank hour** ${bankHour.richLabel}`,
-      ephemeral: true,
-    });
+    interaction.editReply(`Added **bank hour** ${bankHour.richLabel}`);
 
     await updateBankRequestInfo(interaction.client);
   }
 
   public get builder() {
-    return new SlashCommandBuilder()
-      .setName(this.name)
-      .setDescription("Creates or updates a banker hour. Specify time in EST.")
+    return this.command
       .addUserOption((o) =>
         o
           .setName(Option.Banker)
@@ -90,4 +84,7 @@ class AddBankHourCommand extends Command {
   }
 }
 
-export const setBankHourCommand = new AddBankHourCommand("addbankhour");
+export const setBankHourCommand = new AddBankHourCommand(
+  "addbankhour",
+  "Creates or updates a banker hour. Specify time in EST."
+);

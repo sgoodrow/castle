@@ -1,11 +1,9 @@
 import { Client, Intents } from "discord.js";
-import {
-  interactionCreateListener,
-  registerCommands,
-} from "./listeners/interaction-create-listener";
+import { interactionCreateListener } from "./listeners/interaction-create-listener";
 import { token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
 import { messageReactionAddListener } from "./listeners/message-reaction-add-listener";
+import { registerCommands } from "./listeners/register-commands";
 
 export const client = new Client({
   intents: [

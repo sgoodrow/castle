@@ -23,7 +23,6 @@ export const Option = { ...ItemOption, ...AuctionOption };
 
 class ItemAuctionCommand extends AuctionCommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    await interaction.deferReply({ ephemeral: true });
     const auctionChannel = await this.authorize(interaction);
 
     // send message to notify roles
@@ -47,9 +46,7 @@ class ItemAuctionCommand extends AuctionCommand {
   }
 
   public get builder() {
-    const command = new SlashCommandBuilder()
-      .setName(this.name)
-      .setDescription("Creates a new item DKP auction thread.")
+    const command = this.command
       .addStringOption((o) =>
         o
           .setName(Option.ItemId)
@@ -133,4 +130,7 @@ class ItemAuctionCommand extends AuctionCommand {
   }
 }
 
-export const itemAuctionCommand = new ItemAuctionCommand("itemauc");
+export const itemAuctionCommand = new ItemAuctionCommand(
+  "itemauc",
+  "Creates a new item DKP auction thread."
+);

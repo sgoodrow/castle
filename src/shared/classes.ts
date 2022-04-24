@@ -1,4 +1,4 @@
-enum Classes {
+export enum Class {
   Enchanter = "Enchanter",
   Mage = "Mage",
   Necromancer = "Necromancer",
@@ -15,37 +15,37 @@ enum Classes {
   Warrior = "Warrior",
 }
 
-export const classes = Object.keys(Classes);
+export const classes = Object.keys(Class);
 
 export const getClassAbreviation = (role?: string) => {
   switch (role) {
-    case Classes.Enchanter:
+    case Class.Enchanter:
       return "ENC";
-    case Classes.Mage:
+    case Class.Mage:
       return "MAG";
-    case Classes.Necromancer:
+    case Class.Necromancer:
       return "NEC";
-    case Classes.Wizard:
+    case Class.Wizard:
       return "WIZ";
-    case Classes.Cleric:
+    case Class.Cleric:
       return "CLR";
-    case Classes.Druid:
+    case Class.Druid:
       return "DRU";
-    case Classes.Shaman:
+    case Class.Shaman:
       return "SHM";
-    case Classes.Bard:
+    case Class.Bard:
       return "BRD";
-    case Classes.Monk:
+    case Class.Monk:
       return "MNK";
-    case Classes.Ranger:
+    case Class.Ranger:
       return "RNG";
-    case Classes.Rogue:
+    case Class.Rogue:
       return "ROG";
-    case Classes.Paladin:
+    case Class.Paladin:
       return "PAL";
-    case Classes.Shadowknight:
+    case Class.Shadowknight:
       return "SHD";
-    case Classes.Warrior:
+    case Class.Warrior:
       return "WAR";
     default:
       throw new Error(`Invalid class (${role} not recognized)`);

@@ -1,4 +1,3 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
 import {
   ApplicationCommandOptionChoice,
   CacheType,
@@ -22,7 +21,6 @@ export const Option = { ...SpellOption, ...AuctionOption };
 
 class SpellAuctionCommand extends AuctionCommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    await interaction.deferReply({ ephemeral: true });
     const auctionChannel = await this.authorize(interaction);
 
     // send message to notify role
@@ -50,9 +48,7 @@ class SpellAuctionCommand extends AuctionCommand {
   }
 
   public get builder() {
-    return new SlashCommandBuilder()
-      .setName(this.name)
-      .setDescription("Creates a new Forbidden Spell auction thread.")
+    return this.command
       .addUserOption((o) =>
         o
           .setName(Option.Player)
@@ -104,4 +100,7 @@ class SpellAuctionCommand extends AuctionCommand {
   }
 }
 
-export const spellAuctionCommand = new SpellAuctionCommand("spellauc");
+export const spellAuctionCommand = new SpellAuctionCommand(
+  "spellauc",
+  "Creates a new Forbidden Spell auction thread."
+);

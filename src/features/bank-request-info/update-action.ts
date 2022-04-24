@@ -1,7 +1,6 @@
-import { Client, DiscordAPIError, MessageEmbed } from "discord.js";
+import { Client, MessageEmbed } from "discord.js";
 import { bankRequestsChannelId } from "../../config";
 import {
-  ReadyAction,
   readyActionExecutor,
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
@@ -9,38 +8,28 @@ import { dataSource } from "../../db/data-source";
 import { Icon, Service } from "./types";
 import { services } from "./bank-services";
 import { BankHour } from "../../db/bank-hour";
-import { Instructions, Name } from "../../db/instructions";
+import { Name } from "../../db/instructions";
 import moment from "moment";
+import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 
 export const updateBankRequestInfo = (
   client: Client,
   options?: ReadyActionExecutorOptions
 ) => readyActionExecutor(new UpdateBankRequestInfoAction(client), options);
 
-class UpdateBankRequestInfoAction extends ReadyAction {
+class UpdateBankRequestInfoAction extends InstructionsReadyAction {
   public async execute() {
-    const embed = await this.getEmbed();
-
-    const payload = {
-      embeds: [
-        await this.getInstructionsEmbed(),
-        await this.getServicesEmbed(),
-        await this.getAvailabilityEmbed(),
-        await this.getTldrEmbed(),
-      ],
-    };
-
-    if (embed) {
-      embed.edit(payload);
-      return;
-    }
-
-    const message = await this.bankRequestChannel.send(payload);
-    const instructions = new Instructions();
-    instructions.id = message.id;
-    instructions.name = Name.BankRequestInstructions;
-
-    await dataSource.manager.save(instructions);
+    await this.createOrUpdateInstructions(
+      {
+        embeds: [
+          await this.getInstructionsEmbed(),
+          await this.getServicesEmbed(),
+          await this.getAvailabilityEmbed(),
+          await this.getTldrEmbed(),
+        ],
+      },
+      Name.BankRequestInstructions
+    );
   }
 
   private async getInstructionsEmbed() {
@@ -79,9 +68,7 @@ ${bullets.map((b) => `• ${b}`).join("\n")}`
 ${bankHour
   .map((a) => `• ${a.richLabel}`)
   .sort((a, b) => (a > b ? 1 : -1))
-  .join("\n")}
-
-_last updated <t:${moment().unix()}:R>_`,
+  .join("\n")}`,
       color: "PURPLE",
     });
   }
@@ -89,7 +76,11 @@ _last updated <t:${moment().unix()}:R>_`,
   private async getTldrEmbed() {
     return new MessageEmbed({
       title: "⚠️ TL;DR",
-      description: `Make requests when you're available. Follow the instructions. Bankers will only process requests made in ${this.bankRequestChannel} (not PMs). Requests are deleted after processing (or if old or invalid).`,
+      description: `Make requests when you're available. Follow the instructions. Bankers will only process requests made in ${
+        this.channel
+      } (not PMs). Requests are deleted after processing (or if old or invalid).
+
+_last updated <t:${moment().unix()}:R>_`,
       color: "ORANGE",
     });
   }
@@ -98,37 +89,7 @@ _last updated <t:${moment().unix()}:R>_`,
     return url ? `[${text}](${url})` : text;
   }
 
-  private async getEmbed() {
-    const instructions = await dataSource
-      .getRepository(Instructions)
-      .findOneBy({ name: Name.BankRequestInstructions, canceled: false });
-    if (!instructions) {
-      return;
-    }
-
-    try {
-      return await this.bankRequestChannel.messages.fetch(instructions.id);
-    } catch (error) {
-      if (error instanceof DiscordAPIError && error.httpStatus === 404) {
-        console.error(
-          "Could not find bank request instructions. Was it deleted?"
-        );
-        instructions.canceled = true;
-        await dataSource.manager.save(instructions);
-        return;
-      }
-      throw error;
-    }
-  }
-
-  private get bankRequestChannel() {
-    const c = this.client.channels.cache.get(bankRequestsChannelId);
-    if (!c) {
-      throw new Error("Could not find bank requests channel");
-    }
-    if (!c.isText()) {
-      throw new Error("Bank requests channel is not a text channel");
-    }
-    return c;
+  protected get channel() {
+    return this.getChannel(bankRequestsChannelId, "bank requests");
   }
 }

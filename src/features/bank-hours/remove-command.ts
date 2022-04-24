@@ -1,4 +1,3 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
 import {
   AutocompleteInteraction,
   CacheType,
@@ -28,27 +27,21 @@ class RemoveBankHourCommand extends Command {
 
     await dataSource.manager.save(bankHour);
 
-    interaction.reply({
-      content: `Removed **bank hour**: ${bankHour.richLabel}.`,
-      ephemeral: true,
-    });
+    interaction.editReply(`Removed **bank hour**: ${bankHour.richLabel}.`);
 
     await updateBankRequestInfo(interaction.client);
   }
 
   public get builder() {
-    return new SlashCommandBuilder()
-      .setName(this.name)
-      .setDescription("Removes a banker hour.")
-      .addIntegerOption((o) =>
-        o
-          .setName(Option.BankHourID)
-          .setDescription(
-            "The bank hour ID. Set a banker to get a list of hours."
-          )
-          .setAutocomplete(true)
-          .setRequired(true)
-      );
+    return this.command.addIntegerOption((o) =>
+      o
+        .setName(Option.BankHourID)
+        .setDescription(
+          "The bank hour ID. Set a banker to get a list of hours."
+        )
+        .setAutocomplete(true)
+        .setRequired(true)
+    );
   }
 
   protected async getOptionAutocomplete(
@@ -86,4 +79,7 @@ class RemoveBankHourCommand extends Command {
   }
 }
 
-export const removeBankHour = new RemoveBankHourCommand("removebankhour");
+export const removeBankHour = new RemoveBankHourCommand(
+  "removebankhour",
+  "Removes a banker hour."
+);

@@ -1,3 +1,4 @@
+import { SlashCommandBuilder } from "@discordjs/builders";
 import {
   AutocompleteInteraction,
   ApplicationCommandOptionChoice,
@@ -15,7 +16,10 @@ export const getOption = (
 ) => interaction.options.data.find((d) => d.name === name);
 
 export abstract class Command {
-  public constructor(private readonly _name: string) {}
+  public constructor(
+    private readonly _name: string,
+    public readonly description: string
+  ) {}
 
   public get name() {
     return `${this._name}${commandSuffix ? commandSuffix : ""}`;
@@ -40,6 +44,12 @@ export abstract class Command {
   ): Promise<void>;
 
   public abstract get builder(): any;
+
+  protected get command() {
+    return new SlashCommandBuilder()
+      .setName(this.name)
+      .setDescription(this.description);
+  }
 
   protected requireUserRole(
     userId: string,
