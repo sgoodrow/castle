@@ -58,9 +58,7 @@ ${bullets.map((b) => `• ${b}`).join("\n")}`
   }
 
   private async getAvailabilityEmbed() {
-    const bankHour = await dataSource
-      .getRepository(BankHour)
-      .findBy({ canceled: false });
+    const bankHour = await dataSource.getRepository(BankHour).findBy({});
     return new MessageEmbed({
       title: "🕐 Availability",
       description: `Bankers may be available upon request, however they also hold regular hours. The start times are listed below (in your timezone).

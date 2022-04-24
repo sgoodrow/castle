@@ -34,7 +34,6 @@ export abstract class InstructionsReadyAction extends ReadyAction {
     const instructions = new Instructions();
     instructions.id = message.id;
     instructions.name = name;
-    console.log("saving", instructions.id, instructions.name);
     await dataSource.manager.save(instructions);
   }
 

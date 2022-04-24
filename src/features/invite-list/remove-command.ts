@@ -51,5 +51,5 @@ class RemoveCommand extends Command {
 
 export const removeCommand = new RemoveCommand(
   "remove",
-  "Remove a player or character who is no longer interested in joining."
+  "Remove a player or character who is no longer interested."
 );

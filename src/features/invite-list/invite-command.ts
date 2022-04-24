@@ -1,4 +1,4 @@
-import { CacheType, CommandInteraction } from "discord.js";
+import { CacheType, CommandInteraction, Permissions } from "discord.js";
 import { Command, getOption } from "../../shared/command/command";
 import { dataSource } from "../../db/data-source";
 import { Class, classes } from "../../shared/classes";
@@ -9,7 +9,7 @@ enum Option {
   Name = "name",
   Class = "class",
   Level = "level",
-  Note = "note",
+  Main = "main",
 }
 
 const classChoices: [name: string, value: string][] = classes.map((c) => [
@@ -18,17 +18,30 @@ const classChoices: [name: string, value: string][] = classes.map((c) => [
 ]);
 
 class InviteCommand extends Command {
+  public constructor(
+    name: string,
+    description: string,
+    private readonly requireMain: boolean
+  ) {
+    super(name, description);
+  }
   public async execute(interaction: CommandInteraction<CacheType>) {
+    this.requireInteractionMemberPermission(
+      Permissions.FLAGS.MANAGE_ROLES,
+      interaction
+    );
+
     const name = String(
       getOption(Option.Name, interaction)?.value
     ).toLowerCase();
     const className = getOption(Option.Class, interaction)?.value;
     const level = getOption(Option.Level, interaction)?.value;
-    const note = getOption(Option.Note, interaction)?.value;
+    const main = getOption(Option.Main, interaction)?.value;
 
     // check that the name isn't already tracked
     const invites = await dataSource.getRepository(Invite).findBy({
-      name: name,
+      name,
+      invited: false,
       canceled: false,
     });
     if (invites.length) {
@@ -44,8 +57,8 @@ class InviteCommand extends Command {
     if (className) {
       invite.class = className as Class;
     }
-    if (note) {
-      invite.note = String(note);
+    if (main) {
+      invite.main = String(main);
     }
     invite.interviewed = true;
 
@@ -57,13 +70,22 @@ class InviteCommand extends Command {
   }
 
   public get builder() {
-    return this.command
-      .addStringOption((o) =>
+    const command = this.command.addStringOption((o) =>
+      o
+        .setName(Option.Name)
+        .setDescription("The name of the character who needs an invite")
+        .setRequired(true)
+    );
+    if (this.requireMain) {
+      command.addStringOption((o) =>
         o
-          .setName(Option.Name)
-          .setDescription("The name of the character who needs an invite")
-          .setRequired(true)
-      )
+          .setName(Option.Main)
+          .setDescription("The name of the player's main, if this is an alt")
+          .setRequired(this.requireMain)
+      );
+    }
+
+    return command
       .addStringOption((o) =>
         o
           .setName(Option.Class)
@@ -76,13 +98,6 @@ class InviteCommand extends Command {
           .setMinValue(1)
           .setMaxValue(60)
           .setDescription("The level of the character who needs an invite")
-      )
-      .addStringOption((o) =>
-        o
-          .setName(Option.Note)
-          .setDescription(
-            "Additional information about the character, such as main name"
-          )
       );
   }
 
@@ -93,5 +108,12 @@ class InviteCommand extends Command {
 
 export const inviteCommand = new InviteCommand(
   "invite",
-  "Add a character who needs an invite. Player should already have been interviewed. Use for alts."
+  "Add a character who needs an invite. Player should already have been interviewed.",
+  false
+);
+
+export const altCommand = new InviteCommand(
+  "alt",
+  "Adds an alt who needs an invite.",
+  true
 );

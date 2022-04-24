@@ -1,4 +1,9 @@
-import { Client, MessageEmbed } from "discord.js";
+import {
+  Client,
+  MessageActionRow,
+  MessageButton,
+  MessageEmbed,
+} from "discord.js";
 import moment from "moment-timezone";
 import { inviteListChannelId } from "../../config";
 import { dataSource } from "../../db/data-source";
@@ -9,11 +14,20 @@ import {
   readyActionExecutor,
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
+import { friendConfigButtonCommand } from "./friend-config-button";
 import { interviewCommand } from "./interview-command";
 import { interviewedCommand } from "./interviewed-command";
-import { inviteCommand } from "./invite-command";
+import { altCommand, inviteCommand } from "./invite-command";
 import { invitedCommand } from "./invited-command";
 import { removeCommand } from "./remove-command";
+import { whoButtonCommand } from "./who-button-command";
+
+export const sortInvites = (a: Invite, b: Invite) => {
+  if (a.priority === b.priority) {
+    return a.createdAt > b.createdAt ? 1 : -1;
+  }
+  return a.priority > b.priority ? -1 : 1;
+};
 
 export const updateInviteListInfo = (
   client: Client,
@@ -31,15 +45,28 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
           await this.getInviteEmbed(),
           await this.getTldrEmbed(),
         ],
+        components: [await this.getButtons()],
       },
       Name.InviteListInstructions
+    );
+  }
+
+  private async getButtons() {
+    return new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId(whoButtonCommand.customId)
+        .setStyle("PRIMARY")
+        .setLabel("Priority /who"),
+      new MessageButton()
+        .setCustomId(friendConfigButtonCommand.customId)
+        .setStyle("SECONDARY")
+        .setLabel("Friends Config")
     );
   }
 
   private async getCastleMemberInstructionsEmbed() {
     return new MessageEmbed({
       title: "Castle Member Instructions",
-      description: `Use the following commands to invite players to the guild.`,
       color: "RED",
     }).addFields([
       {
@@ -47,8 +74,8 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
         value: interviewCommand.description,
       },
       {
-        name: `/${inviteCommand.name}`,
-        value: inviteCommand.description,
+        name: `/${altCommand.name}`,
+        value: altCommand.description,
       },
       {
         name: `/${removeCommand.name}`,
@@ -76,11 +103,11 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
   private async getInterviewEmbed() {
     const needInterview = await dataSource
       .getRepository(Invite)
-      .findBy({ interviewed: false, canceled: false });
+      .findBy({ interviewed: false, invited: false, canceled: false });
     return new MessageEmbed({
       title: "Need Interview",
       description: needInterview
-        .sort((a, b) => (a.createdAt > b.createdAt ? 1 : -1))
+        .sort(sortInvites)
         .map((n) => `• ${n.richLabel}`)
         .join("\n"),
     });
@@ -93,7 +120,7 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
     return new MessageEmbed({
       title: "Need Invite",
       description: needInvite
-        .sort((a, b) => (a.createdAt > b.createdAt ? 1 : -1))
+        .sort(sortInvites)
         .map((n) => `• ${n.richLabel}`)
         .join("\n"),
     });

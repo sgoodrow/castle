@@ -5,6 +5,7 @@ import {
   CacheType,
   CommandInteraction,
   GuildMemberRoleManager,
+  PermissionResolvable,
 } from "discord.js";
 import { commandSuffix } from "../../config";
 
@@ -85,6 +86,17 @@ export abstract class Command {
     }
     if (!roles.cache.get(roleId)) {
       throw new Error(`Must have <#${roleId}> to use this command.`);
+    }
+  }
+
+  protected requireInteractionMemberPermission(
+    permission: PermissionResolvable,
+    interaction:
+      | CommandInteraction<CacheType>
+      | AutocompleteInteraction<CacheType>
+  ) {
+    if (!interaction.memberPermissions?.has(permission)) {
+      throw new Error("You do not have permission to do this..");
     }
   }
 }

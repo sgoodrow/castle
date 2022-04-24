@@ -36,18 +36,33 @@ export class Invite {
   level?: number;
 
   @Column({ nullable: true })
-  note?: string;
+  main?: string;
+
+  public get priority() {
+    let score = 0;
+    if (this.interviewed) {
+      score += 1;
+    }
+    if (!this.main) {
+      score += 2;
+    }
+    return score;
+  }
 
   public get richLabel() {
-    return `<t:${this.time}:R> **${this.capitalizedName}**${this.characterDetails} added by <@${this.byUserId}>${this.noteDetails}`;
+    return `**${this.capitalizedName}**${this.characterDetails} added <t:${this.time}:R> by <@${this.byUserId}>${this.altNote} `;
+  }
+
+  public getFriendEntry(i: number) {
+    return `Friend${i}=${this.name}`;
   }
 
   private get time() {
     return Math.floor(this.createdAt.getTime() / 1000);
   }
 
-  private get noteDetails() {
-    return this.note ? `: ${this.note}` : "";
+  private get altNote() {
+    return this.main ? ` (${this.main}'s alt)` : "";
   }
 
   private get characterDetails() {

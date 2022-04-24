@@ -23,13 +23,13 @@ class InvitedCommand extends Command {
 
     await dataSource.manager.save(invite);
 
-    interaction.editReply(`Interviewed: ${invite.capitalizedName}`);
+    interaction.editReply(`Invited: ${invite.capitalizedName}`);
 
     await updateInviteListInfo(interaction.client);
   }
 
   public get builder() {
-    return this.command.addStringOption((o) =>
+    return this.command.addIntegerOption((o) =>
       o
         .setName(Option.InviteId)
         .setDescription("The ID of the invite who was interviewed")
@@ -46,12 +46,12 @@ class InvitedCommand extends Command {
     });
     return invites.map((i) => ({
       name: i.capitalizedName,
-      value: String(i.id),
+      value: i.id,
     }));
   }
 }
 
 export const invitedCommand = new InvitedCommand(
   "invited",
-  "After inviting a player, mark them as invited."
+  "After inviting a character, mark them as invited."
 );

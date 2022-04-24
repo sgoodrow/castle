@@ -30,7 +30,7 @@ class InterviewedCommand extends Command {
   }
 
   public get builder() {
-    return this.command.addStringOption((o) =>
+    return this.command.addIntegerOption((o) =>
       o
         .setName(Option.InviteId)
         .setDescription("The ID of the invite who was interviewed")
@@ -47,7 +47,7 @@ class InterviewedCommand extends Command {
     });
     return invites.map((i) => ({
       name: i.capitalizedName,
-      value: String(i.id),
+      value: i.id,
     }));
   }
 }

@@ -1,5 +1,5 @@
 import { CacheType, Interaction } from "discord.js";
-import { getCommand } from "./register-commands";
+import { getButton, getCommand } from "./register-commands";
 
 export const interactionCreateListener = async (
   interaction: Interaction<CacheType>
@@ -9,10 +9,21 @@ export const interactionCreateListener = async (
     return;
   }
 
+  if (interaction.isButton()) {
+    try {
+      await getButton(interaction).execute(interaction);
+      console.log(`/${interaction.customId} succeded`);
+    } catch (error) {
+      console.log(`/${interaction.customId} failed: ${error}`);
+      await interaction.reply({ content: String(error), ephemeral: true });
+    }
+    return;
+  }
+
   if (interaction.isCommand()) {
     try {
       await interaction.deferReply({ ephemeral: true });
-      await getCommand(interaction)?.execute(interaction);
+      await getCommand(interaction).execute(interaction);
       console.log(`/${interaction.commandName} succeded`);
     } catch (error) {
       console.log(`/${interaction.commandName} failed: ${error}`);

@@ -3,7 +3,7 @@ import { interactionCreateListener } from "./listeners/interaction-create-listen
 import { token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
 import { messageReactionAddListener } from "./listeners/message-reaction-add-listener";
-import { registerCommands } from "./listeners/register-commands";
+import { registerSlashCommands } from "./listeners/register-commands";
 
 export const client = new Client({
   intents: [
@@ -21,4 +21,4 @@ client.on("interactionCreate", interactionCreateListener);
 client.on("messageReactionAdd", messageReactionAddListener);
 client.on("ready", readyListener);
 
-registerCommands();
+registerSlashCommands();

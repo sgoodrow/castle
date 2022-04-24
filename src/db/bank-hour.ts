@@ -15,9 +15,6 @@ export class BankHour {
   @Column()
   hour!: number;
 
-  @Column({ default: false })
-  canceled!: boolean;
-
   public get richLabel() {
     const date = this.nextBankerHour.getTime() / 1000;
     return `<t:${date}:R> <@${this.userId}> <t:${date}:F>`;

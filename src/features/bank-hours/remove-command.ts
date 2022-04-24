@@ -23,9 +23,7 @@ class RemoveBankHourCommand extends Command {
       .getRepository(BankHour)
       .findOneByOrFail({ id: bankHourId });
 
-    bankHour.canceled = true;
-
-    await dataSource.manager.save(bankHour);
+    await dataSource.manager.remove(bankHour);
 
     interaction.editReply(`Removed **bank hour**: ${bankHour.richLabel}.`);
 
@@ -60,9 +58,7 @@ class RemoveBankHourCommand extends Command {
     interaction: AutocompleteInteraction<CacheType>
   ) {
     const weeklyBankAvailabilities = dataSource.getRepository(BankHour);
-    const bankHour = await weeklyBankAvailabilities.findBy({
-      canceled: false,
-    });
+    const bankHour = await weeklyBankAvailabilities.findBy({});
     await Promise.all(
       bankHour.map(async (h) => interaction.guild?.members.fetch(h.userId))
     );
