@@ -50,7 +50,7 @@ export class Invite {
   }
 
   public get richLabel() {
-    return `**${this.capitalizedName}**${this.characterDetails} added <t:${this.time}:R> by <@${this.byUserId}>${this.altNote} `;
+    return `${this.altNote}**${this.capitalizedName}**${this.characterDetails} <t:${this.time}:R>`;
   }
 
   public getFriendEntry(i: number) {
@@ -62,7 +62,7 @@ export class Invite {
   }
 
   private get altNote() {
-    return this.main ? ` (${this.main}'s alt)` : "";
+    return this.main ? `(Alt: ${this.main}) ` : "";
   }
 
   private get characterDetails() {
