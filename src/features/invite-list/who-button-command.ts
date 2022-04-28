@@ -1,6 +1,8 @@
 import { Invite } from "../../db/invite";
-import { sortInvites } from "./update-action";
-import { PendingButtonCommand } from "./who-pending-button-command";
+import {
+  PendingButtonCommand,
+  sortInvites,
+} from "./who-pending-button-command";
 
 class WhoButtonCommand extends PendingButtonCommand {
   protected getContent(pending: Invite[]): string {

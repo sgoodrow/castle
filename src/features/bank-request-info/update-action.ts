@@ -1,16 +1,22 @@
-import { Client, MessageEmbed } from "discord.js";
+import {
+  Client,
+  MessageActionRow,
+  MessageButton,
+  MessageEmbed,
+} from "discord.js";
+import moment from "moment";
 import { bankRequestsChannelId } from "../../config";
+import { BankHour } from "../../db/bank-hour";
+import { dataSource } from "../../db/data-source";
+import { Name } from "../../db/instructions";
+import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 import {
   readyActionExecutor,
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
-import { dataSource } from "../../db/data-source";
-import { Icon, Service } from "./types";
 import { services } from "./bank-services";
-import { BankHour } from "../../db/bank-hour";
-import { Name } from "../../db/instructions";
-import moment from "moment";
-import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
+import { bankingButtonCommand } from "./bankingButtonCommand";
+import { Icon } from "./types";
 
 export const updateBankRequestInfo = (
   client: Client,
@@ -27,8 +33,18 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
           await this.getAvailabilityEmbed(),
           await this.getTldrEmbed(),
         ],
+        components: [await this.getButtons()],
       },
       Name.BankRequestInstructions
+    );
+  }
+
+  private async getButtons() {
+    return new MessageActionRow().addComponents(
+      new MessageButton()
+        .setCustomId(bankingButtonCommand.customId)
+        .setStyle("PRIMARY")
+        .setLabel("Banker Is In")
     );
   }
 
@@ -81,10 +97,6 @@ ${bankHour
 _last updated <t:${moment().unix()}:R>_`,
       color: "ORANGE",
     });
-  }
-
-  private maybeUrl(text: string, url?: string) {
-    return url ? `[${text}](${url})` : text;
   }
 
   protected get channel() {

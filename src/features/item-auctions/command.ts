@@ -1,18 +1,17 @@
-import { SlashCommandBuilder } from "@discordjs/builders";
 import {
   ApplicationCommandOptionChoice,
   CacheType,
   CommandInteraction,
 } from "discord.js";
 import { bankerRoleId, raiderRoleId } from "../../config";
-import { ItemAuctionThreadBuilder } from "./thread-builder";
-import { getOption } from "../../shared/command/command";
-import { itemsList } from "../../shared/items";
 import { classes } from "../../shared/classes";
 import {
   AuctionCommand,
   AuctionOption,
 } from "../../shared/command/auction-command";
+import { getOption } from "../../shared/command/command";
+import { itemsList } from "../../shared/items";
+import { ItemAuctionThreadBuilder } from "./thread-builder";
 
 enum ItemOption {
   ItemId = "itemid",

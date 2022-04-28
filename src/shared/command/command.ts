@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import {
-  AutocompleteInteraction,
   ApplicationCommandOptionChoice,
+  AutocompleteInteraction,
   CacheType,
   CommandInteraction,
   GuildMemberRoleManager,
@@ -85,7 +85,7 @@ export abstract class Command {
       throw new Error("Could not determine your roles.");
     }
     if (!roles.cache.get(roleId)) {
-      throw new Error(`Must have <#${roleId}> to use this command.`);
+      throw new Error(`Must have <@&${roleId}> role to use this command.`);
     }
   }
 

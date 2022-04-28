@@ -21,13 +21,7 @@ import { altCommand, inviteCommand } from "./invite-command";
 import { invitedCommand } from "./invited-command";
 import { removeCommand } from "./remove-command";
 import { whoButtonCommand } from "./who-button-command";
-
-export const sortInvites = (a: Invite, b: Invite) => {
-  if (a.priority === b.priority) {
-    return a.createdAt > b.createdAt ? 1 : -1;
-  }
-  return a.priority > b.priority ? -1 : 1;
-};
+import { sortInvites } from "./who-pending-button-command";
 
 export const updateInviteListInfo = (
   client: Client,

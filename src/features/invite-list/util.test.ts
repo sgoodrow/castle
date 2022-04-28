@@ -1,5 +1,5 @@
 import { Invite } from "../../db/invite";
-import { sortInvites } from "./update-action";
+import { sortInvites } from "./who-pending-button-command";
 
 const invite = (date: number, interviewed: boolean, main?: string) => {
   const i = new Invite();

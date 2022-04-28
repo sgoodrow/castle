@@ -6,21 +6,22 @@ import {
   CacheType,
   CommandInteraction,
 } from "discord.js";
-import { spellAuctionCommand } from "../features/spell-auctions/command";
 import { clientId, guildId, token } from "../config";
 import { setBankHourCommand } from "../features/bank-hours/add-command";
 import { removeBankHour } from "../features/bank-hours/remove-command";
-import { itemAuctionCommand } from "../features/item-auctions/command";
+import { bankingButtonCommand } from "../features/bank-request-info/bankingButtonCommand";
+import { friendConfigButtonCommand } from "../features/invite-list/friend-config-button";
 import { interviewCommand } from "../features/invite-list/interview-command";
+import { interviewedCommand } from "../features/invite-list/interviewed-command";
 import {
   altCommand,
   inviteCommand,
 } from "../features/invite-list/invite-command";
-import { removeCommand } from "../features/invite-list/remove-command";
-import { interviewedCommand } from "../features/invite-list/interviewed-command";
 import { invitedCommand } from "../features/invite-list/invited-command";
+import { removeCommand } from "../features/invite-list/remove-command";
 import { whoButtonCommand } from "../features/invite-list/who-button-command";
-import { friendConfigButtonCommand } from "../features/invite-list/friend-config-button";
+import { itemAuctionCommand } from "../features/item-auctions/command";
+import { spellAuctionCommand } from "../features/spell-auctions/command";
 
 const slashCommands = [
   spellAuctionCommand,
@@ -35,7 +36,11 @@ const slashCommands = [
   invitedCommand,
 ];
 
-const buttonCommands = [whoButtonCommand, friendConfigButtonCommand];
+const buttonCommands = [
+  whoButtonCommand,
+  friendConfigButtonCommand,
+  bankingButtonCommand,
+];
 
 export const getCommand = (
   interaction:
