@@ -23,7 +23,7 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
       {
         embeds: [
           await this.getInstructionsEmbed(),
-          await this.getServicesEmbed(),
+          ...(await this.getServicesEmbeds()),
           await this.getAvailabilityEmbed(),
           await this.getTldrEmbed(),
         ],
@@ -43,18 +43,18 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
     });
   }
 
-  private async getServicesEmbed() {
-    return new MessageEmbed({
-      title: "Services",
-      description: `${services
-        .map(
-          ({ title, icon, requestFormats, inventoryUrl, bullets }: Service) => `
-${icon} **${this.maybeUrl(title, inventoryUrl)}**
-${requestFormats.map((r) => `${Icon.Request} \`${r}\``).join("\n")}
-${bullets.map((b) => `• ${b}`).join("\n")}`
-        )
-        .join("\n")}`,
-    });
+  private async getServicesEmbeds() {
+    return services.map(
+      ({ title, icon, requestFormats, inventoryUrl, bullets }) =>
+        new MessageEmbed({
+          title: `${icon} ${title}`,
+          url: inventoryUrl,
+          footer: {
+            text: requestFormats.map((r) => `${Icon.Request} ${r}`).join("\n"),
+          },
+          description: `${bullets.map((b) => `• ${b}`).join("\n")}`,
+        })
+    );
   }
 
   private async getAvailabilityEmbed() {

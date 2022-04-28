@@ -13,8 +13,8 @@ export const services: Service[] = [
       "Blue Diamond (950p)",
       "Thin Boned Wand (100p)",
       "Burnished Wooden Stave (100p)",
-      "NOT Diamonds",
-      "NOT Black Sapphires",
+      "~~Diamonds~~",
+      "~~Black Sapphires~~",
     ],
   },
   {
