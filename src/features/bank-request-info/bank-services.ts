@@ -8,10 +8,11 @@ export const services: Service[] = [
     icon: Icon.Bought,
     requestFormats: ["Bounty: Item name, Item count"],
     bullets: [
-      "At North Freeport Bank",
+      "__North Freeport Bank__",
       "Alligator Skin (200p)",
       "Blue Diamond (950p)",
       "Thin Boned Wand (100p)",
+      "Burnished Wooden Stave (100p)",
       "NOT Diamonds",
       "NOT Black Sapphires",
     ],
@@ -22,9 +23,21 @@ export const services: Service[] = [
     requestFormats: ["Misc item: Item name"],
     inventoryUrl: "https://tinyurl.com/castle-misc-items",
     bullets: [
-      "Leatherfoot Raiders Skullcap (500p Rivervale Bank)",
-      "Mind Melt (500p Thurgadin Bank)",
-      "Puppet Strings Charge (1750p The Overthere)",
+      "Leatherfoot Raiders Skullcap (500p __Rivervale Bank__)",
+      "Puppet Strings Charge (1750p __The Overthere__)",
+    ],
+  },
+  {
+    title: "Coldain Ring #9",
+    icon: Icon.Sold,
+    requestFormats: ["Coldain ring: Item name"],
+    inventoryUrl: "https://wiki.project1999.com/Coldain_Ring_Quests",
+    bullets: [
+      "__Thurgadin Bank__",
+      "Mind Melt (500p)",
+      "Iceball (free)",
+      "Seahorse Scales (free)",
+      "Arctic Mussles (free)",
     ],
   },
   {
@@ -33,7 +46,7 @@ export const services: Service[] = [
     requestFormats: ["Sky item: Name (Mule name, Quantity available)"],
     inventoryUrl: "https://tinyurl.com/castle-sky-items",
     bullets: [
-      "At East Freeport Docks (250p)",
+      "__East Freeport Docks__ (250p)",
       "You must have won the related DKP items",
     ],
   },
@@ -45,7 +58,7 @@ export const services: Service[] = [
     ],
     inventoryUrl: "https://tinyurl.com/castle-spell-spreadsheet",
     bullets: [
-      "At North Freeport Bank",
+      "__North Freeport Bank__",
       "You must be able to scribe the spell",
       "You must check the spreadsheet and post the quantity availabile",
       "**51-54** spells cost 50p, as well as: Tiger's Insects, Infusion, Conjure Corpse, Wake of Tranquility",
@@ -61,14 +74,14 @@ export const services: Service[] = [
       "Research component: Component name",
     ],
     inventoryUrl: "https://tinyurl.com/castle-research",
-    bullets: ["At North Freeport Bank (free)"],
+    bullets: ["__North Freeport Bank__ (free)"],
   },
   {
     title: "Resistance Jewelry",
     icon: Icon.Sold,
     requestFormats: ["Jewelry: Item name, Item quantity"],
     bullets: [
-      "At North Freeport Bank",
+      "__North Freeport Bank__",
       `Request in <#${jewelryChannelId}> (read pins)`,
     ],
   },

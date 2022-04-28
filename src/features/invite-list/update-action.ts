@@ -109,7 +109,7 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
       .getRepository(Invite)
       .findBy({ interviewed: false, invited: false, canceled: false });
     return new MessageEmbed({
-      title: "Need Interview",
+      title: `Need Interview (${needInterview.length})`,
       description: needInterview
         .sort(sortInvites)
         .map((n) => `• ${n.richLabel}`)
@@ -122,7 +122,7 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
       .getRepository(Invite)
       .findBy({ interviewed: true, invited: false, canceled: false });
     return new MessageEmbed({
-      title: "Need Invite",
+      title: `Need Invite (${needInvite.length})`,
       description: needInvite
         .sort(sortInvites)
         .map((n) => `• ${n.richLabel}`)
