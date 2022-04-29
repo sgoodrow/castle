@@ -36,9 +36,7 @@ class BankingButtonCommand extends ButtonCommand {
     const banker = interaction.member?.user;
 
     await bankRequestsChannel.send(
-      `${users
-        .map((u) => `${u}`)
-        .join(" ")}, a <@&${bankerRoleId}> is in (${banker})!`
+      `${users.map((u) => `${u}`).join(" ")}:\n\nA banker is in (${banker})!`
     );
 
     await interaction.reply({});
