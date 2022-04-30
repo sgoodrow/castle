@@ -63,7 +63,7 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
     return services.map(
       ({ title, icon, requestFormats, inventoryUrl, bullets }) =>
         new MessageEmbed({
-          title: `${icon} ${title}`,
+          title: `${icon} __${title}__`,
           url: inventoryUrl,
           footer: {
             text: requestFormats.map((r) => `${Icon.Request} ${r}`).join("\n"),

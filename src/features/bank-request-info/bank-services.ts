@@ -4,7 +4,7 @@ import { Icon, Service } from "./types";
 // todo: store this in database, populate and remove with command
 export const services: Service[] = [
   {
-    title: "Bounties (bank buys)",
+    title: "Bounties",
     icon: Icon.Bought,
     requestFormats: ["Bounty: Item name, Item count"],
     bullets: [
@@ -25,6 +25,7 @@ export const services: Service[] = [
     bullets: [
       "Leatherfoot Raiders Skullcap (500p __Rivervale Bank__)",
       "Puppet Strings Charge (1750p __The Overthere__)",
+      "Various Items, see spreadsheet (80% market rate)",
     ],
   },
   {
