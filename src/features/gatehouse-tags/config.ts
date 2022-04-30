@@ -15,7 +15,9 @@ export enum Emoji {
   BlueCastle = "☑️",
   BlueCalvary = "🐴",
   Interview = "❔",
+  InterviewAlt = "❓",
   Instruct = "❗",
+  InstructAlt = "❕",
 }
 
 export enum ActionType {
@@ -29,33 +31,50 @@ interface ReactionConfig {
   action: ActionType;
 }
 
+// todo: refactor this to more generically associate an emoji with an action
+const GreenTagAction: ReactionConfig = {
+  roles: [garrisonRoleId, greenRoleId],
+  action: ActionType.Tag,
+};
+
+const GreenAncientBloodTagAction: ReactionConfig = {
+  roles: [visitorRoleId, greenRoleId, ancientBloodRoleId],
+  action: ActionType.Tag,
+};
+
+const GreenFreyasCharriotTagAction: ReactionConfig = {
+  roles: [visitorRoleId, greenRoleId, freyasChariotRoleId],
+  action: ActionType.Tag,
+};
+
+const BlueTagAction: ReactionConfig = {
+  roles: [garrisonRoleId, blueRoleId],
+  action: ActionType.Tag,
+};
+
+const BlueCalvaryTagAction: ReactionConfig = {
+  roles: [visitorRoleId, calvaryRoleId],
+  action: ActionType.Tag,
+};
+
+const InstructAction: ReactionConfig = {
+  roles: [],
+  action: ActionType.Instruct,
+};
+
+const InterviewAction: ReactionConfig = {
+  roles: [],
+  action: ActionType.Interview,
+};
+
 export const actionConfigByReaction: { [emoji: string]: ReactionConfig } = {
-  [Emoji.GreenCastle]: {
-    roles: [garrisonRoleId, greenRoleId],
-    action: ActionType.Tag,
-  },
-  [Emoji.GreenAncientBlood]: {
-    roles: [visitorRoleId, greenRoleId, ancientBloodRoleId],
-    action: ActionType.Tag,
-  },
-  [Emoji.GreenFreyasChariot]: {
-    roles: [visitorRoleId, greenRoleId, freyasChariotRoleId],
-    action: ActionType.Tag,
-  },
-  [Emoji.BlueCastle]: {
-    roles: [garrisonRoleId, blueRoleId],
-    action: ActionType.Tag,
-  },
-  [Emoji.BlueCalvary]: {
-    roles: [visitorRoleId, calvaryRoleId],
-    action: ActionType.Tag,
-  },
-  [Emoji.Instruct]: {
-    roles: [],
-    action: ActionType.Instruct,
-  },
-  [Emoji.Interview]: {
-    roles: [],
-    action: ActionType.Interview,
-  },
+  [Emoji.GreenCastle]: GreenTagAction,
+  [Emoji.GreenAncientBlood]: GreenAncientBloodTagAction,
+  [Emoji.GreenFreyasChariot]: GreenFreyasCharriotTagAction,
+  [Emoji.BlueCastle]: BlueTagAction,
+  [Emoji.BlueCalvary]: BlueCalvaryTagAction,
+  [Emoji.Instruct]: InstructAction,
+  [Emoji.InstructAlt]: InstructAction,
+  [Emoji.Interview]: InterviewAction,
+  [Emoji.InterviewAlt]: InterviewAction,
 };

@@ -8,6 +8,7 @@ import {
 import {
   gatehouseChannelId,
   greenRoleId,
+  inviteListChannelId,
   raiderEnlistmentChannelId,
   rolesChannelId,
 } from "../../config";
@@ -63,7 +64,7 @@ class GatehouseReactionAction extends ReactionAction {
     // send welcome message
     let welcome = `${author} Welcome to the Garrison! Check out <#${rolesChannelId}>`;
     if (this.roleIds.includes(greenRoleId)) {
-      welcome += ` and, when you're ready, <#${raiderEnlistmentChannelId}>.`;
+      welcome += ` and <#${raiderEnlistmentChannelId}>. If you need an in-game invite, use \`/invite\` to add yourself to the <#${inviteListChannelId}>.`;
     } else {
       welcome += ".";
     }

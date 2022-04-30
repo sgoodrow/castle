@@ -1,4 +1,4 @@
-import { jewelryChannelId } from "../../config";
+import { auctionChannelId, jewelryChannelId } from "../../config";
 import { Icon, Service } from "./types";
 
 // todo: store this in database, populate and remove with command
@@ -64,7 +64,7 @@ export const services: Service[] = [
       "You must check the spreadsheet and post the quantity availabile",
       "**51-54** spells cost 50p, as well as: Tiger's Insects, Infusion, Conjure Corpse, Wake of Tranquility",
       "**55-60** spells cost 200p or 1DKP each (buyer's choice)",
-      "**Forbidden** spells (highlighted in gold), when requested, will initiate a DKP auction in #dkp-auctions.",
+      `**Forbidden** spells (highlighted in gold), when requested, will initiate a DKP auction in <#${auctionChannelId}>.`,
     ],
   },
   {
