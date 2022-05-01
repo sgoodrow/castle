@@ -21,7 +21,7 @@ class SpellAuction extends AuctionCommand {
     const auctionChannel = await this.authorize(interaction);
 
     // send message to notify role
-    const builder = new SpellAuctionThreadBuilder(interaction);
+    const builder = new SpellAuctionThreadBuilder(this.name, interaction);
     const message = await auctionChannel.send(
       builder.classRole.map((r) => String(r)).join(" ")
     );

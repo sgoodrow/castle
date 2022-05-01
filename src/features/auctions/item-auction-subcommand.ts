@@ -27,7 +27,7 @@ class ItemAuction extends AuctionCommand {
     );
 
     // turn message into a thread
-    const builder = new ItemAuctionThreadBuilder(interaction);
+    const builder = new ItemAuctionThreadBuilder(this.name, interaction);
     const thread = await message.startThread(builder.options);
     await message.edit(`${message.content} ${thread}`);
 

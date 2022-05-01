@@ -1,20 +1,12 @@
 import { ThreadAutoArchiveDuration } from "discord-api-types/v9";
 import { range } from "lodash";
 import moment from "moment";
-import { CacheType, CommandInteraction } from "discord.js";
 import { Embed } from "@discordjs/builders";
 import { ThreadBuilder } from "../../shared/thread/thread-builder";
 import { Item } from "../../shared/items";
 import { AuctionOption } from "./auction-base-subcommand";
 
 export abstract class AuctionThreadBuilder extends ThreadBuilder {
-  public constructor(
-    private readonly type: string,
-    interaction: CommandInteraction<CacheType>
-  ) {
-    super(interaction);
-  }
-
   public get options() {
     return {
       name: this.threadName,
@@ -100,7 +92,7 @@ export abstract class AuctionThreadBuilder extends ThreadBuilder {
   }
 
   private get itemList() {
-    return `**${this.type}:**\n${range(this.count)
+    return `**Available:**\n${range(this.count)
       .map((i: number) => `• ${this.item.name} #${i + 1}`)
       .join("\n")}`;
   }

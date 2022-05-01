@@ -6,6 +6,22 @@ import {
 } from "discord.js";
 import { BaseCommand } from "./base-command";
 
+export const getOption = (
+  subcommandName: string,
+  option: string,
+  interaction:
+    | CommandInteraction<CacheType>
+    | AutocompleteInteraction<CacheType>
+) => {
+  const subcommand = interaction.options.data.find(
+    (d) => d.name === subcommandName
+  );
+  if (!subcommand || !subcommand.options) {
+    throw new Error("Subcommand has no options");
+  }
+  return subcommand.options.find((o) => o.name === option);
+};
+
 export abstract class Subcommand extends BaseCommand {
   public get command() {
     return new SlashCommandSubcommandBuilder()
@@ -19,12 +35,6 @@ export abstract class Subcommand extends BaseCommand {
       | CommandInteraction<CacheType>
       | AutocompleteInteraction<CacheType>
   ) {
-    const subcommand = interaction.options.data.find(
-      (d) => d.name === this.name
-    );
-    if (!subcommand || !subcommand.options) {
-      throw new Error("Subcommand has no options");
-    }
-    return subcommand.options.find((o) => o.name === name);
+    return getOption(this.name, name, interaction);
   }
 }

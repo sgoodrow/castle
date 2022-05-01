@@ -1,13 +1,8 @@
 import { Option } from "./item-auction-subcommand";
 import { itemsMap } from "../../shared/items";
 import { AuctionThreadBuilder } from "./auction-thread-builder";
-import { CacheType, CommandInteraction } from "discord.js";
 
 export class ItemAuctionThreadBuilder extends AuctionThreadBuilder {
-  public constructor(interaction: CommandInteraction<CacheType>) {
-    super("Items", interaction);
-  }
-
   protected override getLocation() {
     const user = this.getOption(Option.HeldBy)?.user;
     if (user) {
