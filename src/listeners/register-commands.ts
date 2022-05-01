@@ -10,10 +10,19 @@ import { clientId, guildId, token } from "../config";
 import { auctionCommand } from "../features/auctions/command";
 import { bankHourCommand } from "../features/bank-hours/command";
 import { bankingButtonCommand } from "../features/bank-request-info/bankingButtonCommand";
+import { inviteCommand } from "../features/invite-list/command";
+import { friendConfigButtonCommand } from "../features/invite-list/friend-config-button";
+import { requestGuardApplicationCommand } from "../features/invite-list/request-guard-application-command";
+import { whoButtonCommand } from "../features/invite-list/who-button-command";
 
-const slashCommands = [bankHourCommand, auctionCommand];
+const slashCommands = [bankHourCommand, auctionCommand, inviteCommand];
 
-const buttonCommands = [bankingButtonCommand];
+const buttonCommands = [
+  bankingButtonCommand,
+  whoButtonCommand,
+  friendConfigButtonCommand,
+  requestGuardApplicationCommand,
+];
 
 export const getCommand = (
   interaction:
