@@ -6,7 +6,7 @@ import {
   Role,
 } from "discord.js";
 import { auctionChannelId, raiderRoleId } from "../../config";
-import { Command } from "./command";
+import { Subcommand } from "../../shared/command/subcommand";
 
 const EMBED_CHAR_LIMIT = 6000;
 const USER_ID_CHAR_SIZE = 18;
@@ -15,12 +15,12 @@ const BUFFER_CHAR_SIZE = 4;
 const USER_MENTION_CHAR_SIZE =
   USER_ID_CHAR_SIZE + SPACE_CHAR_SIZE + BUFFER_CHAR_SIZE;
 
-export enum AuctionOption {
+export enum BaseSubcommandOption {
   Name = "name",
   Count = "count",
 }
 
-export abstract class AuctionCommand extends Command {
+export abstract class BaseSubcommand extends Subcommand {
   protected async getAuctionChannel(
     interaction: CommandInteraction<CacheType>
   ) {

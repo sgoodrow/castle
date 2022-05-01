@@ -4,12 +4,9 @@ import {
   CommandInteraction,
 } from "discord.js";
 import { bankerRoleId } from "../../config";
-import { SpellAuctionThreadBuilder } from "./thread-builder";
+import { SpellThreadBuilder } from "./spell-thread-builder";
 import { ForbiddenSpells } from "../../shared/forbidden-spells";
-import {
-  AuctionCommand,
-  AuctionOption,
-} from "../../shared/command/auction-command";
+import { BaseSubcommand, BaseSubcommandOption } from "./base-subcommand";
 
 enum SpellOption {
   Player = "player",
@@ -17,14 +14,14 @@ enum SpellOption {
   ClassRole = "class",
 }
 
-export const Option = { ...SpellOption, ...AuctionOption };
+export const Option = { ...SpellOption, ...BaseSubcommandOption };
 
-class SpellAuctionCommand extends AuctionCommand {
+class Spell extends BaseSubcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     const auctionChannel = await this.authorize(interaction);
 
     // send message to notify role
-    const builder = new SpellAuctionThreadBuilder(interaction);
+    const builder = new SpellThreadBuilder(this.name, interaction);
     const message = await auctionChannel.send(
       builder.classRole.map((r) => String(r)).join(" ")
     );
@@ -47,8 +44,8 @@ class SpellAuctionCommand extends AuctionCommand {
     await interaction.editReply(`Started spell auction thread: ${thread}`);
   }
 
-  public get builder() {
-    return this.command
+  public get command() {
+    return super.command
       .addUserOption((o) =>
         o
           .setName(Option.Player)
@@ -70,7 +67,7 @@ class SpellAuctionCommand extends AuctionCommand {
       );
   }
 
-  protected async getOptionAutocomplete(
+  public async getOptionAutocomplete(
     option: string
   ): Promise<ApplicationCommandOptionChoice[] | undefined> {
     switch (option) {
@@ -100,7 +97,7 @@ class SpellAuctionCommand extends AuctionCommand {
   }
 }
 
-export const spellAuctionCommand = new SpellAuctionCommand(
-  "spellauc",
+export const spellSubcommand = new Spell(
+  "spell",
   "Creates a new Forbidden Spell auction thread."
 );

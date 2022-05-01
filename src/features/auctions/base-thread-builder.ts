@@ -1,20 +1,12 @@
 import { ThreadAutoArchiveDuration } from "discord-api-types/v9";
 import { range } from "lodash";
 import moment from "moment";
-import { CacheType, CommandInteraction } from "discord.js";
 import { Embed } from "@discordjs/builders";
-import { ThreadBuilder } from "./thread-builder";
-import { Item } from "../items";
-import { AuctionOption } from "../command/auction-command";
+import { ThreadBuilder } from "../../shared/thread/thread-builder";
+import { Item } from "../../shared/items";
+import { BaseSubcommandOption } from "./base-subcommand";
 
-export abstract class AuctionThreadBuilder extends ThreadBuilder {
-  public constructor(
-    private readonly type: string,
-    interaction: CommandInteraction<CacheType>
-  ) {
-    super(interaction);
-  }
-
+export abstract class BaseThreadBuilder extends ThreadBuilder {
   public get options() {
     return {
       name: this.threadName,
@@ -100,7 +92,7 @@ export abstract class AuctionThreadBuilder extends ThreadBuilder {
   }
 
   private get itemList() {
-    return `**${this.type}:**\n${range(this.count)
+    return `**Available:**\n${range(this.count)
       .map((i: number) => `• ${this.item.name} #${i + 1}`)
       .join("\n")}`;
   }
@@ -118,10 +110,10 @@ export abstract class AuctionThreadBuilder extends ThreadBuilder {
   }
 
   protected get count() {
-    return Number(this.getOption(AuctionOption.Count)?.value) || 1;
+    return Number(this.getOption(BaseSubcommandOption.Count)?.value) || 1;
   }
 
   protected get name() {
-    return this.getOption(AuctionOption.Name)?.value;
+    return this.getOption(BaseSubcommandOption.Name)?.value;
   }
 }

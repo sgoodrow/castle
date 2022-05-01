@@ -1,16 +1,16 @@
 import { CacheType, CommandInteraction } from "discord.js";
-import { Command, getOption } from "../../shared/command/command";
 import { dataSource } from "../../db/data-source";
 import { Invite } from "../../db/invite";
 import { updateInviteListInfo } from "./update-action";
+import { Subcommand } from "../../shared/command/subcommand";
 
 enum Option {
   InviteId = "inviteid",
 }
 
-class RemoveCommand extends Command {
+class Remove extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const id = Number(getOption(Option.InviteId, interaction)?.value);
+    const id = Number(this.getOption(Option.InviteId, interaction)?.value);
 
     const invite = await dataSource.getRepository(Invite).findOneBy({
       id,
@@ -28,8 +28,8 @@ class RemoveCommand extends Command {
     await updateInviteListInfo(interaction.client);
   }
 
-  public get builder() {
-    return this.command.addStringOption((o) =>
+  public get command() {
+    return super.command.addStringOption((o) =>
       o
         .setName(Option.InviteId)
         .setDescription("The ID of the invite to remove")
@@ -38,7 +38,7 @@ class RemoveCommand extends Command {
     );
   }
 
-  protected async getOptionAutocomplete() {
+  public async getOptionAutocomplete() {
     const invites = await dataSource.getRepository(Invite).find({
       where: [
         {
@@ -58,7 +58,7 @@ class RemoveCommand extends Command {
   }
 }
 
-export const removeCommand = new RemoveCommand(
+export const removeSubcommand = new Remove(
   "remove",
-  "Remove a player or character who is no longer interested."
+  "Remove someone who is no longer interested."
 );

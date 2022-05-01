@@ -1,16 +1,11 @@
 import { getClassAbreviation } from "../../shared/classes";
 import { ForbiddenSpells } from "../../shared/forbidden-spells";
-import { AuctionThreadBuilder } from "../../shared/thread/auction-thread-builder";
-import { CacheType, CommandInteraction } from "discord.js";
-import { Option } from "./command";
+import { BaseThreadBuilder } from "./base-thread-builder";
+import { Option } from "./spell-subcommand";
 
-export class SpellAuctionThreadBuilder extends AuctionThreadBuilder {
-  public constructor(interaction: CommandInteraction<CacheType>) {
-    super("Scrolls", interaction);
-  }
-
+export class SpellThreadBuilder extends BaseThreadBuilder {
   protected getReason() {
-    return `${this.player} can scribe ${this.name}`;
+    return `${this.player} has requested an auction for ${this.name}`;
   }
 
   protected getThreadName(): string {
@@ -18,12 +13,7 @@ export class SpellAuctionThreadBuilder extends AuctionThreadBuilder {
   }
 
   protected getExtraDescription(): string {
-    return `${this.player} can scribe this spell. `;
-  }
-
-  protected getExtraRules() {
-    return `
-• You must be able to scribe spell.`;
+    return `${this.player} has requested an auction for this spell. `;
   }
 
   protected getItem() {

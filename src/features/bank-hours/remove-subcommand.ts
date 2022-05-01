@@ -4,20 +4,22 @@ import {
   CommandInteraction,
 } from "discord.js";
 import { bankerRoleId } from "../../config";
-import { Command, getOption } from "../../shared/command/command";
 import { dataSource } from "../../db/data-source";
 import { updateBankRequestInfo } from "../bank-request-info/update-action";
 import { BankHour } from "../../db/bank-hour";
+import { Subcommand } from "../../shared/command/subcommand";
 
 enum Option {
   BankHourID = "hourid",
 }
 
-class RemoveBankHourCommand extends Command {
+class Remove extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     await this.authorize(interaction);
 
-    const bankHourId = Number(getOption(Option.BankHourID, interaction)?.value);
+    const bankHourId = Number(
+      this.getOption(Option.BankHourID, interaction)?.value
+    );
 
     const bankHour = await dataSource
       .getRepository(BankHour)
@@ -30,8 +32,8 @@ class RemoveBankHourCommand extends Command {
     await updateBankRequestInfo(interaction.client);
   }
 
-  public get builder() {
-    return this.command.addIntegerOption((o) =>
+  public get command() {
+    return super.command.addIntegerOption((o) =>
       o
         .setName(Option.BankHourID)
         .setDescription(
@@ -42,7 +44,7 @@ class RemoveBankHourCommand extends Command {
     );
   }
 
-  protected async getOptionAutocomplete(
+  public async getOptionAutocomplete(
     option: string,
     interaction: AutocompleteInteraction<CacheType>
   ) {
@@ -75,7 +77,4 @@ class RemoveBankHourCommand extends Command {
   }
 }
 
-export const removeBankHour = new RemoveBankHourCommand(
-  "removebankhour",
-  "Removes a banker hour."
-);
+export const removeSubcommand = new Remove("remove", "Removes a banker hour.");

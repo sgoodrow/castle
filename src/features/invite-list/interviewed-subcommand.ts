@@ -1,22 +1,22 @@
 import { CacheType, CommandInteraction, Permissions } from "discord.js";
-import { Command, getOption } from "../../shared/command/command";
 import { dataSource } from "../../db/data-source";
 import { Invite } from "../../db/invite";
 import { updateInviteListInfo } from "./update-action";
+import { Subcommand } from "../../shared/command/subcommand";
 
 enum Option {
   InviteId = "inviteid",
 }
 
 // dry this up, see remove and invited command
-class InterviewedCommand extends Command {
+class Interviewed extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     this.requireInteractionMemberPermission(
       Permissions.FLAGS.MANAGE_ROLES,
       interaction
     );
 
-    const id = Number(getOption(Option.InviteId, interaction)?.value);
+    const id = Number(this.getOption(Option.InviteId, interaction)?.value);
 
     const invite = await dataSource.getRepository(Invite).findOneBy({
       id,
@@ -34,8 +34,8 @@ class InterviewedCommand extends Command {
     await updateInviteListInfo(interaction.client);
   }
 
-  public get builder() {
-    return this.command.addIntegerOption((o) =>
+  public get command() {
+    return super.command.addIntegerOption((o) =>
       o
         .setName(Option.InviteId)
         .setDescription("The ID of the invite who was interviewed")
@@ -44,7 +44,7 @@ class InterviewedCommand extends Command {
     );
   }
 
-  protected async getOptionAutocomplete() {
+  public async getOptionAutocomplete() {
     const invites = await dataSource.getRepository(Invite).findBy({
       interviewed: false,
       invited: false,
@@ -57,7 +57,7 @@ class InterviewedCommand extends Command {
   }
 }
 
-export const interviewedCommand = new InterviewedCommand(
+export const interviewedSubcommand = new Interviewed(
   "interviewed",
-  "Mark a player as interviewed. This means they are ready for an invite."
+  "Mark a player as interviewed. This command will be removed when all pending interviews are done."
 );

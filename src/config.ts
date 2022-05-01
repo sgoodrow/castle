@@ -80,6 +80,10 @@ interface Config {
    */
   inviteListChannelId: string;
   /**
+   * The Discord server's officer roster channel ID.
+   */
+  officerRosterChannelId: string;
+  /**
    * This is appended to all commands. It is used when multiple developers are running bots
    * in the same Discord server so their development bots do not override each other.
    *
@@ -122,6 +126,7 @@ export const {
   raiderEnlistmentChannelId,
   gatehouseChannelId,
   inviteListChannelId,
+  officerRosterChannelId,
   commandSuffix,
   DATABASE_URL: databaseUrl,
   ENVIRONMENT: environment,
