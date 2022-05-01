@@ -6,6 +6,7 @@ import {
 import { BaseCommand } from "./base-command";
 import { Subcommand } from "./subcommand";
 import { SlashCommandBuilder } from "@discordjs/builders";
+import { commandSuffix } from "../../config";
 
 export class Command extends BaseCommand {
   public readonly command: SlashCommandBuilder;
@@ -15,7 +16,7 @@ export class Command extends BaseCommand {
     description: string,
     private readonly _subcommands: Subcommand[]
   ) {
-    super(name, description);
+    super(`${name}${commandSuffix ? commandSuffix : ""}`, description);
     this.command = new SlashCommandBuilder()
       .setName(this.name)
       .setDescription(this.description);

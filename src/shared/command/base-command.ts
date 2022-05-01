@@ -6,7 +6,6 @@ import {
   GuildMemberRoleManager,
   PermissionResolvable,
 } from "discord.js";
-import { commandSuffix } from "../../config";
 
 export abstract class BaseCommand {
   public constructor(
@@ -15,7 +14,7 @@ export abstract class BaseCommand {
   ) {}
 
   public get name() {
-    return `${this._name}${commandSuffix ? commandSuffix : ""}`;
+    return this._name;
   }
 
   public async autocomplete(interaction: AutocompleteInteraction<CacheType>) {
