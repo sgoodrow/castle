@@ -1,9 +1,9 @@
 import { getClassAbreviation } from "../../shared/classes";
 import { ForbiddenSpells } from "../../shared/forbidden-spells";
-import { AuctionThreadBuilder } from "./auction-thread-builder";
-import { Option } from "./spell-auction-subcommand";
+import { BaseThreadBuilder } from "./base-thread-builder";
+import { Option } from "./spell-subcommand";
 
-export class SpellAuctionThreadBuilder extends AuctionThreadBuilder {
+export class SpellThreadBuilder extends BaseThreadBuilder {
   protected getReason() {
     return `${this.player} can scribe ${this.name}`;
   }

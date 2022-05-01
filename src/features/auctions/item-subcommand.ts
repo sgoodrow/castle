@@ -6,17 +6,17 @@ import {
 import { bankerRoleId, raiderRoleId } from "../../config";
 import { classes } from "../../shared/classes";
 import { itemsList } from "../../shared/items";
-import { ItemAuctionThreadBuilder } from "./item-auction-thread-builder";
-import { AuctionCommand, AuctionOption } from "./auction-base-subcommand";
+import { ItemThreadBuilder } from "./item-thread-builder";
+import { BaseSubcommand, BaseSubcommandOption } from "./base-subcommand";
 
 enum ItemOption {
   ItemId = "itemid",
   HeldBy = "heldby",
 }
 
-export const Option = { ...ItemOption, ...AuctionOption };
+export const Option = { ...ItemOption, ...BaseSubcommandOption };
 
-class ItemAuction extends AuctionCommand {
+class Item extends BaseSubcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     const auctionChannel = await this.authorize(interaction);
 
@@ -27,7 +27,7 @@ class ItemAuction extends AuctionCommand {
     );
 
     // turn message into a thread
-    const builder = new ItemAuctionThreadBuilder(this.name, interaction);
+    const builder = new ItemThreadBuilder(this.name, interaction);
     const thread = await message.startThread(builder.options);
     await message.edit(`${message.content} ${thread}`);
 
@@ -125,7 +125,7 @@ class ItemAuction extends AuctionCommand {
   }
 }
 
-export const itemAuctionSubcommand = new ItemAuction(
+export const itemSubcommand = new Item(
   "item",
   "Creates a new item DKP auction thread."
 );

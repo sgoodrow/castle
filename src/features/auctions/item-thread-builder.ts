@@ -1,8 +1,8 @@
-import { Option } from "./item-auction-subcommand";
+import { Option } from "./item-subcommand";
 import { itemsMap } from "../../shared/items";
-import { AuctionThreadBuilder } from "./auction-thread-builder";
+import { BaseThreadBuilder } from "./base-thread-builder";
 
-export class ItemAuctionThreadBuilder extends AuctionThreadBuilder {
+export class ItemThreadBuilder extends BaseThreadBuilder {
   protected override getLocation() {
     const user = this.getOption(Option.HeldBy)?.user;
     if (user) {

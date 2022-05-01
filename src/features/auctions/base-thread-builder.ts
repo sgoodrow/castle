@@ -4,9 +4,9 @@ import moment from "moment";
 import { Embed } from "@discordjs/builders";
 import { ThreadBuilder } from "../../shared/thread/thread-builder";
 import { Item } from "../../shared/items";
-import { AuctionOption } from "./auction-base-subcommand";
+import { BaseSubcommandOption } from "./base-subcommand";
 
-export abstract class AuctionThreadBuilder extends ThreadBuilder {
+export abstract class BaseThreadBuilder extends ThreadBuilder {
   public get options() {
     return {
       name: this.threadName,
@@ -110,10 +110,10 @@ export abstract class AuctionThreadBuilder extends ThreadBuilder {
   }
 
   protected get count() {
-    return Number(this.getOption(AuctionOption.Count)?.value) || 1;
+    return Number(this.getOption(BaseSubcommandOption.Count)?.value) || 1;
   }
 
   protected get name() {
-    return this.getOption(AuctionOption.Name)?.value;
+    return this.getOption(BaseSubcommandOption.Name)?.value;
   }
 }

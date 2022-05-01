@@ -15,12 +15,12 @@ const BUFFER_CHAR_SIZE = 4;
 const USER_MENTION_CHAR_SIZE =
   USER_ID_CHAR_SIZE + SPACE_CHAR_SIZE + BUFFER_CHAR_SIZE;
 
-export enum AuctionOption {
+export enum BaseSubcommandOption {
   Name = "name",
   Count = "count",
 }
 
-export abstract class AuctionCommand extends Subcommand {
+export abstract class BaseSubcommand extends Subcommand {
   protected async getAuctionChannel(
     interaction: CommandInteraction<CacheType>
   ) {
