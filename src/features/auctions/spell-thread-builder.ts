@@ -5,7 +5,7 @@ import { Option } from "./spell-subcommand";
 
 export class SpellThreadBuilder extends BaseThreadBuilder {
   protected getReason() {
-    return `${this.player} can scribe ${this.name}`;
+    return `${this.player} has requested an auction for ${this.name}`;
   }
 
   protected getThreadName(): string {
@@ -13,12 +13,7 @@ export class SpellThreadBuilder extends BaseThreadBuilder {
   }
 
   protected getExtraDescription(): string {
-    return `${this.player} can scribe this spell. `;
-  }
-
-  protected getExtraRules() {
-    return `
-• You must be able to scribe spell.`;
+    return `${this.player} has requested an auction for this spell. `;
   }
 
   protected getItem() {
