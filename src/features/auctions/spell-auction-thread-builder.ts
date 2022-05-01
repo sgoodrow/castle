@@ -1,8 +1,8 @@
 import { getClassAbreviation } from "../../shared/classes";
 import { ForbiddenSpells } from "../../shared/forbidden-spells";
-import { AuctionThreadBuilder } from "../../shared/thread/auction-thread-builder";
+import { AuctionThreadBuilder } from "./auction-thread-builder";
 import { CacheType, CommandInteraction } from "discord.js";
-import { Option } from "./command";
+import { Option } from "./spell-auction-subcommand";
 
 export class SpellAuctionThreadBuilder extends AuctionThreadBuilder {
   public constructor(interaction: CommandInteraction<CacheType>) {

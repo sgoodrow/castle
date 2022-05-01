@@ -1,6 +1,6 @@
 import { Client, Intents } from "discord.js";
 import { interactionCreateListener } from "./listeners/interaction-create-listener";
-import { token } from "./config";
+import { guildId, token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
 import { messageReactionAddListener } from "./listeners/message-reaction-add-listener";
 import { registerSlashCommands } from "./listeners/register-commands";
@@ -17,6 +17,7 @@ export const client = new Client({
 });
 
 client.login(token);
+client.on("rateLimit", (d) => console.log(d));
 client.on("interactionCreate", interactionCreateListener);
 client.on("messageReactionAdd", messageReactionAddListener);
 client.on("ready", readyListener);

@@ -3,9 +3,9 @@ import { range } from "lodash";
 import moment from "moment";
 import { CacheType, CommandInteraction } from "discord.js";
 import { Embed } from "@discordjs/builders";
-import { ThreadBuilder } from "./thread-builder";
-import { Item } from "../items";
-import { AuctionOption } from "../command/auction-command";
+import { ThreadBuilder } from "../../shared/thread/thread-builder";
+import { Item } from "../../shared/items";
+import { AuctionOption } from "./auction-base-subcommand";
 
 export abstract class AuctionThreadBuilder extends ThreadBuilder {
   public constructor(

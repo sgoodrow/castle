@@ -12,7 +12,7 @@ export const interactionCreateListener = async (
   if (interaction.isButton()) {
     try {
       await getButton(interaction).execute(interaction);
-      console.log(`/${interaction.customId} succeded`);
+      console.log(`/${interaction.customId} succeeded`);
     } catch (error) {
       console.log(`/${interaction.customId} failed: ${error}`);
       await interaction.reply({ content: String(error), ephemeral: true });
@@ -24,7 +24,7 @@ export const interactionCreateListener = async (
     try {
       await interaction.deferReply({ ephemeral: true });
       await getCommand(interaction).execute(interaction);
-      console.log(`/${interaction.commandName} succeded`);
+      console.log(`/${interaction.commandName} succeeded`);
     } catch (error) {
       console.log(`/${interaction.commandName} failed: ${error}`);
       await interaction.editReply(String(error));

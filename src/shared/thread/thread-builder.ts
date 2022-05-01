@@ -1,5 +1,4 @@
 import { CacheType, CommandInteraction } from "discord.js";
-import { getOption } from "../command/command";
 
 export abstract class ThreadBuilder {
   public constructor(
@@ -7,6 +6,6 @@ export abstract class ThreadBuilder {
   ) {}
 
   protected getOption(name: string) {
-    return getOption(name, this.interaction);
+    return this.interaction.options.data.find((d) => d.name === name);
   }
 }

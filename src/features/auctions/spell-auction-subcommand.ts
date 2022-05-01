@@ -4,12 +4,9 @@ import {
   CommandInteraction,
 } from "discord.js";
 import { bankerRoleId } from "../../config";
-import { SpellAuctionThreadBuilder } from "./thread-builder";
+import { SpellAuctionThreadBuilder } from "./spell-auction-thread-builder";
 import { ForbiddenSpells } from "../../shared/forbidden-spells";
-import {
-  AuctionCommand,
-  AuctionOption,
-} from "../../shared/command/auction-command";
+import { AuctionCommand, AuctionOption } from "./auction-base-subcommand";
 
 enum SpellOption {
   Player = "player",
@@ -19,7 +16,7 @@ enum SpellOption {
 
 export const Option = { ...SpellOption, ...AuctionOption };
 
-class SpellAuctionCommand extends AuctionCommand {
+class SpellAuction extends AuctionCommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     const auctionChannel = await this.authorize(interaction);
 
@@ -47,8 +44,8 @@ class SpellAuctionCommand extends AuctionCommand {
     await interaction.editReply(`Started spell auction thread: ${thread}`);
   }
 
-  public get builder() {
-    return this.command
+  public get command() {
+    return super.command
       .addUserOption((o) =>
         o
           .setName(Option.Player)
@@ -70,7 +67,7 @@ class SpellAuctionCommand extends AuctionCommand {
       );
   }
 
-  protected async getOptionAutocomplete(
+  public async getOptionAutocomplete(
     option: string
   ): Promise<ApplicationCommandOptionChoice[] | undefined> {
     switch (option) {
@@ -100,7 +97,7 @@ class SpellAuctionCommand extends AuctionCommand {
   }
 }
 
-export const spellAuctionCommand = new SpellAuctionCommand(
-  "spellauc",
+export const spellAuctionSubcommand = new SpellAuction(
+  "spell",
   "Creates a new Forbidden Spell auction thread."
 );

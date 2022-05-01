@@ -5,13 +5,9 @@ import {
 } from "discord.js";
 import { bankerRoleId, raiderRoleId } from "../../config";
 import { classes } from "../../shared/classes";
-import {
-  AuctionCommand,
-  AuctionOption,
-} from "../../shared/command/auction-command";
-import { getOption } from "../../shared/command/command";
 import { itemsList } from "../../shared/items";
-import { ItemAuctionThreadBuilder } from "./thread-builder";
+import { ItemAuctionThreadBuilder } from "./item-auction-thread-builder";
+import { AuctionCommand, AuctionOption } from "./auction-base-subcommand";
 
 enum ItemOption {
   ItemId = "itemid",
@@ -20,7 +16,7 @@ enum ItemOption {
 
 export const Option = { ...ItemOption, ...AuctionOption };
 
-class ItemAuctionCommand extends AuctionCommand {
+class ItemAuction extends AuctionCommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     const auctionChannel = await this.authorize(interaction);
 
@@ -44,8 +40,8 @@ class ItemAuctionCommand extends AuctionCommand {
     await interaction.editReply(`Started item auction thread: ${thread}`);
   }
 
-  public get builder() {
-    const command = this.command
+  public get command() {
+    const command = super.command
       .addStringOption((o) =>
         o
           .setName(Option.ItemId)
@@ -82,7 +78,7 @@ class ItemAuctionCommand extends AuctionCommand {
     const roles = await interaction.guild?.roles.fetch();
 
     const classRoleNames = classes.filter(
-      (c) => getOption(c.toLowerCase(), interaction)?.value
+      (c) => this.getOption(c.toLowerCase(), interaction)?.value
     );
 
     const notifyRoles = roles
@@ -99,7 +95,7 @@ class ItemAuctionCommand extends AuctionCommand {
     return raiderRole;
   }
 
-  protected async getOptionAutocomplete(
+  public async getOptionAutocomplete(
     option: string
   ): Promise<ApplicationCommandOptionChoice[] | undefined> {
     switch (option) {
@@ -129,7 +125,7 @@ class ItemAuctionCommand extends AuctionCommand {
   }
 }
 
-export const itemAuctionCommand = new ItemAuctionCommand(
-  "itemauc",
+export const itemAuctionSubcommand = new ItemAuction(
+  "item",
   "Creates a new item DKP auction thread."
 );

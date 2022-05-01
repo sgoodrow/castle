@@ -1,10 +1,10 @@
 import { CacheType, CommandInteraction } from "discord.js";
 import { bankerRoleId } from "../../config";
-import { Command, getOption } from "../../shared/command/command";
 import { dataSource } from "../../db/data-source";
 import { updateBankRequestInfo } from "../bank-request-info/update-action";
 import { Day, Days } from "../bank-request-info/types";
 import { BankHour } from "../../db/bank-hour";
+import { Subcommand } from "../../shared/command/subcommand";
 
 enum Option {
   Banker = "banker",
@@ -17,11 +17,12 @@ const EST_UTC_TIMEZONE_OFFSET = 4;
 
 const dayChoices: [name: string, value: string][] = Days.map((d) => [d, d]);
 
-class AddBankHourCommand extends Command {
+class Add extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     await this.authorize(interaction);
 
-    const banker = getOption(Option.Banker, interaction)?.user;
+    const banker = this.getOption(Option.Banker, interaction)?.user;
+
     if (!banker) {
       throw new Error(`Banker not found.`);
     }
@@ -30,10 +31,12 @@ class AddBankHourCommand extends Command {
 
     const bankHour = new BankHour();
     bankHour.userId = banker.id;
-    bankHour.day = String(getOption(Option.Day, interaction)?.value) as Day;
-    const pm = Boolean(getOption(Option.PM, interaction)?.value);
+    bankHour.day = String(
+      this.getOption(Option.Day, interaction)?.value
+    ) as Day;
+    const pm = Boolean(this.getOption(Option.PM, interaction)?.value);
     bankHour.hour =
-      Number(getOption(Option.Hour, interaction)?.value) +
+      Number(this.getOption(Option.Hour, interaction)?.value) +
       (pm ? 12 : 0) +
       EST_UTC_TIMEZONE_OFFSET;
 
@@ -44,8 +47,8 @@ class AddBankHourCommand extends Command {
     await updateBankRequestInfo(interaction.client);
   }
 
-  public get builder() {
-    return this.command
+  public get command() {
+    return super.command
       .addUserOption((o) =>
         o
           .setName(Option.Banker)
@@ -75,7 +78,7 @@ class AddBankHourCommand extends Command {
       );
   }
 
-  protected async getOptionAutocomplete() {
+  public async getOptionAutocomplete() {
     return [];
   }
 
@@ -84,7 +87,7 @@ class AddBankHourCommand extends Command {
   }
 }
 
-export const setBankHourCommand = new AddBankHourCommand(
-  "addbankhour",
-  "Creates or updates a banker hour. Specify time in EST."
+export const addSubcommand = new Add(
+  "add",
+  "Creates a banker hour. Specify time in EST."
 );
