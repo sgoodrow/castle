@@ -63,14 +63,15 @@ class GatehouseReactionAction extends ReactionAction {
     author.roles.add(this.roleIds);
 
     // send welcome message
-    let welcome = `${author} Welcome to the Garrison! Check out <#${rolesChannelId}>`;
-    if (this.roleIds.includes(greenRoleId)) {
-      welcome += ` and <#${raiderEnlistmentChannelId}>.`;
-      if (this.roleIds.includes(garrisonRoleId)) {
-        welcome += ` If you need an in-game invite, use \`/invite\` to add yourself to the <#${inviteListChannelId}>.`;
-      }
-    } else {
-      welcome += ".";
+    let welcome = `Welcome to the Garrison, ${author}! Check out:
+• <#${rolesChannelId}> (set your class)`;
+    const green = this.roleIds.includes(greenRoleId);
+    const garrison = this.roleIds.includes(garrisonRoleId);
+    if (green) {
+      welcome += `\n• <#${raiderEnlistmentChannelId}> (join the raid force)`;
+    }
+    if (green && garrison) {
+      welcome += `\n• <#${inviteListChannelId}> (add yourself with \`/invite player\`)`;
     }
     this.message.channel.send(welcome);
   }
