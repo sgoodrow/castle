@@ -47,10 +47,10 @@ class Add extends Subcommand {
         .setRequired(true)
     );
     if (this.requireMain) {
-      command.addStringOption((o) =>
+      command.addUserOption((o) =>
         o
           .setName(Option.Main)
-          .setDescription("The name of the player's main, if this is an alt")
+          .setDescription("The name of the player's main")
           .setRequired(this.requireMain)
       );
     }

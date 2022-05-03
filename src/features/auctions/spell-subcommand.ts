@@ -7,6 +7,7 @@ import { bankerRoleId } from "../../config";
 import { SpellThreadBuilder } from "./spell-thread-builder";
 import { ForbiddenSpells } from "../../shared/forbidden-spells";
 import { BaseSubcommand, BaseSubcommandOption } from "./base-subcommand";
+import { requireInteractionMemberRole } from "../../shared/command/util";
 
 enum SpellOption {
   Player = "player",
@@ -91,7 +92,7 @@ class Spell extends BaseSubcommand {
       throw new Error("The auction channel is not a text channel.");
     }
 
-    this.requireInteractionMemberRole(bankerRoleId, interaction);
+    requireInteractionMemberRole(bankerRoleId, interaction);
 
     return auctionChannel;
   }

@@ -10,6 +10,7 @@ import { clientId, guildId, token } from "../config";
 import { auctionCommand } from "../features/auctions/command";
 import { bankHourCommand } from "../features/bank-hours/command";
 import { bankingButtonCommand } from "../features/bank-request-info/bankingButtonCommand";
+import { cleanupInvitesCommand } from "../features/invite-list/cleanup-invites-command";
 import { inviteCommand } from "../features/invite-list/command";
 import { friendConfigButtonCommand } from "../features/invite-list/friend-config-button";
 import { requestGuardApplicationCommand } from "../features/invite-list/request-guard-application-command";
@@ -19,6 +20,7 @@ const slashCommands = [bankHourCommand, auctionCommand, inviteCommand];
 
 const buttonCommands = [
   bankingButtonCommand,
+  cleanupInvitesCommand,
   whoButtonCommand,
   friendConfigButtonCommand,
   requestGuardApplicationCommand,

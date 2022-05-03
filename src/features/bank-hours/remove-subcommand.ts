@@ -8,6 +8,7 @@ import { dataSource } from "../../db/data-source";
 import { updateBankRequestInfo } from "../bank-request-info/update-action";
 import { BankHour } from "../../db/bank-hour";
 import { Subcommand } from "../../shared/command/subcommand";
+import { requireInteractionMemberRole } from "../../shared/command/util";
 
 enum Option {
   BankHourID = "hourid",
@@ -73,7 +74,7 @@ class Remove extends Subcommand {
   }
 
   private async authorize(interaction: CommandInteraction<CacheType>) {
-    this.requireInteractionMemberRole(bankerRoleId, interaction);
+    requireInteractionMemberRole(bankerRoleId, interaction);
   }
 }
 

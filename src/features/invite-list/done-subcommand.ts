@@ -3,6 +3,7 @@ import { dataSource } from "../../db/data-source";
 import { Invite } from "../../db/invite";
 import { updateInviteListInfo } from "./update-action";
 import { Subcommand } from "../../shared/command/subcommand";
+import { requireInteractionMemberPermission } from "../../shared/command/util";
 
 enum Option {
   InviteId = "inviteid",
@@ -10,7 +11,7 @@ enum Option {
 
 class Done extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    this.requireInteractionMemberPermission(
+    requireInteractionMemberPermission(
       Permissions.FLAGS.MANAGE_ROLES,
       interaction
     );

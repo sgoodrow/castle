@@ -26,6 +26,7 @@ import { whoButtonCommand } from "./who-button-command";
 import { sortInvites } from "./who-pending-button-command";
 import { inviteCommand } from "./command";
 import { requestGuardApplicationCommand } from "./request-guard-application-command";
+import { cleanupInvitesCommand } from "./cleanup-invites-command";
 
 export const updateInviteListInfo = (
   client: Client,
@@ -82,6 +83,11 @@ Use the \`/invite\` Discord command to add your name to the invite list, then ei
         .setCustomId(requestGuardApplicationCommand.customId)
         .setStyle("PRIMARY")
         .setLabel("Request Guard Application"),
+      new MessageButton()
+        .setCustomId(cleanupInvitesCommand.customId)
+        .setStyle("DANGER")
+        .setLabel("Cleanup Old")
+        .setDisabled(await cleanupInvitesCommand.disabled()),
       new MessageButton()
         .setCustomId(whoButtonCommand.customId)
         .setStyle("SECONDARY")

@@ -5,6 +5,10 @@ import { updateBankRequestInfo } from "../bank-request-info/update-action";
 import { Day, Days } from "../bank-request-info/types";
 import { BankHour } from "../../db/bank-hour";
 import { Subcommand } from "../../shared/command/subcommand";
+import {
+  requireInteractionMemberRole,
+  requireUserRole,
+} from "../../shared/command/util";
 
 enum Option {
   Banker = "banker",
@@ -19,7 +23,7 @@ const dayChoices: [name: string, value: string][] = Days.map((d) => [d, d]);
 
 class Add extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    await this.authorize(interaction);
+    requireInteractionMemberRole(bankerRoleId, interaction);
 
     const banker = this.getOption(Option.Banker, interaction)?.user;
 
@@ -27,7 +31,7 @@ class Add extends Subcommand {
       throw new Error(`Banker not found.`);
     }
 
-    this.requireUserRole(banker.id, bankerRoleId, interaction);
+    requireUserRole(banker.id, bankerRoleId, interaction);
 
     const bankHour = new BankHour();
     bankHour.userId = banker.id;
@@ -80,10 +84,6 @@ class Add extends Subcommand {
 
   public async getOptionAutocomplete() {
     return [];
-  }
-
-  private async authorize(interaction: CommandInteraction<CacheType>) {
-    this.requireInteractionMemberRole(bankerRoleId, interaction);
   }
 }
 

@@ -8,6 +8,7 @@ import { classes } from "../../shared/classes";
 import { itemsList } from "../../shared/items";
 import { ItemThreadBuilder } from "./item-thread-builder";
 import { BaseSubcommand, BaseSubcommandOption } from "./base-subcommand";
+import { requireInteractionMemberRole } from "../../shared/command/util";
 
 enum ItemOption {
   ItemId = "itemid",
@@ -119,7 +120,7 @@ class Item extends BaseSubcommand {
       throw new Error("The auction channel is not a text channel.");
     }
 
-    this.requireInteractionMemberRole(bankerRoleId, interaction);
+    requireInteractionMemberRole(bankerRoleId, interaction);
 
     return auctionChannel;
   }
