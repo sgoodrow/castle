@@ -1,0 +1,149 @@
+[
+  {
+    "level": "51",
+    "name": "Improved Invis to Undead",
+    "banker": "",
+    "cost": "50p",
+    "updated": ""
+  },
+  {
+    "level": "51",
+    "name": "Sunskin",
+    "banker": "",
+    "cost": "50p",
+    "updated": ""
+  },
+  {
+    "level": "52",
+    "name": "Heroic Bond",
+    "banker": "Cgkcleric",
+    "cost": "50p",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": "52",
+    "name": "Word of Vigor",
+    "banker": "Cgkcleric",
+    "cost": "50p",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": "52",
+    "name": "Upheaval",
+    "banker": "Cgkxclass",
+    "cost": "50p",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": "53",
+    "name": "Yaulp IV",
+    "banker": "Cgkxclass",
+    "cost": "50p",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": "54",
+    "name": "Reckoning",
+    "banker": "Cgkcleric",
+    "cost": "50p",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": "54",
+    "name": "Unswerving Hammer",
+    "banker": "Cgkcleric",
+    "cost": "50p",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": "55",
+    "name": "Fortitude",
+    "banker": "",
+    "cost": "200p OR 1DKP",
+    "updated": ""
+  },
+  {
+    "level": "55",
+    "name": "Stun Command",
+    "banker": "",
+    "cost": "200p OR 1DKP",
+    "updated": ""
+  },
+  {
+    "level": "55",
+    "name": "Wake of Tranquility",
+    "banker": "Cgkxclass",
+    "cost": "50p",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": "56",
+    "name": "Mark of Karn",
+    "banker": "",
+    "cost": "DKP Auction only",
+    "updated": ""
+  },
+  {
+    "level": "57",
+    "name": "Aegis",
+    "banker": "Cgkcleric",
+    "cost": "200p OR 1DKP",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": "57",
+    "name": "Word of Restoration",
+    "banker": "",
+    "cost": "200p OR 1DKP",
+    "updated": ""
+  },
+  {
+    "level": "58",
+    "name": "Enforced Reverence",
+    "banker": "Cgkcleric",
+    "cost": "200p OR 1DKP",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": "58",
+    "name": "Naltron's Mark",
+    "banker": "",
+    "cost": "DKP Auction only",
+    "updated": ""
+  },
+  {
+    "level": "59",
+    "name": "The Unspoken Word",
+    "banker": "Cgkcleric",
+    "cost": "200p OR 1DKP",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": "60",
+    "name": "Aegolism",
+    "banker": "Cgkcleric",
+    "cost": "DKP Auction only",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": "60",
+    "name": "Banishment of Shadows",
+    "banker": "",
+    "cost": "200p OR 1DKP",
+    "updated": ""
+  },
+  {
+    "level": "60",
+    "name": "Divine Intervention",
+    "banker": "",
+    "cost": "DKP Auction only",
+    "updated": ""
+  },
+  {
+    "level": "60",
+    "name": "Word of Redemption",
+    "banker": "",
+    "cost": "DKP Auction only",
+    "updated": ""
+  }
+]
