@@ -1,9 +1,11 @@
 import { ButtonInteraction, CacheType, Permissions } from "discord.js";
+import { partition } from "lodash";
+import { greenRoleId } from "../../config";
 import { dataSource } from "../../db/data-source";
-import { Invite } from "../../db/invite";
+import { InviteSimple } from "../../db/invite-simple";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { requireInteractionMemberPermission } from "../../shared/command/util";
-import { updateInviteListInfo } from "./update-action";
+import { updateInviteListInfo } from "./update-invite-action";
 
 const SECONDS = 1000;
 const MINUTES = 60 * SECONDS;
@@ -20,14 +22,19 @@ class CleanupInvitesCommand extends ButtonCommand {
       interaction
     );
 
-    const old = await this.getOldInvites();
+    const oldInvites = await this.getOldInvites();
+    if (!oldInvites.length) {
+      throw new Error("There is nobody to clean up.");
+    }
 
-    old.forEach((i) => (i.canceled = true));
+    const [altInvites, mainInvites] = partition(oldInvites, (o) => o.alt);
 
-    dataSource.manager.save(old);
+    await interaction.guild?.members.fetch();
+    await this.removeMains(mainInvites, interaction);
+    await this.removeAlts(altInvites, interaction);
+    const removed = await this.removeFromInviteList(oldInvites);
 
-    const removed = old.map((i) => `• ${i.richLabel}`).join("\n");
-
+    // summarize
     await interaction.reply({
       content: `Cleanup removed the following invites:
 ${removed}
@@ -35,20 +42,59 @@ ${removed}
       ephemeral: true,
     });
 
+    // update
     await updateInviteListInfo(interaction.client);
   }
 
-  public async disabled() {
-    const old = await this.getOldInvites();
-    return old.length === 0;
+  protected getUsers(
+    invites: InviteSimple[],
+    interaction: ButtonInteraction<CacheType>
+  ) {
+    const discordIds = [...new Set(invites.map((i) => i.discordId))];
+    return interaction.guild?.members.cache?.filter((m) =>
+      discordIds.includes(m.id)
+    );
+  }
+
+  protected async removeMains(
+    mainInvites: InviteSimple[],
+    interaction: ButtonInteraction<CacheType>
+  ) {
+    this.getUsers(mainInvites, interaction)?.forEach((u) => {
+      u.roles.remove(greenRoleId);
+      u.send(`Hello friend 👋! You were found to be on the <Castle> Discord's invite-list for more than 2 weeks.
+    
+To keep track of who has been invited, we automatically remove players on the invite list if they've been pending for 2 weeks, and remove their Discord permissions.
+
+**We still want you to join Castle!** Please drop by the #gatehouse channel and let us know you're still interested.
+
+Thank you!`);
+    });
+  }
+
+  protected async removeAlts(
+    altInvites: InviteSimple[],
+    interaction: ButtonInteraction<CacheType>
+  ) {
+    this.getUsers(altInvites, interaction)?.forEach((u) => {
+      u.send(`Hello <Castle> member! You have had at least one alt on the invite-list for more than 2 weeks.
+      
+To keep track of who has been invited, we automatically remove characters on the invite list if they've been pending for 2 weeks.
+
+**You are still welcome to have your alts in Castle!** Please drop by the #invite-list channel and add your alt(s) again.
+
+Thank you!`);
+    });
+  }
+
+  protected async removeFromInviteList(oldInvites: InviteSimple[]) {
+    dataSource.manager.remove(oldInvites);
+    return oldInvites.map((i) => `• ${i.richLabel}`).join("\n");
   }
 
   private async getOldInvites() {
-    const inviteRepository = dataSource.getRepository(Invite);
-    const invites = await inviteRepository.findBy({
-      canceled: false,
-      invited: false,
-    });
+    const inviteRepository = dataSource.getRepository(InviteSimple);
+    const invites = await inviteRepository.findBy({});
     const now = new Date().getTime();
     return invites.filter(
       (i) => Number(now - i.createdAt.getTime()) > OLD_LIMIT

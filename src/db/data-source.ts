@@ -2,14 +2,14 @@ import { DataSource } from "typeorm";
 import { databaseUrl, environment } from "../config";
 import { BankHour } from "./bank-hour";
 import { Instructions } from "./instructions";
-import { Invite } from "./invite";
+import { InviteSimple } from "./invite-simple";
 
 const ssl = { rejectUnauthorized: false };
 
 export const dataSource = new DataSource({
   url: databaseUrl,
   type: "postgres",
-  entities: [BankHour, Instructions, Invite],
+  entities: [BankHour, Instructions, InviteSimple],
   synchronize: true,
   logging: false,
   ssl: environment !== "local" ? ssl : undefined,

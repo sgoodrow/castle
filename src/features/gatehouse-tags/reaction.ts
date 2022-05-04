@@ -71,7 +71,7 @@ class GatehouseReactionAction extends ReactionAction {
       welcome += `\n• <#${raiderEnlistmentChannelId}> (join the raid force)`;
     }
     if (green && garrison) {
-      welcome += `\n• <#${inviteListChannelId}> (add yourself with \`/invite player\`)`;
+      welcome += `\n• <#${inviteListChannelId}> (coordinate for an in-game invite)`;
     }
     this.message.channel.send(welcome);
   }

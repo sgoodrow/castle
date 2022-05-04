@@ -26,6 +26,6 @@ Guards are voted in by current officers. Each applicant must be approved by 3 cu
   }
 }
 
-export const requestGuardApplicationCommand = new RequestGuardApplication(
+export const requestGuardApplicationButtonCommand = new RequestGuardApplication(
   "requestGuardApplication"
 );

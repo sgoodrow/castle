@@ -2,6 +2,7 @@ import { Column, Entity, PrimaryColumn } from "typeorm";
 
 export enum Name {
   BankRequestInstructions = "bankRequestInstructions",
+  GuardInstructions = "guardInstructions",
   InviteListInstructions = "inviteListInstructions",
 }
 

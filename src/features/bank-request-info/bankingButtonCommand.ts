@@ -37,13 +37,9 @@ class BankingButtonCommand extends ButtonCommand {
       return;
     }
 
-    const banker = interaction.member?.user;
-
-    await bankRequestsChannel.send(`**${banker} is now banking!**
+    await interaction.reply(`**${interaction.member?.user} is now banking!**
 
 Attn: ${users.map((u) => `${u}`).join(" ")}`);
-
-    await interaction.reply({});
   }
 
   protected async authorize(interaction: ButtonInteraction<CacheType>) {
