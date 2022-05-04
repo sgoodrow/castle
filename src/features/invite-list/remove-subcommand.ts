@@ -1,64 +1,44 @@
 import { CacheType, CommandInteraction } from "discord.js";
 import { dataSource } from "../../db/data-source";
-import { Invite } from "../../db/invite";
-import { updateInviteListInfo } from "./update-action";
+import { updateInviteListInfo } from "./update-invite-action";
 import { Subcommand } from "../../shared/command/subcommand";
+import { InviteSimple } from "../../db/invite-simple";
 
 enum Option {
-  InviteId = "inviteid",
+  DiscordUser = "discordid",
 }
 
 class Remove extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const id = Number(this.getOption(Option.InviteId, interaction)?.value);
+    const discordId = this.getOption(Option.DiscordUser, interaction)?.user?.id;
 
-    const invite = await dataSource.getRepository(Invite).findOneBy({
-      id,
+    const invite = await dataSource.getRepository(InviteSimple).findOneBy({
+      discordId,
     });
     if (!invite) {
-      return;
+      throw new Error(`<@${discordId}> is not on the invite list.`);
     }
 
-    invite.canceled = true;
-
-    await dataSource.manager.save(invite);
-
-    interaction.editReply(`Removed: ${invite.capitalizedName}`);
-
+    await dataSource.manager.remove(invite);
+    interaction.editReply(`Removed: ${invite.richLabel}`);
     await updateInviteListInfo(interaction.client);
   }
 
   public get command() {
-    return super.command.addStringOption((o) =>
+    return super.command.addUserOption((o) =>
       o
-        .setName(Option.InviteId)
-        .setDescription("The ID of the invite to remove")
-        .setAutocomplete(true)
+        .setName(Option.DiscordUser)
+        .setDescription("The Discord user to remove")
         .setRequired(true)
     );
   }
 
   public async getOptionAutocomplete() {
-    const invites = await dataSource.getRepository(Invite).find({
-      where: [
-        {
-          interviewed: false,
-          canceled: false,
-        },
-        {
-          invited: false,
-          canceled: false,
-        },
-      ],
-    });
-    return invites.map((i) => ({
-      name: i.capitalizedName,
-      value: String(i.id),
-    }));
+    return [];
   }
 }
 
 export const removeSubcommand = new Remove(
   "remove",
-  "Remove someone who is no longer interested."
+  "Remove someone from the invite list."
 );
