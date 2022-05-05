@@ -1,9 +1,11 @@
+import { CacheType, Guild, Interaction } from "discord.js";
 import {
   Column,
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
 } from "typeorm";
+import { Members } from "../features/invite-list/update-invite-action";
 
 @Entity({})
 export class InviteSimple {
@@ -25,6 +27,15 @@ export class InviteSimple {
       score += 2;
     }
     return score;
+  }
+
+  public getDiscordDisplayName(members: Members) {
+    return members?.get(this.discordId)?.displayName || `<@${this.discordId}>`;
+  }
+
+  public getRichLabel(members: Members) {
+    const displayName = this.getDiscordDisplayName(members);
+    return `${this.altNote}**${displayName}** <t:${this.time}:R>`;
   }
 
   public get richLabel() {

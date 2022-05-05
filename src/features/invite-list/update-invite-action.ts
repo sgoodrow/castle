@@ -1,9 +1,13 @@
 import {
   Client,
+  Collection,
+  Guild,
+  GuildMember,
   MessageActionRow,
   MessageButton,
   MessageEmbed,
 } from "discord.js";
+import { getMembers } from "../..";
 import { inviteListChannelId } from "../../config";
 import { dataSource } from "../../db/data-source";
 import { Name } from "../../db/instructions";
@@ -25,13 +29,16 @@ export const updateInviteListInfo = (
   options?: ReadyActionExecutorOptions
 ) => readyActionExecutor(new UpdateInviteListInfoAction(client), options);
 
+export declare type Members = Collection<string, GuildMember> | undefined;
+
 class UpdateInviteListInfoAction extends InstructionsReadyAction {
   public async execute(): Promise<void> {
+    const members = await getMembers();
     await this.createOrUpdateInstructions(
       {
         embeds: [
           await this.getFAQ(),
-          await this.getInviteEmbed(),
+          await this.getInviteEmbed(members),
           await this.getTldrEmbed(),
         ],
         components: [await this.getButtons()],
@@ -71,13 +78,13 @@ A guard or officer will notify you in Discord when they are performing invites. 
     );
   }
 
-  private async getInviteEmbed() {
+  private async getInviteEmbed(members: Members) {
     const needInvite = await dataSource.getRepository(InviteSimple).findBy({});
     return new MessageEmbed({
       title: `Need Invite (${needInvite.length})`,
       description: needInvite
         .sort(sortInvites)
-        .map((n) => `• ${n.richLabel}`)
+        .map((n) => `• ${n.getRichLabel(members)}`)
         .join("\n"),
     });
   }

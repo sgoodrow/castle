@@ -1,6 +1,6 @@
 import { Client, Intents } from "discord.js";
 import { interactionCreateListener } from "./listeners/interaction-create-listener";
-import { token } from "./config";
+import { guildId, token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
 import { messageReactionAddListener } from "./listeners/message-reaction-add-listener";
 import { registerSlashCommands } from "./listeners/register-commands";
@@ -16,6 +16,13 @@ export const client = new Client({
   ],
   partials: ["MESSAGE", "REACTION"],
 });
+
+export const getMembers = async () => {
+  const guilds = await client.guilds.fetch();
+  const guild = await guilds.get(guildId)?.fetch();
+  const members = await guild?.members.fetch();
+  return members;
+};
 
 client.login(token);
 client.on("rateLimit", (d) => console.log(d));
