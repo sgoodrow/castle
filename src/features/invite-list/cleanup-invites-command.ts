@@ -68,7 +68,7 @@ To keep track of who has been invited, we automatically remove players on the in
 
 **We still want you to join Castle!** Please drop by the #gatehouse channel and let us know you're still interested.
 
-If you are already in Castle and intended for have an alt invited, just let us know that's what happened, and use the "Add Alt to Invite List" button next time.
+If you are already in Castle and intended to have an alt invited, just let us know that's what happened, and use the "Add Alt to Invite List" button next time.
 
 Thank you!`);
     });
