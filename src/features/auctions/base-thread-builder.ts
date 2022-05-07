@@ -64,11 +64,11 @@ export abstract class BaseThreadBuilder extends ThreadBuilder {
       url: this.item.url,
       description: `${this.extraDescription}${this.location}.
 
-      ${this.itemList}
+${this.itemList}
 
-      **Rules:**${this.multiCountRules}${this.extraRules}
-      • Bids in the last 12 hours extend the auction by 12 hours.
-      • Reply to the bidder you are raising.`,
+**Rules:**${this.multiCountRules}${this.extraRules}
+• Bids in the last 12 hours extend the auction by 12 hours.
+• Reply to the bidder you are raising.`,
     });
   }
 

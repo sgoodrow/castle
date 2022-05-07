@@ -1,6 +1,12 @@
 import { ButtonInteraction, CacheType, Permissions } from "discord.js";
 import { partition } from "lodash";
-import { greenRoleId } from "../../config";
+import {
+  ancientBloodRoleId,
+  freyasChariotRoleId,
+  garrisonRoleId,
+  greenRoleId,
+  visitorRoleId,
+} from "../../config";
 import { dataSource } from "../../db/data-source";
 import { InviteSimple } from "../../db/invite-simple";
 import { ButtonCommand } from "../../shared/command/button-command";
@@ -61,7 +67,13 @@ ${removed}
     interaction: ButtonInteraction<CacheType>
   ) {
     this.getUsers(mainInvites, interaction)?.forEach((u) => {
-      u.roles.remove(greenRoleId);
+      u.roles.remove([
+        greenRoleId,
+        visitorRoleId,
+        garrisonRoleId,
+        ancientBloodRoleId,
+        freyasChariotRoleId,
+      ]);
       u.send(`Hello friend 👋! You were found to be on the <Castle> Discord's invite-list for more than 2 weeks.
     
 To keep track of who has been invited, we automatically remove players on the invite list if they've been pending for 2 weeks, and remove their Discord permissions.

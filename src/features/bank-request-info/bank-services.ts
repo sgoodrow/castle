@@ -60,11 +60,11 @@ export const services: Service[] = [
     inventoryUrl: "https://tinyurl.com/castle-spell-spreadsheet",
     bullets: [
       "_North Freeport Bank_",
-      "For all purchased spells, you must be able to scribe the scroll",
+      "For all bank spells, you **must be able to scribe the spell**",
       "You must check the spreadsheet and post the quantity availabile",
       "**51-54** spells cost 50p, as well as: Tiger's Insects, Infusion, Conjure Corpse, Wake of Tranquility",
       "**55-60** spells cost 200p or 1DKP each (buyer's choice)",
-      `**Forbidden** spells (highlighted in gold), when requested, will initiate a DKP auction in <#${auctionChannelId}>. You do not need to be able to scribe the scroll.`,
+      `**Forbidden** spells (highlighted in gold), when requested, will initiate a DKP auction in <#${auctionChannelId}>.`,
     ],
   },
   {
