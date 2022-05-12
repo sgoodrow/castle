@@ -3,6 +3,7 @@ import { partition } from "lodash";
 import {
   ancientBloodRoleId,
   freyasChariotRoleId,
+  blackLotusRoleId,
   garrisonRoleId,
   greenRoleId,
   visitorRoleId,
@@ -73,6 +74,7 @@ ${removed}
         garrisonRoleId,
         ancientBloodRoleId,
         freyasChariotRoleId,
+        blackLotusRoleId,
       ]);
       u.send(`Hello friend 👋! You were found to be on the <Castle> Discord's invite-list for more than 2 weeks.
     

@@ -1,5 +1,6 @@
 import {
   ancientBloodRoleId,
+  blackLotusRoleId,
   blueRoleId,
   calvaryRoleId,
   freyasChariotRoleId,
@@ -11,6 +12,7 @@ import {
 export enum Emoji {
   GreenCastle = "✅",
   GreenFreyasChariot = "🏹",
+  GreenBlackLotus = "🎴",
   GreenAncientBlood = "🦎",
   BlueCastle = "☑️",
   BlueCalvary = "🐴",
@@ -47,6 +49,11 @@ const GreenFreyasCharriotTagAction: ReactionConfig = {
   action: ActionType.Tag,
 };
 
+const GreenBlackLotusTagAction: ReactionConfig = {
+  roles: [visitorRoleId, greenRoleId, blackLotusRoleId],
+  action: ActionType.Tag,
+};
+
 const BlueTagAction: ReactionConfig = {
   roles: [garrisonRoleId, blueRoleId],
   action: ActionType.Tag,
@@ -71,6 +78,7 @@ export const actionConfigByReaction: { [emoji: string]: ReactionConfig } = {
   [Emoji.GreenCastle]: GreenTagAction,
   [Emoji.GreenAncientBlood]: GreenAncientBloodTagAction,
   [Emoji.GreenFreyasChariot]: GreenFreyasCharriotTagAction,
+  [Emoji.GreenBlackLotus]: GreenBlackLotusTagAction,
   [Emoji.BlueCastle]: BlueTagAction,
   [Emoji.BlueCalvary]: BlueCalvaryTagAction,
   [Emoji.Instruct]: InstructAction,

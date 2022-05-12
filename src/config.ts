@@ -44,9 +44,13 @@ interface Config {
    */
   ancientBloodRoleId: string;
   /**
-   * The Discord server's Frey'as Chariot ally role ID.
+   * The Discord server's Freya's Chariot ally role ID.
    */
   freyasChariotRoleId: string;
+  /**
+   * The Discord server's Black Lotus ally role ID.
+   */
+  blackLotusRoleId: string;
   /**
    * The Discord server's Calvary ally role ID.
    */
@@ -118,6 +122,7 @@ export const {
   blueRoleId,
   ancientBloodRoleId,
   freyasChariotRoleId,
+  blackLotusRoleId,
   calvaryRoleId,
   auctionChannelId,
   bankRequestsChannelId,
