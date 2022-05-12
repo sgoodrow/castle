@@ -89,7 +89,7 @@ class GatehouseReactionAction extends ReactionAction {
 
   private async instruct() {
     await this.message.reply(
-      `Please ensure your nickname is set to your in-game name and tell us your server **and** guild. Thanks!`
+      `Please right-click your own name to set your nickname to your in-game name and tell us both your server and guild. Thanks!`
     );
   }
 
