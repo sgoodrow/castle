@@ -9,6 +9,7 @@ import {
 import { clientId, guildId, token } from "../config";
 import { auctionCommand } from "../features/auctions/command";
 import { bankHourCommand } from "../features/bank-hours/command";
+import { bankCleanupButtonCommand } from "../features/bank-request-info/bankCleanupButtonCommand";
 import { bankingButtonCommand } from "../features/bank-request-info/bankingButtonCommand";
 import {
   addAltInviteButtonCommand,
@@ -24,6 +25,7 @@ const slashCommands = [bankHourCommand, auctionCommand, invitedCommand];
 
 const buttonCommands = [
   bankingButtonCommand,
+  bankCleanupButtonCommand,
   cleanupInvitesCommand,
   requestGuardApplicationButtonCommand,
   pingInviteListButtonCommand,

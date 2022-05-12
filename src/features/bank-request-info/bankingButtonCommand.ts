@@ -1,8 +1,4 @@
-import {
-  ButtonInteraction,
-  CacheType,
-  GuildMemberRoleManager,
-} from "discord.js";
+import { ButtonInteraction, CacheType } from "discord.js";
 import { bankerRoleId, bankRequestsChannelId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 import {

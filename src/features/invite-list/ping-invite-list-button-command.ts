@@ -32,7 +32,7 @@ class PingInviteListCommand extends ButtonCommand {
       interaction.member?.user
     } is available to send invites!**
 
-    Attn: ${users.map((u) => `<@${u}>`).join(" ")}`);
+Attn: ${users.map((u) => `<@${u}>`).join(" ")}`);
   }
 
   private async getPendingInviteUsers() {

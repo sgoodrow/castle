@@ -1,11 +1,9 @@
 name: Release
 
-on:
-  workflow_dispatch:
+on: [workflow_dispatch]
 
 jobs:
-  deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3

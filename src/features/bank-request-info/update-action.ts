@@ -15,6 +15,7 @@ import {
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
 import { services } from "./bank-services";
+import { bankCleanupButtonCommand } from "./bankCleanupButtonCommand";
 import { bankingButtonCommand } from "./bankingButtonCommand";
 import { Icon } from "./types";
 
@@ -44,7 +45,11 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
       new MessageButton()
         .setCustomId(bankingButtonCommand.customId)
         .setStyle("PRIMARY")
-        .setLabel("Banker Is In")
+        .setLabel("Banker Is In"),
+      new MessageButton()
+        .setCustomId(bankCleanupButtonCommand.customId)
+        .setStyle("DANGER")
+        .setLabel("Cleanup Old")
     );
   }
 
