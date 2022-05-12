@@ -7,6 +7,10 @@ export const guildMemberAddListener = async (member: GuildMember) => {
     throw new Error(`${gatehouseChannelId} is not a text channel.`);
   }
 
+  // ensure the user has loaded in before sending the message, since they can't
+  // see channel history by default
+  await new Promise((r) => setTimeout(r, 1000));
+
   channel.send(
     `Hello ${member}! Please set your nickname to your in-game name and tell us your server and guild (if you have one).`
   );
