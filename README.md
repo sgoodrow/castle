@@ -1,4 +1,4 @@
-# Castle Discord Bot
+# Castle Discord Bot [![CI](https://github.com/sgoodrow/castle/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/sgoodrow/castle/actions/workflows/test.yml)
 
 ## Develop
 
