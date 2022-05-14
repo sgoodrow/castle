@@ -12,6 +12,6 @@ export const guildMemberAddListener = async (member: GuildMember) => {
   await new Promise((r) => setTimeout(r, 1000));
 
   channel.send(
-    `Hello ${member}! Please set right-click your own name to set your nickname to your in-game name and tell us both your server and guild (if you have one).`
+    `Hello ${member}! Please right-click your own name to set your nickname to your in-game name and tell us both your server and guild (if you have one).`
   );
 };
