@@ -68,7 +68,8 @@ ${this.itemList}
 
 **Rules:**${this.multiCountRules}${this.extraRules}
 • Bids in the last 12 hours extend the auction by 12 hours.
-• Reply to the bidder you are raising.`,
+• Reply to the bidder you are raising so they receive a notification.
+• If you win the auction, record your DKP purchase in the records channel and announce in this thread when you have done so.`,
     });
   }
 
