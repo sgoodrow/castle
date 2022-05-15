@@ -107,7 +107,7 @@ ${this.itemList}
   }
 
   private get endTime() {
-    return moment().add("2", "days").unix();
+    return moment().add("1", "days").unix();
   }
 
   protected get count() {
