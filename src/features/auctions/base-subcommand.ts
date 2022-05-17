@@ -8,7 +8,7 @@ import {
 import { auctionChannelId, raiderRoleId } from "../../config";
 import { Subcommand } from "../../shared/command/subcommand";
 
-const EMBED_CHAR_LIMIT = 4000;
+const EMBED_CHAR_LIMIT = 3000;
 const USER_ID_CHAR_SIZE = 18;
 const SPACE_CHAR_SIZE = 1;
 const BUFFER_CHAR_SIZE = 4;
