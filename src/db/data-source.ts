@@ -12,7 +12,7 @@ export const dataSource = new DataSource({
   entities: [BankHour, Instructions, InviteSimple],
   synchronize: true,
   logging: false,
-  ssl: environment !== "local" ? ssl : undefined,
+  ssl: environment !== "local" ? ssl : false,
 });
 
 dataSource

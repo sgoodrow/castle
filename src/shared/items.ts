@@ -10889,7 +10889,7 @@ export const mapFromData = (data: { [id: string]: string }) =>
     const item: Item = {
       id,
       url: `https://wiki.project1999.com${url}`,
-      name: replaceAll(decodeURI(url), "_", " ").substring(1),
+      name: `Spell ${replaceAll(decodeURI(url), "_", " ").substring(1)}`,
     };
     map[item.id] = item;
     return map;

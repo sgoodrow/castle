@@ -64,17 +64,22 @@ export abstract class BaseSubcommand extends Subcommand {
 
     // Iteratively edit user mentions into the thread in batches that do
     // not exceed the message character limit.
-    const charBudget = MESSAGE_CHAR_LIMIT - content.length;
     const names = usersToAdd.map((f) => ` @${f.displayName}`);
     const ids = usersToAdd.map((f) => ` <@${f.id}>`);
     let i = 0;
     let extraContentNames = "";
     let extraContentIds = "";
     while (i < names.length) {
-      if (extraContentNames.length + names[i].length < charBudget) {
+      const size = Math.max(names[i].length, ids[i].length);
+      if (
+        content.length + extraContentNames.length + size <
+        MESSAGE_CHAR_LIMIT
+      ) {
         extraContentNames += names[i];
         extraContentIds += ids[i];
       } else {
+        console.log(`${content}${extraContentIds}`);
+        console.log(`${content}${extraContentIds}`.length);
         await message.edit(`${content}${extraContentIds}`);
         extraContentNames = names[i];
         extraContentIds = ids[i];
@@ -83,6 +88,8 @@ export abstract class BaseSubcommand extends Subcommand {
     }
 
     // Final add
+    console.log(`${content}${extraContentIds}`.length);
+    console.log(`${content}${extraContentIds}`);
     await message.edit(`${content}${extraContentIds}`);
 
     // Edit the message back to normal

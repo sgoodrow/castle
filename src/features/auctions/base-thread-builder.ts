@@ -25,7 +25,10 @@ export abstract class BaseThreadBuilder extends ThreadBuilder {
   protected abstract getName(): Item;
 
   protected getThreadName() {
-    const base = `${this.item.name} (${this.count})`;
+    let base = `${this.item.name}`;
+    if (this.count > 1) {
+      base += ` (${this.count})`;
+    }
     return this.raid ? `${this.raid} - ${base}` : base;
   }
 
