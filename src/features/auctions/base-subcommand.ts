@@ -72,14 +72,22 @@ export abstract class BaseSubcommand extends Subcommand {
     while (i < names.length) {
       const size = Math.max(names[i].length, ids[i].length);
       if (contentNames.length + size < MESSAGE_CHAR_LIMIT) {
+        console.log(
+          contentNames.length + size,
+          " less than ",
+          MESSAGE_CHAR_LIMIT
+        );
         contentNames += names[i];
         contentIds += ids[i];
+        console.log("added ", names[i], ids[i]);
       } else {
+        console.log("would have exceeded limit");
         console.log(`${contentIds}`);
         console.log(`${contentIds}`.length);
         await message.edit(`${contentIds}`);
         contentNames = names[i];
         contentIds = ids[i];
+        console.log("reset to ", contentNames, contentIds);
       }
       i++;
     }
