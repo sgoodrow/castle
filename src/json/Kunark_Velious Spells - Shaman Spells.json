@@ -1,0 +1,218 @@
+[
+  {
+    "level": 50,
+    "name": "Spirit Quickening",
+    "count": 0,
+    "banker": "",
+    "cost": "50p",
+    "updated": ""
+  },
+  {
+    "level": 51,
+    "name": "Talisman of Jasinth",
+    "count": 4,
+    "banker": "",
+    "cost": "50p",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": 52,
+    "name": "Insidious Decay",
+    "count": 0,
+    "banker": "",
+    "cost": "50p",
+    "updated": ""
+  },
+  {
+    "level": 52,
+    "name": "Spirit of Scale",
+    "count": 1,
+    "banker": "Cgkxclass",
+    "cost": "50p",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": 53,
+    "name": "Cripple",
+    "count": 0,
+    "banker": "",
+    "cost": "50p",
+    "updated": ""
+  },
+  {
+    "level": 53,
+    "name": "Talisman of Shadoo",
+    "count": 0,
+    "banker": "",
+    "cost": "50p",
+    "updated": ""
+  },
+  {
+    "level": 54,
+    "name": "Cannibalize III",
+    "count": 4,
+    "banker": "Cgkshaman",
+    "cost": "50p",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": 54,
+    "name": "Shroud of the Spirits",
+    "count": 0,
+    "banker": "",
+    "cost": "50p",
+    "updated": ""
+  },
+  {
+    "level": 55,
+    "name": "Form of the Great Bear",
+    "count": 0,
+    "banker": "",
+    "cost": "DKP Auction only",
+    "updated": ""
+  },
+  {
+    "level": 55,
+    "name": "Spirit of the Howler",
+    "count": 0,
+    "banker": "",
+    "cost": "DKP Auction only",
+    "updated": ""
+  },
+  {
+    "level": 55,
+    "name": "Torrent of Poison",
+    "count": 3,
+    "banker": "Cgkshaman",
+    "cost": "200p OR 1DKP",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": 56,
+    "name": "Acumen",
+    "count": 12,
+    "banker": "Cgkshaman",
+    "cost": "200p OR 1DKP",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": 55,
+    "name": "Bane of Nife",
+    "count": 0,
+    "banker": "",
+    "cost": "DKP Auction only",
+    "updated": ""
+  },
+  {
+    "level": 57,
+    "name": "Talisman of the Brute",
+    "count": 1,
+    "banker": "Cgkshaman",
+    "cost": "200p OR 1DKP",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": 57,
+    "name": "Talisman of the Cat",
+    "count": 1,
+    "banker": "Cgkshaman",
+    "cost": "200p OR 1DKP",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": 58,
+    "name": "Cannibalize IV",
+    "count": 0,
+    "banker": "",
+    "cost": "DKP Auction only",
+    "updated": ""
+  },
+  {
+    "level": 58,
+    "name": "Talisman of the Rhino",
+    "count": 0,
+    "banker": "",
+    "cost": "200p OR 1DKP",
+    "updated": ""
+  },
+  {
+    "level": 58,
+    "name": "Talisman of the Serpent",
+    "count": 1,
+    "banker": "Cgkshaman",
+    "cost": "200p OR 1DKP",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": 58,
+    "name": "Tigir's Insects",
+    "count": 0,
+    "banker": "",
+    "cost": "50p",
+    "updated": ""
+  },
+  {
+    "level": 59,
+    "name": "Pox of Bertoxxulous",
+    "count": 0,
+    "banker": "",
+    "cost": "DKP Auction only",
+    "updated": ""
+  },
+  {
+    "level": 59,
+    "name": "Talisman of the Raptor",
+    "count": 1,
+    "banker": "Cgkshaman",
+    "cost": "200p OR 1DKP",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": 59,
+    "name": "Voice of the Berserker",
+    "count": 0,
+    "banker": "",
+    "cost": "200p OR 1DKP",
+    "updated": ""
+  },
+  {
+    "level": 60,
+    "name": "Avatar",
+    "count": 1,
+    "banker": "Cgkshaman",
+    "cost": "DKP Auction only",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": 60,
+    "name": "Focus of Spirit",
+    "count": 5,
+    "banker": "Cgkshaman",
+    "cost": "DKP Auction only",
+    "updated": "4/14/2022"
+  },
+  {
+    "level": 60,
+    "name": "Malo",
+    "count": 0,
+    "banker": "",
+    "cost": "DKP Auction only",
+    "updated": ""
+  },
+  {
+    "level": 60,
+    "name": "Primal Avatar",
+    "count": 0,
+    "banker": "",
+    "cost": "200p OR 1DKP",
+    "updated": ""
+  },
+  {
+    "level": 60,
+    "name": "Torpor",
+    "count": 0,
+    "banker": "",
+    "cost": "DKP Auction only",
+    "updated": ""
+  }
+]
