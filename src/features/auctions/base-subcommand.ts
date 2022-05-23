@@ -67,30 +67,27 @@ export abstract class BaseSubcommand extends Subcommand {
     const names = usersToAdd.map((f) => ` @${f.displayName}`);
     const ids = usersToAdd.map((f) => ` <@${f.id}>`);
     let i = 0;
-    let extraContentNames = "";
-    let extraContentIds = "";
+    let contentNames = "";
+    let contentIds = "";
     while (i < names.length) {
       const size = Math.max(names[i].length, ids[i].length);
-      if (
-        content.length + extraContentNames.length + size <
-        MESSAGE_CHAR_LIMIT
-      ) {
-        extraContentNames += names[i];
-        extraContentIds += ids[i];
+      if (contentNames.length + size < MESSAGE_CHAR_LIMIT) {
+        contentNames += names[i];
+        contentIds += ids[i];
       } else {
-        console.log(`${content}${extraContentIds}`);
-        console.log(`${content}${extraContentIds}`.length);
-        await message.edit(`${content}${extraContentIds}`);
-        extraContentNames = names[i];
-        extraContentIds = ids[i];
+        console.log(`${contentIds}`);
+        console.log(`${contentIds}`.length);
+        await message.edit(`${contentIds}`);
+        contentNames = names[i];
+        contentIds = ids[i];
       }
       i++;
     }
 
     // Final add
-    console.log(`${content}${extraContentIds}`.length);
-    console.log(`${content}${extraContentIds}`);
-    await message.edit(`${content}${extraContentIds}`);
+    console.log(`${contentIds}`.length);
+    console.log(`${contentIds}`);
+    await message.edit(`${contentIds}`);
 
     // Edit the message back to normal
     await message.edit(content);
