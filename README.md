@@ -5,9 +5,10 @@
 ### Requirements
 
 1. docker
-2. yarn
-3. git
-4. heroku
+2. docker-compose@2
+3. yarn
+4. git
+5. heroku
 
 ### Discord Setup
 

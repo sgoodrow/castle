@@ -5,12 +5,12 @@ import { Embed } from "@discordjs/builders";
 import { ThreadBuilder } from "../../shared/thread/thread-builder";
 import { Item } from "../../shared/items";
 import { BaseSubcommandOption } from "./base-subcommand";
+import { replaceAll } from "../../shared/string-util";
 
 export abstract class BaseThreadBuilder extends ThreadBuilder {
   public get options() {
     return {
       name: this.threadName,
-      reason: this.reason,
       autoArchiveDuration: ThreadAutoArchiveDuration.ThreeDays,
     };
   }
@@ -22,54 +22,57 @@ export abstract class BaseThreadBuilder extends ThreadBuilder {
     };
   }
 
-  protected getReason() {
-    return `Guild bank has ${this.count} ${this.item.name}`;
-  }
-
-  protected abstract getItem(): Item;
+  protected abstract getName(): Item;
 
   protected getThreadName() {
-    return `${this.item.name} (${this.count})`;
-  }
-
-  protected getExtraDescription() {
-    return "";
+    const base = `${this.item.name} (${this.count})`;
+    return this.raid ? `${this.raid} - ${base}` : base;
   }
 
   protected getExtraRules() {
     return "";
   }
 
-  private get reason() {
-    return this.getReason();
+  protected get restrictToRaid() {
+    return !!this.raid;
   }
 
-  protected getLocation(): string {
+  private get raid() {
+    const raid = String(this.getOption(BaseSubcommandOption.Raid)?.value);
+    if (!raid) {
+      return;
+    }
+    return replaceAll(raid, "/", "-");
+  }
+
+  private get location() {
+    const user = this.getOption(BaseSubcommandOption.HeldBy)?.user;
+    if (user) {
+      return this.count > 1
+        ? `These items are on ${user}`
+        : `This item is on ${user}`;
+    }
     return this.count > 1
       ? "These items are in the guild bank"
       : "This item is in the guild bank";
   }
 
-  private get location() {
-    return this.getLocation();
-  }
-
   private get item() {
-    return this.getItem();
+    return this.getName();
   }
 
   private getEmbed() {
     return new Embed({
-      title: this.item.name,
+      title: `__${this.item.name}__ (view on P99 Wiki)`,
       url: this.item.url,
-      description: `${this.extraDescription}${this.location}.
+      description: `${this.location}.
 
 ${this.itemList}
 
-**Rules:**${this.multiCountRules}${this.extraRules}
+**Rules:**${this.multiCountRules}${this.extraRules}${this.raidRules}
 • Bids in the last 12 hours extend the auction by 12 hours.
-• Reply to the bidder you are raising so they receive a notification.
-• If you win the auction, record your DKP purchase in the records channel and announce in this thread when you have done so.`,
+• If you win the auction, record your DKP purchase in the records channel and announce in this thread when you have done so.
+• **Reply to the bidder you are raising so they receive a notification**.`,
     });
   }
 
@@ -77,8 +80,10 @@ ${this.itemList}
     return this.getThreadName();
   }
 
-  private get extraDescription() {
-    return this.getExtraDescription();
+  private get raidRules() {
+    return this.restrictToRaid
+      ? `\n• Bid only if you were present for the ${this.raid} raid.`
+      : "";
   }
 
   private get extraRules() {
@@ -115,6 +120,6 @@ ${this.itemList}
   }
 
   protected get name() {
-    return this.getOption(BaseSubcommandOption.Name)?.value;
+    return String(this.getOption(BaseSubcommandOption.Name)?.value);
   }
 }

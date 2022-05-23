@@ -1,43 +1,59 @@
 import {
+  ApplicationCommandOptionChoice,
   CacheType,
-  Collection,
   CommandInteraction,
   Message,
-  Role,
 } from "discord.js";
-import { auctionChannelId, raiderRoleId } from "../../config";
+import { auctionChannelId, bankerRoleId, raiderRoleId } from "../../config";
 import { Subcommand } from "../../shared/command/subcommand";
+import { requireInteractionMemberRole } from "../../shared/command/util";
+import { Item } from "../../shared/items";
 
-const EMBED_CHAR_LIMIT = 3000;
-const USER_ID_CHAR_SIZE = 18;
-const SPACE_CHAR_SIZE = 1;
-const BUFFER_CHAR_SIZE = 4;
-const USER_MENTION_CHAR_SIZE =
-  USER_ID_CHAR_SIZE + SPACE_CHAR_SIZE + BUFFER_CHAR_SIZE;
+const MESSAGE_CHAR_LIMIT = 1800;
 
 export enum BaseSubcommandOption {
   Name = "name",
   Count = "count",
+  Raid = "raid",
+  HeldBy = "heldby",
 }
 
 export abstract class BaseSubcommand extends Subcommand {
+  public async getOptionAutocomplete(
+    option: string
+  ): Promise<ApplicationCommandOptionChoice[] | undefined> {
+    switch (option) {
+      case BaseSubcommandOption.Name:
+        return await this.autocompleteName();
+      default:
+        return;
+    }
+  }
+
+  protected async autocompleteName() {
+    return this.itemsList.map(({ name, id }) => ({
+      name,
+      value: id,
+    }));
+  }
+
+  protected abstract get itemsList(): Item[];
+
   protected async getAuctionChannel(
     interaction: CommandInteraction<CacheType>
   ) {
     return await interaction.guild?.channels.fetch(auctionChannelId);
   }
 
-  protected async addRoleMembersToThread(
+  protected async addRaidersToThread(
     message: Message<boolean>,
-    interaction: CommandInteraction<CacheType>,
-    roles: Collection<string, Role>,
-    requireRaiders: boolean
+    interaction: CommandInteraction<CacheType>
   ) {
+    const roles = await this.getRaiderRole(interaction);
+
     const content = message.content;
     const everyone = await interaction.guild?.members.fetch();
-    const members = requireRaiders
-      ? everyone?.filter((m) => m.roles.cache.has(raiderRoleId))
-      : everyone;
+    const members = everyone?.filter((m) => m.roles.cache.has(raiderRoleId));
     const usersToAdd = members
       ?.filter((m) => m.roles.cache.has(raiderRoleId))
       .filter((m) => m.roles.cache.hasAny(...roles.map((r) => r.id)));
@@ -47,20 +63,49 @@ export abstract class BaseSubcommand extends Subcommand {
     }
 
     // Iteratively edit user mentions into the thread in batches that do
-    // not exceed the embed character limit.
-    const ids = usersToAdd.map((f) => f.id);
-    const batchSize = Math.floor(
-      EMBED_CHAR_LIMIT - content.length / USER_MENTION_CHAR_SIZE
-    );
-    for (let i = 0; i < ids.length; i += batchSize) {
-      await message.edit(`${content}
-${ids
-  .slice(i, i + batchSize)
-  .map((userId) => `<@${userId}>`)
-  .join(" ")}`);
+    // not exceed the message character limit.
+    const charBudget = MESSAGE_CHAR_LIMIT - content.length;
+    const names = usersToAdd.map((f) => ` @${f.displayName}`);
+    const ids = usersToAdd.map((f) => ` <@${f.id}>`);
+    let i = 0;
+    let extraContentNames = "";
+    let extraContentIds = "";
+    while (i < names.length) {
+      if (extraContentNames.length + names[i].length < charBudget) {
+        extraContentNames += names[i];
+        extraContentIds += ids[i];
+      } else {
+        await message.edit(`${content}${extraContentIds}`);
+        extraContentNames = names[i];
+        extraContentIds = ids[i];
+      }
+      i++;
     }
+
+    // Final add
+    await message.edit(`${content}${extraContentIds}`);
 
     // Edit the message back to normal
     await message.edit(content);
+  }
+
+  protected async authorize(interaction: CommandInteraction<CacheType>) {
+    const auctionChannel = await this.getAuctionChannel(interaction);
+    if (!auctionChannel?.isText()) {
+      throw new Error("The auction channel is not a text channel.");
+    }
+
+    requireInteractionMemberRole(bankerRoleId, interaction);
+
+    return auctionChannel;
+  }
+
+  private async getRaiderRole(interaction: CommandInteraction<CacheType>) {
+    const roles = await interaction.guild?.roles.fetch();
+    const raiderRole = roles?.filter((r) => r.id === raiderRoleId);
+    if (!raiderRole) {
+      throw new Error("Could not find the raider role.");
+    }
+    return raiderRole;
   }
 }

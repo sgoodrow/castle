@@ -1,21 +1,7 @@
-import {
-  ApplicationCommandOptionChoice,
-  CacheType,
-  CommandInteraction,
-} from "discord.js";
-import { bankerRoleId } from "../../config";
+import { CacheType, CommandInteraction } from "discord.js";
 import { SpellThreadBuilder } from "./spell-thread-builder";
-import { ForbiddenSpells } from "../../shared/forbidden-spells";
 import { BaseSubcommand, BaseSubcommandOption } from "./base-subcommand";
-import { requireInteractionMemberRole } from "../../shared/command/util";
-
-enum SpellOption {
-  Player = "player",
-  Level = "level",
-  ClassRole = "class",
-}
-
-export const Option = { ...SpellOption, ...BaseSubcommandOption };
+import { spellsList } from "../../shared/spells";
 
 class Spell extends BaseSubcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -23,82 +9,55 @@ class Spell extends BaseSubcommand {
 
     // send message to notify role
     const builder = new SpellThreadBuilder(this.name, interaction);
-    const message = await auctionChannel.send(
-      builder.classRole.map((r) => String(r)).join(" ")
-    );
+    const message = await auctionChannel.send(builder.options.name);
 
     // turn message into a thread
     const thread = await message.startThread(builder.options);
-    await message.edit(`${message.content} ${thread}`);
+    await message.edit(`${thread}`);
 
     // add auction message to thread
     const threadMessage = await thread.send(builder.message);
 
     // add members to thread
-    await this.addRoleMembersToThread(
-      threadMessage,
-      interaction,
-      builder.classRole,
-      false
-    );
-
+    await this.addRaidersToThread(threadMessage, interaction);
     await interaction.editReply(`Started spell auction thread: ${thread}`);
   }
 
   public get command() {
     return super.command
-      .addUserOption((o) =>
-        o
-          .setName(Option.Player)
-          .setDescription("The name of the player who requested the auction")
-          .setRequired(true)
-      )
       .addStringOption((o) =>
         o
-          .setName(Option.Name)
+          .setName(BaseSubcommandOption.Name)
           .setDescription("The name of the spell")
           .setAutocomplete(true)
           .setRequired(true)
       )
+      .addStringOption((o) =>
+        o
+          .setName(BaseSubcommandOption.Raid)
+          .setDescription("The raid to restrict bidders to")
+      )
+      .addUserOption((o) =>
+        o
+          .setName(BaseSubcommandOption.HeldBy)
+          .setDescription(
+            "The player holding the spell(s). If empty, spells(s) are assumed to be in the guild bank"
+          )
+      )
       .addIntegerOption((o) =>
         o
-          .setName(Option.Count)
+          .setName(BaseSubcommandOption.Count)
           .setMinValue(1)
-          .setDescription("The number of scrolls available")
+          .setDescription("The number of scrolls available. Defaults to 1")
       );
   }
 
-  public async getOptionAutocomplete(
-    option: string
-  ): Promise<ApplicationCommandOptionChoice[] | undefined> {
-    switch (option) {
-      case Option.Name:
-        return await this.autocompleteName();
-      default:
-        return;
-    }
-  }
-
-  private async autocompleteName() {
-    return ForbiddenSpells.map((spell) => ({
-      name: `[${spell.className}] ${spell.name} (${spell.level})`,
-      value: spell.name,
-    }));
-  }
-
-  private async authorize(interaction: CommandInteraction<CacheType>) {
-    const auctionChannel = await this.getAuctionChannel(interaction);
-    if (!auctionChannel?.isText()) {
-      throw new Error("The auction channel is not a text channel.");
-    }
-
-    requireInteractionMemberRole(bankerRoleId, interaction);
-
-    return auctionChannel;
+  protected get itemsList() {
+    return spellsList;
   }
 }
 
 export const spellSubcommand = new Spell(
   "spell",
-  "Creates a new Forbidden Spell auction thread."
+  "Creates a new spell auction thread."
 );
