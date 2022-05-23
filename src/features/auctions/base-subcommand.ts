@@ -67,35 +67,26 @@ export abstract class BaseSubcommand extends Subcommand {
     const names = usersToAdd.map((f) => ` @${f.displayName}`);
     const ids = usersToAdd.map((f) => ` <@${f.id}>`);
     let i = 0;
-    let contentNames = "";
-    let contentIds = "";
+
+    // Both the message sent (with IDs) and the message drawn (with display names) must
+    // be under 2000 characters (I think). Ensure it is.
+    let contentActual = "";
+    let contentSent = "";
     while (i < names.length) {
-      const size = Math.max(names[i].length, ids[i].length);
-      if (contentNames.length + size < MESSAGE_CHAR_LIMIT) {
-        console.log(
-          contentNames.length + size,
-          " less than ",
-          MESSAGE_CHAR_LIMIT
-        );
-        contentNames += names[i];
-        contentIds += ids[i];
-        console.log("added ", names[i], ids[i]);
+      const actual = names[i].length > ids[i].length ? names[i] : ids[i];
+      if (contentActual.length + actual.length < MESSAGE_CHAR_LIMIT) {
+        contentActual += actual;
+        contentSent += ids[i];
       } else {
-        console.log("would have exceeded limit");
-        console.log(`${contentIds}`);
-        console.log(`${contentIds}`.length);
-        await message.edit(`${contentIds}`);
-        contentNames = names[i];
-        contentIds = ids[i];
-        console.log("reset to ", contentNames, contentIds);
+        await message.edit(`${contentSent}`);
+        contentActual = actual;
+        contentSent = ids[i];
       }
       i++;
     }
 
     // Final add
-    console.log(`${contentIds}`.length);
-    console.log(`${contentIds}`);
-    await message.edit(`${contentIds}`);
+    await message.edit(`${contentSent}`);
 
     // Edit the message back to normal
     await message.edit(content);
