@@ -43,7 +43,7 @@ class Item extends BaseSubcommand {
         o
           .setName(BaseSubcommandOption.HeldBy)
           .setDescription(
-            "The player or character holding the item(s). If empty, item(s) are assumed to be in the guild bank"
+            "The player holding the item(s). If empty, item(s) are assumed to be in the guild bank"
           )
       )
       .addIntegerOption((o) =>

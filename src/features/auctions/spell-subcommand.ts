@@ -41,7 +41,7 @@ class Spell extends BaseSubcommand {
         o
           .setName(BaseSubcommandOption.HeldBy)
           .setDescription(
-            "The player or character holding the spell(s). If empty, spells(s) are assumed to be in the guild bank"
+            "The player holding the spell(s). If empty, spells(s) are assumed to be in the guild bank"
           )
       )
       .addIntegerOption((o) =>

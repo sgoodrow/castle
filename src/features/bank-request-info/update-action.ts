@@ -32,7 +32,6 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
           await this.getInstructionsEmbed(),
           ...(await this.getServicesEmbeds()),
           await this.getAvailabilityEmbed(),
-          await this.getTldrEmbed(),
         ],
         components: [await this.getButtons()],
       },
@@ -89,20 +88,14 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
 ${bankHour
   .map((a) => `• ${a.richLabel}`)
   .sort((a, b) => (a > b ? 1 : -1))
-  .join("\n")}`,
-      color: "PURPLE",
-    });
-  }
-
-  private async getTldrEmbed() {
-    return new MessageEmbed({
-      title: "⚠️ TL;DR",
-      description: `Make requests when you're available. Follow the instructions. Bankers will only process requests made in ${
+  .join(
+    "\n"
+  )}⚠️ **TL;DR** Make requests when you're available and follow the instructions. Bankers will only process requests made in ${
         this.channel
-      } (not PMs). Requests are deleted after processing (or if old or invalid).
+      } (not PMs).
 
 _last updated <t:${moment().unix()}:R>_`,
-      color: "ORANGE",
+      color: "PURPLE",
     });
   }
 

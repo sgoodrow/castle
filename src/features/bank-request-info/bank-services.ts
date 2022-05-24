@@ -18,6 +18,19 @@ export const services: Service[] = [
     ],
   },
   {
+    title: "Recharge Instructions",
+    icon: Icon.Sold,
+    requestFormats: ["Recharge: Item name"],
+    inventoryUrl: "https://tinyurl.com/castle-charge",
+    bullets: [
+      "_West Commons Inn_",
+      "Twice the item's buyback price",
+      "Leatherfoot Raiders Skullcap (180p)",
+      "Ring of Shadows (36p)",
+      "Various Items, see spreadsheet",
+    ],
+  },
+  {
     title: "Misc Item Spreadsheeet",
     icon: Icon.Sold,
     requestFormats: ["Misc item: Item name"],
