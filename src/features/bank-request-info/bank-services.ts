@@ -23,8 +23,7 @@ export const services: Service[] = [
     requestFormats: ["Recharge: Item name"],
     inventoryUrl: "https://tinyurl.com/castle-charge",
     bullets: [
-      "_West Commons Inn_",
-      "Twice the item's buyback price",
+      "_West Commons Lake, South Inn_",
       "Leatherfoot Raiders Skullcap (180p)",
       "Ring of Shadows (36p)",
       "Various Items, see spreadsheet",

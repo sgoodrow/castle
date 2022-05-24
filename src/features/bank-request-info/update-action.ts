@@ -55,11 +55,11 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
   private async getInstructionsEmbed() {
     return new MessageEmbed({
       title: "Instructions",
-      description: `Always be courteous and patient with your bankers. If you are willing to help staff the bank, please reach out to an officer.
+      description: `Always be courteous and patient with your bankers. Reach out to an officer if you want to help bank.
+• Use the ${Icon.Request} request format
 • Make bank requests when you are available and state how long you will be available.
-• If you are no longer available, please delete your request and repost it later.
-• Use the ${Icon.Request} request format`,
-      color: "RED",
+• Delete requests when you are no longer available.`,
+      color: "GREEN",
     });
   }
 
