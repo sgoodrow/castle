@@ -88,9 +88,8 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
 ${bankHour
   .map((a) => `• ${a.richLabel}`)
   .sort((a, b) => (a > b ? 1 : -1))
-  .join(
-    "\n"
-  )}⚠️ **TL;DR** Make requests when you're available and follow the instructions. Bankers will only process requests made in ${
+  .join("\n")}
+⚠️ **TL;DR** Make requests when you're available and follow the instructions. Bankers will only process requests made in ${
         this.channel
       } (not PMs).
 
