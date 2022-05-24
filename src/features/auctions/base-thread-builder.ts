@@ -49,7 +49,7 @@ export abstract class BaseThreadBuilder extends ThreadBuilder {
   }
 
   private get location() {
-    const user = this.getOption(BaseSubcommandOption.HeldBy)?.user;
+    const user = String(this.getOption(BaseSubcommandOption.HeldBy)?.value);
     if (user) {
       return this.count > 1
         ? `These items are on ${user}`

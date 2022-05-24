@@ -65,7 +65,7 @@ class GatehouseReactionAction extends ReactionAction {
     const garrison = this.roleIds.includes(garrisonRoleId);
 
     // send welcome message
-    let welcome = `Welcome to the Garrison, ${author}! Check out:`;
+    let welcome = `Welcome to the Garrison, ${author}! Check out these channels:`;
     if (green && garrison) {
       welcome += `\n• <#${inviteListChannelId}> (coordinate for an in-game invite)`;
     }

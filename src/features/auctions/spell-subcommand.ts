@@ -37,11 +37,11 @@ class Spell extends BaseSubcommand {
           .setName(BaseSubcommandOption.Raid)
           .setDescription("The raid to restrict bidders to")
       )
-      .addUserOption((o) =>
+      .addStringOption((o) =>
         o
           .setName(BaseSubcommandOption.HeldBy)
           .setDescription(
-            "The player holding the spell(s). If empty, spells(s) are assumed to be in the guild bank"
+            "The player or character holding the spell(s). If empty, spells(s) are assumed to be in the guild bank"
           )
       )
       .addIntegerOption((o) =>

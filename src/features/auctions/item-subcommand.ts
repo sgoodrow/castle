@@ -39,11 +39,11 @@ class Item extends BaseSubcommand {
             "The raid to restrict bidders to. Defaults to no restriction"
           )
       )
-      .addUserOption((o) =>
+      .addStringOption((o) =>
         o
           .setName(BaseSubcommandOption.HeldBy)
           .setDescription(
-            "The player holding the item(s). If empty, item(s) are assumed to be in the guild bank"
+            "The player or character holding the item(s). If empty, item(s) are assumed to be in the guild bank"
           )
       )
       .addIntegerOption((o) =>
