@@ -12,9 +12,7 @@ export const services: Service[] = [
       "Alligator Skin (200p)",
       "Blue Diamond (950p)",
       "Thin Boned Wand (100p)",
-      "Burnished Wooden Stave (100p)",
-      "~~Diamonds~~",
-      "~~Black Sapphires~~",
+      "~~Burnished Wooden Stave~~",
     ],
   },
   {
@@ -37,6 +35,8 @@ export const services: Service[] = [
     bullets: [
       "Leatherfoot Raiders Skullcap (500p _Rivervale Bank_)",
       "Puppet Strings Charge (1750p _The Overthere_)",
+      "Black Sapphire (500p _North Freeport Bank_)",
+      "Burnished Wooden Stave (400p _North Freeport Bank_)",
       "Various Items, see spreadsheet (80% market rate)",
     ],
   },

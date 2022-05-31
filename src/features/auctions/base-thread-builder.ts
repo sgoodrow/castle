@@ -41,7 +41,7 @@ export abstract class BaseThreadBuilder extends ThreadBuilder {
   }
 
   private get raid() {
-    const raid = String(this.getOption(BaseSubcommandOption.Raid)?.value);
+    const raid = this.getOption(BaseSubcommandOption.Raid)?.value as string;
     if (!raid) {
       return;
     }
@@ -49,7 +49,7 @@ export abstract class BaseThreadBuilder extends ThreadBuilder {
   }
 
   private get location() {
-    const user = String(this.getOption(BaseSubcommandOption.HeldBy)?.value);
+    const user = this.getOption(BaseSubcommandOption.HeldBy)?.value as string;
     if (user) {
       return this.count > 1
         ? `These items are on ${user}`
