@@ -1,12 +1,12 @@
 import { ButtonInteraction, CacheType, Permissions } from "discord.js";
-import { inviteListChannelId } from "../../config";
-import { dataSource } from "../../db/data-source";
-import { InviteSimple } from "../../db/invite-simple";
-import { ButtonCommand } from "../../shared/command/button-command";
+import { inviteListChannelId } from "src/shared/config";
+import { dataSource } from "src/db/data-source";
+import { InviteSimple } from "src/db/invite-simple";
+import { ButtonCommand } from "src/shared/command/button-command";
 import {
   getChannel,
   requireInteractionMemberPermission,
-} from "../../shared/command/util";
+} from "src/shared/command/util";
 
 class PingInviteListCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {

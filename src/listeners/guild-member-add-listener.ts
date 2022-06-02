@@ -1,5 +1,5 @@
 import { GuildMember } from "discord.js";
-import { gatehouseChannelId } from "../config";
+import { gatehouseChannelId } from "src/shared/config";
 
 export const guildMemberAddListener = async (member: GuildMember) => {
   const channel = member.guild.channels.cache.get(gatehouseChannelId);

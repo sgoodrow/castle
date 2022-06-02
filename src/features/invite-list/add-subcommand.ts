@@ -1,8 +1,8 @@
 import { CacheType, CommandInteraction } from "discord.js";
-import { dataSource } from "../../db/data-source";
+import { dataSource } from "src/db/data-source";
 import { updateInviteListInfo } from "./update-invite-action";
-import { Subcommand } from "../../shared/command/subcommand";
-import { InviteSimple } from "../../db/invite-simple";
+import { Subcommand } from "src/shared/command/subcommand";
+import { InviteSimple } from "src/db/invite-simple";
 import { checkInvite } from "./util";
 
 enum Option {

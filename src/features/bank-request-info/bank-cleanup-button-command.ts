@@ -1,10 +1,10 @@
 import { ButtonInteraction, CacheType, Message, User } from "discord.js";
-import { bankerRoleId, bankRequestsChannelId } from "../../config";
-import { ButtonCommand } from "../../shared/command/button-command";
+import { bankerRoleId, bankRequestsChannelId } from "src/shared/config";
+import { ButtonCommand } from "src/shared/command/button-command";
 import {
   getChannel,
   requireInteractionMemberRole,
-} from "../../shared/command/util";
+} from "src/shared/command/util";
 
 class BankCleanupCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {

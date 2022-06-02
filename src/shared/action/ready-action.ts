@@ -1,4 +1,4 @@
-import { Client } from "discord.js";
+import { Client, MessageActionRow, MessageEmbed } from "discord.js";
 
 export interface ReadyActionExecutorOptions {
   repeatDuration?: number;
@@ -25,4 +25,9 @@ export const readyActionExecutor = async (
 export abstract class ReadyAction {
   constructor(protected readonly client: Client) {}
   public abstract execute(): Promise<void>;
+}
+
+export interface MessageStartOrEditOptions {
+  embeds?: MessageEmbed[];
+  components?: MessageActionRow[];
 }

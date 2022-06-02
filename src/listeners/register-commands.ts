@@ -6,20 +6,20 @@ import {
   CacheType,
   CommandInteraction,
 } from "discord.js";
-import { clientId, guildId, token } from "../config";
-import { auctionCommand } from "../features/auctions/command";
-import { bankHourCommand } from "../features/bank-hours/command";
-import { bankCleanupButtonCommand } from "../features/bank-request-info/bankCleanupButtonCommand";
-import { bankingButtonCommand } from "../features/bank-request-info/bankingButtonCommand";
+import { clientId, guildId, token } from "src/shared/config";
+import { auctionCommand } from "src/features/auctions/command";
+import { bankHourCommand } from "src/features/bank-hours/command";
+import { bankCleanupButtonCommand } from "src/features/bank-request-info/bank-cleanup-button-command";
+import { bankingButtonCommand } from "src/features/bank-request-info/banking-button-command";
 import {
   addAltInviteButtonCommand,
   addPlayerInviteButtonCommand,
-} from "../features/invite-list/add-player-button-command";
-import { cleanupInvitesCommand } from "../features/invite-list/cleanup-invites-command";
-import { invitedCommand } from "../features/invite-list/command";
-import { pingInviteListButtonCommand } from "../features/invite-list/ping-invite-list-button-command";
-import { removePlayerInviteButtonCommand } from "../features/invite-list/remove-player-button-command";
-import { requestGuardApplicationButtonCommand } from "../features/invite-list/request-guard-application-button-command";
+} from "src/features/invite-list/add-player-button-command";
+import { cleanupInvitesCommand } from "src/features/invite-list/cleanup-invites-command";
+import { invitedCommand } from "src/features/invite-list/command";
+import { pingInviteListButtonCommand } from "src/features/invite-list/ping-invite-list-button-command";
+import { removePlayerInviteButtonCommand } from "src/features/invite-list/remove-player-button-command";
+import { requestGuardApplicationButtonCommand } from "src/features/invite-list/request-guard-application-button-command";
 
 const slashCommands = [bankHourCommand, auctionCommand, invitedCommand];
 
