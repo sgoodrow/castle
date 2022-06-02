@@ -7,7 +7,7 @@ import {
   garrisonRoleId,
   greenRoleId,
   visitorRoleId,
-} from "src/shared/config";
+} from "../../config";
 
 export enum Emoji {
   GreenCastle = "✅",

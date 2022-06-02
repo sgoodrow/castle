@@ -1,4 +1,4 @@
-import { Command } from "src/shared/command/command";
+import { Command } from "../../shared/command/command";
 import { addSubcommand } from "./add-subcommand";
 import { removeSubcommand } from "./remove-subcommand";
 

@@ -4,13 +4,13 @@ import {
   MessageButton,
   MessageEmbed,
 } from "discord.js";
-import { gatehouseChannelId, inviteListChannelId } from "src/shared/config";
-import { Name } from "src/db/instructions";
-import { InstructionsReadyAction } from "src/shared/action/instructions-ready-action";
+import { gatehouseChannelId, inviteListChannelId } from "../../config";
+import { Name } from "../../db/instructions";
+import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 import {
   readyActionExecutor,
   ReadyActionExecutorOptions,
-} from "src/shared/action/ready-action";
+} from "../../shared/action/ready-action";
 import { removeSubcommand } from "./remove-subcommand";
 import { invitedCommand } from "./command";
 import { requestGuardApplicationButtonCommand } from "./request-guard-application-button-command";

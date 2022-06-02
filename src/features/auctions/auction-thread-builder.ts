@@ -2,11 +2,11 @@ import { ThreadAutoArchiveDuration } from "discord-api-types/v9";
 import { range } from "lodash";
 import moment from "moment";
 import { Embed } from "@discordjs/builders";
-import { ThreadBuilder } from "src/shared/thread/thread-builder";
-import { Item } from "src/shared/items";
+import { ThreadBuilder } from "../../shared/thread/thread-builder";
+import { Item } from "../../shared/items";
 import { Option } from "./auction-subcommand";
-import { replaceAll } from "src/shared/string-util";
-import { dkpRecordsChannelId } from "src/shared/config";
+import { replaceAll } from "../../shared/string-util";
+import { dkpRecordsChannelId } from "../../config";
 import { CacheType, CommandInteraction } from "discord.js";
 
 export class AuctionThreadBuilder extends ThreadBuilder {
@@ -38,6 +38,10 @@ export class AuctionThreadBuilder extends ThreadBuilder {
       base += ` (${this.count})`;
     }
     return this.raid ? `${this.raid} - ${base}` : base;
+  }
+
+  protected getExtraRules() {
+    return "";
   }
 
   protected get restrictToRaid() {
@@ -72,7 +76,7 @@ export class AuctionThreadBuilder extends ThreadBuilder {
 
 ${this.itemList}
 
-**Rules:**${this.multiCountRules}${this.raidRules}
+**Rules:**${this.multiCountRules}${this.extraRules}${this.raidRules}
 • Bids in the last 12 hours extend the auction by 12 hours.
 • If you win the auction, record your DKP purchase in <#${dkpRecordsChannelId}> and announce in this thread when you have done so.
 • **Reply to the bidder you are raising so they receive a notification**.`,
@@ -87,6 +91,10 @@ ${this.itemList}
     return this.restrictToRaid
       ? `\n• Bid only if you were present for the ${this.raid} raid.`
       : `\n• This auction has no raid attendance requirements.`;
+  }
+
+  private get extraRules() {
+    return this.getExtraRules();
   }
 
   private get multiCountRules() {

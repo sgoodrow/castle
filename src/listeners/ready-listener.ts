@@ -1,7 +1,7 @@
 import { Client } from "discord.js";
-import { updateBankRequestInfo } from "src/features/bank-request-info/update-action";
-import { updateGuardInfo } from "src/features/invite-list/update-guard-action";
-import { updateInviteListInfo } from "src/features/invite-list/update-invite-action";
+import { updateBankRequestInfo } from "../features/bank-request-info/update-action";
+import { updateGuardInfo } from "../features/invite-list/update-guard-action";
+import { updateInviteListInfo } from "../features/invite-list/update-invite-action";
 
 const SECONDS = 1000;
 const MINUTES = 60 * SECONDS;

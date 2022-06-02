@@ -1,10 +1,11 @@
+import { CacheType, Guild, Interaction } from "discord.js";
 import {
   Column,
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Members } from "src/features/invite-list/update-invite-action";
+import { Members } from "../features/invite-list/update-invite-action";
 
 @Entity({})
 export class InviteSimple {

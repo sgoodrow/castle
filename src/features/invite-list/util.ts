@@ -1,5 +1,5 @@
-import { dataSource } from "src/db/data-source";
-import { InviteSimple } from "src/db/invite-simple";
+import { dataSource } from "../../db/data-source";
+import { InviteSimple } from "../../db/invite-simple";
 
 export const checkInvite = async (discordId: string) => {
   const invite = await dataSource

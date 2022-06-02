@@ -1,4 +1,4 @@
-import { Command } from "src/shared/command/command";
+import { Command } from "../../shared/command/command";
 import { itemSubcommand, spellSubcommand } from "./auction-subcommand";
 
 // Why are these commands split up? Because the available JSON data was split

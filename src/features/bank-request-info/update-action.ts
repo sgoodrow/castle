@@ -4,18 +4,19 @@ import {
   MessageButton,
   MessageEmbed,
 } from "discord.js";
-import { bankRequestsChannelId } from "src/shared/config";
-import { BankHour } from "src/db/bank-hour";
-import { dataSource } from "src/db/data-source";
-import { Name } from "src/db/instructions";
-import { InstructionsReadyAction } from "src/shared/action/instructions-ready-action";
+import moment from "moment";
+import { bankRequestsChannelId } from "../../config";
+import { BankHour } from "../../db/bank-hour";
+import { dataSource } from "../../db/data-source";
+import { Name } from "../../db/instructions";
+import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 import {
   readyActionExecutor,
   ReadyActionExecutorOptions,
-} from "src/shared/action/ready-action";
+} from "../../shared/action/ready-action";
 import { services } from "./bank-services";
-import { bankCleanupButtonCommand } from "./bank-cleanup-button-command";
-import { bankingButtonCommand } from "./banking-button-command";
+import { bankCleanupButtonCommand } from "./bankCleanupButtonCommand";
+import { bankingButtonCommand } from "./bankingButtonCommand";
 import { Icon } from "./types";
 
 export const updateBankRequestInfo = (

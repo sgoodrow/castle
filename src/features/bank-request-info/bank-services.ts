@@ -1,4 +1,4 @@
-import { auctionChannelId, jewelryChannelId } from "src/shared/config";
+import { auctionChannelId, jewelryChannelId } from "../../config";
 import { Icon, Service } from "./types";
 
 // todo: store this in database, populate and remove with command
