@@ -1,5 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
-import { Day, Days } from "../features/bank-request-info/types";
+import { Day, Days } from "@features/bank-request-info/types";
 
 @Entity()
 export class BankHour {

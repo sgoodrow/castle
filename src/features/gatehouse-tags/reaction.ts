@@ -12,11 +12,11 @@ import {
   inviteListChannelId,
   raiderEnlistmentChannelId,
   rolesChannelId,
-} from "../../config";
+} from "@shared/config";
 import {
   ReactionAction,
   reactionActionExecutor,
-} from "../../shared/action/reaction-action";
+} from "@shared/action/reaction-action";
 import { actionConfigByReaction, Emoji, ActionType } from "./config";
 
 export const tryGatehouseReactionAction = (

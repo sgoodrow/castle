@@ -1,5 +1,5 @@
 import {
-  ApplicationCommandOptionChoice,
+  ApplicationCommandOptionChoiceData,
   AutocompleteInteraction,
   CacheType,
   CommandInteraction,
@@ -27,7 +27,7 @@ export abstract class BaseCommand {
   public abstract getOptionAutocomplete(
     option: string,
     interaction: AutocompleteInteraction<CacheType>
-  ): Promise<ApplicationCommandOptionChoice[] | undefined>;
+  ): Promise<ApplicationCommandOptionChoiceData[] | undefined>;
 
   public abstract execute(
     interaction: CommandInteraction<CacheType>

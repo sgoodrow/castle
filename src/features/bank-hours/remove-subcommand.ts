@@ -3,12 +3,12 @@ import {
   CacheType,
   CommandInteraction,
 } from "discord.js";
-import { bankerRoleId } from "../../config";
-import { dataSource } from "../../db/data-source";
-import { updateBankRequestInfo } from "../bank-request-info/update-action";
-import { BankHour } from "../../db/bank-hour";
-import { Subcommand } from "../../shared/command/subcommand";
-import { requireInteractionMemberRole } from "../../shared/command/util";
+import { bankerRoleId } from "@shared/config";
+import { dataSource } from "@db/data-source";
+import { updateBankRequestInfo } from "@features/bank-request-info/update-action";
+import { BankHour } from "@db/bank-hour";
+import { Subcommand } from "@shared/command/subcommand";
+import { requireInteractionMemberRole } from "@shared/command/util";
 
 enum Option {
   BankHourID = "hourid",

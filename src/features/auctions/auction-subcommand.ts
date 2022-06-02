@@ -1,14 +1,14 @@
 import {
-  ApplicationCommandOptionChoice,
+  ApplicationCommandOptionChoiceData,
   CacheType,
   CommandInteraction,
   Message,
 } from "discord.js";
-import { auctionChannelId, bankerRoleId, raiderRoleId } from "../../config";
-import { Subcommand } from "../../shared/command/subcommand";
-import { requireInteractionMemberRole } from "../../shared/command/util";
-import { Item, itemsMap } from "../../shared/items";
-import { spellsMap } from "../../shared/spells";
+import { auctionChannelId, bankerRoleId, raiderRoleId } from "@shared/config";
+import { Subcommand } from "@shared/command/subcommand";
+import { requireInteractionMemberRole } from "@shared/command/util";
+import { Item, itemsMap } from "@shared/items";
+import { spellsMap } from "@shared/spells";
 import { AuctionThreadBuilder } from "./auction-thread-builder";
 
 const MESSAGE_CHAR_LIMIT = 1800;
@@ -82,7 +82,7 @@ export class AuctionSubcommand extends Subcommand {
 
   public async getOptionAutocomplete(
     option: string
-  ): Promise<ApplicationCommandOptionChoice[] | undefined> {
+  ): Promise<ApplicationCommandOptionChoiceData[] | undefined> {
     switch (option) {
       case Option.Name:
         return await this.autocompleteName();

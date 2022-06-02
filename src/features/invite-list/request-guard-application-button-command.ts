@@ -1,5 +1,5 @@
 import { ButtonInteraction, CacheType } from "discord.js";
-import { ButtonCommand } from "../../shared/command/button-command";
+import { ButtonCommand } from "@shared/command/button-command";
 
 class RequestGuardApplication extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {

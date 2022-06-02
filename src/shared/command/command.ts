@@ -6,7 +6,7 @@ import {
 import { BaseCommand } from "./base-command";
 import { Subcommand } from "./subcommand";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { commandSuffix } from "../../config";
+import { commandSuffix } from "@shared/config";
 
 export class Command extends BaseCommand {
   public readonly command: SlashCommandBuilder;

@@ -7,11 +7,11 @@ import {
   garrisonRoleId,
   greenRoleId,
   visitorRoleId,
-} from "../../config";
-import { dataSource } from "../../db/data-source";
-import { InviteSimple } from "../../db/invite-simple";
-import { ButtonCommand } from "../../shared/command/button-command";
-import { requireInteractionMemberPermission } from "../../shared/command/util";
+} from "@shared/config";
+import { dataSource } from "@db/data-source";
+import { InviteSimple } from "@db/invite-simple";
+import { ButtonCommand } from "@shared/command/button-command";
+import { requireInteractionMemberPermission } from "@shared/command/util";
 import { updateInviteListInfo } from "./update-invite-action";
 
 const SECONDS = 1000;

@@ -4,7 +4,7 @@ import {
   PartialUser,
   User,
 } from "discord.js";
-import { tryGatehouseReactionAction } from "../features/gatehouse-tags/reaction";
+import { tryGatehouseReactionAction } from "@features/gatehouse-tags/reaction";
 
 const reactionActions = [tryGatehouseReactionAction];
 

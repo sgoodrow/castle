@@ -1,15 +1,14 @@
 import {
   DiscordAPIError,
   DMChannel,
-  MessageOptions,
   NewsChannel,
   PartialDMChannel,
   TextChannel,
   ThreadChannel,
 } from "discord.js";
-import { dataSource } from "../../db/data-source";
-import { Instructions, Name } from "../../db/instructions";
-import { ReadyAction } from "./ready-action";
+import { dataSource } from "@db/data-source";
+import { Instructions, Name } from "@db/instructions";
+import { MessageStartOrEditOptions, ReadyAction } from "./ready-action";
 
 export abstract class InstructionsReadyAction extends ReadyAction {
   protected abstract get channel():
@@ -20,7 +19,7 @@ export abstract class InstructionsReadyAction extends ReadyAction {
     | ThreadChannel;
 
   protected async createOrUpdateInstructions(
-    options: MessageOptions,
+    options: MessageStartOrEditOptions,
     name: Name
   ) {
     const embed = await this.getEmbed(name);

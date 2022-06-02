@@ -1,5 +1,5 @@
 import { CacheType, CommandInteraction } from "discord.js";
-import { getOption } from "../command/subcommand";
+import { getOption } from "@shared/command/subcommand";
 
 export abstract class ThreadBuilder {
   public constructor(

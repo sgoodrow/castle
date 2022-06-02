@@ -1,7 +1,7 @@
 import { ButtonInteraction, CacheType } from "discord.js";
-import { dataSource } from "../../db/data-source";
-import { InviteSimple } from "../../db/invite-simple";
-import { ButtonCommand } from "../../shared/command/button-command";
+import { dataSource } from "@db/data-source";
+import { InviteSimple } from "@db/invite-simple";
+import { ButtonCommand } from "@shared/command/button-command";
 import { updateInviteListInfo } from "./update-invite-action";
 
 class RemovePlayerInvite extends ButtonCommand {

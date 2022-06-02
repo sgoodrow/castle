@@ -1,12 +1,12 @@
 import { Client, Intents } from "discord.js";
 import { interactionCreateListener } from "./listeners/interaction-create-listener";
-import { guildId, token } from "./config";
+import { guildId, token } from "./shared/config";
 import { readyListener } from "./listeners/ready-listener";
 import { messageReactionAddListener } from "./listeners/message-reaction-add-listener";
 import { registerSlashCommands } from "./listeners/register-commands";
 import { guildMemberAddListener } from "./listeners/guild-member-add-listener";
 
-export const client = new Client({
+const client = new Client({
   intents: [
     Intents.FLAGS.GUILDS,
     Intents.FLAGS.GUILD_MEMBERS,

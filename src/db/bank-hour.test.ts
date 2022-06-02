@@ -1,4 +1,4 @@
-import { Day } from "../features/bank-request-info/types";
+import { Day } from "@features/bank-request-info/types";
 import { BankHour } from "./bank-hour";
 
 jest.useFakeTimers().setSystemTime(new Date(Date.UTC(2020, 0))); // Wednesday
