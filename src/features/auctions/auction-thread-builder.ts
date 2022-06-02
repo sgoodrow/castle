@@ -4,10 +4,20 @@ import moment from "moment";
 import { Embed } from "@discordjs/builders";
 import { ThreadBuilder } from "../../shared/thread/thread-builder";
 import { Item } from "../../shared/items";
-import { BaseSubcommandOption } from "./base-subcommand";
+import { Option } from "./auction-subcommand";
 import { replaceAll } from "../../shared/string-util";
+import { dkpRecordsChannelId } from "../../config";
+import { CacheType, CommandInteraction } from "discord.js";
 
-export abstract class BaseThreadBuilder extends ThreadBuilder {
+export class AuctionThreadBuilder extends ThreadBuilder {
+  public constructor(
+    subcommandName: string,
+    interaction: CommandInteraction<CacheType>,
+    private readonly item: Item
+  ) {
+    super(subcommandName, interaction);
+  }
+
   public get options() {
     return {
       name: this.threadName,
@@ -21,8 +31,6 @@ export abstract class BaseThreadBuilder extends ThreadBuilder {
       embeds: [this.getEmbed()],
     };
   }
-
-  protected abstract getName(): Item;
 
   protected getThreadName() {
     let base = `${this.item.name}`;
@@ -41,7 +49,7 @@ export abstract class BaseThreadBuilder extends ThreadBuilder {
   }
 
   private get raid() {
-    const raid = this.getOption(BaseSubcommandOption.Raid)?.value as string;
+    const raid = this.getOption(Option.Raid)?.value as string;
     if (!raid) {
       return;
     }
@@ -49,7 +57,7 @@ export abstract class BaseThreadBuilder extends ThreadBuilder {
   }
 
   private get location() {
-    const user = this.getOption(BaseSubcommandOption.HeldBy)?.value as string;
+    const user = this.getOption(Option.HeldBy)?.value as string;
     if (user) {
       return this.count > 1
         ? `These items are on ${user}`
@@ -58,10 +66,6 @@ export abstract class BaseThreadBuilder extends ThreadBuilder {
     return this.count > 1
       ? "These items are in the guild bank"
       : "This item is in the guild bank";
-  }
-
-  private get item() {
-    return this.getName();
   }
 
   private getEmbed() {
@@ -74,7 +78,7 @@ ${this.itemList}
 
 **Rules:**${this.multiCountRules}${this.extraRules}${this.raidRules}
 • Bids in the last 12 hours extend the auction by 12 hours.
-• If you win the auction, record your DKP purchase in the records channel and announce in this thread when you have done so.
+• If you win the auction, record your DKP purchase in <#${dkpRecordsChannelId}> and announce in this thread when you have done so.
 • **Reply to the bidder you are raising so they receive a notification**.`,
     });
   }
@@ -86,7 +90,7 @@ ${this.itemList}
   private get raidRules() {
     return this.restrictToRaid
       ? `\n• Bid only if you were present for the ${this.raid} raid.`
-      : "";
+      : `\n• This auction has no raid attendance requirements.`;
   }
 
   private get extraRules() {
@@ -119,10 +123,10 @@ ${this.itemList}
   }
 
   protected get count() {
-    return Number(this.getOption(BaseSubcommandOption.Count)?.value) || 1;
+    return Number(this.getOption(Option.Count)?.value) || 1;
   }
 
   protected get name() {
-    return String(this.getOption(BaseSubcommandOption.Name)?.value);
+    return String(this.getOption(Option.Name)?.value);
   }
 }

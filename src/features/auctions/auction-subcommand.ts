@@ -7,45 +7,111 @@ import {
 import { auctionChannelId, bankerRoleId, raiderRoleId } from "../../config";
 import { Subcommand } from "../../shared/command/subcommand";
 import { requireInteractionMemberRole } from "../../shared/command/util";
-import { Item } from "../../shared/items";
+import { Item, itemsMap } from "../../shared/items";
+import { spellsMap } from "../../shared/spells";
+import { AuctionThreadBuilder } from "./auction-thread-builder";
 
 const MESSAGE_CHAR_LIMIT = 1800;
 
-export enum BaseSubcommandOption {
+export enum Option {
   Name = "name",
   Count = "count",
   Raid = "raid",
   HeldBy = "heldby",
 }
 
-export abstract class BaseSubcommand extends Subcommand {
+export class AuctionSubcommand extends Subcommand {
+  public constructor(
+    name: string,
+    description: string,
+    private readonly itemsMap: { [id: string]: Item }
+  ) {
+    super(name, description);
+  }
+
+  public async execute(interaction: CommandInteraction<CacheType>) {
+    const auctionChannel = await this.authorize(interaction);
+
+    // send message to notify roles
+    const item = this.lookupItem(interaction);
+    const builder = new AuctionThreadBuilder(this.name, interaction, item);
+    const message = await auctionChannel.send(builder.options.name);
+
+    // turn message into a thread
+    const thread = await message.startThread(builder.options);
+    await message.edit(`${thread}`);
+
+    // add auction message to thread
+    const threadMessage = await thread.send(builder.message);
+
+    // add members of role to thread
+    await this.addRaidersToThread(threadMessage, interaction);
+    await interaction.editReply(`Started auction thread: ${thread}`);
+  }
+
+  public get command() {
+    return super.command
+      .addStringOption((o) =>
+        o
+          .setName(Option.Name)
+          .setDescription("The name of the item")
+          .setAutocomplete(true)
+          .setRequired(true)
+      )
+      .addStringOption((o) =>
+        o
+          .setName(Option.Raid)
+          .setDescription(
+            "The raid to restrict bidders to. Defaults to no restriction"
+          )
+      )
+      .addStringOption((o) =>
+        o
+          .setName(Option.HeldBy)
+          .setDescription(
+            "The player holding the item(s). Defaults to assuming items are in the guild bank"
+          )
+      )
+      .addIntegerOption((o) =>
+        o
+          .setName(Option.Count)
+          .setMinValue(1)
+          .setDescription("The number of items available. Defaults to 1")
+      );
+  }
+
   public async getOptionAutocomplete(
     option: string
   ): Promise<ApplicationCommandOptionChoice[] | undefined> {
     switch (option) {
-      case BaseSubcommandOption.Name:
+      case Option.Name:
         return await this.autocompleteName();
       default:
         return;
     }
   }
 
-  protected async autocompleteName() {
-    return this.itemsList.map(({ name, id }) => ({
+  private lookupItem(interaction: CommandInteraction<CacheType>) {
+    const name = this.getOption(Option.Name, interaction)?.value as string;
+    const item = this.itemsMap[name];
+    if (!item) {
+      throw new Error(`Could not find item named ${name}`);
+    }
+    return item;
+  }
+
+  private async autocompleteName() {
+    return Object.values(this.itemsMap).map(({ name, id }) => ({
       name,
       value: id,
     }));
   }
 
-  protected abstract get itemsList(): Item[];
-
-  protected async getAuctionChannel(
-    interaction: CommandInteraction<CacheType>
-  ) {
+  private async getAuctionChannel(interaction: CommandInteraction<CacheType>) {
     return await interaction.guild?.channels.fetch(auctionChannelId);
   }
 
-  protected async addRaidersToThread(
+  private async addRaidersToThread(
     message: Message<boolean>,
     interaction: CommandInteraction<CacheType>
   ) {
@@ -92,7 +158,7 @@ export abstract class BaseSubcommand extends Subcommand {
     await message.edit(content);
   }
 
-  protected async authorize(interaction: CommandInteraction<CacheType>) {
+  private async authorize(interaction: CommandInteraction<CacheType>) {
     const auctionChannel = await this.getAuctionChannel(interaction);
     if (!auctionChannel?.isText()) {
       throw new Error("The auction channel is not a text channel.");
@@ -112,3 +178,15 @@ export abstract class BaseSubcommand extends Subcommand {
     return raiderRole;
   }
 }
+
+export const spellSubcommand = new AuctionSubcommand(
+  "spell",
+  "Creates a new spell auction thread.",
+  spellsMap
+);
+
+export const itemSubcommand = new AuctionSubcommand(
+  "item",
+  "Creates a new item DKP auction thread.",
+  itemsMap
+);

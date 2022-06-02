@@ -7,6 +7,7 @@ services:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
       POSTGRES_DB: castle
+      PGDATA: /tmp
     ports:
       - 5432:5432/tcp
     volumes:

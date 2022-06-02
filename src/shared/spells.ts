@@ -1485,4 +1485,3 @@ export const spellsData = {
 };
 
 export const spellsMap = mapFromData(spellsData, "Spell ");
-export const spellsList = Object.values(spellsMap);

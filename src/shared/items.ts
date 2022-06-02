@@ -10896,4 +10896,3 @@ export const mapFromData = (data: { [id: string]: string }, namePrefix = "") =>
   }, {} as { [id: string]: Item });
 
 export const itemsMap = mapFromData(itemsData);
-export const itemsList = Object.values(itemsMap);
