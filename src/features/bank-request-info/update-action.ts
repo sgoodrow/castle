@@ -4,7 +4,6 @@ import {
   MessageButton,
   MessageEmbed,
 } from "discord.js";
-import moment from "moment";
 import { bankRequestsChannelId } from "../../config";
 import { BankHour } from "../../db/bank-hour";
 import { dataSource } from "../../db/data-source";

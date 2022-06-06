@@ -18,6 +18,7 @@ export enum Option {
   Count = "count",
   Raid = "raid",
   HeldBy = "heldby",
+  RequireScribe = "requirescribe",
 }
 
 export class AuctionSubcommand extends Subcommand {
@@ -50,7 +51,7 @@ export class AuctionSubcommand extends Subcommand {
   }
 
   public get command() {
-    return super.command
+    const command = super.command
       .addStringOption((o) =>
         o
           .setName(Option.Name)
@@ -78,6 +79,16 @@ export class AuctionSubcommand extends Subcommand {
           .setMinValue(1)
           .setDescription("The number of items available. Defaults to 1")
       );
+    if (this.name === "spell") {
+      command.addBooleanOption((o) =>
+        o
+          .setName(Option.RequireScribe)
+          .setDescription(
+            "Add a rule that the bidders must be able to scribe the spell."
+          )
+      );
+    }
+    return command;
   }
 
   public async getOptionAutocomplete(

@@ -40,10 +40,6 @@ export class AuctionThreadBuilder extends ThreadBuilder {
     return this.raid ? `${this.raid} - ${base}` : base;
   }
 
-  protected getExtraRules() {
-    return "";
-  }
-
   protected get restrictToRaid() {
     return !!this.raid;
   }
@@ -76,7 +72,7 @@ export class AuctionThreadBuilder extends ThreadBuilder {
 
 ${this.itemList}
 
-**Rules:**${this.multiCountRules}${this.extraRules}${this.raidRules}
+**Rules:**${this.multiCountRules}${this.raidRules}${this.requireScribeRule}
 • Bids in the last 12 hours extend the auction by 12 hours.
 • If you win the auction, record your DKP purchase in <#${dkpRecordsChannelId}> and announce in this thread when you have done so.
 • **Reply to the bidder you are raising so they receive a notification**.`,
@@ -93,8 +89,8 @@ ${this.itemList}
       : `\n• This auction has no raid attendance requirements.`;
   }
 
-  private get extraRules() {
-    return this.getExtraRules();
+  private get requireScribeRule() {
+    return `\n• Bid only if you can scribe the spell.`;
   }
 
   private get multiCountRules() {

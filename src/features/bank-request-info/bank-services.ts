@@ -57,7 +57,7 @@ export const services: Service[] = [
     title: "Plane of Sky Spreadsheeet",
     icon: Icon.Sold,
     requestFormats: ["Sky item: Name (Mule name, Quantity available)"],
-    inventoryUrl: "https://tinyurl.com/castle-sky-items",
+    inventoryUrl: "https://tinyurl.com/castle-sky-bank",
     bullets: [
       "_East Freeport Docks_ (250p)",
       "You must have won the related DKP items",
