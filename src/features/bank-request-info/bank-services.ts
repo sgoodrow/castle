@@ -28,7 +28,7 @@ export const services: Service[] = [
   {
     title: "Misc Item Spreadsheeet",
     icon: Icon.Sold,
-    requestFormats: ["Misc item: Item name"],
+    requestFormats: ["Misc item: Item name (Mule name)"],
     inventoryUrl: "https://tinyurl.com/castle-misc-items",
     bullets: [
       "Leatherfoot Raiders Skullcap (500p _Rivervale Bank_)",
@@ -54,7 +54,7 @@ export const services: Service[] = [
   {
     title: "Plane of Sky Spreadsheeet",
     icon: Icon.Sold,
-    requestFormats: ["Sky item: Name (Mule name, Quantity available)"],
+    requestFormats: ["Sky: Item name (Mule name, Quantity available)"],
     inventoryUrl: "https://tinyurl.com/castle-sky-bank",
     bullets: [
       "_East Freeport Docks_ (250p)",
