@@ -43,11 +43,11 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
       new MessageButton()
         .setCustomId(bankingButtonCommand.customId)
         .setStyle("PRIMARY")
-        .setLabel("Banker Is In"),
+        .setLabel("Notify Bank Requesters"),
       new MessageButton()
         .setCustomId(bankCleanupButtonCommand.customId)
         .setStyle("DANGER")
-        .setLabel("Cleanup Old")
+        .setLabel("Remove Old Requests")
     );
   }
 
