@@ -8,11 +8,9 @@ export const services: Service[] = [
     icon: Icon.Bought,
     requestFormats: ["Bounty: Item name, Item count"],
     bullets: [
-      "_North Freeport Bank_",
-      "Alligator Skin (200p)",
-      "Blue Diamond (950p)",
-      "Thin Boned Wand (100p)",
-      "~~Burnished Wooden Stave~~",
+      "Alligator Skin (200p _Rivervale Bank_)",
+      "Blue Diamond (800p _North Freeport Bank_)",
+      "Thin Boned Wand (100p _North Freeport Bank_)",
     ],
   },
   {
@@ -37,7 +35,7 @@ export const services: Service[] = [
       "Puppet Strings Charge (1750p _The Overthere_)",
       "Black Sapphire (500p _North Freeport Bank_)",
       "Burnished Wooden Stave (400p _North Freeport Bank_)",
-      "Various Items, see spreadsheet (80% market rate)",
+      "Various Items, see spreadsheet (80% market rate, bags not for sale)",
     ],
   },
   {
