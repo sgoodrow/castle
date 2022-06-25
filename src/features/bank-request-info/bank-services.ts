@@ -10,7 +10,6 @@ export const services: Service[] = [
     bullets: [
       "Alligator Skin (200p _Rivervale Bank_)",
       "Blue Diamond (800p _North Freeport Bank_)",
-      "Thin Boned Wand (100p _North Freeport Bank_)",
     ],
   },
   {
