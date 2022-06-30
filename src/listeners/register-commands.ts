@@ -20,12 +20,16 @@ import { invitedCommand } from "../features/invite-list/command";
 import { pingInviteListButtonCommand } from "../features/invite-list/ping-invite-list-button-command";
 import { removePlayerInviteButtonCommand } from "../features/invite-list/remove-player-button-command";
 import { requestGuardApplicationButtonCommand } from "../features/invite-list/request-guard-application-button-command";
+import { craftingButtonCommand } from "../features/jewelry-request-info/craftingButtonCommand";
+import { jewelryCleanupButtonCommand } from "../features/jewelry-request-info/jewelryCleanupButtonCommand";
 
 const slashCommands = [bankHourCommand, auctionCommand, invitedCommand];
 
 const buttonCommands = [
   bankingButtonCommand,
   bankCleanupButtonCommand,
+  jewelryCleanupButtonCommand,
+  craftingButtonCommand,
   cleanupInvitesCommand,
   requestGuardApplicationButtonCommand,
   pingInviteListButtonCommand,

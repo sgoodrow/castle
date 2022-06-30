@@ -16,6 +16,10 @@ interface Config {
    */
   clientId: string;
   /**
+   * The Discord server's jeweler role ID.
+   */
+  jewelerRoleId: string;
+  /**
    * The Discord server's banker role ID.
    */
   bankerRoleId: string;
@@ -114,6 +118,7 @@ export const {
   token,
   guildId,
   clientId,
+  jewelerRoleId,
   bankerRoleId,
   raiderRoleId,
   garrisonRoleId,
