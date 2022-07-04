@@ -96,6 +96,7 @@ export const services: Service[] = [
       "Peridots (Clerics, Enchanters, Wizards with giant-bane nuke)",
       "Hate Stones (Wizards)",
       "Pearls (Mages)",
+      "Small Portal Fragments (Wizards)",
     ],
   },
 ];
