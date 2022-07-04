@@ -80,18 +80,20 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
 
   private async getAvailabilityEmbed() {
     const bankHour = await dataSource.getRepository(BankHour).findBy({});
-    return new MessageEmbed({
-      title: "🕐 Availability",
-      description: `Bankers may be available upon request, however they also hold regular hours. The start times are listed below (in your timezone).
+    const bankHourDescription = ` and during their listed banking hour. The start times are listed below (in your timezone):
 
 ${bankHour
   .map((a) => `• ${a.richLabel}`)
   .sort((a, b) => (a > b ? 1 : -1))
-  .join("\n")}
+  .join("\n")}`;
+    const description = `Bankers are available at their convenience${
+      bankHour.length ? bankHourDescription : "."
+    }`;
+    return new MessageEmbed({
+      title: "🕐 Availability",
+      description: `${description}
 
-⚠️ **TL;DR** Make requests when you're available and follow the instructions. Bankers will only process requests made in ${
-        this.channel
-      } (not PMs).`,
+⚠️ **TL;DR** Make requests when you're available and follow the instructions. Bankers will only process requests made in ${this.channel} (not PMs).`,
       color: "PURPLE",
     });
   }

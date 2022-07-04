@@ -1,4 +1,4 @@
-import { auctionChannelId, jewelryChannelId } from "../../config";
+import { auctionChannelId } from "../../config";
 import { Icon, Service } from "./types";
 
 // todo: store this in database, populate and remove with command
@@ -87,12 +87,15 @@ export const services: Service[] = [
     bullets: ["_North Freeport Bank_ (free)"],
   },
   {
-    title: "Resistance Jewelry",
-    icon: Icon.Sold,
-    requestFormats: ["Jewelry: Item name, Item quantity"],
+    title: "Raid Reagents",
+    icon: Icon.Jewelry,
+    requestFormats: ["Raid Reagents: Item name, Item count"],
     bullets: [
       "_North Freeport Bank_",
-      `Request in <#${jewelryChannelId}> (read pins)`,
+      "The following reagents are free **for raid purposes only**.",
+      "Peridots (Clerics, Enchanters, Wizards with giant-bane nuke)",
+      "Hate Stone (Wizards)",
+      "Pearl (Mages)",
     ],
   },
 ];
