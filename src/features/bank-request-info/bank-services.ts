@@ -94,8 +94,8 @@ export const services: Service[] = [
       "_North Freeport Bank_",
       "The following reagents are free **for raid purposes only**.",
       "Peridots (Clerics, Enchanters, Wizards with giant-bane nuke)",
-      "Hate Stone (Wizards)",
-      "Pearl (Mages)",
+      "Hate Stones (Wizards)",
+      "Pearls (Mages)",
     ],
   },
 ];
