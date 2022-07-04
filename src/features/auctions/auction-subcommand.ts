@@ -4,7 +4,7 @@ import {
   CommandInteraction,
   Message,
 } from "discord.js";
-import { auctionChannelId, bankerRoleId, raiderRoleId } from "../../config";
+import { auctionChannelId, raiderRoleId } from "../../config";
 import { Subcommand } from "../../shared/command/subcommand";
 import { requireInteractionMemberRole } from "../../shared/command/util";
 import { Item, itemsMap } from "../../shared/items";
@@ -175,7 +175,7 @@ export class AuctionSubcommand extends Subcommand {
       throw new Error("The auction channel is not a text channel.");
     }
 
-    requireInteractionMemberRole(bankerRoleId, interaction);
+    requireInteractionMemberRole(raiderRoleId, interaction);
 
     return auctionChannel;
   }
