@@ -91,7 +91,7 @@ export const services: Service[] = [
     icon: Icon.Jewelry,
     requestFormats: ["Raid Reagents: Item name, Item count"],
     bullets: [
-      "_North Freeport Bank_",
+      "_West Commonlands_",
       "The following reagents are free **for raid purposes only**.",
       "Peridots (Clerics, Enchanters, Wizards with giant-bane nuke)",
       "Hate Stones (Wizards)",
