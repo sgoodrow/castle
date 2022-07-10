@@ -77,7 +77,8 @@ class GatehouseReactionAction extends ReactionAction {
   }
 
   private async interview() {
-    await this.message.reply(`Would you agree to these rules?
+    await this.message
+      .reply(`If you verbally agree to these rules, the next available officer will give you Discord tags.
 
 **Castle Rules**:
 (1) no real-life politics or contentious real-life issues in guild chat

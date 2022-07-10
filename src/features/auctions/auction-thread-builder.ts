@@ -74,9 +74,13 @@ ${this.itemList}
 
 **Rules:**${this.multiCountRules}${this.raidRules}${this.requireScribeRule}
 • Bids in the last 12 hours extend the auction by 12 hours.
-• If you win the auction, record your DKP purchase in <#${dkpRecordsChannelId}> and announce in this thread when you have done so.
+• ${this.auctioneer} will announce the winner of the auction and record the DKP purchase in <#${dkpRecordsChannelId}>.
 • **Reply to the bidder you are raising so they receive a notification**.`,
     });
+  }
+
+  private get auctioneer() {
+    return this.interaction.user;
   }
 
   private get threadName() {
