@@ -94,7 +94,9 @@ ${this.itemList}
   }
 
   private get requireScribeRule() {
-    return `\n• Bid only if you can scribe the spell.`;
+    return this.requireScribe
+      ? `\n• Bid only if you can scribe the spell.`
+      : "";
   }
 
   private get multiCountRules() {
@@ -128,5 +130,9 @@ ${this.itemList}
 
   protected get name() {
     return String(this.getOption(Option.Name)?.value);
+  }
+
+  protected get requireScribe() {
+    return !!this.getOption(Option.RequireScribe)?.value;
   }
 }
