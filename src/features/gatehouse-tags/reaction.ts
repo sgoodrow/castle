@@ -90,7 +90,10 @@ class GatehouseReactionAction extends ReactionAction {
 
   private async instruct() {
     await this.message.reply(
-      `Please right-click your own name to set your nickname to your in-game name and tell us both your server and guild. Thanks!`
+      `Perform the [following 3 steps]:
+1. Set your nickname to your in-game name (right-click your own name to set it).
+2. Tell us your server (Blue or Green)
+3. Tell us your current guild (or none if you're joining)`
     );
   }
 
