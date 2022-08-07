@@ -34,6 +34,7 @@ export const services: Service[] = [
       "Puppet Strings Charge (1750p _The Overthere_)",
       "Black Sapphire (500p _North Freeport Bank_)",
       "Burnished Wooden Stave (400p _North Freeport Bank_)",
+      "Jade Reaver (1000p _North Freeport Bank_, must have VSR stone)",
       "Various Items, see spreadsheet (80% market rate, bags not for sale)",
     ],
   },
