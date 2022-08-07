@@ -56,8 +56,10 @@ export const services: Service[] = [
     requestFormats: ["Sky: Item name (Mule name, Quantity available)"],
     inventoryUrl: "https://tinyurl.com/castle-sky-bank",
     bullets: [
-      "_East Freeport Docks_ (250p)",
-      "You must have won the related DKP items",
+      "_East Freeport Docks_",
+      "**Droppables and non-DKP no-drops for quests** cost 250p each, must have already won the other required DKP items.",
+      `**Efreeti items**, when requested, will initiate a DKP auction in <#${auctionChannelId}>.`,
+      `**No-drops for quests that do not require Efreeti items**, when requested, will initiate a DKP auction in <#${auctionChannelId}>.`,
     ],
   },
   {
