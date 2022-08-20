@@ -51,10 +51,10 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
     return new MessageEmbed({
       title: "Frequently Asked Questions",
       description: `**Someone wants to join, what do I tell them?**
-Tell them to introduce themselves in our Discord (https://tinyurl.com/castle-discord) and ask for an interview.
+Tell them to introduce themselves in our Discord (https://tinyurl.com/castle-discord). A guard will give them a brief interview.
 
 **I need an invite in-game, how do I get one?**
-Post in this channel when you are available to meet up for an invite, and add yourself to the invite list using the buttons below so that a Guard or Officer can contact you in the future if they're not available now.
+Hit the button to add yourself to the invite list. A Guard or Officer will contact you in the future when they're doing invites in-game. After you get an invite, remove yourself from the list.
 
 **I'm on the invite list, now what?**
 A guard or officer will notify you in Discord when they are performing invites. If you do not get an invite within 2 weeks, you will be removed from the invite list and need to ask for Discord access again.`,
