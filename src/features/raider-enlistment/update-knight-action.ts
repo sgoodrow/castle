@@ -34,7 +34,7 @@ class UpdateKnightInfoAction extends InstructionsReadyAction {
   private async getApplication() {
     return new MessageEmbed({
       title: "Become a Knight",
-      description: `**What do Knights do?** Any of the following, and more!
+      description: `**What do Knights do?** Any of the following:
 • Lead raids
 • Support raid leaders
 • Assist in scheduling raids
