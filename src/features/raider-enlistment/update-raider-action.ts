@@ -38,11 +38,11 @@ class UpdateInfoAction extends InstructionsReadyAction {
 • Not PvP flagged
 
 📜 **Behaviors**
-1. **Be in raid voice.** Listen to raid leader instructions.
+1. **Be in raid voice.** Listen to raid leader instructions and do not argue with them. Only discuss the raid topics.
 2. **Wait for assist.** Use an "/assist Name" macro. Attack only when assist is called to allow tanks to position mobs and enchanters to drain mana to prevent gating/healing.
 3. **Arrive 15 minutes early.** Being late delays the raid.
 4. **Send tells for buffs, res's and ports.** Do not use /say, /gu, or voice. Sending a /tell allows people to use /rt to target and buff you.
-5. **Healers form groups.** Druids, clerics, and shamans pick up LFGs. Send them a tell saying "invited". Everyone else set /lfg on.
+5. **Healers form groups unless RL says otherwise.** Druids, clerics, and shamans pick up LFGs. Send them a tell saying "invited". Everyone else set /lfg on and accept invites.
 6. **Keep raid voice clear.** Voice is used by the pull team and raid leaders. Use text for everything you can.
 7. **Avoid being AFK.** Don't attend raids you can't be present for. For short AFKs (less than 5 minutes), type /afk and announce it in /say. If you have a critical role (main tank, assist, cleric), say it in voice chat. Make someone else your group leader.
 8. **Don't push mobs out of camp.** Melee should attack from the sides, not the back, so the tank stays near healers.
