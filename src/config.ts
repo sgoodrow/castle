@@ -28,6 +28,10 @@ interface Config {
    */
   raiderRoleId: string;
   /**
+   * The Discord server's reinforcements role ID.
+   */
+  reinforcementsRoleId: string;
+  /**
    * The Discord server's member permissions role ID.
    */
   garrisonRoleId: string;
@@ -121,6 +125,7 @@ export const {
   jewelerRoleId,
   bankerRoleId,
   raiderRoleId,
+  reinforcementsRoleId,
   garrisonRoleId,
   visitorRoleId,
   greenRoleId,

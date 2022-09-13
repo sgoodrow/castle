@@ -47,7 +47,7 @@ class UpdateGuardInfoAction extends InstructionsReadyAction {
 • If they want, run EXPeditions and other fun events.
 
 **How do I apply to be a Guard?**
-• Hit the "Request Guard Application" button below.
+• Hit the "Guard Application" button below and check your DMs.
 • If you've had positive interactions with 2-3 officers you're probably cleared to be a Guard.`,
     });
   }

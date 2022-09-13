@@ -22,6 +22,9 @@ import { removePlayerInviteButtonCommand } from "../features/invite-list/remove-
 import { requestGuardApplicationButtonCommand } from "../features/invite-list/request-guard-application-button-command";
 import { craftingButtonCommand } from "../features/jewelry-request-info/craftingButtonCommand";
 import { jewelryCleanupButtonCommand } from "../features/jewelry-request-info/jewelryCleanupButtonCommand";
+import { joinReinforcementsButtonCommand } from "../features/raider-enlistment/join-reinforcements-button-command";
+import { leaveReinforcementsButtonCommand } from "../features/raider-enlistment/leave-reinforcements-button-command";
+import { requestKnightApplicationButtonCommand } from "../features/raider-enlistment/request-knight-application-button-command";
 
 const slashCommands = [bankHourCommand, auctionCommand, invitedCommand];
 
@@ -31,9 +34,12 @@ const buttonCommands = [
   jewelryCleanupButtonCommand,
   craftingButtonCommand,
   cleanupInvitesCommand,
+  requestKnightApplicationButtonCommand,
   requestGuardApplicationButtonCommand,
   pingInviteListButtonCommand,
   addPlayerInviteButtonCommand,
+  joinReinforcementsButtonCommand,
+  leaveReinforcementsButtonCommand,
   addAltInviteButtonCommand,
   removePlayerInviteButtonCommand,
 ];

@@ -4,6 +4,9 @@ export enum Name {
   BankRequestInstructions = "bankRequestInstructions",
   JewelryRequestInstructions = "jewelryRequestInstructions",
   GuardInstructions = "guardInstructions",
+  KnightInstructions = "knightInstructions",
+  RaiderInstructions = "raiderInstructions",
+  ReinforcementsInstructions = "reinforcementsInstructions",
   InviteListInstructions = "inviteListInstructions",
 }
 
