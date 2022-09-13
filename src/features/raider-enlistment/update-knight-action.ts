@@ -34,12 +34,12 @@ class UpdateKnightInfoAction extends InstructionsReadyAction {
   private async getApplication() {
     return new MessageEmbed({
       title: "Become a Knight",
-      description: `**What do Knights do?**
+      description: `**What do Knights do?** Any of the following, and more!
 • Lead raids
 • Support raid leaders
 • Assist in scheduling raids
 • Restock raid reagents
-• Meditate and position COTH mages
+• Meditate, position and play COTH mages
 • Propose and enact raid policies
 • Train raiders and enforce raider behaviors
 

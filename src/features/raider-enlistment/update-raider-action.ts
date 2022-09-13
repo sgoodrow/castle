@@ -33,6 +33,7 @@ class UpdateInfoAction extends InstructionsReadyAction {
       title: `Join the Raid Force`,
       description: `📜 **Requirements**
 • Level 46.5+ for most raids; 55+ for raids beyond Siren's Grotto (52+ for Enchanters & Clerics)
+• Read and understand the Castle DKP rules (https://tinyurl.com/castle-dkp-rules)
 • Not raiding with any other guilds
 • Not PvP flagged
 
