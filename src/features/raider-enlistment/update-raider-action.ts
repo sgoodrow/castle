@@ -52,7 +52,7 @@ class UpdateInfoAction extends InstructionsReadyAction {
 ❓ **How do I join ${this.role}?**
 Send a message in this channel with the following information and a Knight will give you the role.
 
-1. Include a screenshot of your Castle- or alliance- tagged character with their name, guild and level visible.
+1. Include a screenshot of your Castle- or alliance- tagged character with their name, guild and level visible. Also include /time in the chat.
 2. Include a link to your CastleDKP.com raiding character profile.
 3. Confirm that you have read and will follow the raider requirements and behaviors.
 
