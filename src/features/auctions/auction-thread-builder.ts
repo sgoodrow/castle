@@ -27,7 +27,7 @@ export class AuctionThreadBuilder extends ThreadBuilder {
 
   public get message() {
     return {
-      content: `Ends ${this.endDifference} on ${this.endDate}.`,
+      content: `Initial auction duration ends ${this.endDifference} on ${this.endDate}.`,
       embeds: [this.getEmbed()],
     };
   }
@@ -73,7 +73,7 @@ export class AuctionThreadBuilder extends ThreadBuilder {
 ${this.itemList}
 
 **Rules:**${this.multiCountRules}${this.raidRules}${this.requireScribeRule}
-• Bids in the last 12 hours extend the auction by 12 hours.
+• The auction ends when nobody has bid for 12 consecutive hours and the auction has been open for at least 24.
 • ${this.auctioneer} will announce the winner of the auction and record the DKP purchase in <#${dkpRecordsChannelId}>.
 • **Reply to the bidder you are raising so they receive a notification**.`,
     });
