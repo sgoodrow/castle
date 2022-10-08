@@ -9,7 +9,7 @@ export const services: Service[] = [
     requestFormats: ["Bounty: Item name, Item count"],
     bullets: [
       "Alligator Skin (200p _Rivervale Bank_)",
-      "Blue Diamond (750p _North Freeport Bank_)",
+      "Blue Diamond (Market Rate _North Freeport Bank_)",
     ],
   },
   {
@@ -30,7 +30,7 @@ export const services: Service[] = [
     requestFormats: ["Misc item: Item name (Mule name)"],
     inventoryUrl: "https://tinyurl.com/castle-misc-items",
     bullets: [
-      "Leatherfoot Raiders Skullcap (500p _Rivervale Bank_)",
+      "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk OR 500p _Rivervale Bank_)",
       "Puppet Strings Charge (1750p _The Overthere_)",
       "Black Sapphire (500p _North Freeport Bank_)",
       "Burnished Wooden Stave (400p _North Freeport Bank_)",
