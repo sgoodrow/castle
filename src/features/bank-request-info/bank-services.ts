@@ -9,6 +9,7 @@ export const services: Service[] = [
     requestFormats: ["Bounty: Item name, Item count"],
     bullets: [
       "Alligator Skin (200p _Rivervale Bank_)",
+      "Polar Bear Skin (10p _Rivervale Bank_)",
       "Blue Diamond (Market Rate _North Freeport Bank_)",
       "Diamond (Market Rate _North Freeport Bank_)",
     ],
