@@ -60,6 +60,10 @@ interface Config {
    */
   blackLotusRoleId: string;
   /**
+   * The Discord server's Venerate ally role ID.
+   */
+  venerateRoleId: string;
+  /**
    * The Discord server's Calvary ally role ID.
    */
   calvaryRoleId: string;
@@ -133,6 +137,7 @@ export const {
   ancientBloodRoleId,
   freyasChariotRoleId,
   blackLotusRoleId,
+  venerateRoleId,
   calvaryRoleId,
   auctionChannelId,
   bankRequestsChannelId,
