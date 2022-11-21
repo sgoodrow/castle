@@ -10,8 +10,8 @@ export const services: Service[] = [
     bullets: [
       "Alligator Skin (200p _Rivervale Bank_)",
       "Polar Bear Skin (10p _Rivervale Bank_)",
-      "Blue Diamond (Market Rate _North Freeport Bank_)",
-      "Diamond (Market Rate _North Freeport Bank_)",
+      "Blue Diamond (Price on Jewelry Spreadsheet, _North Freeport Bank_)",
+      "Diamond (Price on Jewelry Spreadsheet, _North Freeport Bank_)",
     ],
   },
   {
@@ -23,6 +23,7 @@ export const services: Service[] = [
       "_West Commons Lake, South Inn_",
       "Leatherfoot Raiders Skullcap (180p)",
       "Ring of Shadows (36p)",
+      "Wort Potions (750p, scheduled events only)",
       "Various Items, see spreadsheet",
     ],
   },
