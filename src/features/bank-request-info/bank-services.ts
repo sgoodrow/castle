@@ -28,7 +28,7 @@ export const services: Service[] = [
     ],
   },
   {
-    title: "Misc Item Spreadsheeet",
+    title: "Misc Item Spreadsheet",
     icon: Icon.Sold,
     requestFormats: ["Misc item: Item name (Mule name)"],
     inventoryUrl: "https://tinyurl.com/castle-misc-items",
@@ -55,7 +55,7 @@ export const services: Service[] = [
     ],
   },
   {
-    title: "Plane of Sky Spreadsheeet",
+    title: "Plane of Sky Spreadsheet",
     icon: Icon.Sold,
     requestFormats: ["Sky: Item name (Mule name, Quantity available)"],
     inventoryUrl: "https://tinyurl.com/castle-sky-bank",
@@ -67,7 +67,7 @@ export const services: Service[] = [
     ],
   },
   {
-    title: "Dropped Spell Spreadsheeet",
+    title: "Dropped Spell Spreadsheet",
     icon: Icon.Sold,
     requestFormats: [
       "Dropped spell: Class, Level, Spell name (Mule name, Quantity available)",
