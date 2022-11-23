@@ -31,7 +31,7 @@ export const services: Service[] = [
     title: "Misc Item Spreadsheet",
     icon: Icon.Sold,
     requestFormats: ["Misc item: Item name (Mule name)"],
-    inventoryUrl: "https://tinyurl.com/castle-misc-items",
+    inventoryUrl: "https://tinyurl.com/castle-misc-list",
     bullets: [
       "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk OR 500p _Rivervale Bank_)",
       "Puppet Strings Charge (1750p _The Overthere_)",
