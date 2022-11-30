@@ -15,6 +15,19 @@ export const services: Service[] = [
     ],
   },
   {
+    title: "OT Hammer Event Scheduling",
+    icon: Icon.Sold,
+    requestFormats: ["OT Hammer Event", "OT Hammer Event: Date, Time (include timezone)"],
+    bullets: [
+      "Requires more people to facilitate, so this is a request to schedule an event",
+      "You bring a Jade and 1750pp (for Alliance members)",
+      "We provide CHA gear, Tash and Malo",
+      "No IOUs: Payment made in NFP (or thereabouts)",
+      "Default time: Thursday at noon EST",
+      "Non-alliance members: cost is a Jade and 1950pp (and we reserve the right to refuse service)",
+    ],
+  },
+  {
     title: "Recharge Instructions",
     icon: Icon.Sold,
     requestFormats: ["Recharge: Item name"],
