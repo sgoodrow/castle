@@ -22,7 +22,7 @@ export const services: Service[] = [
       "Requires more people to facilitate, so this is a request to schedule an event",
       "You bring a Jade and 1750pp (for Alliance members)",
       "We provide CHA gear, Tash and Malo",
-      "No IOUs: Payment made in NFP (or thereabouts)",
+      "No IOUs: Payment made in NFP or on-site",
       "Default time: Thursday at noon EST",
       "Non-alliance members: cost is a Jade and 1950pp (and we reserve the right to refuse service)",
     ],
