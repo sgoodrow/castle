@@ -60,10 +60,6 @@ interface Config {
    */
   blackLotusRoleId: string;
   /**
-   * The Discord server's Venerate ally role ID.
-   */
-  venerateRoleId: string;
-  /**
    * The Discord server's Calvary ally role ID.
    */
   calvaryRoleId: string;
@@ -92,9 +88,13 @@ interface Config {
    */
   gatehouseChannelId: string;
   /**
-   * The Discord server's invite channel ID.
+   * The Discord server's green invite channel ID.
    */
-  inviteListChannelId: string;
+  greenInviteListChannelId: string;
+  /**
+   * The Discord server's blue invite channel ID.
+   */
+  blueInviteListChannelId: string;
   /**
    * The Discord server's DKP records channel ID.
    */
@@ -137,7 +137,6 @@ export const {
   ancientBloodRoleId,
   freyasChariotRoleId,
   blackLotusRoleId,
-  venerateRoleId,
   calvaryRoleId,
   auctionChannelId,
   bankRequestsChannelId,
@@ -145,7 +144,8 @@ export const {
   rolesChannelId,
   raiderEnlistmentChannelId,
   gatehouseChannelId,
-  inviteListChannelId,
+  greenInviteListChannelId,
+  blueInviteListChannelId,
   dkpRecordsChannelId,
   commandSuffix,
   DATABASE_URL: databaseUrl,

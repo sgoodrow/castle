@@ -1,5 +1,5 @@
 import { ButtonInteraction, CacheType, Permissions } from "discord.js";
-import { inviteListChannelId } from "../../config";
+import { greenInviteListChannelId } from "../../config";
 import { dataSource } from "../../db/data-source";
 import { InviteSimple } from "../../db/invite-simple";
 import { ButtonCommand } from "../../shared/command/button-command";
@@ -11,7 +11,7 @@ import {
 class PingInviteListCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {
     const inviteListChannel = await getChannel(
-      inviteListChannelId,
+      greenInviteListChannelId,
       interaction
     );
     if (!inviteListChannel?.isText()) {

@@ -6,10 +6,12 @@ import {
   User,
 } from "discord.js";
 import {
+  blueRoleId,
   garrisonRoleId,
   gatehouseChannelId,
   greenRoleId,
-  inviteListChannelId,
+  greenInviteListChannelId,
+  blueInviteListChannelId,
   raiderEnlistmentChannelId,
   rolesChannelId,
 } from "../../config";
@@ -62,12 +64,33 @@ class GatehouseReactionAction extends ReactionAction {
 
     author.roles.add(this.roleIds);
     const green = this.roleIds.includes(greenRoleId);
+    const blue = this.roleIds.includes(blueRoleId);
     const garrison = this.roleIds.includes(garrisonRoleId);
 
     // send welcome message
     let welcome = `Welcome to the Garrison, ${author}! Check out these channels:`;
     if (green && garrison) {
-      welcome += `\n• Visit <#${inviteListChannelId}> (hit the "add self to invite list" button)`;
+      welcome += `\n• Visit <#${greenInviteListChannelId}> (hit the "add self to invite list" button)`;
+
+      this.message.author?.send({
+        content:
+          "Welcome to Castle! Please add assign yourself some class roles and add yourself to the invite list, a Guard or Officer will contact you soon.",
+        files: [
+          {
+            attachment:
+              "https://cdn.discordapp.com/attachments/567113199535652864/1049937688595283968/green-channels.png",
+            name: "roles-and-invite-list-channels.png",
+          },
+          {
+            attachment:
+              "https://cdn.discordapp.com/attachments/567113199535652864/1049937689073422396/invite-button.png",
+            name: "add-self-to-invite-list.png",
+          },
+        ],
+      });
+    }
+    if (blue && garrison) {
+      welcome += `\n• Visit <#${blueInviteListChannelId}>`;
     }
     welcome += `\n• Visit <#${rolesChannelId}> (set your class)`;
     if (green) {

@@ -4,7 +4,7 @@ import {
   MessageButton,
   MessageEmbed,
 } from "discord.js";
-import { gatehouseChannelId, inviteListChannelId } from "../../config";
+import { gatehouseChannelId, greenInviteListChannelId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 import {
@@ -85,6 +85,6 @@ class UpdateGuardInfoAction extends InstructionsReadyAction {
   }
 
   protected get channel() {
-    return this.getChannel(inviteListChannelId, "invite list");
+    return this.getChannel(greenInviteListChannelId, "invite list");
   }
 }

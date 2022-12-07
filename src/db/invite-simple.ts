@@ -1,4 +1,3 @@
-import { CacheType, Guild, Interaction } from "discord.js";
 import {
   Column,
   CreateDateColumn,

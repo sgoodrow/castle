@@ -6,7 +6,6 @@ import {
   freyasChariotRoleId,
   garrisonRoleId,
   greenRoleId,
-  venerateRoleId,
   visitorRoleId,
 } from "../../config";
 
@@ -15,7 +14,6 @@ export enum Emoji {
   GreenFreyasChariot = "🏹",
   GreenBlackLotus = "🎴",
   GreenAncientBlood = "🦎",
-  GreenVenerate = "🖖",
   BlueCastle = "☑️",
   BlueCalvary = "🐴",
   Interview = "❔",
@@ -56,11 +54,6 @@ const GreenBlackLotusTagAction: ReactionConfig = {
   action: ActionType.Tag,
 };
 
-const GreenVenerateTagAction: ReactionConfig = {
-  roles: [visitorRoleId, greenRoleId, venerateRoleId],
-  action: ActionType.Tag,
-};
-
 const BlueTagAction: ReactionConfig = {
   roles: [garrisonRoleId, blueRoleId],
   action: ActionType.Tag,
@@ -86,7 +79,6 @@ export const actionConfigByReaction: { [emoji: string]: ReactionConfig } = {
   [Emoji.GreenAncientBlood]: GreenAncientBloodTagAction,
   [Emoji.GreenFreyasChariot]: GreenFreyasCharriotTagAction,
   [Emoji.GreenBlackLotus]: GreenBlackLotusTagAction,
-  [Emoji.GreenVenerate]: GreenVenerateTagAction,
   [Emoji.BlueCastle]: BlueTagAction,
   [Emoji.BlueCalvary]: BlueCalvaryTagAction,
   [Emoji.Instruct]: InstructAction,
