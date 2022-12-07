@@ -51,6 +51,8 @@ Push the latest app to the test environment.
 yarn deploy
 ```
 
+This app may be offline to save credits.
+
 ### Release
 
 Push the latest app to the production environment.

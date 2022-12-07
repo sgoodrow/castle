@@ -17,14 +17,16 @@ export const services: Service[] = [
   {
     title: "OT Hammer Event Scheduling",
     icon: Icon.Sold,
-    requestFormats: ["OT Hammer Event", "OT Hammer Event: Date, Time (include timezone)"],
+    requestFormats: [
+      "OT Hammer Event",
+      "OT Hammer Event: Date, Time (include timezone)",
+    ],
     bullets: [
-      "Requires more people to facilitate, so this is a request to schedule an event",
-      "You bring a Jade and 1750pp (for Alliance members)",
-      "We provide CHA gear, Tash and Malo",
-      "No IOUs: Payment made in NFP or on-site",
-      "Default time: Thursday at noon EST",
-      "Non-alliance members: cost is a Jade and 1950pp (and we reserve the right to refuse service)",
+      "_The Overthere, Outpost_ (Thursday <t:1670518800:t>)",
+      "Bring 1 Jade and either 1750pp (members and allies) or 2500p (non-allies)",
+      "Payment may be delivered at _North Freeport Bank_ or _Hammer Hill_",
+      "Charisma gear, Tash and Malo will be provided",
+      "Requires more people to facilitate, so this is a request to schedule event",
     ],
   },
   {

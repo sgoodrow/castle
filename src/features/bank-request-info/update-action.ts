@@ -28,9 +28,8 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
     await this.createOrUpdateInstructions(
       {
         embeds: [
-          await this.getInstructionsEmbed(),
           ...(await this.getServicesEmbeds()),
-          await this.getAvailabilityEmbed(),
+          await this.getInstructionsEmbed(),
         ],
         components: [await this.getButtons()],
       },
@@ -51,17 +50,6 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
     );
   }
 
-  private async getInstructionsEmbed() {
-    return new MessageEmbed({
-      title: "Instructions",
-      description: `Always be courteous and patient with your bankers. Reach out to an officer if you want to help bank.
-• Use the ${Icon.Request} request format
-• Make bank requests when you are available and state how long you will be available.
-• Delete requests when you are no longer available.`,
-      color: "GREEN",
-    });
-  }
-
   private async getServicesEmbeds() {
     return services.map(
       ({ title, icon, requestFormats, inventoryUrl, bullets }) =>
@@ -78,7 +66,7 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
     );
   }
 
-  private async getAvailabilityEmbed() {
+  private async getInstructionsEmbed() {
     const bankHour = await dataSource.getRepository(BankHour).findBy({});
     const bankHourDescription = ` and during their listed banking hour. The start times are listed below (in your timezone):
 
@@ -86,15 +74,21 @@ ${bankHour
   .map((a) => `• ${a.richLabel}`)
   .sort((a, b) => (a > b ? 1 : -1))
   .join("\n")}`;
-    const description = `Bankers are available at their convenience${
+    const description = `Always be courteous and patient with your bankers.
+• Use the ${Icon.Request} request format
+• Make bank requests when you are available
+• State how long you will be available.
+• Delete requests when you are no longer available.
+• Reach out to an officer if you want to help bank.
+• Bankers will only process requests made in ${this.channel} (not PMs).
+
+    Bankers are available at their convenience${
       bankHour.length ? bankHourDescription : "."
     }`;
     return new MessageEmbed({
-      title: "🕐 Availability",
-      description: `${description}
-
-⚠️ **TL;DR** Make requests when you're available and follow the instructions. Bankers will only process requests made in ${this.channel} (not PMs).`,
-      color: "PURPLE",
+      title: "Instructions",
+      description,
+      color: "GREEN",
     });
   }
 
