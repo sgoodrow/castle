@@ -12,6 +12,8 @@ export const services: Service[] = [
       "Polar Bear Skin (10p _Rivervale Bank_)",
       "Blue Diamond (Price on Jewelry Spreadsheet, _North Freeport Bank_)",
       "Diamond (Price on Jewelry Spreadsheet, _North Freeport Bank_)",
+      "Singed Scrolls (50% of winning DKP bid)",
+      "Staff of Elemental Mastery (50% of winning DKP bid)",
     ],
   },
   {

@@ -82,6 +82,9 @@ ${bankHour
 • Reach out to an officer if you want to help bank.
 • Bankers will only process requests made in ${this.channel} (not PMs).
 
+**__Example Request:__**
+> Raid Reagents: Peridots, 40
+
     Bankers are available at their convenience${
       bankHour.length ? bankHourDescription : "."
     }`;
