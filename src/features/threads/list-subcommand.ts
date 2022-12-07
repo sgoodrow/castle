@@ -4,6 +4,12 @@ import { listThreadMembers } from "../../shared/command/util";
 
 class List extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
+    await interaction.channel?.fetch();
+
+    if (!interaction.channel) {
+      throw new Error(`Channel is falsy.`);
+    }
+
     if (!interaction.channel?.isThread()) {
       throw new Error(`Channel is not a thread.`);
     }

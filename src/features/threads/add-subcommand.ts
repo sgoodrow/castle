@@ -13,6 +13,12 @@ class Add extends Subcommand {
       throw new Error(`A Role ID is required.`);
     }
 
+    await interaction.channel?.fetch();
+
+    if (!interaction.channel) {
+      throw new Error(`Channel is falsy.`);
+    }
+
     if (!interaction.channel?.isThread()) {
       throw new Error(`Channel is not a thread.`);
     }
