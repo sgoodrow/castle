@@ -13,14 +13,14 @@ class Add extends Subcommand {
       throw new Error(`A Role ID is required.`);
     }
 
-    await interaction.channel?.fetch();
+    await interaction.guild?.channels.fetch(interaction.channelId);
 
     if (!interaction.channel) {
-      throw new Error(`Channel is falsy.`);
+      throw new Error(`Channel (${interaction.channelId}) is falsy.`);
     }
 
     if (!interaction.channel?.isThread()) {
-      throw new Error(`Channel is not a thread.`);
+      throw new Error(`Channel (${interaction.channelId}) is not a thread.`);
     }
 
     const message = await interaction.channel.send("Temporary message.");

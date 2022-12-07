@@ -108,12 +108,12 @@ export const listThreadMembers = async (
   let contentSent = "";
   while (i < names.length) {
     const actual = names[i].length > ids[i].length ? names[i] : ids[i];
-    if (contentActual.length + actual.length < MESSAGE_CHAR_LIMIT) {
+    if (contentActual.length + actual.length < MESSAGE_CHAR_LIMIT - 2) {
       contentActual += actual;
       contentSent += ids[i];
     } else {
       const message = await interaction.channel.send("Temporary message");
-      await message.edit(`${contentSent}`);
+      await message.edit(`\`${contentSent}\``);
       contentActual = actual;
       contentSent = ids[i];
     }
@@ -122,7 +122,7 @@ export const listThreadMembers = async (
 
   // Final add
   const message = await interaction.channel.send("Temporary message");
-  await message.edit(`${contentSent}`);
+  await message.edit(`\`${contentSent}\``);
 
   return names.length;
 };
