@@ -9,8 +9,8 @@ import {
 import { clientId, guildId, token } from "../config";
 import { auctionCommand } from "../features/auctions/command";
 import { bankHourCommand } from "../features/bank-hours/command";
-import { bankCleanupButtonCommand } from "../features/bank-request-info/bankCleanupButtonCommand";
-import { bankingButtonCommand } from "../features/bank-request-info/bankingButtonCommand";
+import { bankCleanupButtonCommand } from "../features/bank-request-info/bank-cleanup-button-command";
+import { bankingButtonCommand } from "../features/bank-request-info/banking-button-command";
 import {
   addAltInviteButtonCommand,
   addPlayerInviteButtonCommand,
@@ -20,8 +20,8 @@ import { invitedCommand } from "../features/invite-list/command";
 import { pingInviteListButtonCommand } from "../features/invite-list/ping-invite-list-button-command";
 import { removePlayerInviteButtonCommand } from "../features/invite-list/remove-player-button-command";
 import { requestGuardApplicationButtonCommand } from "../features/invite-list/request-guard-application-button-command";
-import { craftingButtonCommand } from "../features/jewelry-request-info/craftingButtonCommand";
-import { jewelryCleanupButtonCommand } from "../features/jewelry-request-info/jewelryCleanupButtonCommand";
+import { craftingButtonCommand } from "../features/jewelry-request-info/crafting-button-command";
+import { jewelryCleanupButtonCommand } from "../features/jewelry-request-info/jewelry-cleanup-button-command";
 import { joinReinforcementsButtonCommand } from "../features/raider-enlistment/join-reinforcements-button-command";
 import { leaveReinforcementsButtonCommand } from "../features/raider-enlistment/leave-reinforcements-button-command";
 import { requestKnightApplicationButtonCommand } from "../features/raider-enlistment/request-knight-application-button-command";

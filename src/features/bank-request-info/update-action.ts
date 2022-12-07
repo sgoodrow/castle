@@ -14,8 +14,8 @@ import {
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
 import { services } from "./bank-services";
-import { bankCleanupButtonCommand } from "./bankCleanupButtonCommand";
-import { bankingButtonCommand } from "./bankingButtonCommand";
+import { bankCleanupButtonCommand } from "./bank-cleanup-button-command";
+import { bankingButtonCommand } from "./banking-button-command";
 import { Icon } from "./types";
 
 export const updateBankRequestInfo = (

@@ -12,8 +12,8 @@ import {
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
 import { services } from "./jewelry-services";
-import { jewelryCleanupButtonCommand } from "./jewelryCleanupButtonCommand";
-import { craftingButtonCommand } from "./craftingButtonCommand";
+import { jewelryCleanupButtonCommand } from "./jewelry-cleanup-button-command";
+import { craftingButtonCommand } from "./crafting-button-command";
 import { Icon } from "../bank-request-info/types";
 
 export const updateJewelryRequestInfo = (
