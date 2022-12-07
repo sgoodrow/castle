@@ -2,16 +2,16 @@ import {
   ApplicationCommandOptionChoice,
   CacheType,
   CommandInteraction,
-  Message,
 } from "discord.js";
 import { auctionChannelId, raiderRoleId } from "../../config";
 import { Subcommand } from "../../shared/command/subcommand";
-import { requireInteractionMemberRole } from "../../shared/command/util";
+import {
+  addRoleToThread,
+  requireInteractionMemberRole,
+} from "../../shared/command/util";
 import { Item, itemsMap } from "../../shared/items";
 import { spellsMap } from "../../shared/spells";
 import { AuctionThreadBuilder } from "./auction-thread-builder";
-
-const MESSAGE_CHAR_LIMIT = 1800;
 
 export enum Option {
   Name = "name",
@@ -46,7 +46,7 @@ export class AuctionSubcommand extends Subcommand {
     const threadMessage = await thread.send(builder.message);
 
     // add members of role to thread
-    await this.addRaidersToThread(threadMessage, interaction);
+    await addRoleToThread(raiderRoleId, threadMessage, interaction);
     await interaction.editReply(`Started auction thread: ${thread}`);
   }
 
@@ -122,53 +122,6 @@ export class AuctionSubcommand extends Subcommand {
     return await interaction.guild?.channels.fetch(auctionChannelId);
   }
 
-  private async addRaidersToThread(
-    message: Message<boolean>,
-    interaction: CommandInteraction<CacheType>
-  ) {
-    const roles = await this.getRaiderRole(interaction);
-
-    const content = message.content;
-    const everyone = await interaction.guild?.members.fetch();
-    const members = everyone?.filter((m) => m.roles.cache.has(raiderRoleId));
-    const usersToAdd = members
-      ?.filter((m) => m.roles.cache.has(raiderRoleId))
-      .filter((m) => m.roles.cache.hasAny(...roles.map((r) => r.id)));
-
-    if (!usersToAdd) {
-      return;
-    }
-
-    // Iteratively edit user mentions into the thread in batches that do
-    // not exceed the message character limit.
-    const names = usersToAdd.map((f) => ` @${f.displayName}`);
-    const ids = usersToAdd.map((f) => ` <@${f.id}>`);
-    let i = 0;
-
-    // Both the message sent (with IDs) and the message drawn (with display names) must
-    // be under 2000 characters (I think). Ensure it is.
-    let contentActual = "";
-    let contentSent = "";
-    while (i < names.length) {
-      const actual = names[i].length > ids[i].length ? names[i] : ids[i];
-      if (contentActual.length + actual.length < MESSAGE_CHAR_LIMIT) {
-        contentActual += actual;
-        contentSent += ids[i];
-      } else {
-        await message.edit(`${contentSent}`);
-        contentActual = actual;
-        contentSent = ids[i];
-      }
-      i++;
-    }
-
-    // Final add
-    await message.edit(`${contentSent}`);
-
-    // Edit the message back to normal
-    await message.edit(content);
-  }
-
   private async authorize(interaction: CommandInteraction<CacheType>) {
     const auctionChannel = await this.getAuctionChannel(interaction);
     if (!auctionChannel?.isText()) {
@@ -178,15 +131,6 @@ export class AuctionSubcommand extends Subcommand {
     requireInteractionMemberRole(raiderRoleId, interaction);
 
     return auctionChannel;
-  }
-
-  private async getRaiderRole(interaction: CommandInteraction<CacheType>) {
-    const roles = await interaction.guild?.roles.fetch();
-    const raiderRole = roles?.filter((r) => r.id === raiderRoleId);
-    if (!raiderRole) {
-      throw new Error("Could not find the raider role.");
-    }
-    return raiderRole;
   }
 }
 
