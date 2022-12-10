@@ -4,11 +4,8 @@ import { greenRoleId, removedChannelId } from "../../config";
 export const guildMemberLeaveListener = async (
   member: GuildMember | PartialGuildMember
 ) => {
-  console.log("detected leaver");
-
   // Verify they're a green member
   if (!member.roles.cache.has(greenRoleId)) {
-    console.log("not green");
     return;
   }
 
@@ -20,8 +17,6 @@ export const guildMemberLeaveListener = async (
   const name = `**${member.displayName}** (<@${member.id}>) has left the Discord.`;
 
   // get info
-  member.roles.cache.map((r) => console.log(r.name));
-
   const roles = member.roles.cache
     .filter((r) => r.name !== "@everyone")
     .map((r) => `<@&${r.id}>`)
@@ -32,7 +27,7 @@ export const guildMemberLeaveListener = async (
   await message.edit(`${name}
 ${roles}`);
 
-  // turn message into a thread
+  // turn message into a threadgit pul
   await message.startThread({
     name: `${member.displayName}`,
     autoArchiveDuration: 60,

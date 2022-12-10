@@ -26,7 +26,6 @@ export const getMembers = async () => {
 };
 
 client.login(token);
-client.on("rateLimit", (d) => console.log(d));
 client.on("interactionCreate", interactionCreateListener);
 client.on("messageReactionAdd", messageReactionAddListener);
 client.on("ready", readyListener);
