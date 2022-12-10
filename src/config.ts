@@ -88,6 +88,10 @@ interface Config {
    */
   gatehouseChannelId: string;
   /**
+   * The Discord server's removed channel ID.
+   */
+  removedChannelId: string;
+  /**
    * The Discord server's green invite channel ID.
    */
   greenInviteListChannelId: string;
@@ -144,6 +148,7 @@ export const {
   rolesChannelId,
   raiderEnlistmentChannelId,
   gatehouseChannelId,
+  removedChannelId,
   greenInviteListChannelId,
   blueInviteListChannelId,
   dkpRecordsChannelId,

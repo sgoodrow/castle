@@ -4,7 +4,8 @@ import { guildId, token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
 import { messageReactionAddListener } from "./listeners/message-reaction-add-listener";
 import { registerSlashCommands } from "./listeners/register-commands";
-import { guildMemberAddListener } from "./listeners/guild-member-add-listener";
+import { guildMemberAddListener } from "./features/gatehouse/guild-member-add-listener";
+import { guildMemberLeaveListener } from "./features/removed/guild-member-leave-listener";
 
 export const client = new Client({
   intents: [
@@ -30,5 +31,6 @@ client.on("interactionCreate", interactionCreateListener);
 client.on("messageReactionAdd", messageReactionAddListener);
 client.on("ready", readyListener);
 client.on("guildMemberAdd", guildMemberAddListener);
+client.on("guildMemberRemove", guildMemberLeaveListener);
 
 registerSlashCommands();
