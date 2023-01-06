@@ -66,7 +66,7 @@ class Add extends Subcommand {
           .setChoices(dayChoices)
           .setRequired(true)
       )
-      .addIntegerOption((o) =>
+      .addNumberOption((o) =>
         o
           .setName(Option.Hour)
           .setMinValue(0)
@@ -89,5 +89,5 @@ class Add extends Subcommand {
 
 export const addSubcommand = new Add(
   "add",
-  "Creates a banker hour. Specify time in EST."
+  "Creates a banker hour. Specify time in UTC."
 );
