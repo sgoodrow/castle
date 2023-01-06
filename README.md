@@ -24,6 +24,16 @@ yarn install
 yarn dev
 ```
 
+### Migrations
+
+After mutating the TypeORM entities, you must generate a migration.
+
+```sh
+yarn typeorm migration:generate ./src/db/migrations/NAME
+```
+
+Migrations are run automatically when deployed to production.
+
 ## Deploy
 
 This bot is deployed to two environments with Heroku:

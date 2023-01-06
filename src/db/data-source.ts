@@ -13,6 +13,8 @@ export const dataSource = new DataSource({
   synchronize: true,
   logging: false,
   ssl: environment !== "local" ? ssl : false,
+  migrations: ['./migrations/*.ts'],
+  migrationsRun: environment !== "local",
 });
 
 dataSource

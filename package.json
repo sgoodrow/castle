@@ -15,7 +15,8 @@
     "test:ci": "jest",
     "build": "tsc",
     "deploy": "git push heroku-test main",
-    "release": "git push heroku-prod main"
+    "release": "git push heroku-prod main",
+    "typeorm": "typeorm-ts-node-commonjs -d ./src/db/data-source.ts"
   },
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
