@@ -6,12 +6,10 @@ import {
   User,
 } from "discord.js";
 import {
-  blueRoleId,
-  garrisonRoleId,
+  castleRoleId,
   gatehouseChannelId,
-  greenRoleId,
-  greenInviteListChannelId,
-  blueInviteListChannelId,
+  membersAndAlliesRoleId,
+  inviteListChannelId,
   raiderEnlistmentChannelId,
   rolesChannelId,
 } from "../../config";
@@ -19,6 +17,7 @@ import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../shared/action/reaction-action";
+import { greetingActivity } from "../gatehouse/guild-member-add-listener";
 import { actionConfigByReaction, Emoji, ActionType } from "./config";
 
 export const tryGatehouseReactionAction = (
@@ -63,14 +62,13 @@ class GatehouseReactionAction extends ReactionAction {
     }
 
     author.roles.add(this.roleIds);
-    const green = this.roleIds.includes(greenRoleId);
-    const blue = this.roleIds.includes(blueRoleId);
-    const garrison = this.roleIds.includes(garrisonRoleId);
+    const member = this.roleIds.includes(membersAndAlliesRoleId);
+    const castle = this.roleIds.includes(castleRoleId);
 
     // send welcome message
     let welcome = `Welcome to the Garrison, ${author}! Check out these channels:`;
-    if (green && garrison) {
-      welcome += `\n• Visit <#${greenInviteListChannelId}> (hit the "add self to invite list" button)`;
+    if (castle) {
+      welcome += `\n• Visit <#${inviteListChannelId}> (hit the "add self to invite list" button)`;
 
       this.message.author?.send({
         content:
@@ -89,11 +87,8 @@ class GatehouseReactionAction extends ReactionAction {
         ],
       });
     }
-    if (blue && garrison) {
-      welcome += `\n• Visit <#${blueInviteListChannelId}>`;
-    }
     welcome += `\n• Visit <#${rolesChannelId}> (set your class)`;
-    if (green) {
+    if (member) {
       welcome += `\n• Visit <#${raiderEnlistmentChannelId}> (join the raid force)`;
     }
     this.message.channel.send(welcome);
@@ -112,12 +107,7 @@ class GatehouseReactionAction extends ReactionAction {
   }
 
   private async instruct() {
-    await this.message.reply(
-      `Perform the [following 3 steps]:
-1. Set your nickname to your in-game name (right-click your own name to set it).
-2. Tell us your server (Blue or Green)
-3. Tell us your current guild (or none if you're joining)`
-    );
+    await this.message.reply(greetingActivity);
   }
 
   private get emoji() {

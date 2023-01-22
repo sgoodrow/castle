@@ -1,21 +1,22 @@
 import {
   ancientBloodRoleId,
   blackLotusRoleId,
-  blueRoleId,
-  calvaryRoleId,
   freyasChariotRoleId,
-  garrisonRoleId,
-  greenRoleId,
-  visitorRoleId,
+  castleRoleId,
+  membersAndAlliesRoleId,
+  competitorRoleId,
+  akatsukiRoleId,
 } from "../../config";
 
 export enum Emoji {
-  GreenCastle = "✅",
-  GreenFreyasChariot = "🏹",
-  GreenBlackLotus = "🎴",
-  GreenAncientBlood = "🦎",
-  BlueCastle = "☑️",
-  BlueCalvary = "🐴",
+  Castle = "✅",
+  CastleAlt1 = "🏰",
+  CastleAlt2 = "🏯",
+  FreyasChariot = "🏹",
+  BlackLotus = "🎴",
+  AncientBlood = "🦎",
+  Akatsuki = "☀️",
+  Competitor = "🏁",
   Interview = "❔",
   InterviewAlt = "❓",
   Instruct = "❗",
@@ -34,35 +35,36 @@ interface ReactionConfig {
 }
 
 // todo: refactor this to more generically associate an emoji with an action
-const GreenTagAction: ReactionConfig = {
-  roles: [garrisonRoleId, greenRoleId],
+const CastleTagAction: ReactionConfig = {
+  roles: [castleRoleId, membersAndAlliesRoleId],
   action: ActionType.Tag,
 };
 
-const GreenAncientBloodTagAction: ReactionConfig = {
-  roles: [visitorRoleId, greenRoleId, ancientBloodRoleId],
+const AncientBloodTagAction: ReactionConfig = {
+  roles: [membersAndAlliesRoleId, ancientBloodRoleId],
   action: ActionType.Tag,
 };
 
-const GreenFreyasCharriotTagAction: ReactionConfig = {
-  roles: [visitorRoleId, greenRoleId, freyasChariotRoleId],
+const FreyasCharriotTagAction: ReactionConfig = {
+  roles: [membersAndAlliesRoleId, freyasChariotRoleId],
   action: ActionType.Tag,
 };
 
-const GreenBlackLotusTagAction: ReactionConfig = {
-  roles: [visitorRoleId, greenRoleId, blackLotusRoleId],
+const BlackLotusTagAction: ReactionConfig = {
+  roles: [membersAndAlliesRoleId, blackLotusRoleId],
   action: ActionType.Tag,
 };
 
-const BlueTagAction: ReactionConfig = {
-  roles: [garrisonRoleId, blueRoleId],
+const AkatsukiTagAction: ReactionConfig = {
+  roles: [membersAndAlliesRoleId, akatsukiRoleId],
   action: ActionType.Tag,
 };
 
-const BlueCalvaryTagAction: ReactionConfig = {
-  roles: [visitorRoleId, calvaryRoleId],
+const CompetitorTagAction: ReactionConfig = {
+  roles: [membersAndAlliesRoleId, competitorRoleId],
   action: ActionType.Tag,
 };
+
 
 const InstructAction: ReactionConfig = {
   roles: [],
@@ -75,12 +77,14 @@ const InterviewAction: ReactionConfig = {
 };
 
 export const actionConfigByReaction: { [emoji: string]: ReactionConfig } = {
-  [Emoji.GreenCastle]: GreenTagAction,
-  [Emoji.GreenAncientBlood]: GreenAncientBloodTagAction,
-  [Emoji.GreenFreyasChariot]: GreenFreyasCharriotTagAction,
-  [Emoji.GreenBlackLotus]: GreenBlackLotusTagAction,
-  [Emoji.BlueCastle]: BlueTagAction,
-  [Emoji.BlueCalvary]: BlueCalvaryTagAction,
+  [Emoji.Castle]: CastleTagAction,
+  [Emoji.CastleAlt1]: CastleTagAction,
+  [Emoji.CastleAlt2]: CastleTagAction,
+  [Emoji.AncientBlood]: AncientBloodTagAction,
+  [Emoji.FreyasChariot]: FreyasCharriotTagAction,
+  [Emoji.BlackLotus]: BlackLotusTagAction,
+  [Emoji.Akatsuki]: AkatsukiTagAction,
+  [Emoji.Competitor]: CompetitorTagAction,
   [Emoji.Instruct]: InstructAction,
   [Emoji.InstructAlt]: InstructAction,
   [Emoji.Interview]: InterviewAction,

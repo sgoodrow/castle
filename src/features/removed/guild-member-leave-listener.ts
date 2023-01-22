@@ -1,11 +1,11 @@
 import { GuildMember, PartialGuildMember } from "discord.js";
-import { greenRoleId, removedChannelId } from "../../config";
+import { membersAndAlliesRoleId, removedChannelId } from "../../config";
 
 export const guildMemberLeaveListener = async (
   member: GuildMember | PartialGuildMember
 ) => {
-  // Verify they're a green member
-  if (!member.roles.cache.has(greenRoleId)) {
+  // Verify they're a member
+  if (!member.roles.cache.has(membersAndAlliesRoleId)) {
     return;
   }
 
