@@ -8,7 +8,7 @@ import {
   MessageEmbed,
 } from "discord.js";
 import { getMembers } from "../..";
-import { greenInviteListChannelId } from "../../config";
+import { inviteListChannelId } from "../../config";
 import { dataSource } from "../../db/data-source";
 import { Name } from "../../db/instructions";
 import { InviteSimple } from "../../db/invite-simple";
@@ -98,6 +98,6 @@ A guard or officer will notify you in Discord when they are performing invites. 
   }
 
   protected get channel() {
-    return this.getChannel(greenInviteListChannelId, "invite list");
+    return this.getChannel(inviteListChannelId, "invite list");
   }
 }

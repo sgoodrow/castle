@@ -6,7 +6,7 @@ class RequestGuardApplication extends ButtonCommand {
     interaction.user.send({
       content: `In <Castle>, leadership is a voluntary service with no compensation or special privileges. Guards are tasked with conducting guild invites and optionally running non-raid events. Guards may step down at any time.
 
-**How do I apply to be a Guard of <Castle> Green?**
+**How do I apply to be a Guard of <Castle>?**
 Send a Discord message to any officer with your answers to the following questions.
 
 **Guard Application**

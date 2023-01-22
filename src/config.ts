@@ -34,19 +34,15 @@ interface Config {
   /**
    * The Discord server's member permissions role ID.
    */
-  garrisonRoleId: string;
+  castleRoleId: string;
   /**
-   * The Discord server's visitor permissions role ID.
+   * The Discord server's channel access role ID.
    */
-  visitorRoleId: string;
+  membersAndAlliesRoleId: string;
   /**
-   * The Discord server's green channel access role ID.
+   * The Discord server's competitor role ID.
    */
-  greenRoleId: string;
-  /**
-   * The Discord server's blue channel access role ID.
-   */
-  blueRoleId: string;
+  competitorRoleId: string;
   /**
    * The Discord server's Ancient Blood ally role ID.
    */
@@ -60,9 +56,9 @@ interface Config {
    */
   blackLotusRoleId: string;
   /**
-   * The Discord server's Calvary ally role ID.
+   * The Discord server's Akatsuki ally role ID.
    */
-  calvaryRoleId: string;
+  akatsukiRoleId: string;
   /**
    * The Discord server's DKP auction channel ID.
    */
@@ -92,13 +88,9 @@ interface Config {
    */
   removedChannelId: string;
   /**
-   * The Discord server's green invite channel ID.
+   * The Discord server's invite channel ID.
    */
-  greenInviteListChannelId: string;
-  /**
-   * The Discord server's blue invite channel ID.
-   */
-  blueInviteListChannelId: string;
+  inviteListChannelId: string;
   /**
    * The Discord server's DKP records channel ID.
    */
@@ -134,14 +126,13 @@ export const {
   bankerRoleId,
   raiderRoleId,
   reinforcementsRoleId,
-  garrisonRoleId,
-  visitorRoleId,
-  greenRoleId,
-  blueRoleId,
+  castleRoleId,
+  membersAndAlliesRoleId,
+  competitorRoleId,
   ancientBloodRoleId,
   freyasChariotRoleId,
   blackLotusRoleId,
-  calvaryRoleId,
+  akatsukiRoleId,
   auctionChannelId,
   bankRequestsChannelId,
   jewelryChannelId,
@@ -149,8 +140,7 @@ export const {
   raiderEnlistmentChannelId,
   gatehouseChannelId,
   removedChannelId,
-  greenInviteListChannelId,
-  blueInviteListChannelId,
+  inviteListChannelId,
   dkpRecordsChannelId,
   commandSuffix,
   DATABASE_URL: databaseUrl,
