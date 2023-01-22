@@ -12,7 +12,7 @@ export class BankHour {
   @Column({ type: "enum", enum: Day })
   day!: Day;
 
-  @Column({ type: "real" })
+  @Column()
   hour!: number;
 
   public get richLabel() {
@@ -24,7 +24,7 @@ export class BankHour {
     const day = Days.indexOf(this.day) + 1;
     const d = new Date();
     d.setUTCDate(d.getUTCDate() + ((7 + day - d.getUTCDay()) % 7));
-    d.setUTCHours(Math.floor(this.hour), (this.hour % 1) * 60, 0, 0);
+    d.setUTCHours(this.hour, 0, 0, 0);
     if (d < new Date()) {
       d.setUTCDate(d.getUTCDate() + 7);
     }
