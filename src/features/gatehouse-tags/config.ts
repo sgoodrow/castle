@@ -36,7 +36,7 @@ interface ReactionConfig {
 
 // todo: refactor this to more generically associate an emoji with an action
 const CastleTagAction: ReactionConfig = {
-  roles: [castleRoleId, membersAndAlliesRoleId],
+  roles: [membersAndAlliesRoleId, castleRoleId],
   action: ActionType.Tag,
 };
 

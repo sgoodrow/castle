@@ -12,6 +12,7 @@ import {
   inviteListChannelId,
   raiderEnlistmentChannelId,
   rolesChannelId,
+  competitorRoleId,
 } from "../../config";
 import {
   ReactionAction,
@@ -62,8 +63,9 @@ class GatehouseReactionAction extends ReactionAction {
     }
 
     author.roles.add(this.roleIds);
-    const member = this.roleIds.includes(membersAndAlliesRoleId);
+    const memberOrAlly = this.roleIds.includes(membersAndAlliesRoleId);
     const castle = this.roleIds.includes(castleRoleId);
+    const competitor = this.roleIds.includes(competitorRoleId);
 
     // send welcome message
     let welcome = `Welcome to the Garrison, ${author}! Check out these channels:`;
@@ -88,7 +90,7 @@ class GatehouseReactionAction extends ReactionAction {
       });
     }
     welcome += `\n• Visit <#${rolesChannelId}> (set your class)`;
-    if (member) {
+    if (memberOrAlly && !competitor) {
       welcome += `\n• Visit <#${raiderEnlistmentChannelId}> (join the raid force)`;
     }
     this.message.channel.send(welcome);
