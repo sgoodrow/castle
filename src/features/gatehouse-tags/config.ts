@@ -61,7 +61,7 @@ const AkatsukiTagAction: ReactionConfig = {
 };
 
 const CompetitorTagAction: ReactionConfig = {
-  roles: [membersAndAlliesRoleId, competitorRoleId],
+  roles: [competitorRoleId],
   action: ActionType.Tag,
 };
 

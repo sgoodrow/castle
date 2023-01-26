@@ -8,7 +8,6 @@ import {
 import {
   castleRoleId,
   gatehouseChannelId,
-  membersAndAlliesRoleId,
   inviteListChannelId,
   raiderEnlistmentChannelId,
   rolesChannelId,
@@ -63,9 +62,12 @@ class GatehouseReactionAction extends ReactionAction {
     }
 
     author.roles.add(this.roleIds);
-    const memberOrAlly = this.roleIds.includes(membersAndAlliesRoleId);
+
+    if (this.roleIds.includes(competitorRoleId)) {
+      return this.message.channel.send(`Thanks for introducing yourself, ${author}! Unfortunately, we do not grant access to our private Discord channels to players who raid with other guilds. You're welcome to chat with us in our public channels, though -- don't be a stranger!`)
+    }
+
     const castle = this.roleIds.includes(castleRoleId);
-    const competitor = this.roleIds.includes(competitorRoleId);
 
     // send welcome message
     let welcome = `Welcome to the Garrison, ${author}! Check out these channels:`;
@@ -90,9 +92,7 @@ class GatehouseReactionAction extends ReactionAction {
       });
     }
     welcome += `\n• Visit <#${rolesChannelId}> (set your class)`;
-    if (memberOrAlly && !competitor) {
-      welcome += `\n• Visit <#${raiderEnlistmentChannelId}> (join the raid force)`;
-    }
+    welcome += `\n• Visit <#${raiderEnlistmentChannelId}> (join the raid force)`;
     this.message.channel.send(welcome);
   }
 
