@@ -68,7 +68,7 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
 
   private async getInstructionsEmbed() {
     const bankHour = await dataSource.getRepository(BankHour).findBy({});
-    const bankHourDescription = ` and during their listed banking hour. The start times are listed below (in your timezone):
+    const bankHourDescription = ` OR during their listed banking hour. The start times are listed below (in your timezone):
 
 ${bankHour
   .map((a) => `• ${a.richLabel}`)
@@ -85,7 +85,7 @@ ${bankHour
 **__Example Request:__**
 > Raid Reagents: Peridots, 40
 
-    Bankers are available at their convenience${
+Bankers are available EITHER at their convenience${
       bankHour.length ? bankHourDescription : "."
     }`;
     return new MessageEmbed({
