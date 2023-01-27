@@ -68,7 +68,7 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
 
   private async getInstructionsEmbed() {
     const bankHour = await dataSource.getRepository(BankHour).findBy({});
-    const bankHourDescription = ` OR during their listed banking hour. The start times are listed below (in your timezone):
+    const bankHourDescription = ` Additionally the following banker(s) have a set schedule on which they are also available (in your timezone):
 
 ${bankHour
   .map((a) => `• ${a.richLabel}`)
@@ -85,7 +85,7 @@ ${bankHour
 **__Example Request:__**
 > Raid Reagents: Peridots, 40
 
-Bankers are available EITHER at their convenience${
+We have many bankers that are available at their convenience throughout the day but do not have set banking hours.${
       bankHour.length ? bankHourDescription : "."
     }`;
     return new MessageEmbed({
