@@ -18,4 +18,5 @@ export const guildMemberAddListener = async (member: GuildMember) => {
 
 export const greetingActivity = `Do the following:
 1. Set your nickname to your in-game name (right-click your own name to set it).
-2. Tell us your current guild (or none if you're joining)`
+2. Tell us your current guild (or none if you're joining)
+3. Tell us what guild you raid (if any)`
