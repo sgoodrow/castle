@@ -64,7 +64,7 @@ class GatehouseReactionAction extends ReactionAction {
     author.roles.add(this.roleIds);
 
     if (this.roleIds.includes(competitorRoleId)) {
-      return this.message.channel.send(`Thanks for introducing yourself, ${author}! Unfortunately, we do not grant access to our private Discord channels to players who raid with other guilds. You're welcome to chat with us in our public channels, though -- don't be a stranger!`)
+      return this.message.channel.send(`Thanks for introducing yourself, ${author}! Unfortunately, we do not grant access to our private Discord channels to players who are not in Castle or an allied guild. You're welcome to chat with us in our public channels, though -- don't be a stranger!`)
     }
 
     const castle = this.roleIds.includes(castleRoleId);
