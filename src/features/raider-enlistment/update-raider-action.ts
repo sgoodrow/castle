@@ -53,7 +53,7 @@ class UpdateInfoAction extends InstructionsReadyAction {
 Send a message in this channel with the following information and a Knight will give you the role.
 
 1. Include a screenshot of your Castle- or alliance- tagged character with their name, guild and level visible. Also include /time in the chat.
-2. Include a link to your CastleDKP.com raiding character profile.
+2. Include a link to your CastleDKP.com raiding character profile (NOT the MyCharacters page).
 3. Say **"I have read and agree to follow the raider requirements and behaviors."**
 
 ❓ **What if I don't follow the required raider requirements or behaviors?**
