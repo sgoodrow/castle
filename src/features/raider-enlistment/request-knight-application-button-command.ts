@@ -6,7 +6,7 @@ class RequestKnightApplication extends ButtonCommand {
     interaction.user.send({
       content: `In <Castle>, leadership is a voluntary service with no compensation or special privileges. Knights are tasked with running, scheduling and supporting guild raids. Knights may step down at any time.
 
-**How do I apply to be a Knight of <Castle> Green?**
+**How do I apply to be a Knight of <Castle>?**
 Send a Discord message to any officer or knight with your answers to the following questions.
 
 **Knight Application**
