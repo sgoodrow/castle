@@ -9,10 +9,11 @@ export const services: Service[] = [
     requestFormats: ["Bounty: Item name, Item count"],
     bullets: [
       "Alligator Skin (200p _Rivervale Bank_)",
-      "Polar Bear Skin (10p _Rivervale Bank_)",
-      "Iceball (10p _Thurgadin Bank_)",
       "Blue Diamond (Price on Jewelry Spreadsheet, _North Freeport Bank_)",
       "Diamond (Price on Jewelry Spreadsheet, _North Freeport Bank_)",
+      "Iceball (10p _Thurgadin Bank_)",
+      "Polar Bear Skin (10p _Rivervale Bank_)",
+      "Scepter of the Forlorn (2 DKP, limit 2 per month)",
       "Singed Scrolls (50% of winning DKP bid)",
       "Staff of Elemental Mastery (50% of winning DKP bid)",
     ],
