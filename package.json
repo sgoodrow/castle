@@ -9,6 +9,7 @@
   "scripts": {
     "clean": "docker-compose down && rimraf postgres-db",
     "start": "ts-node .",
+    "build": "tsc",
     "predev": "docker-compose up -d --wait",
     "dev": "nodemon",
     "test": "jest --watch",

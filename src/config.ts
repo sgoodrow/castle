@@ -1,5 +1,6 @@
 export const {
   DATABASE_URL,
+  USER,
   token,
   clientId,
   commandSuffix,
@@ -26,9 +27,13 @@ export const {
   dkpRecordsChannelId,
 } = process.env as {
   /**
-   * [Optional] PostgreSQL DB connection URL. Defaults to local development DB.
+   * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
    */
   DATABASE_URL?: string;
+  /**
+   * [Optional] The deployment environment user.
+   */
+  USER?: string;
 
   /**
    * Discord bot OAuth2 token.

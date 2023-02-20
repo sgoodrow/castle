@@ -1,8 +1,10 @@
 import { DataSource } from "typeorm";
-import { DATABASE_URL } from "../config";
+import { DATABASE_URL, USER } from "../config";
 import { BankHour } from "./bank-hour";
 import { Instructions } from "./instructions";
 import { InviteSimple } from "./invite-simple";
+
+const ssl = { rejectUnauthorized: false };
 
 export const dataSource = new DataSource({
   url: DATABASE_URL || "postgresql://admin:password@localhost:5432/castle",
@@ -10,7 +12,7 @@ export const dataSource = new DataSource({
   entities: [BankHour, Instructions, InviteSimple],
   synchronize: true,
   logging: false,
-  ssl: false,
+  ssl: USER === "gitpod" ? false : ssl,
 });
 
 dataSource
