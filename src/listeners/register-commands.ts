@@ -19,12 +19,16 @@ import { cleanupInvitesCommand } from "../features/invite-list/cleanup-invites-c
 import { invitedCommand } from "../features/invite-list/command";
 import { pingInviteListButtonCommand } from "../features/invite-list/ping-invite-list-button-command";
 import { removePlayerInviteButtonCommand } from "../features/invite-list/remove-player-button-command";
-import { requestGuardApplicationButtonCommand } from "../features/invite-list/request-guard-application-button-command";
+import {
+  requestBankerApplicationButtonCommand,
+  requestGuardApplicationButtonCommand,
+  requestKnightApplicationButtonCommand,
+  requestOfficerApplicationButtonCommand,
+} from "../features/applications/request-application-button-commands";
 import { craftingButtonCommand } from "../features/jewelry-request-info/crafting-button-command";
 import { jewelryCleanupButtonCommand } from "../features/jewelry-request-info/jewelry-cleanup-button-command";
 import { joinReinforcementsButtonCommand } from "../features/raider-enlistment/join-reinforcements-button-command";
 import { leaveReinforcementsButtonCommand } from "../features/raider-enlistment/leave-reinforcements-button-command";
-import { requestKnightApplicationButtonCommand } from "../features/raider-enlistment/request-knight-application-button-command";
 import { threadUtilCommand } from "../features/threads/command";
 
 const slashCommands = [
@@ -40,8 +44,10 @@ const buttonCommands = [
   jewelryCleanupButtonCommand,
   craftingButtonCommand,
   cleanupInvitesCommand,
-  requestKnightApplicationButtonCommand,
+  requestOfficerApplicationButtonCommand,
   requestGuardApplicationButtonCommand,
+  requestKnightApplicationButtonCommand,
+  requestBankerApplicationButtonCommand,
   pingInviteListButtonCommand,
   addPlayerInviteButtonCommand,
   joinReinforcementsButtonCommand,
