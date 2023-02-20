@@ -12,10 +12,7 @@
     "predev": "docker-compose up -d --wait",
     "dev": "nodemon",
     "test": "jest --watch",
-    "test:ci": "jest",
-    "build": "tsc",
-    "deploy": "git push heroku-test main",
-    "release": "git push heroku-prod main"
+    "test:ci": "jest"
   },
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
@@ -24,7 +21,6 @@
     "@types/pg": "^8.6.5",
     "discord-api-types": "^0.31.1",
     "discord.js": "^13.6.0",
-    "dotenv": "^16.0.0",
     "jest": "^27.5.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.2",

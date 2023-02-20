@@ -16,7 +16,7 @@ export class Command extends BaseCommand {
     description: string,
     private readonly _subcommands: Subcommand[]
   ) {
-    super(`${name}${commandSuffix ? commandSuffix : ""}`, description);
+    super(`${name}${commandSuffix || ''}`, description);
     this.command = new SlashCommandBuilder()
       .setName(this.name)
       .setDescription(this.description);

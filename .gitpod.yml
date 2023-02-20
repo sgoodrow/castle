@@ -1,0 +1,36 @@
+tasks:
+  - init: yarn install
+    env:
+      # Pumped's test server
+      guildId: "954825353392709682"
+
+      # Roles
+      jewelerRoleId: "991929666308943972"
+      bankerRoleId: "965410465402462249"
+      raiderRoleId: "966958386660909116"
+      reinforcementsRoleId: "966958386660909116"
+      castleRoleId: "967282282656313377"
+      membersAndAlliesRoleId: "967282250771226624"
+      competitorRoleId: "1077051663849889816"
+      ancientBloodRoleId: "967288751325872168"
+      freyasChariotRoleId: "967288791092051989"
+      blackLotusRoleId: "1077053390896517271"
+      akatsukiRoleId: "1077053438891925514"
+
+      # Channels
+      auctionChannelId: "965137311929094154"
+      bankRequestsChannelId: "965842541431885874"
+      jewelryChannelId: "991929564613840927"
+      rolesChannelId: "970450382209810454"
+      raiderEnlistmentChannelId: "1049922085608243272"
+      gatehouseChannelId: "967276165276520448"
+      removedChannelId: "1077053969114861640"
+      inviteListChannelId: "967640348274860043"
+      dkpRecordsChannelId: "1077054041017823303"
+    command: yarn dev
+
+vscode:
+  extensions:
+    - ms-vscode.vscode-typescript-next
+    - dbaeumer.vscode-eslint
+    - esbenp.prettier-vscode

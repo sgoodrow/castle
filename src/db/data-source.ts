@@ -1,18 +1,16 @@
 import { DataSource } from "typeorm";
-import { databaseUrl, environment } from "../config";
+import { DATABASE_URL } from "../config";
 import { BankHour } from "./bank-hour";
 import { Instructions } from "./instructions";
 import { InviteSimple } from "./invite-simple";
 
-const ssl = { rejectUnauthorized: false };
-
 export const dataSource = new DataSource({
-  url: databaseUrl,
+  url: DATABASE_URL || "postgresql://admin:password@localhost:5432/castle",
   type: "postgres",
   entities: [BankHour, Instructions, InviteSimple],
   synchronize: true,
   logging: false,
-  ssl: environment !== "local" ? ssl : false,
+  ssl: false,
 });
 
 dataSource

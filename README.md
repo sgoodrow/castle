@@ -1,62 +1,32 @@
-# Castle Discord Bot [![CI](https://github.com/sgoodrow/castle/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/sgoodrow/castle/actions/workflows/test.yml)
+# Castle Discord Bot [![CI](https://github.com/sgoodrow/castle/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/sgoodrow/castle/actions/workflows/test.yml) [![Release](https://github.com/sgoodrow/castle/actions/workflows/release.yml/badge.svg)](https://github.com/sgoodrow/castle/actions/workflows/release.yml)
+
 
 ## Develop
 
-### Requirements
+The codebase is written in TypeScript and uses the `discord.js` package.
 
-1. docker
-2. docker-compose@2
-3. yarn
-4. git
-5. heroku
+Development typically happens in a [Gitpod](https://www.gitpod.io/)-provisioned environment against a Discord test server that has the [appropriate channels and roles set up](./src/config.ts). You can probably use Pumped's test server, just ask him.
 
-### Discord Setup
+### Use the shared bot
+1. Join Pumped's test server.
+2. Use the [pinned link](https://discord.com/channels/954825353392709682/954825353392709685/966541314063745105) in `#general` to spin up a workspace using the shared development bot.
 
-To develop or deploy, you will need a Discord application, bot, and test server.
+> Only one developer can use it at a time.
 
-1. Follow Discord's [Developer Portal - Getting Started](https://discord.com/developers/docs/getting-started) guide to provision and connect a development bot to a test server.
-2. Set the local environment variables described in [`./src/config.ts`](src/config.ts). If you are using Pumped's Test Server, many of the channel and role IDs are pinned in #general.
+### Use your own bot
 
-### Run
+1. Join Pumped's test server and ask to be an admin.
+2. [Create a bot with administrator permissions](https://discord.com/developers/docs/getting-started) and invite it to Pumped's test server.
+3. Generate an [OAuth2 token and client ID](https://www.writebots.com/discord-bot-token/).
+4. Create [Gitpod variables](https://gitpod.io/user/variables) for them labeled `token` and `clientID`.
+5. Then, [click here to open a Gitpod](https://gitpod.io/#https://github.com/sgoodrow/castle).
 
-```sh
-yarn install
-yarn dev
-```
+> Multiple developers can run development bots at the same time, however you should set a variable named `commandSuffix` to a short unique value so your Discord commands do not conflict.
 
-## Deploy
+## Release
 
-This bot is deployed to two environments with Heroku:
+This bot is [deployed to Heroku](https://dashboard.heroku.com/apps/castle-banker-bot-prod/settings).
 
-- [castle-banker-bot-test](https://dashboard.heroku.com/apps/castle-banker-bot-test/settings) - Pumped's test server
-- [castle-banker-bot-prod](https://dashboard.heroku.com/apps/castle-banker-bot-prod/settings) - Castle's server
+Successful merge into `main` will automatically deploy into production using the [Release](https://github.com/sgoodrow/castle/actions/workflows/release.yml) GitHub action.
 
-To deploy to these environments, you will need to be a member of the Heroku app.
-
-```sh
-# Connect git to test environment
-heroku git:remote -a castle-banker-bot-test
-git remote rename heroku heroku-test
-
-# Connect git to prod environment
-heroku git:remote -a castle-banker-bot-prod
-git remote rename heroku heroku-prod
-```
-
-### UAT
-
-Push the latest app to the test environment.
-
-```sh
-yarn deploy
-```
-
-This app may be offline to save credits.
-
-### Release
-
-Push the latest app to the production environment.
-
-```sh
-yarn release
-```
+If an issue occurs, revert or branch off the last known working commit and manually run the action on that branch.
