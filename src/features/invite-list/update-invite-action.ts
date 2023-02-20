@@ -25,6 +25,8 @@ import { sortInvites } from "./util";
 import { invitedCommand } from "./command";
 import { addSubcommand } from "./add-subcommand";
 import { removeSubcommand } from "./remove-subcommand";
+import { pingInviteListButtonCommand } from "./ping-invite-list-button-command";
+import { cleanupInvitesCommand } from "./cleanup-invites-command";
 
 export const updateInviteListInfo = (
   client: Client,
@@ -39,8 +41,8 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
     await this.createOrUpdateInstructions(
       {
         embeds: [
-          await this.getCommandInstructions(),
           await this.getFAQ(),
+          await this.getCommandInstructions(),
           await this.getInviteEmbed(members),
           await this.getTldrEmbed(),
         ],
@@ -52,7 +54,7 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
 
   private async getCommandInstructions() {
     return new MessageEmbed({
-      title: "Commands",
+      title: "Guard Commands",
     }).addFields([
       {
         name: `/${invitedCommand.name} ${addSubcommand.name}`,
@@ -86,12 +88,20 @@ A guard or officer will notify you in Discord when they are performing invites. 
         .setLabel("Add Self to Invite List"),
       new MessageButton()
         .setCustomId(addAltInviteButtonCommand.customId)
-        .setStyle("SECONDARY")
+        .setStyle("PRIMARY")
         .setLabel("Add Alt to Invite List"),
       new MessageButton()
         .setCustomId(removePlayerInviteButtonCommand.customId)
+        .setStyle("SECONDARY")
+        .setLabel("Remove from Invite List"),
+      new MessageButton()
+        .setCustomId(pingInviteListButtonCommand.customId)
         .setStyle("DANGER")
-        .setLabel("Remove from Invite List")
+        .setLabel("Inviter Is In"),
+      new MessageButton()
+        .setCustomId(cleanupInvitesCommand.customId)
+        .setStyle("DANGER")
+        .setLabel("Cleanup Old")
     );
   }
 
