@@ -19,7 +19,7 @@ import { cleanupInvitesCommand } from "../features/invite-list/cleanup-invites-c
 import { invitedCommand } from "../features/invite-list/command";
 import { pingInviteListButtonCommand } from "../features/invite-list/ping-invite-list-button-command";
 import { removePlayerInviteButtonCommand } from "../features/invite-list/remove-player-button-command";
-import { requestGuardApplicationButtonCommand } from "../features/invite-list/request-guard-application-button-command";
+import { requestGuardApplicationButtonCommand } from "../features/applications/request-guard-application-button-command";
 import { craftingButtonCommand } from "../features/jewelry-request-info/crafting-button-command";
 import { jewelryCleanupButtonCommand } from "../features/jewelry-request-info/jewelry-cleanup-button-command";
 import { joinReinforcementsButtonCommand } from "../features/raider-enlistment/join-reinforcements-button-command";

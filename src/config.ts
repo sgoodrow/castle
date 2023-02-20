@@ -25,6 +25,7 @@ export const {
   removedChannelId,
   inviteListChannelId,
   dkpRecordsChannelId,
+  applicationsChannelId,
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
@@ -81,4 +82,5 @@ export const {
   removedChannelId: string;
   inviteListChannelId: string;
   dkpRecordsChannelId: string;
+  applicationsChannelId: string;
 };

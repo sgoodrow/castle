@@ -1,7 +1,6 @@
 import {
   Client,
   Collection,
-  Guild,
   GuildMember,
   MessageActionRow,
   MessageButton,
@@ -23,6 +22,9 @@ import {
 } from "./add-player-button-command";
 import { removePlayerInviteButtonCommand } from "./remove-player-button-command";
 import { sortInvites } from "./util";
+import { invitedCommand } from "./command";
+import { addSubcommand } from "./add-subcommand";
+import { removeSubcommand } from "./remove-subcommand";
 
 export const updateInviteListInfo = (
   client: Client,
@@ -37,6 +39,7 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
     await this.createOrUpdateInstructions(
       {
         embeds: [
+          await this.getCommandInstructions(),
           await this.getFAQ(),
           await this.getInviteEmbed(members),
           await this.getTldrEmbed(),
@@ -47,6 +50,20 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
     );
   }
 
+  private async getCommandInstructions() {
+    return new MessageEmbed({
+      title: "Commands",
+    }).addFields([
+      {
+        name: `/${invitedCommand.name} ${addSubcommand.name}`,
+        value: addSubcommand.description,
+      },
+      {
+        name: `/${invitedCommand.name} ${removeSubcommand.name}`,
+        value: removeSubcommand.description,
+      },
+    ]);
+  }
   private async getFAQ() {
     return new MessageEmbed({
       title: "Frequently Asked Questions",

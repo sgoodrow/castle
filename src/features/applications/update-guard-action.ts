@@ -4,19 +4,14 @@ import {
   MessageButton,
   MessageEmbed,
 } from "discord.js";
-import { gatehouseChannelId, inviteListChannelId } from "../../config";
+import { applicationsChannelId, gatehouseChannelId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 import {
   readyActionExecutor,
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
-import { removeSubcommand } from "./remove-subcommand";
-import { invitedCommand } from "./command";
 import { requestGuardApplicationButtonCommand } from "./request-guard-application-button-command";
-import { cleanupInvitesCommand } from "./cleanup-invites-command";
-import { pingInviteListButtonCommand } from "./ping-invite-list-button-command";
-import { addSubcommand } from "./add-subcommand";
 
 export const updateGuardInfo = (
   client: Client,
@@ -27,10 +22,7 @@ class UpdateGuardInfoAction extends InstructionsReadyAction {
   public async execute(): Promise<void> {
     await this.createOrUpdateInstructions(
       {
-        embeds: [
-          await this.getGuardApplication(),
-          await this.getCommandInstructions(),
-        ],
+        embeds: [await this.getGuardApplication()],
         components: [await this.getButtons()],
       },
       Name.GuardInstructions
@@ -57,34 +49,11 @@ class UpdateGuardInfoAction extends InstructionsReadyAction {
       new MessageButton()
         .setCustomId(requestGuardApplicationButtonCommand.customId)
         .setStyle("PRIMARY")
-        .setLabel("Guard Application"),
-      new MessageButton()
-        .setCustomId(pingInviteListButtonCommand.customId)
-        .setStyle("SECONDARY")
-        .setLabel("Inviter Is In"),
-      new MessageButton()
-        .setCustomId(cleanupInvitesCommand.customId)
-        .setStyle("DANGER")
-        .setLabel("Cleanup Old")
+        .setLabel("Guard Application")
     );
   }
 
-  private async getCommandInstructions() {
-    return new MessageEmbed({
-      title: "Commands",
-    }).addFields([
-      {
-        name: `/${invitedCommand.name} ${addSubcommand.name}`,
-        value: addSubcommand.description,
-      },
-      {
-        name: `/${invitedCommand.name} ${removeSubcommand.name}`,
-        value: removeSubcommand.description,
-      },
-    ]);
-  }
-
   protected get channel() {
-    return this.getChannel(inviteListChannelId, "invite list");
+    return this.getChannel(applicationsChannelId, "applications");
   }
 }
