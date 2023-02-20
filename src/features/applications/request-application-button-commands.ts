@@ -82,7 +82,7 @@ export const requestKnightApplicationButtonCommand = new RequestApplication(
   `In Castle, leadership is a voluntary service with no compensation or special privileges. Knights are tasked with running, scheduling and supporting guild raids. Knights may step down at any time.
 
 **How do I apply to be a Knight?**
-Send a Discord message to any officer or knight with your answers to the following questions.
+Send a Discord message to any officer with your answers to the following questions.
 
 **Knight Application**
 > 1. Please describe what motivates you to volunteer as a Knight. Which aspects of being raid leadership, support and preparation are you interested in or willing to help with?
@@ -99,6 +99,19 @@ Knight applications are reviewed and then a casual voice chat will be set up wit
 export const requestBankerApplicationButtonCommand = new RequestApplication(
   "requestBankApplication",
   "Bank Deputy Application",
-  `TODO`,
+  `In Castle, leadership is a voluntary service with no compensation or special privileges. Bank deputies are tasked with TODO. Bank deputies may step down at any time.
+
+**How do I apply to be a Bank deputy?**
+Send a Discord message to TODO with your answers to the following questions.
+
+**Bank Deputy Application**
+> 1. Banking requires you to perform recordkeeping in various places including google docs and discord threads. what challenges would you have with making time/space in your schedule to help guildies and also keep records?
+> 
+> 2. Banking requires patience and attention to detail. How capable are you of being patient and performing all aspects of your banking tasks?
+> 
+> 3. Please describe how you think it might be best to handle it when a requestor is not in zone when you log in to fullfill their bank request.
+
+**What happens to an application?**
+Bank deputy applications are TODO. This process typically takes a less than a week.`,
   "SECONDARY"
 );
