@@ -4,6 +4,7 @@ import {
   MessageButton,
   MessageButtonStyle,
 } from "discord.js";
+import { requestDumpThreadId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 
 export class RequestApplication extends ButtonCommand {
@@ -29,6 +30,15 @@ export class RequestApplication extends ButtonCommand {
       content: `You have been DM'd the **${this.label}**.`,
       ephemeral: true,
     });
+
+    const channel = interaction.guild?.channels.cache.get(requestDumpThreadId);
+    if (!channel?.isText()) {
+      throw new Error(`${"1077736628992352276"} is not a text channel.`);
+    }
+
+    await channel.send(
+      `${this.label} sent to **${interaction.user.username}** (<@${interaction.user.id}>)`
+    );
   }
 
   public getMessageButton(style: MessageButtonStyle) {
