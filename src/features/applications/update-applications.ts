@@ -22,41 +22,42 @@ class UpdateGuardInfoAction extends InstructionsReadyAction {
   public async execute(): Promise<void> {
     await this.createOrUpdateInstructions(
       {
-        embeds: [await this.leadershipRoles()],
+        embeds: [await this.volunteerRoles()],
         components: [await this.getButtons()],
       },
       Name.GuardInstructions
     );
   }
 
-  private async leadershipRoles() {
+  private async volunteerRoles() {
     return new MessageEmbed({
-      title: "Volunteer Roles",
-      url: "https://docs.google.com/document/d/19fqGGGAW3tXTPb8syiCZQZED9qTGhY65dnaWL8YzZnE",
-      description: `**What do Castle volunteers do?**
-• Castle is a casual-friendly guild and that applies to volunteer and leadership roles as well. We have many volunteer roles that help keep the guild running.
-• Click the link "Volunteer Roles" above to read about each.
+      title: "Volunteer Applications",
+      description: `Castle is a casual-friendly guild and that applies to volunteer and leadership roles as well. We have many volunteer roles that help keep the guild running smoothly.
 
-**What's expected of Castle volunteers?**
-• Commit as much time as you would like, when you'd like. You may step down or take a break at any time.
+:question: **What do volunteers do?**
+• Read about each [volunteer role](https://docs.google.com/document/d/19fqGGGAW3tXTPb8syiCZQZED9qTGhY65dnaWL8YzZnE).
+
+:question: **What's expected of volunteers?**
 • Represent us well, both internally and externally.
+• Commit as much time as you like, when you'd like.
+• You may step down or take a break at any time.
 
-**Am I a good candidate to volunteer?**
-• Yes! We encourage everyone to volunteer at some point in their Castle stay. Many hands make light work!
-• Volunteering is a great way to work your way up to becoming an Officer and shaping guild policy.
+:question: **Am I a good candidate to volunteer? What if I'm an ally?**
+• Yes! Everyone is encouraged to volunteer.
+• All roles are open to alliance members except :red_square: **Officer** and :red_square: **Guard**.
 
-**How do I apply?**
+:scroll: **How do I apply?**
 • Press one of the buttons below to receive a copy of the role's application in a DM.
-• Retrieving the application is not a commitment to apply!`,
+• Retrieving the application is not a commitment to apply!
+
+:sparkles: _"Many hands make light work!"_ :sparkles:`,
     });
   }
 
   private async getButtons() {
     return new MessageActionRow().addComponents(
-      requestOfficerApplicationButtonCommand.messageButton,
-      requestGuardApplicationButtonCommand.messageButton,
-      requestKnightApplicationButtonCommand.messageButton,
-      requestBankerApplicationButtonCommand.messageButton
+      ...castleOrAllyRoles.map((r) => r.getMessageButton("SECONDARY")),
+      ...castleOnlyRoles.map((r) => r.getMessageButton("DANGER"))
     );
   }
 
@@ -64,3 +65,13 @@ class UpdateGuardInfoAction extends InstructionsReadyAction {
     return this.getChannel(applicationsChannelId, "applications");
   }
 }
+
+const castleOnlyRoles = [
+  requestOfficerApplicationButtonCommand,
+  requestGuardApplicationButtonCommand,
+];
+
+const castleOrAllyRoles = [
+  requestKnightApplicationButtonCommand,
+  requestBankerApplicationButtonCommand,
+];

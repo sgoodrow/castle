@@ -10,8 +10,7 @@ class RequestApplication extends ButtonCommand {
   public constructor(
     public readonly customId: string,
     public readonly label: string,
-    private readonly content: string,
-    private readonly style: MessageButtonStyle
+    private readonly content: string
   ) {
     super(customId);
   }
@@ -26,10 +25,10 @@ class RequestApplication extends ButtonCommand {
     });
   }
 
-  public get messageButton() {
+  public getMessageButton(style: MessageButtonStyle) {
     return new MessageButton()
       .setCustomId(this.customId)
-      .setStyle(this.style)
+      .setStyle(style)
       .setLabel(this.label);
   }
 }
@@ -52,8 +51,7 @@ Send a Discord message to any Officer with your answers to the following questio
 >  4. The complaints and reports we receive are sometimes genuine, but sometimes frivolous or false. We need people who will endure the discomfort of dealing diplomatically with reports and be willing to have honest talks with members, mostly 30-to-60-year-old adults, about their misbehavior in a video game. Do you have the maturity to maintain your composure and behave professionally?
 
 **What happens to an application?**
-Officers are voted in by current officers. Each applicant must be approved by 3 current officers and not be opposed by any. This process typically takes a less than a week. Officers are the only players who see applications. Applications and their discussion are deleted permanently once voted on.`,
-  "SUCCESS"
+Officers are voted in by current officers. Each applicant must be approved by 3 current officers and not be opposed by any. This process typically takes a less than a week. Officers are the only players who see applications. Applications and their discussion are deleted permanently once voted on.`
 );
 
 export const requestGuardApplicationButtonCommand = new RequestApplication(
@@ -72,8 +70,7 @@ Send a Discord message to any officer with your answers to the following questio
 > 3. While we should play the game and not be on-duty all the time, being a Guard will indeed consume some of one's game time. Are you willing to dedicate some of your game time to being a Guard of Castle? And do you have the wisdom to set aside time for yourself to enjoy the game?
 
 **What happens to an application?**
-Guards are approved by current officers. Each applicant must be approved by 3 officers and not be opposed by any. This process typically takes a less than a week. Officers are the only players who see applications.`,
-  "PRIMARY"
+Guards are approved by current officers. Each applicant must be approved by 3 officers and not be opposed by any. This process typically takes a less than a week. Officers are the only players who see applications.`
 );
 
 export const requestKnightApplicationButtonCommand = new RequestApplication(
@@ -92,8 +89,7 @@ Send a Discord message to any officer with your answers to the following questio
 > 3. While we should play the game and not be on-duty all the time, being a Knight will indeed consume some of one's game time. Are you willing to dedicate some of your game time to being a Knight of Castle? And do you have the wisdom to set aside time for yourself to enjoy the game?
 
 **What happens to an application?**
-Knight applications are reviewed and then a casual voice chat will be set up with a panel of knights and officers to discuss areas of interest. This process typically takes a less than a week.`,
-  "PRIMARY"
+Knight applications are reviewed and then a casual voice chat will be set up with a panel of knights and officers to discuss areas of interest. This process typically takes a less than a week.`
 );
 
 export const requestBankerApplicationButtonCommand = new RequestApplication(
@@ -112,6 +108,5 @@ Send a Discord message to TODO with your answers to the following questions.
 > 3. Please describe how you think it might be best to handle it when a requestor is not in zone when you log in to fullfill their bank request.
 
 **What happens to an application?**
-Bank deputy applications are TODO. This process typically takes a less than a week.`,
-  "SECONDARY"
+Bank deputy applications are TODO. This process typically takes a less than a week.`
 );
