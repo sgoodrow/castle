@@ -7,6 +7,7 @@ import {
   CommandInteraction,
 } from "discord.js";
 import { clientId, guildId, token } from "../config";
+import { applicationCommands } from "../features/applications/config";
 import { auctionCommand } from "../features/auctions/command";
 import { bankHourCommand } from "../features/bank-hours/command";
 import { bankCleanupButtonCommand } from "../features/bank-request-info/bank-cleanup-button-command";
@@ -19,12 +20,6 @@ import { cleanupInvitesCommand } from "../features/invite-list/cleanup-invites-c
 import { invitedCommand } from "../features/invite-list/command";
 import { pingInviteListButtonCommand } from "../features/invite-list/ping-invite-list-button-command";
 import { removePlayerInviteButtonCommand } from "../features/invite-list/remove-player-button-command";
-import {
-  requestBankerApplicationButtonCommand,
-  requestGuardApplicationButtonCommand,
-  requestKnightApplicationButtonCommand,
-  requestOfficerApplicationButtonCommand,
-} from "../features/applications/request-application-button-commands";
 import { craftingButtonCommand } from "../features/jewelry-request-info/crafting-button-command";
 import { jewelryCleanupButtonCommand } from "../features/jewelry-request-info/jewelry-cleanup-button-command";
 import { joinReinforcementsButtonCommand } from "../features/raider-enlistment/join-reinforcements-button-command";
@@ -44,16 +39,13 @@ const buttonCommands = [
   jewelryCleanupButtonCommand,
   craftingButtonCommand,
   cleanupInvitesCommand,
-  requestOfficerApplicationButtonCommand,
-  requestGuardApplicationButtonCommand,
-  requestKnightApplicationButtonCommand,
-  requestBankerApplicationButtonCommand,
   pingInviteListButtonCommand,
   addPlayerInviteButtonCommand,
   joinReinforcementsButtonCommand,
   leaveReinforcementsButtonCommand,
   addAltInviteButtonCommand,
   removePlayerInviteButtonCommand,
+  ...applicationCommands,
 ];
 
 export const getCommand = (

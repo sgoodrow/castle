@@ -4,7 +4,7 @@ import { updateInviteListInfo } from "../features/invite-list/update-invite-acti
 import { updateJewelryRequestInfo } from "../features/jewelry-request-info/update-action";
 import { updateRaiderInfo } from "../features/raider-enlistment/update-raider-action";
 import { updateReinforcementInfo } from "../features/raider-enlistment/update-reinforcement-action";
-import { updateGuardInfo as updateApplicationInfo } from "../features/applications/update-applications";
+import { updateApplicationInfo as updateApplicationInfo } from "../features/applications/update-applications";
 
 const SECONDS = 1000;
 const MINUTES = 60 * SECONDS;

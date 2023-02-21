@@ -1,7 +1,4 @@
-import {
-  Client,
-  MessageEmbed,
-} from "discord.js";
+import { Client, MessageEmbed } from "discord.js";
 import { raiderEnlistmentChannelId, raiderRoleId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
@@ -13,16 +10,13 @@ import {
 export const updateRaiderInfo = (
   client: Client,
   options?: ReadyActionExecutorOptions
-) => readyActionExecutor(new UpdateInfoAction(client), options);
+) => readyActionExecutor(new UpdateRaiderInfoAction(client), options);
 
-class UpdateInfoAction extends InstructionsReadyAction {
+class UpdateRaiderInfoAction extends InstructionsReadyAction {
   public async execute(): Promise<void> {
     await this.createOrUpdateInstructions(
       {
-        embeds: [
-          await this.getRequirements(),
-          await this.getTldrEmbed(),
-        ],
+        embeds: [await this.getRequirements(), await this.getTldrEmbed()],
       },
       Name.RaiderInstructions
     );
