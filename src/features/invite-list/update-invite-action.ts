@@ -96,7 +96,7 @@ A guard or officer will notify you in Discord when they are performing invites. 
         .setLabel("Remove from Invite List"),
       new MessageButton()
         .setCustomId(pingInviteListButtonCommand.customId)
-        .setStyle("DANGER")
+        .setStyle("SUCCESS")
         .setLabel("Inviter Is In"),
       new MessageButton()
         .setCustomId(cleanupInvitesCommand.customId)

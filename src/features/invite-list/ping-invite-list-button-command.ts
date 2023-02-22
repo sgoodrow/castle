@@ -7,6 +7,7 @@ import {
   getChannel,
   requireInteractionMemberPermission,
 } from "../../shared/command/util";
+import { HOURS } from "../../shared/time";
 
 class PingInviteListCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {
@@ -28,11 +29,13 @@ class PingInviteListCommand extends ButtonCommand {
       throw new Error("There is nobody to invite.");
     }
 
-    await interaction.reply(`**${
-      interaction.member?.user
-    } is available to send invites!**
+    const alert = `**${interaction.member?.user} is available to send invites!**
 
-Attn: ${users.map((u) => `<@${u}>`).join(" ")}`);
+    Attn: ${users.map((u) => `<@${u}>`).join(" ")}`;
+
+    await interaction.channel
+      ?.send(alert)
+      .then((r) => setTimeout(() => r.delete(), 1 * HOURS));
   }
 
   private async getPendingInviteUsers() {
