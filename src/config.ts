@@ -3,8 +3,12 @@ export const {
   USER,
   token,
   clientId,
+  castleDkpTokenRO,
+  castleDkpAuctionRaidId,
   commandSuffix,
   guildId,
+  dkpDeputyRoleId,
+  officerRoleId,
   jewelerRoleId,
   bankerRoleId,
   raiderRoleId,
@@ -47,6 +51,16 @@ export const {
   clientId: string;
 
   /**
+   * CastleDKP.com admin read-only access token.
+   */
+  castleDkpTokenRO?: string;
+
+  /**
+   * CastleDKP.com Raid ID for DKP auctions.
+   */
+  castleDkpAuctionRaidId?: string;
+
+  /**
    * [Optional] Custom suffix for all Discord commands. Useful for running multiple instances of the bot in the same server simultaneously.
    */
   commandSuffix?: string;
@@ -57,6 +71,8 @@ export const {
   guildId: string;
 
   // Volunteer role IDs
+  dkpDeputyRoleId: string;
+  officerRoleId: string;
   jewelerRoleId: string;
   bankerRoleId: string;
 

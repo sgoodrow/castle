@@ -10,7 +10,10 @@ export const reactionActionExecutor = async (action: ReactionAction) => {
   return action
     .execute()
     .then(() => console.log(`Successfully ran ${action.constructor.name}.`))
-    .catch(console.error);
+    .catch((err) => {
+      console.error(err);
+      action.replyError(err);
+    });
 };
 
 export abstract class ReactionAction {
@@ -27,6 +30,10 @@ export abstract class ReactionAction {
   }
 
   public abstract execute(): Promise<void>;
+
+  public async replyError(err: string) {
+    await this.message.reply(`⚠️${err}`);
+  }
 
   protected get authorId() {
     const authorId = this.reaction.message.author?.id;

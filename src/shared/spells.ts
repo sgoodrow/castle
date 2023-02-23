@@ -1484,4 +1484,4 @@ export const spellsData = {
   "ZUMAIK`S ANIMATION": "/Zumaik%60s_Animation",
 };
 
-export const spellsMap = mapFromData(spellsData, "Spell ");
+export const spellsMap = mapFromData(spellsData);
