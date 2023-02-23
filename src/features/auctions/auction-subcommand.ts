@@ -9,13 +9,12 @@ import {
   addRoleToThread,
   requireInteractionMemberRole,
 } from "../../shared/command/util";
-import { Item, itemsMap } from "../../shared/items";
-import { spellsMap } from "../../shared/spells";
+import { Item, itemsMapById } from "../../shared/items";
+import { spellsMapById } from "../../shared/spells";
 import { AuctionThreadBuilder } from "./auction-thread-builder";
 
 export enum Option {
   Name = "name",
-  Count = "count",
   Raid = "raid",
   HeldBy = "heldby",
   RequireScribe = "requirescribe",
@@ -72,12 +71,6 @@ export class AuctionSubcommand extends Subcommand {
           .setDescription(
             "The player holding the item(s). Defaults to assuming items are in the guild bank"
           )
-      )
-      .addIntegerOption((o) =>
-        o
-          .setName(Option.Count)
-          .setMinValue(1)
-          .setDescription("The number of items available. Defaults to 1")
       );
     if (this.name === "spell") {
       command.addBooleanOption((o) =>
@@ -137,11 +130,11 @@ export class AuctionSubcommand extends Subcommand {
 export const spellSubcommand = new AuctionSubcommand(
   "spell",
   "Creates a new spell auction thread.",
-  spellsMap
+  spellsMapById
 );
 
 export const itemSubcommand = new AuctionSubcommand(
   "item",
   "Creates a new item DKP auction thread.",
-  itemsMap
+  itemsMapById
 );

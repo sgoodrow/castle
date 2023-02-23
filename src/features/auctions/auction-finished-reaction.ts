@@ -16,7 +16,10 @@ import {
   reactionActionExecutor,
 } from "../../shared/action/reaction-action";
 import { castledkp } from "../../services/castledkp";
+import { itemsMapByName } from "../../shared/items";
+import { spellsMapByName } from "../../shared/spells";
 
+const itemsAndSpellsMapByName = { ...itemsMapByName, ...spellsMapByName };
 const startCodeBlock = "```";
 const endCodeBlock = startCodeBlock;
 
@@ -66,9 +69,9 @@ class AuctionFinishedReactionAction extends ReactionAction {
     }
     const price = await this.getPrice(this.message.content);
     const character = await this.getCharacter(this.message.content);
+    const item = await this.getItem(this.message.channel.name);
 
     // add item to raid
-    const item = this.message.channel.name;
     await castledkp.addItem({
       item,
       characterId: character.id,
@@ -77,11 +80,11 @@ class AuctionFinishedReactionAction extends ReactionAction {
     });
 
     // provide receipt
-    await this.message.channel.send({
+    await this.message.reply({
       embeds: [
         new MessageEmbed({
           title: `Purchase Receipt`,
-          description: `Grats ${this.message.author}!${startCodeBlock}diff
+          description: `Auction complete, grats!${startCodeBlock}diff
 + ${character.name} ${item}
 - ${character.name} ${price} DKP${endCodeBlock}`,
           url: castleDkpAuctionRaidId
@@ -90,6 +93,20 @@ class AuctionFinishedReactionAction extends ReactionAction {
         }),
       ],
     });
+  }
+
+  private async getItem(threadName: string) {
+    // parse out the extra stuff
+    const [_, itemName] = threadName.split(" - ", 2);
+
+    // verify whats left is an item
+    const item = itemsAndSpellsMapByName[itemName];
+    if (!item) {
+      throw new Error(
+        "Could not determine the item name from the thread name."
+      );
+    }
+    return item.name;
   }
 
   private async getPrice(messageContent: string) {

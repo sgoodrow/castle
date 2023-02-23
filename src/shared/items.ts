@@ -10886,13 +10886,17 @@ export interface Item {
 
 export const mapFromData = (data: { [id: string]: string }) =>
   Object.entries(data).reduce((map, [id, url]) => {
-    const item: Item = {
+    map[id] = {
       id,
       url: `https://wiki.project1999.com${url}`,
       name: `${replaceAll(decodeURI(url), "_", " ").substring(1)}`,
     };
-    map[item.id] = item;
     return map;
   }, {} as { [id: string]: Item });
 
-export const itemsMap = mapFromData(itemsData);
+export const itemsMapById = mapFromData(itemsData);
+
+export const itemsMapByName = Object.values(itemsMapById).reduce((map, i) => {
+  map[i.name] = i;
+  return map;
+}, {} as { [name: string]: Item });

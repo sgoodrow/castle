@@ -32,14 +32,6 @@ export class AuctionThreadBuilder extends ThreadBuilder {
     };
   }
 
-  protected getThreadName() {
-    let base = `${this.item.name}`;
-    if (this.count > 1) {
-      base += ` (${this.count})`;
-    }
-    return this.raid ? `${this.raid} - ${base}` : base;
-  }
-
   protected get restrictToRaid() {
     return !!this.raid;
   }
@@ -55,13 +47,9 @@ export class AuctionThreadBuilder extends ThreadBuilder {
   private get location() {
     const user = this.getOption(Option.HeldBy)?.value as string;
     if (user) {
-      return this.count > 1
-        ? `These items are on ${user}`
-        : `This item is on ${user}`;
+      return `This item is on ${user}`;
     }
-    return this.count > 1
-      ? "These items are in the guild bank"
-      : "This item is in the guild bank";
+    return "This item is in the guild bank";
   }
 
   private getEmbed() {
@@ -70,9 +58,11 @@ export class AuctionThreadBuilder extends ThreadBuilder {
       url: this.item.url,
       description: `${this.location}.
 
-${this.itemList}
+**Item:**
+${this.item.name}
 
-**Rules:**${this.multiCountRules}${this.raidRules}${this.requireScribeRule}
+**Rules:**
+• Bid the number of DKP and your character name, e.g.: "**3 Pumped**".${this.raidRules}${this.requireScribeRule}
 • The auction ends when nobody has bid for 12 consecutive hours and the auction has been open for at least 24.
 • ${this.auctioneer} will announce the winner of the auction and record the DKP purchase in <#${dkpRecordsChannelId}>.
 • **Reply to the bidder you are raising so they receive a notification**.`,
@@ -84,7 +74,8 @@ ${this.itemList}
   }
 
   private get threadName() {
-    return this.getThreadName();
+    const base = `${this.item.name}`;
+    return this.raid ? `${this.raid} - ${base}` : base;
   }
 
   private get raidRules() {
@@ -99,19 +90,6 @@ ${this.itemList}
       : "";
   }
 
-  private get multiCountRules() {
-    return this.count > 1
-      ? `
-• Include the item number (e.g. #1).`
-      : "";
-  }
-
-  private get itemList() {
-    return `**Available:**\n${range(this.count)
-      .map((i: number) => `• ${this.item.name} #${i + 1}`)
-      .join("\n")}`;
-  }
-
   private get endDate() {
     return `<t:${this.endTime}:F>`;
   }
@@ -122,10 +100,6 @@ ${this.itemList}
 
   private get endTime() {
     return moment().add("1", "days").unix();
-  }
-
-  protected get count() {
-    return Number(this.getOption(Option.Count)?.value) || 1;
   }
 
   protected get name() {
