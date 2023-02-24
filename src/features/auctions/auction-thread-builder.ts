@@ -1,12 +1,10 @@
 import { ThreadAutoArchiveDuration } from "discord-api-types/v9";
-import { range } from "lodash";
 import moment from "moment";
 import { Embed } from "@discordjs/builders";
 import { ThreadBuilder } from "../../shared/thread/thread-builder";
 import { Item } from "../../shared/items";
 import { Option } from "./auction-subcommand";
 import { replaceAll } from "../../shared/string-util";
-import { dkpRecordsChannelId } from "../../config";
 import { CacheType, CommandInteraction } from "discord.js";
 
 export class AuctionThreadBuilder extends ThreadBuilder {
@@ -58,19 +56,13 @@ export class AuctionThreadBuilder extends ThreadBuilder {
       url: this.item.url,
       description: `${this.location}.
 
-**Item:**
-${this.item.name}
+**Bid Format:**
+• The number of DKP and one of your raiding character names, e.g.: "**3 Potatus**".
+• **Reply to the bidder you are raising so they receive a notification**.
 
 **Rules:**
-• Bid the number of DKP and your character name, e.g.: "**3 Pumped**".${this.raidRules}${this.requireScribeRule}
-• The auction ends when nobody has bid for 12 consecutive hours and the auction has been open for at least 24.
-• ${this.auctioneer} will announce the winner of the auction and record the DKP purchase in <#${dkpRecordsChannelId}>.
-• **Reply to the bidder you are raising so they receive a notification**.`,
+• The auction ends when nobody has bid for 12 consecutive hours and the auction has been open for at least 24.${this.raidRules}${this.requireScribeRule}`,
     });
-  }
-
-  private get auctioneer() {
-    return this.interaction.user;
   }
 
   private get threadName() {

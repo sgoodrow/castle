@@ -20,8 +20,7 @@ import { itemsMapByName } from "../../shared/items";
 import { spellsMapByName } from "../../shared/spells";
 
 const itemsAndSpellsMapByName = { ...itemsMapByName, ...spellsMapByName };
-const startCodeBlock = "```";
-const endCodeBlock = startCodeBlock;
+const code = "```";
 
 export const tryAuctionFinishedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -84,9 +83,9 @@ class AuctionFinishedReactionAction extends ReactionAction {
       embeds: [
         new MessageEmbed({
           title: `Purchase Receipt`,
-          description: `Auction complete, grats!${startCodeBlock}diff
+          description: `Auction complete, grats!${code}diff
 + ${character.name} ${item}
-- ${character.name} ${price} DKP${endCodeBlock}`,
+- ${character.name} ${price} DKP${code}`,
           url: castleDkpAuctionRaidId
             ? `https://castledkp.com/index.php/Raids/[green]-discord-dkp-auctions-r${castleDkpAuctionRaidId}.html?s=`
             : undefined,
@@ -141,6 +140,6 @@ ${this.example}`
   }
 
   private get example() {
-    return `${startCodeBlock}Example: "3 Potatus"${startCodeBlock}`;
+    return `${code}Example: "3 Potatus"${code}`;
   }
 }
