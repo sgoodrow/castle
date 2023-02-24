@@ -12,6 +12,7 @@ export const {
   jewelerRoleId,
   bankerRoleId,
   raiderRoleId,
+  knightRoleId,
   reinforcementsRoleId,
   castleRoleId,
   membersAndAlliesRoleId,
@@ -75,6 +76,7 @@ export const {
   officerRoleId: string;
   jewelerRoleId: string;
   bankerRoleId: string;
+  knightRoleId: string;
 
   // Raider role IDs
   raiderRoleId: string;
