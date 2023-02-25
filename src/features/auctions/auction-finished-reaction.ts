@@ -7,6 +7,7 @@ import {
 } from "discord.js";
 import {
   auctionChannelId,
+  bankerRoleId,
   castleDkpAuctionRaidId,
   dkpDeputyRoleId,
   officerRoleId,
@@ -49,7 +50,8 @@ class AuctionFinishedReactionAction extends ReactionAction {
     if (
       !(
         reactor?.roles.cache.has(dkpDeputyRoleId) ||
-        reactor?.roles.cache.has(officerRoleId)
+        reactor?.roles.cache.has(officerRoleId) ||
+        reactor?.roles.cache.has(bankerRoleId)
       )
     ) {
       return;
@@ -96,7 +98,9 @@ class AuctionFinishedReactionAction extends ReactionAction {
 
   private async getItem(threadName: string) {
     // parse out the extra stuff
-    const [_, itemName] = threadName.split(" - ", 2);
+    const itemName = threadName.includes(" - ")
+      ? threadName.split(" - ", 2)[1]
+      : threadName;
 
     // verify whats left is an item
     const item = itemsAndSpellsMapByName[itemName];
@@ -121,8 +125,7 @@ ${this.example}`
   }
 
   private async getCharacter(messageContent: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_, name] = messageContent.split(" ", 2);
+    const name = messageContent.split(" ", 2)[1];
     if (!name) {
       throw new Error(
         `The bid does not have a character name specified.
