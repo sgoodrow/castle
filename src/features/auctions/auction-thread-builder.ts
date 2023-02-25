@@ -56,12 +56,11 @@ export class AuctionThreadBuilder extends ThreadBuilder {
       url: this.item.url,
       description: `${this.location}.
 
-✍️ **Bid Format:**
-• The number of DKP and one of your raiding character names.
-• Reply to the bidder you are raising so they receive a notification.
-• Example: \`3 Potatus\`
+**Bid Format:**
+• The number of DKP and one of your raiding character names, e.g.: "**3 Potatus**".
+• **Reply to the bidder you are raising so they receive a notification**.
 
-📜 **Rules:**
+**Rules:**
 • The auction ends when nobody has bid for 12 consecutive hours and the auction has been open for at least 24.${this.raidRules}${this.requireScribeRule}`,
     });
   }

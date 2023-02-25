@@ -96,12 +96,7 @@ class AuctionFinishedReactionAction extends ReactionAction {
 
   private async getItem(threadName: string) {
     // parse out the extra stuff
-    let itemName: string;
-    if (threadName.includes(" - ")) {
-      itemName = threadName.split(" - ", 2)[1];
-    } else {
-      itemName = threadName;
-    }
+    const [_, itemName] = threadName.split(" - ", 2);
 
     // verify whats left is an item
     const item = itemsAndSpellsMapByName[itemName];
