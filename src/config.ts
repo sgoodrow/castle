@@ -7,6 +7,7 @@ export const {
   castleDkpAuctionRaidId,
   commandSuffix,
   guildId,
+  guardRoleId,
   dkpDeputyRoleId,
   officerRoleId,
   jewelerRoleId,
@@ -72,6 +73,7 @@ export const {
   guildId: string;
 
   // Volunteer role IDs
+  guardRoleId: string;
   dkpDeputyRoleId: string;
   officerRoleId: string;
   jewelerRoleId: string;

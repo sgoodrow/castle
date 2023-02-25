@@ -5,6 +5,7 @@ tasks:
       guildId: "954825353392709682"
 
       # Roles
+      guardRoleId: "1079186119465381978"
       dkpDeputyRoleId: "1078070130807951410"
       officerRoleId: "1078070211888037900"
       jewelerRoleId: "991929666308943972"
