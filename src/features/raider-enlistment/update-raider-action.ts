@@ -1,9 +1,4 @@
-import {
-  Client,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
-} from "discord.js";
+import { Client, MessageEmbed } from "discord.js";
 import { raiderEnlistmentChannelId, raiderRoleId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
@@ -11,7 +6,6 @@ import {
   readyActionExecutor,
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
-import { raiderCleanupButtonCommand } from "./cleanup-requests-command";
 
 export const updateRaiderInfo = (
   client: Client,
@@ -23,7 +17,6 @@ class UpdateRaiderInfoAction extends InstructionsReadyAction {
     await this.createOrUpdateInstructions(
       {
         embeds: [await this.getRequirements(), await this.getTldrEmbed()],
-        components: [await this.getButtons()],
       },
       Name.RaiderInstructions
     );
@@ -60,15 +53,6 @@ Send a message in this channel with the following information and a Knight will 
 ❓ **What if I don't follow the required raider requirements or behaviors?**
 A leader will DM you with a reminder, then a warning, then 3 1-DKP penalties, and finally a 2-week raid suspension.`,
     });
-  }
-
-  private async getButtons() {
-    return new MessageActionRow().addComponents(
-      new MessageButton()
-        .setCustomId(raiderCleanupButtonCommand.customId)
-        .setStyle("DANGER")
-        .setLabel("Cleanup Old")
-    );
   }
 
   private async getTldrEmbed() {
