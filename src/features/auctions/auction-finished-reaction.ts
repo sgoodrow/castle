@@ -106,18 +106,9 @@ class AuctionFinishedReactionAction extends ReactionAction {
 
   private async getItem(threadName: string) {
     // parse out the extra stuff
-    const itemName = threadName.includes(" - ")
+    return threadName.includes(" - ")
       ? threadName.split(" - ", 2)[1]
       : threadName;
-
-    // verify whats left is an item
-    const item = itemsAndSpellsMapByName[itemName];
-    if (!item) {
-      throw new Error(
-        "Could not determine the item name from the thread name."
-      );
-    }
-    return item.name;
   }
 
   private async getPrice(messageContent: string) {
