@@ -4,7 +4,7 @@ import {
   PartialUser,
   User,
 } from "discord.js";
-import { guardRoleId, officerRoleId } from "../../config";
+import { inviteRequestsChannelId, guardRoleId, officerRoleId } from "../../config";
 import {
   ReactionAction,
   reactionActionExecutor,
