@@ -4,7 +4,7 @@ import {
   PartialUser,
   User,
 } from "discord.js";
-import { inviteRequestsChannelId, guardRoleId, officerRoleId } from "../../config";
+import { inviteListChannelId, guardRoleId, officerRoleId } from "../../config";
 import {
   ReactionAction,
   reactionActionExecutor,
@@ -21,7 +21,7 @@ export const tryInviteRequestFinishedReactionAction = (
 class InviteRequestFinishedReactionAction extends ReactionAction {
   public async execute() {
     // filter channel
-    if (this.message.channel.id !== inviteRequestsChannelId) {
+    if (this.message.channel.id !== inviteListChannelId) {
       return;
     }
 
