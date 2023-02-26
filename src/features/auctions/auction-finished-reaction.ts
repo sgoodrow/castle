@@ -45,6 +45,11 @@ class AuctionFinishedReactionAction extends ReactionAction {
       return;
     }
 
+    // skip already completed
+    if (this.message.channel.name.startsWith("✅")) {
+      return;
+    }
+
     // authorize user
     const reactor = await this.members?.fetch(this.user.id);
     if (
@@ -94,6 +99,9 @@ class AuctionFinishedReactionAction extends ReactionAction {
         }),
       ],
     });
+
+    // edit thread title
+    this.message.channel.setName(`✅ ${this.message.channel.name}`);
   }
 
   private async getItem(threadName: string) {
