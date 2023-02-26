@@ -9,6 +9,7 @@ import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../shared/action/reaction-action";
+import { removePlayer } from "./remove-subcommand";
 
 export const tryInviteRequestFinishedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -40,6 +41,9 @@ class InviteRequestFinishedReactionAction extends ReactionAction {
     ) {
       return;
     }
+
+    // remove from invite list
+    await removePlayer(this.authorId, this.message.client);
 
     // delete all of their messages and the replies to their messages
     const messages = await this.message.channel.messages.fetch();

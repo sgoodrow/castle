@@ -1,4 +1,4 @@
-import { CacheType, CommandInteraction } from "discord.js";
+import { CacheType, Client, CommandInteraction } from "discord.js";
 import { dataSource } from "../../db/data-source";
 import { updateInviteListInfo } from "./update-invite-action";
 import { Subcommand } from "../../shared/command/subcommand";
@@ -8,20 +8,30 @@ enum Option {
   DiscordUser = "discordid",
 }
 
+export const removePlayer = async (discordId: string, client: Client) => {
+  const invite = await dataSource.getRepository(InviteSimple).findOneBy({
+    discordId,
+  });
+  if (!invite) {
+    throw new Error(`<@${discordId}> is not on the invite list.`);
+  }
+
+  await dataSource.manager.remove(invite);
+  await updateInviteListInfo(client);
+
+  return invite.richLabel;
+};
+
 class Remove extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     const discordId = this.getOption(Option.DiscordUser, interaction)?.user?.id;
-
-    const invite = await dataSource.getRepository(InviteSimple).findOneBy({
-      discordId,
-    });
-    if (!invite) {
-      throw new Error(`<@${discordId}> is not on the invite list.`);
+    if (!discordId) {
+      return;
     }
 
-    await dataSource.manager.remove(invite);
-    interaction.editReply(`Removed: ${invite.richLabel}`);
-    await updateInviteListInfo(interaction.client);
+    const richLabel = await removePlayer(discordId, interaction.client);
+
+    interaction.editReply(`Removed: ${richLabel}`);
   }
 
   public get command() {
