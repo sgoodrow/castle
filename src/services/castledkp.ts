@@ -2,6 +2,8 @@ import axios from "axios";
 import LRUCache from "lru-cache";
 import moment from "moment";
 import { castleDkpTokenRO } from "../config";
+import { RaidReport } from "../features/dkp-records/raid-report";
+import { tryRaidReportFinishedReactionAction } from "../features/dkp-records/raid-report-finished-reaction";
 import { HOURS, MONTHS } from "../shared/time";
 
 const route = (f: string) => `api.php?function=${f}`;
@@ -36,7 +38,25 @@ const characters = new LRUCache<string, Character>({
   updateAgeOnGet: true,
 });
 
+const DATE_FORMAT = "YYYY-MM-DD HH:mm";
+
+const MISC_RAID_EVENT_ID = 20;
+
 export const castledkp = {
+  createRaidTicks: async (raid: RaidReport, threadUrl: string) => {
+    const { data } = await instance.post<{ raid_id: number }>(
+      route("add_raid"),
+      {
+        raid_date: moment().format(DATE_FORMAT),
+        raid_attendees: raid.attendees.map((a) => a.name),
+        raid_value: 0,
+        raid_event_id: MISC_RAID_EVENT_ID,
+        raid_note: `Created from Discord: ${threadUrl}`,
+      }
+    );
+    return `${data.raid_id}`;
+  },
+
   getCharacter: async (name: string) => {
     const character = characters.get(name);
     if (character) {
@@ -76,7 +96,7 @@ export const castledkp = {
       throw new Error("BAD REQUEST: No raid ID provided.");
     }
     return instance.post(route("add_item"), {
-      item_date: moment().format("YYYY-MM-DD HH:mm"),
+      item_date: moment().format(DATE_FORMAT),
       item_name: item,
       item_buyers: { member: [characterId] },
       item_raid_id: raidId,

@@ -25,12 +25,15 @@ import { jewelryCleanupButtonCommand } from "../features/jewelry-request-info/je
 import { joinReinforcementsButtonCommand } from "../features/raider-enlistment/join-reinforcements-button-command";
 import { leaveReinforcementsButtonCommand } from "../features/raider-enlistment/leave-reinforcements-button-command";
 import { threadUtilCommand } from "../features/threads/command";
+import { raiderCleanupButtonCommand } from "../features/raider-enlistment/cleanup-requests-command";
+import { raidCommand } from "../features/dkp-records/command";
 
 const slashCommands = [
   bankHourCommand,
   auctionCommand,
   invitedCommand,
   threadUtilCommand,
+  raidCommand,
 ];
 
 const buttonCommands = [
@@ -76,10 +79,15 @@ export const getButton = (interaction: ButtonInteraction<CacheType>) => {
 
 export const registerSlashCommands = () => {
   const rest = new REST({ version: "9" }).setToken(token);
+
+  // assign new commmands
   rest
     .put(Routes.applicationGuildCommands(clientId, guildId), {
       body: slashCommands.map((c) => c.command.toJSON()),
     })
     .then(() => console.log("Successfully registered application commands."))
-    .catch(console.error);
+    .catch((err) => {
+      console.error(err);
+      console.trace();
+    });
 };

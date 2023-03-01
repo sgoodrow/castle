@@ -9,13 +9,17 @@ import { tryAuctionFinishedReactionAction } from "../features/auctions/auction-f
 import { tryRaiderEnlistedReactionAction } from "../features/raider-enlistment/raider-enlisted-reaction";
 import { tryBankRequestFinishedReactionAction } from "../features/bank-request-info/bank-request-finished-reaction";
 import { tryInviteRequestFinishedReactionAction } from "../features/invite-list/invite-request-finished-reaction";
+import { tryVerifyRaidEditReactionAction } from "../features/dkp-records/verify-raid-edit";
+import { tryRaidReportFinishedReactionAction } from "../features/dkp-records/raid-report-finished-reaction";
 
 const reactionActions = [
   tryGatehouseReactionAction,
   tryAuctionFinishedReactionAction,
+  tryBankRequestFinishedReactionAction,
   tryInviteRequestFinishedReactionAction,
   tryRaiderEnlistedReactionAction,
-  tryBankRequestFinishedReactionAction,
+  tryVerifyRaidEditReactionAction,
+  tryRaidReportFinishedReactionAction,
 ];
 
 export const messageReactionAddListener = async (
