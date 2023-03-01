@@ -17,11 +17,10 @@ import {
   reactionActionExecutor,
 } from "../../shared/action/reaction-action";
 import { castledkp } from "../../services/castledkp";
-import { itemsMapByName } from "../../shared/items";
-import { spellsMapByName } from "../../shared/spells";
+import { some } from "lodash";
 
-const itemsAndSpellsMapByName = { ...itemsMapByName, ...spellsMapByName };
 const code = "```";
+const emojis = ["✅", "🏦"];
 
 export const tryAuctionFinishedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -41,12 +40,13 @@ class AuctionFinishedReactionAction extends ReactionAction {
     }
 
     // filter non-finish emoji reactions
-    if (this.reaction.emoji.name !== "✅") {
+    if (!emojis.includes(this.reaction.emoji.name || "")) {
       return;
     }
 
     // skip already completed
-    if (this.message.channel.name.startsWith("✅")) {
+    const name = this.message.channel.name;
+    if (some(emojis, (e) => name.startsWith(e))) {
       return;
     }
 
@@ -59,6 +59,22 @@ class AuctionFinishedReactionAction extends ReactionAction {
         reactor?.roles.cache.has(bankerRoleId)
       )
     ) {
+      return;
+    }
+
+    // handle banked
+    if (this.reaction.emoji.name === "🏦") {
+      if (
+        this.message.embeds.find((e) => e.title?.includes("view on P99 Wiki"))
+      ) {
+        // provide receipt
+        await this.message.reply({
+          content: "Auction closed. Item is property of the guild bank.",
+        });
+
+        // edit thread title
+        this.message.channel.setName(`🏦 ${name}`);
+      }
       return;
     }
 
@@ -75,7 +91,7 @@ class AuctionFinishedReactionAction extends ReactionAction {
     }
     const price = await this.getPrice(this.message.content);
     const character = await this.getCharacter(this.message.content);
-    const item = await this.getItem(this.message.channel.name);
+    const item = await this.getItem(name);
 
     // add item to raid
     await castledkp.addItem({
@@ -101,7 +117,7 @@ class AuctionFinishedReactionAction extends ReactionAction {
     });
 
     // edit thread title
-    this.message.channel.setName(`✅ ${this.message.channel.name}`);
+    this.message.channel.setName(`✅ ${name}`);
   }
 
   private async getItem(threadName: string) {
