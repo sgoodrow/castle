@@ -15,6 +15,7 @@ class PingInviteListCommand extends ButtonCommand {
       inviteListChannelId,
       interaction
     );
+
     if (!inviteListChannel?.isText()) {
       throw new Error("The invite list channel is not a text channel.");
     }
@@ -24,6 +25,10 @@ class PingInviteListCommand extends ButtonCommand {
       interaction
     );
 
+    await interaction.deferReply({
+      ephemeral: false,
+    });
+
     const users = await this.getPendingInviteUsers();
     if (!users.length) {
       throw new Error("There is nobody to invite.");
@@ -31,11 +36,11 @@ class PingInviteListCommand extends ButtonCommand {
 
     const alert = `**${interaction.member?.user} is available to send invites!**
 
-    Attn: ${users.map((u) => `<@${u}>`).join(" ")}`;
+Attention: ${users.map((u) => `<@${u}>`).join(" ")}`;
 
-    await interaction.channel
-      ?.send(alert)
-      .then((r) => setTimeout(() => r.delete(), 1 * HOURS));
+    await interaction
+      .editReply({ content: alert })
+      .then(() => setTimeout(() => interaction.deleteReply(), 1 * HOURS));
   }
 
   private async getPendingInviteUsers() {
