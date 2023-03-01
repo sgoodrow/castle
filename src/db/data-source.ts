@@ -1,5 +1,5 @@
 import { DataSource } from "typeorm";
-import { DATABASE_URL, USER } from "../config";
+import { DATABASE_URL, SSL } from "../config";
 import { BankHour } from "./bank-hour";
 import { Instructions } from "./instructions";
 import { InviteSimple } from "./invite-simple";
@@ -12,7 +12,7 @@ export const dataSource = new DataSource({
   entities: [BankHour, Instructions, InviteSimple],
   synchronize: true,
   logging: false,
-  ssl: USER === "gitpod" ? false : ssl,
+  ssl: SSL === "false" ? false : ssl,
 });
 
 dataSource

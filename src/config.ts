@@ -1,6 +1,10 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 export const {
   DATABASE_URL,
-  USER,
+  SSL,
   token,
   clientId,
   castleDkpTokenRO,
@@ -39,9 +43,9 @@ export const {
    */
   DATABASE_URL?: string;
   /**
-   * [Optional] The deployment environment user.
+   * [Optional] Whether or not the server supports SSL connections. If unset, SSL is used. The development server sets it automatically.
    */
-  USER?: string;
+  SSL?: "false";
 
   /**
    * Discord bot OAuth2 token.
