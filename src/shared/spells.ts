@@ -1,4 +1,4 @@
-import { Item, mapFromData } from "./items";
+import { Item, itemsMapByName, mapFromData } from "./items";
 
 export const spellsData = {
   "AANYA'S ANIMATION": "/Aanya%27s_Animation",
@@ -1484,9 +1484,14 @@ export const spellsData = {
   "ZUMAIK`S ANIMATION": "/Zumaik%60s_Animation",
 };
 
-export const spellsMapById = mapFromData(spellsData, "Spell: ");
+export const spellsMapById = mapFromData(spellsData);
 
 export const spellsMapByName = Object.values(spellsMapById).reduce((map, i) => {
   map[i.name] = i;
   return map;
 }, {} as { [name: string]: Item });
+
+export const itemsAndSpellsMapByName = {
+  ...itemsMapByName,
+  ...spellsMapByName,
+};

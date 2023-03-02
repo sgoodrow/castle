@@ -8,10 +8,7 @@ export const readyActionExecutor = async (
   action: ReadyAction,
   options: ReadyActionExecutorOptions = {}
 ) => {
-  await action
-    .execute()
-    .then(() => console.log(`Successfully ran ${action.constructor.name}.`))
-    .catch(console.error);
+  await action.execute().catch(console.error);
 
   const { repeatDuration } = options;
 

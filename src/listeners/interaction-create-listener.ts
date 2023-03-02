@@ -14,7 +14,7 @@ export const interactionCreateListener = async (
       await getButton(interaction).execute(interaction);
       console.log(`/${interaction.customId} succeeded`);
     } catch (error) {
-      console.log(`/${interaction.customId} failed: ${error}`);
+      console.error(`/${interaction.customId} ${error}`);
       await interaction.reply({ content: String(error), ephemeral: true });
     }
     return;
@@ -26,7 +26,7 @@ export const interactionCreateListener = async (
       await getCommand(interaction).execute(interaction);
       console.log(`/${interaction.commandName} succeeded`);
     } catch (error) {
-      console.log(`/${interaction.commandName} failed: ${error}`);
+      console.error(`/${interaction.commandName} ${error}`);
       await interaction.editReply(String(error));
     }
   }

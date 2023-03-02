@@ -1,11 +1,6 @@
-import {
-  MessageReaction,
-  PartialMessageReaction,
-  PartialUser,
-  User,
-} from "discord.js";
+import { Message } from "discord.js";
 
-export const reactionActionExecutor = async (action: ReactionAction) => {
+export const messageActionExecutor = async (action: MessageAction) => {
   await action.initialize();
   return action.execute().catch((err) => {
     console.error(err);
@@ -13,15 +8,12 @@ export const reactionActionExecutor = async (action: ReactionAction) => {
   });
 };
 
-export abstract class ReactionAction {
-  constructor(
-    protected readonly reaction: MessageReaction | PartialMessageReaction,
-    protected readonly user: User | PartialUser
-  ) {}
+export abstract class MessageAction {
+  constructor(protected readonly message: Message) {}
 
   public async initialize() {
-    if (this.reaction.partial) {
-      await this.reaction.fetch();
+    if (this.message.partial) {
+      await this.message.fetch();
     }
     return this;
   }
@@ -33,17 +25,13 @@ export abstract class ReactionAction {
   }
 
   protected get authorId() {
-    const authorId = this.reaction.message.author?.id;
+    const authorId = this.message.author?.id;
     if (!authorId) {
       throw new Error(
         "Something went wrong when retrieving the message author."
       );
     }
     return authorId;
-  }
-
-  protected get message() {
-    return this.reaction.message;
   }
 
   protected get guild() {

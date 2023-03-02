@@ -2,7 +2,9 @@ import axios from "axios";
 import LRUCache from "lru-cache";
 import moment from "moment";
 import { castleDkpTokenRO } from "../config";
-import { HOURS, MONTHS } from "../shared/time";
+import { raidEventsMap } from "../features/dkp-records/raid-events";
+import { Loot, RaidTick } from "../features/dkp-records/raid-report";
+import { MONTHS } from "../shared/time";
 
 const route = (f: string) => `api.php?function=${f}`;
 
@@ -36,7 +38,56 @@ const characters = new LRUCache<string, Character>({
   updateAgeOnGet: true,
 });
 
+const DATE_FORMAT = "YYYY-MM-DD HH:mm";
+
+const CASTLE_DKP_EVENT_URL_STRIP = /[-()'\s]/g;
+
 export const castledkp = {
+  // get rid of raid events, use this instead, store results in a cache somewhere? update it when..?
+  getEvents: async () => {
+    const { data } = await instance.get<any>(route("events"));
+    return data;
+  },
+
+  createRaid: async (tick: RaidTick, tickNumber: number, threadUrl: string) => {
+    // validate ticks
+    if (tick.event === undefined) {
+      throw new Error(`Tick is missing an event type.`);
+    }
+    if (tick.value === undefined) {
+      throw new Error(`Tick is missing a value.`);
+    }
+
+    // get character ids
+    const characterIds = await Promise.all(
+      tick.attendees.map((a) => castledkp.getCharacter(a).then((c) => c.id))
+    );
+
+    // create raid
+    const { data } = await instance.post<{ raid_id: number }>(
+      route("add_raid"),
+      {
+        raid_date: moment().format(DATE_FORMAT),
+        raid_attendees: { member: characterIds },
+        raid_value: tick.value,
+        raid_event_id: raidEventsMap[tick.event].id,
+        raid_note: `Tick ${tickNumber}. Details at ${threadUrl}`,
+      }
+    );
+
+    // add items to raid
+    await Promise.all(tick.loot.map((l) => castledkp.addItem(data.raid_id, l)));
+
+    return {
+      event: tick.event,
+      eventType: tick.event
+        .toLowerCase()
+        .replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
+      id: data.raid_id,
+      tickNumber,
+    };
+  },
+
   getCharacter: async (name: string) => {
     const character = characters.get(name);
     if (character) {
@@ -61,26 +112,21 @@ export const castledkp = {
     return result;
   },
 
-  addItem: async ({
-    item,
-    characterId,
-    raidId,
-    price,
-  }: {
-    item: string;
-    characterId: number;
-    raidId: number;
-    price: number;
-  }) => {
-    if (!raidId) {
-      throw new Error("BAD REQUEST: No raid ID provided.");
+  addItem: async (
+    raidId: number,
+    loot: {
+      item: string;
+      buyer: string;
+      price: number;
     }
+  ) => {
+    const character = await castledkp.getCharacter(loot.buyer);
     return instance.post(route("add_item"), {
-      item_date: moment().format("YYYY-MM-DD HH:mm"),
-      item_name: item,
-      item_buyers: { member: [characterId] },
+      item_date: moment().format(DATE_FORMAT),
+      item_name: loot.item,
+      item_buyers: { member: [character.id] },
       item_raid_id: raidId,
-      item_value: price,
+      item_value: loot.price,
       item_itempool_id: 1,
     });
   },

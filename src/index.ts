@@ -6,6 +6,7 @@ import { messageReactionAddListener } from "./listeners/message-reaction-add-lis
 import { registerSlashCommands } from "./listeners/register-commands";
 import { guildMemberAddListener } from "./features/gatehouse/guild-member-add-listener";
 import { guildMemberLeaveListener } from "./features/removed/guild-member-leave-listener";
+import { messageCreateListener } from "./listeners/message-create-listener";
 
 export const client = new Client({
   intents: [
@@ -28,8 +29,11 @@ export const getMembers = async () => {
 client.login(token);
 client.on("interactionCreate", interactionCreateListener);
 client.on("messageReactionAdd", messageReactionAddListener);
+client.on("messageCreate", messageCreateListener);
 client.on("ready", readyListener);
 client.on("guildMemberAdd", guildMemberAddListener);
 client.on("guildMemberRemove", guildMemberLeaveListener);
 
 registerSlashCommands();
+
+console.log("Listening...");

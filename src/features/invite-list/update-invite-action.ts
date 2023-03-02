@@ -64,8 +64,14 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
         name: `/${invitedCommand.name} ${removeSubcommand.name}`,
         value: removeSubcommand.description,
       },
+      {
+        name: "✅ a message",
+        value:
+          "Deletes all messages from the player in the channel AND all replies to their messages from anyone.",
+      },
     ]);
   }
+
   private async getFAQ() {
     return new MessageEmbed({
       title: "Frequently Asked Questions",

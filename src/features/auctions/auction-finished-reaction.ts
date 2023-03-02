@@ -94,10 +94,9 @@ class AuctionFinishedReactionAction extends ReactionAction {
     const item = await this.getItem(name);
 
     // add item to raid
-    await castledkp.addItem({
+    await castledkp.addItem(Number(castleDkpAuctionRaidId), {
       item,
-      characterId: character.id,
-      raidId: Number(castleDkpAuctionRaidId),
+      buyer: character.name,
       price,
     });
 
