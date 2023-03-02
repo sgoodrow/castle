@@ -46,7 +46,8 @@ class RaidReportFinishedReactionAction extends ReactionAction {
     }
 
     // check that the message is the raid report
-    if (!isRaidReportMessage(await this.message.fetch())) {
+    const fullMessage = await this.message.fetch();
+    if (!isRaidReportMessage(fullMessage)) {
       return;
     }
 
@@ -74,7 +75,7 @@ class RaidReportFinishedReactionAction extends ReactionAction {
     }
 
     // get raid report
-    const { raid } = await getRaidReport(this.message.channel);
+    const { raidReport: raid } = await getRaidReport(this.message.channel);
 
     // add raid to castle
     const raidId = await castledkp.createRaidTicks(

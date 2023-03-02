@@ -25,7 +25,6 @@ import { jewelryCleanupButtonCommand } from "../features/jewelry-request-info/je
 import { joinReinforcementsButtonCommand } from "../features/raider-enlistment/join-reinforcements-button-command";
 import { leaveReinforcementsButtonCommand } from "../features/raider-enlistment/leave-reinforcements-button-command";
 import { threadUtilCommand } from "../features/threads/command";
-import { raiderCleanupButtonCommand } from "../features/raider-enlistment/cleanup-requests-command";
 import { raidCommand } from "../features/dkp-records/command";
 
 const slashCommands = [

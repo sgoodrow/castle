@@ -1,8 +1,10 @@
-import { Loot } from "./raid-report";
+import { Loot, RaidTick } from "./raid-report";
 
-export class RaidTickFromAttachment {
+export class RaidTickFromAttachment implements RaidTick {
   public readonly value?: number;
   public readonly event?: string;
+  public readonly attendees: string[];
+  public readonly loot: Loot[];
 
   /**
    * List of strings. Each string may be one of the following:
@@ -15,9 +17,12 @@ export class RaidTickFromAttachment {
   public constructor(
     private readonly xlsxData: string[],
     public readonly tickNumber: number
-  ) {}
+  ) {
+    this.attendees = this.getAttendees();
+    this.loot = this.getLoot();
+  }
 
-  public get attendees(): string[] {
+  private getAttendees(): string[] {
     return this.xlsxData
       .filter((r) => this.getRecordType(r) === "Attendance")
       .map(
@@ -34,7 +39,7 @@ export class RaidTickFromAttachment {
       );
   }
 
-  public get loot(): Loot[] {
+  private getLoot(): Loot[] {
     return this.xlsxData
       .filter((r) => this.getRecordType(r) === "Loot")
       .map((r) => {

@@ -4,10 +4,10 @@ import {
   MessageAction,
   messageActionExecutor,
 } from "../../shared/action/message-action";
-import { read, utils } from "xlsx";
+import { read, utils, WorkSheet } from "xlsx";
 import axios from "axios";
 import { RaidTickFromAttachment } from "./raid-tick-from-attachment";
-import { RaidReport } from "./raid-report";
+import { RaidReport, Attendee, Loot } from "./raid-report";
 import { flatMap } from "lodash";
 
 const supportedFormat =
@@ -37,7 +37,10 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
   }
 
   private async tryCreateRaidThread(a: MessageAttachment) {
-    const { data } = await axios({ url: a.url, responseType: "arraybuffer" });
+    const { data } = await axios({
+      url: a.url,
+      responseType: "arraybuffer",
+    });
     const { Sheets, SheetNames } = read(data);
 
     const name = `${a.name?.replace("_", " - ").replace(".xlsx", "")}`;
@@ -50,44 +53,54 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     });
     await message.edit(`${thread}`);
 
-    // Throw away the redundant "Creditt & Gratss" sheet
-    SheetNames.shift();
+    // parse the attachment
+    const raidTickData = this.parseSheets(SheetNames, Sheets);
+    const raidTicks = this.getRaidTicks(raidTickData);
+    const attendees = this.getAttendees(raidTicks);
 
-    // Parse each remaining sheet as a raid tick, composed of rows of attendance, loot and credit data
-    const raidTickData = SheetNames.map((n) =>
+    const report = new RaidReport({
+      name,
+      attendees,
+      raidTicks,
+    });
+
+    await thread.send({
+      embeds: report.embeds,
+      content: `Created by ${this.message.author}.`,
+      files: report.files,
+    });
+
+    // await this.message.delete();
+  }
+
+  private parseSheets(names: string[], sheets: { [sheet: string]: WorkSheet }) {
+    // Throw away the redundant "Creditt & Gratss" sheet
+    names.shift();
+    return names.map((n) =>
       utils
-        .sheet_to_csv(Sheets[n], {
+        .sheet_to_csv(sheets[n], {
           forceQuotes: true,
           blankrows: false,
         })
         .split("\n")
     );
+  }
 
-    // Parse the attachment for raid tick data
-    const ticks = raidTickData.map(
-      (d, i) => new RaidTickFromAttachment(d, i + 1)
+  private getRaidTicks(data: string[][]): RaidTickFromAttachment[] {
+    return data.map((d, i) => new RaidTickFromAttachment(d, i + 1));
+  }
+
+  private getAttendees(ticks: RaidTickFromAttachment[]): Attendee[] {
+    const playerToTickNumbers = flatMap(ticks, (r) => r.attendees).reduce(
+      (m, a) => {
+        m[a] = ticks.filter((t) => t.attendees.includes(a));
+        return m;
+      },
+      {} as { [attendee: string]: RaidTickFromAttachment[] }
     );
-
-    // Get attendees, this could probably be simpler
-    const attendance = flatMap(ticks, (r) => r.attendees).reduce((m, a) => {
-      m[a] = ticks.filter((t) => t.attendees.includes(a));
-      return m;
-    }, {} as { [attendee: string]: RaidTickFromAttachment[] });
-    const attendees = Object.entries(attendance).map(([name, ticks]) => ({
+    return Object.entries(playerToTickNumbers).map(([name, ticks]) => ({
       name,
       tickNumbers: ticks.map((t) => t.tickNumber),
     }));
-
-    await thread.send({
-      embeds: new RaidReport({
-        attendees,
-        loot: flatMap(ticks, (t) => t.loot),
-        raidTicks: ticks,
-      }).embeds,
-      content: `Created by ${this.message.author}.`,
-      files: [a],
-    });
-
-    await this.message.delete();
   }
 }

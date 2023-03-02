@@ -1,5 +1,11 @@
-import { Message, MessageEmbed, ThreadChannel } from "discord.js";
-import { difference, every, maxBy, union } from "lodash";
+import axios from "axios";
+import {
+  Message,
+  MessageAttachment,
+  MessageEmbed,
+  ThreadChannel,
+} from "discord.js";
+import { difference, every, maxBy, range, union } from "lodash";
 import { dkpDeputyRoleId } from "../../config";
 import { code } from "../../shared/util";
 
@@ -10,78 +16,18 @@ export interface Loot {
   tickNumber: number;
 }
 
-export const RAID_REPORT_TITLE = "Raid Report";
-
-const dkpPadding = 6;
-
-interface RaidTick {
-  value?: number;
-  event?: string;
-}
-
-interface Attendee {
+export interface Attendee {
   name: string;
   tickNumbers: number[];
 }
 
-interface Data {
-  raidTicks: RaidTick[];
-  attendees: Attendee[];
+export interface RaidTick {
+  value?: number;
+  event?: string;
   loot: Loot[];
 }
 
-export const multipleSpaces = /\s+/;
-const parenthetical = /\(([^)]+)\)/;
-
-/**
- * @param a Some example attendee strings:
- * - Someone     ? (1, 2)
- * + SomeoneElse 4 (1)
- */
-const parseAttendee = (a: string): Attendee => {
-  const name = a.split(multipleSpaces)[1];
-  const tickNumbers = parenthetical.exec(a)?.[1].split(", ").map(Number) || [];
-  return {
-    name,
-    tickNumbers,
-  };
-};
-
-/**
- * @param l Example loot strings. The parenthetical is the tick number, not the count.
- * + Someone      -3   Jade Reaver (1)
- * + SomeoneElse  -2   Spell: Bedlam (2)
- */
-const parseLoot = (l: string): Loot => {
-  const words = l.split(multipleSpaces);
-  const tickNumber = Number(words.pop()?.replace("(", "").replace(")", ""));
-  const buyer = words[1];
-  const price = Number(words[2].slice(1));
-  const item = l.slice(l.indexOf(words[3]));
-
-  return {
-    buyer,
-    price,
-    item,
-    tickNumber,
-  };
-};
-
-/**
- * @param t Some example tick strings:
- * + Tick1 ? (?)
- * - Tick1 ? (?)
- * + Tick3 2 (vox)
- */
-const parseRaidTick = (t: string): RaidTick => {
-  const words = t.split(multipleSpaces);
-  const value = words[2] === "?" ? undefined : Number(words[2]);
-  const event = parenthetical.exec(t)?.[1];
-  return {
-    value,
-    event,
-  };
-};
+const RAID_REPORT_TITLE = "Raid Report";
 
 export const isRaidReportMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
@@ -93,42 +39,46 @@ export const getRaidReport = async (channel: ThreadChannel) => {
     throw new Error("Could not find raid report in the thread.");
   }
 
-  const report = message.embeds.find(
-    (e) => e.title === RAID_REPORT_TITLE
-  )?.description;
-
-  if (!report) {
-    throw new Error("Could not find raid report in the thread.");
+  const a = message.attachments.first();
+  if (!a) {
+    throw new Error("Could not find raid report attachment in the thread.");
   }
 
-  // parse raid report
-  const lines = report.split("\n");
-  lines.shift(); // drop the raid ticks header
-  const attendanceHeader = lines.findIndex((l) => l.includes("- Attendance"));
-  const lootHeader = lines.findIndex((l) => l.includes("- Loot"));
-
-  const raidTicks = lines
-    .slice(1, attendanceHeader - 1)
-    .map((t) => parseRaidTick(t));
-  const attendees = lines
-    .slice(attendanceHeader + 1, lootHeader - 1)
-    .map((a) => parseAttendee(a));
-  const loot = lines
-    .slice(lootHeader + 1, lines.length - 1)
-    .map((l) => parseLoot(l));
+  const { data } = await axios({
+    url: a.url,
+    responseType: "json",
+  });
 
   return {
-    raid: new RaidReport({
-      raidTicks,
-      attendees,
-      loot,
-    }),
+    raidReport: new RaidReport(data),
     message,
   };
 };
 
 export class RaidReport {
-  public constructor(private data: Data) {}
+  private readonly attendanceColumnLength: number;
+
+  public constructor(
+    private data: {
+      name: string;
+      raidTicks: RaidTick[];
+      attendees: Attendee[];
+    }
+  ) {
+    const names = this.data.attendees.map((a) => a.name);
+    const longest = maxBy(names, (n) => n.length) || "";
+    this.attendanceColumnLength = longest.length;
+  }
+
+  public get files(): MessageAttachment[] {
+    return [
+      new MessageAttachment(
+        Buffer.from(JSON.stringify(this.data, null, 2), "utf-8")
+      )
+        .setName(`${this.data.name}.json`)
+        .setSpoiler(true),
+    ];
+  }
 
   public get embeds(): MessageEmbed[] {
     return [this.raidReportEmbed, this.instructionsEmbed];
@@ -152,18 +102,25 @@ export class RaidReport {
   }
 
   public addPlayer(name: string, tickNumbers: number[]) {
+    // if no tick numbers are provided, assume all of them are desired
+    if (tickNumbers.length === 0) {
+      tickNumbers = this.allTickNumbers;
+    }
+
     // get attendee
     const attendee = this.data.attendees.find((a) => a.name === name);
+
+    // add attendee
     if (!attendee) {
-      // add new attendee
       this.data.attendees.push({
         name,
         tickNumbers,
       });
-    } else {
-      // update attendee
-      attendee.tickNumbers = union(attendee.tickNumbers, tickNumbers).sort();
+      return;
     }
+
+    // update attendee
+    attendee.tickNumbers = union(attendee.tickNumbers, tickNumbers).sort();
   }
 
   public removePlayer(name: string, tickNumbers: number[]) {
@@ -173,7 +130,6 @@ export class RaidReport {
       throw new Error(
         `Cannot remove ${name} from ${tickNumbers} because they are not in attendance`
       );
-      return;
     }
     const attendee = this.data.attendees[i];
 
@@ -207,6 +163,10 @@ export class RaidReport {
     this.getRaidTick(tick).value = value;
   }
 
+  private get allTickNumbers(): number[] {
+    return range(1, this.data.raidTicks.length + 1);
+  }
+
   private getRaidTick(tick: number): RaidTick {
     const raidTick = this.data.raidTicks[tick - 1];
     if (!raidTick) {
@@ -216,39 +176,45 @@ export class RaidReport {
   }
 
   private get raidReportEmbed(): MessageEmbed {
-    const raidTickValues = this.getRaidTickValues();
-    const attendance = this.getAttendance();
-    const loot = this.getLoot();
     return new MessageEmbed({
       title: RAID_REPORT_TITLE,
       description: `${code}diff
-${raidTickValues}
-
-${attendance}
-
-${loot}${code}`,
+${this.raidTicks}
+${this.attendance}${code}`,
     });
   }
 
-  private getRaidTickValues(): string {
-    return `--- Raid Ticks ---                               
-${this.data.raidTicks.map((t, i) => this.renderRaidTick(t, i)).join("\n")}`;
+  private get raidTicks(): string {
+    return this.data.raidTicks
+      .map((t, i) => this.renderRaidTick(t, i))
+      .join("\n\n");
   }
 
   private renderRaidTick(t: RaidTick, i: number) {
     const ready = t.value !== undefined && t.event !== undefined;
-    return `${ready ? "+" : "-"} Tick${i + 1} ${t.value || "?"} (${
-      t.event || "?"
-    })`;
+    const all = "All".padEnd(this.attendanceColumnLength);
+    const value = `+${this.getPaddedDkp(t.value)}`;
+    return `--- Tick ${i + 1} ---
+${ready ? "+" : "-"} ${all} ${value} (${t.event || "Unknown Event"})
+${this.renderTickLoot(t.loot)}`;
   }
 
-  private getAttendance(): string {
-    const padding = this.getAttendeePadding();
+  private get attendance(): string {
     return `--- Attendance ---
 ${this.data.attendees
   .sort((a, b) => a.name.localeCompare(b.name))
-  .map((a) => this.renderAttendee(a.name.padEnd(padding), a.tickNumbers))
+  .map((a) =>
+    this.renderAttendee(
+      a.name.padEnd(this.attendanceColumnLength),
+      a.tickNumbers
+    )
+  )
   .join("\n")}`;
+  }
+
+  private getPaddedDkp(value?: number) {
+    const s = value === undefined ? "?" : String(value);
+    return s.padEnd(6);
   }
 
   private renderAttendee(attendee: string, tickNumbers: number[]): string {
@@ -258,32 +224,21 @@ ${this.data.attendees
       0
     );
     const calculatable = every(ticks, (t) => t.value !== undefined);
-    return `${calculatable ? "+" : "-"} ${attendee} ${
-      calculatable
-        ? `+${dkp}`.padEnd(dkpPadding + 1)
-        : " ?".padEnd(dkpPadding + 1)
-    } (${tickNumbers.join(", ")})`;
+    return `${calculatable ? "+" : "-"} ${attendee} +${this.getPaddedDkp(
+      calculatable ? dkp : undefined
+    )} (${tickNumbers.join(", ")})`;
   }
 
-  private getLoot(): string {
-    const padding = this.getAttendeePadding();
-    return `--- Loot ---
-${this.data.loot
-  .sort((a, b) => a.buyer.localeCompare(b.buyer))
-  .map((l) => this.renderLoot(l, padding))
-  .join("\n")}
-    `;
+  private renderTickLoot(loot: Loot[]): string {
+    return loot
+      .sort((a, b) => a.buyer.localeCompare(b.buyer))
+      .map((l) => this.renderSingleLoot(l, this.attendanceColumnLength))
+      .join("\n");
   }
 
-  private renderLoot(loot: Loot, padding: number) {
-    return `+ ${loot.buyer.padEnd(padding)} -${String(loot.price).padEnd(
-      dkpPadding
-    )} ${loot.item}`;
-  }
-
-  private getAttendeePadding(): number {
-    const names = this.data.attendees.map((a) => a.name);
-    const longest = maxBy(names, (n) => n.length) || "";
-    return longest.length;
+  private renderSingleLoot(loot: Loot, padding: number) {
+    return `+ ${loot.buyer.padEnd(padding)} -${this.getPaddedDkp(
+      loot.price
+    )} (${loot.item})`;
   }
 }

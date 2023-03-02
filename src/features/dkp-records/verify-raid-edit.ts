@@ -13,7 +13,9 @@ import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../shared/action/reaction-action";
-import { getRaidReport, multipleSpaces, RaidReport } from "./raid-report";
+import { getRaidReport, RaidReport } from "./raid-report";
+
+const multipleSpaces = /\s+/;
 
 export const tryVerifyRaidEditReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -53,21 +55,22 @@ class VerifyRaidEditReactionAction extends ReactionAction {
       return;
     }
 
+    // get raid report
+    const { raidReport, message } = await getRaidReport(this.message.channel);
+
     // get action
     const [actionType, ...actionArguments] = this.message.content
       .slice(1)
       .split(multipleSpaces);
     const action = this.getAction(actionType);
 
-    // get raid report
-    const { raid, message } = await getRaidReport(this.message.channel);
-
     // execute action on raid report
-    action.execute(raid, actionArguments);
+    action.execute(raidReport, actionArguments);
 
     try {
       await message.edit({
-        embeds: raid.embeds,
+        embeds: raidReport.embeds,
+        files: raidReport.files,
       });
     } catch (err) {
       throw new Error(
@@ -95,11 +98,11 @@ class VerifyRaidEditReactionAction extends ReactionAction {
   }
 }
 
-abstract class Action {
-  public abstract execute(raid: RaidReport, args: string[]): void;
+interface Action {
+  execute(raid: RaidReport, args: string[]): void;
 }
 
-class AddAction extends Action {
+class AddAction implements Action {
   public execute(raid: RaidReport, args: string[]) {
     const [player, ...ticks] = args;
     const tickNumbers = ticks.map((t) => Number(t.replace(",", "")));
@@ -107,7 +110,7 @@ class AddAction extends Action {
   }
 }
 
-class RemoveAction extends Action {
+class RemoveAction implements Action {
   public execute(raid: RaidReport, args: string[]) {
     const [player, ...ticks] = args;
     const tickNumbers = ticks.map((t) => Number(t.replace(",", "")));
@@ -115,7 +118,7 @@ class RemoveAction extends Action {
   }
 }
 
-class ReplaceAction extends Action {
+class ReplaceAction implements Action {
   public execute(raid: RaidReport, args: string[]) {
     const [replacer, on, replaced, ...ticks] = args;
     if (on !== "on") {

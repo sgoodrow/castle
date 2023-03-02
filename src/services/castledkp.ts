@@ -3,8 +3,7 @@ import LRUCache from "lru-cache";
 import moment from "moment";
 import { castleDkpTokenRO } from "../config";
 import { RaidReport } from "../features/dkp-records/raid-report";
-import { tryRaidReportFinishedReactionAction } from "../features/dkp-records/raid-report-finished-reaction";
-import { HOURS, MONTHS } from "../shared/time";
+import { MONTHS } from "../shared/time";
 
 const route = (f: string) => `api.php?function=${f}`;
 
