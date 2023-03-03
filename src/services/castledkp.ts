@@ -2,9 +2,8 @@ import axios from "axios";
 import LRUCache from "lru-cache";
 import moment from "moment";
 import { castleDkpTokenRO } from "../config";
-import { raidEventsMap } from "../features/dkp-records/raid-events";
-import { Loot, RaidTick } from "../features/dkp-records/raid-report";
-import { MONTHS } from "../shared/time";
+import { RaidTick } from "../features/dkp-records/raid-report";
+import { MINUTES, MONTHS } from "../shared/time";
 
 const route = (f: string) => `api.php?function=${f}`;
 
@@ -32,21 +31,49 @@ interface Character {
   classname: string;
 }
 
+interface Event {
+  name: string;
+  value: number;
+  id: number;
+}
+
 const characters = new LRUCache<string, Character>({
   max: 200,
   ttl: 3 * MONTHS,
   updateAgeOnGet: true,
 });
 
+const events = new LRUCache<string, Event>({
+  max: 200,
+  ttl: 1 * MINUTES,
+});
+
 const DATE_FORMAT = "YYYY-MM-DD HH:mm";
 
 const CASTLE_DKP_EVENT_URL_STRIP = /[-()'\s]/g;
 
+const getEvents = async () => {
+  events.purgeStale();
+  if (events.size) {
+    return events;
+  }
+  const { data } = await instance.get<{ [_: string]: Event }>(route("events"));
+  delete data.status;
+  Object.values(data).forEach((e) => {
+    events.set(e.name.replace("[Green] ", ""), e);
+  });
+  return events;
+};
+
 export const castledkp = {
-  // get rid of raid events, use this instead, store results in a cache somewhere? update it when..?
-  getEvents: async () => {
-    const { data } = await instance.get<any>(route("events"));
-    return data;
+  getEvent: async (label: string) => {
+    const events = await getEvents();
+    return events.get(label);
+  },
+
+  getEventLabels: async () => {
+    const events = await getEvents();
+    return [...events.keys()];
   },
 
   createRaid: async (tick: RaidTick, tickNumber: number, threadUrl: string) => {
@@ -63,6 +90,15 @@ export const castledkp = {
       tick.attendees.map((a) => castledkp.getCharacter(a).then((c) => c.id))
     );
 
+    console.log("retrieved character ids", characterIds);
+
+    const event = await castledkp.getEvent(tick.event);
+    if (!event) {
+      throw new Error(`Tick event type was not recognized: ${tick.event}`);
+    }
+
+    console.log("retrieved event id", event);
+
     // create raid
     const { data } = await instance.post<{ raid_id: number }>(
       route("add_raid"),
@@ -70,13 +106,17 @@ export const castledkp = {
         raid_date: moment().format(DATE_FORMAT),
         raid_attendees: { member: characterIds },
         raid_value: tick.value,
-        raid_event_id: raidEventsMap[tick.event].id,
+        raid_event_id: event.id,
         raid_note: `Tick ${tickNumber}. Details at ${threadUrl}`,
       }
     );
 
+    console.log("created raid", data.raid_id);
+
     // add items to raid
     await Promise.all(tick.loot.map((l) => castledkp.addItem(data.raid_id, l)));
+
+    console.log("added items");
 
     return {
       event: tick.event,

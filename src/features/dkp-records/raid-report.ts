@@ -3,6 +3,7 @@ import {
   Message,
   MessageAttachment,
   MessageEmbed,
+  MessageManager,
   ThreadChannel,
 } from "discord.js";
 import { every, flatMap, max, range, sumBy } from "lodash";
@@ -66,8 +67,8 @@ export class RaidReport {
       raidTicks: RaidTick[];
     }
   ) {
-    this.attendanceColumnLength =
-      max(this.allAttendees.map((a) => a.length)) || 0;
+    this.attendanceColumnLength = 1;
+    // max(this.allAttendees.map((a) => a.length)) || 0;
   }
 
   public get files(): MessageAttachment[] {
@@ -80,11 +81,15 @@ export class RaidReport {
     ];
   }
 
-  public get embeds(): MessageEmbed[] {
-    return [this.raidReportEmbed, this.instructionsEmbed];
+  public get statusEmbed(): MessageEmbed {
+    return new MessageEmbed({
+      title: RAID_REPORT_TITLE,
+      // todo: add status
+      description: "Status: Pending",
+    });
   }
 
-  private get instructionsEmbed(): MessageEmbed {
+  public get instructionsEmbed(): MessageEmbed {
     return new MessageEmbed({
       title: "Raider Instructions",
       description: `Use the following commands to submit change requests. When a <@&${dkpDeputyRoleId}> confirms the change with ✅, it will be added to the Raid report.`,
@@ -101,6 +106,26 @@ export class RaidReport {
         "Replace a name on raid ticks. Tick numbers are optional.",
         "`!rep Pumped on Iceburgh 2, 3`"
       );
+  }
+
+  public get raidReportEmbeds(): MessageEmbed[] {
+    const attendance = this.attendance;
+    console.log(attendance.length);
+    return [
+      ...this.data.raidTicks.map(
+        (t, i) =>
+          new MessageEmbed({
+            title: `Raid Tick ${i + 1}`,
+            description: `${code}diff
+${this.renderRaidTick(t)}${code}`,
+          })
+      ),
+      new MessageEmbed({
+        title: "Attendance",
+        description: `${code}diff
+${attendance}${code}`,
+      }),
+    ];
   }
 
   public getEarned(tickNumber: number) {
@@ -202,27 +227,11 @@ export class RaidReport {
     return raidTick;
   }
 
-  private get raidReportEmbed(): MessageEmbed {
-    return new MessageEmbed({
-      title: RAID_REPORT_TITLE,
-      description: `${code}diff
-${this.raidTicks}
-${this.attendance}${code}`,
-    });
-  }
-
-  private get raidTicks(): string {
-    return this.data.raidTicks
-      .map((t, i) => this.renderRaidTick(t, i))
-      .join("\n\n");
-  }
-
-  private renderRaidTick(t: RaidTick, i: number) {
+  private renderRaidTick(t: RaidTick) {
     const ready = t.value !== undefined && t.event !== undefined;
     const all = "All".padEnd(this.attendanceColumnLength);
     const value = `+${this.getPaddedDkp(t.value)}`;
-    return `--- Tick ${i + 1} ---
-${ready ? "+" : "-"} ${all} ${value} (${t.event || "Unknown Event"})
+    return `${ready ? "+" : "-"} ${all} ${value} (${t.event || "Unknown Event"})
 ${this.renderTickLoot(t.loot)}`;
   }
 
@@ -256,7 +265,7 @@ ${sorted
 
   private getPaddedDkp(value?: number) {
     const s = value === undefined ? "?" : String(value);
-    return s.padEnd(6);
+    return s.padEnd(1);
   }
 
   private renderAttendee(attendee: string, tickNumbers: number[]): string {

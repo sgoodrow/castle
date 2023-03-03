@@ -71,7 +71,7 @@ class VerifyRaidEditReactionAction extends ReactionAction {
 
     try {
       await message.edit({
-        embeds: raidReport.embeds,
+        embeds: raidReport.raidReportEmbeds,
         files: raidReport.files,
       });
     } catch (err) {

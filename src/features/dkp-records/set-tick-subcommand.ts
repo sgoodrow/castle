@@ -9,8 +9,8 @@ import {
   dkpRecordsChannelId,
   officerRoleId,
 } from "../../config";
+import { castledkp } from "../../services/castledkp";
 import { Subcommand } from "../../shared/command/subcommand";
-import { raidEventsMap } from "./raid-events";
 import { getRaidReport } from "./raid-report";
 
 enum Option {
@@ -49,12 +49,13 @@ export class SetTickSubcommand extends Subcommand {
       Number(this.getOption(Option.Tick, interaction)?.value) || undefined;
     const value =
       Number(this.getOption(Option.Value, interaction)?.value) ||
-      raidEventsMap[event].value;
+      (await castledkp.getEvent(event))?.value ||
+      0;
 
     const ticksUpdated = raid.updateRaidTick(event, value, tick);
 
     await message.edit({
-      embeds: raid.embeds,
+      embeds: raid.raidReportEmbeds,
       files: raid.files,
     });
 
@@ -93,7 +94,7 @@ export class SetTickSubcommand extends Subcommand {
   ): Promise<ApplicationCommandOptionChoice[] | undefined> {
     switch (option) {
       case Option.Event:
-        return Object.keys(raidEventsMap).map((l) => ({
+        return (await castledkp.getEventLabels()).map((l) => ({
           name: l,
           value: l,
         }));

@@ -89,13 +89,19 @@ class RaidReportFinishedReactionAction extends ReactionAction {
           const earned = report.getEarned(i + 1);
           const spent = report.getSpent(i + 1);
           const net = earned - spent;
+          const result =
+            net === 0
+              ? "No change to economy"
+              : net > 0
+              ? `+ Economy DKP increase ${net}`
+              : `- Economy DKP decrease ${net}`;
           return new MessageEmbed({
             title: `Raid Tick ${i + 1} (${event})`,
             description: `Raid uploaded by ${reactor} ${code}diff
-+ DKP Earned        ${earned}
-- DKP Spent         ${spent}
---------------------
-${net === 0 ? " " : net > 0 ? "+" : "-"} DKP Net           ${net}${code}`,
+DKP Earned             ${earned}
+DKP Spent              ${spent}
+-------------------------------
+${result}${code}`,
             url: `https://castledkp.com/index.php/Raids/[green]-${eventType}-r${id}.html?s=`,
           });
         }),
@@ -105,7 +111,7 @@ ${net === 0 ? " " : net > 0 ? "+" : "-"} DKP Net           ${net}${code}`,
       this.message.channel.setName(`✅ ${this.message.channel.name}`);
     } catch (err) {
       throw new Error(
-        `Failed to upload raid ticks. Check for partial uploads!!`
+        `Failed to upload raid ticks: ${err}. Check for partial uploads!!`
       );
     }
   }

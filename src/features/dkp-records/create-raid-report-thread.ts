@@ -7,8 +7,7 @@ import {
 import { read, utils, WorkSheet } from "xlsx";
 import axios from "axios";
 import { RaidTickFromAttachment } from "./raid-tick-from-attachment";
-import { RaidReport, Attendee } from "./raid-report";
-import { flatMap } from "lodash";
+import { RaidReport } from "./raid-report";
 
 const supportedFormat =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -51,7 +50,7 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
       name,
       autoArchiveDuration: 60,
     });
-    await message.edit(`${thread}`);
+    await message.edit(`_ _`);
 
     // parse the attachment into a raid report
     const report = new RaidReport({
@@ -60,10 +59,17 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     });
 
     await thread.send({
-      embeds: report.embeds,
       content: `Created by ${this.message.author}.`,
+      embeds: [report.statusEmbed, report.instructionsEmbed],
       files: report.files,
     });
+
+    report.raidReportEmbeds.forEach(
+      async (e) =>
+        await thread.send({
+          embeds: [e],
+        })
+    );
 
     await this.message.delete();
   }
@@ -72,8 +78,10 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     names: string[],
     sheets: { [sheet: string]: WorkSheet }
   ): RaidTickFromAttachment[] {
-    // Throw away the redundant "Creditt & Gratss" sheet
-    names.shift();
+    // Throw away the unused sheet
+    if (names?.[0] === "Creditt & Gratss") {
+      names.shift();
+    }
     return names
       .map((n) =>
         utils
