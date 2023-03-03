@@ -12,6 +12,8 @@ import {
   raiderEnlistmentChannelId,
   rolesChannelId,
   competitorRoleId,
+  guardRoleId,
+  officerRoleId,
 } from "../../config";
 import {
   ReactionAction,
@@ -31,9 +33,15 @@ class GatehouseReactionAction extends ReactionAction {
     if (this.message.channel.id !== gatehouseChannelId) {
       return;
     }
+
     // authorize user
     const reactor = await this.members?.fetch(this.user.id);
-    if (!reactor?.permissions.has(Permissions.FLAGS.MANAGE_ROLES)) {
+    if (
+      !(
+        reactor?.roles.cache.has(guardRoleId) ||
+        reactor?.roles.cache.has(officerRoleId)
+      )
+    ) {
       return;
     }
 
@@ -64,7 +72,9 @@ class GatehouseReactionAction extends ReactionAction {
     author.roles.add(this.roleIds);
 
     if (this.roleIds.includes(competitorRoleId)) {
-      return this.message.channel.send(`Thanks for introducing yourself, ${author}! Unfortunately, we do not grant access to our private Discord channels to players who are not in Castle or an allied guild. You're welcome to chat with us in our public channels, though -- don't be a stranger!`)
+      return this.message.channel.send(
+        `Thanks for introducing yourself, ${author}! Unfortunately, we do not grant access to our private Discord channels to players who are not in Castle or an allied guild. You're welcome to chat with us in our public channels, though -- don't be a stranger!`
+      );
     }
 
     const castle = this.roleIds.includes(castleRoleId);
