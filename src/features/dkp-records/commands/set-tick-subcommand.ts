@@ -6,12 +6,12 @@ import {
 } from "discord.js";
 import {
   dkpDeputyRoleId,
-  dkpRecordsChannelId,
+  dkpRecordsBetaChannelId,
   officerRoleId,
-} from "../../config";
-import { Subcommand } from "../../shared/command/subcommand";
-import { raidEventsMap } from "./raid-events";
-import { getRaidReport } from "./raid-report";
+} from "../../../config";
+import { castledkp } from "../../../services/castledkp";
+import { Subcommand } from "../../../shared/command/subcommand";
+import { getRaidReport } from "../raid-report";
 
 enum Option {
   Tick = "tick",
@@ -31,7 +31,7 @@ export class SetTickSubcommand extends Subcommand {
     }
 
     // filter channel
-    if (interaction.channel.parentId !== dkpRecordsChannelId) {
+    if (interaction.channel.parentId !== dkpRecordsBetaChannelId) {
       return;
     }
 
@@ -42,21 +42,19 @@ export class SetTickSubcommand extends Subcommand {
     }
 
     // get raid report
-    const { report: raid, message } = await getRaidReport(interaction.channel);
+    const { report, messages } = await getRaidReport(interaction.channel);
 
     const event = String(this.getOption(Option.Event, interaction)?.value);
     const tick =
       Number(this.getOption(Option.Tick, interaction)?.value) || undefined;
     const value =
       Number(this.getOption(Option.Value, interaction)?.value) ||
-      raidEventsMap[event].value;
+      (await castledkp.getEvent(event))?.value ||
+      0;
 
-    const ticksUpdated = raid.updateRaidTick(event, value, tick);
+    const ticksUpdated = report.updateRaidTick(event, value, tick);
 
-    await message.edit({
-      embeds: raid.embeds,
-      files: raid.files,
-    });
+    await report.editMessages(messages);
 
     await interaction.editReply(
       `Identified tick ${ticksUpdated.join(", ")} as "${event} (${value})".`
@@ -93,7 +91,7 @@ export class SetTickSubcommand extends Subcommand {
   ): Promise<ApplicationCommandOptionChoice[] | undefined> {
     switch (option) {
       case Option.Event:
-        return Object.keys(raidEventsMap).map((l) => ({
+        return (await castledkp.getEventLabels()).map((l) => ({
           name: l,
           value: l,
         }));

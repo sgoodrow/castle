@@ -7,6 +7,10 @@ import { registerSlashCommands } from "./listeners/register-commands";
 import { guildMemberAddListener } from "./features/gatehouse/guild-member-add-listener";
 import { guildMemberLeaveListener } from "./features/removed/guild-member-leave-listener";
 import { messageCreateListener } from "./listeners/message-create-listener";
+import https from "https";
+
+// Global
+https.globalAgent.maxSockets = 5;
 
 export const client = new Client({
   intents: [

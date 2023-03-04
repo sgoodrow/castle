@@ -3,7 +3,7 @@ import {
   Message,
   MessageAttachment,
   MessageEmbed,
-  ThreadChannel,
+  TextBasedChannel,
 } from "discord.js";
 import { every, flatMap, max, range, sumBy } from "lodash";
 import { dkpDeputyRoleId } from "../../config";
@@ -23,6 +23,7 @@ export interface Attendee {
 }
 
 export interface RaidTick {
+  name: string;
   value?: number;
   event?: string;
   loot: Loot[];
@@ -30,20 +31,31 @@ export interface RaidTick {
 }
 
 const RAID_REPORT_TITLE = "Raid Report";
+const RAID_INSTRUCTIONS_TITLE = "Raider Instructions";
+
+const THREAD_EMBED_CHAR_LIMIT = 4000;
 
 export const isRaidReportMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
 
-export const getRaidReport = async (channel: ThreadChannel) => {
-  const messages = await channel.messages.fetch();
-  const message = messages.find(isRaidReportMessage);
-  if (!message) {
-    throw new Error("Could not find raid report in the thread.");
+export const isRaidInstructionsMessage = (m: Message) =>
+  !!m.embeds.find((e) => e.title === RAID_INSTRUCTIONS_TITLE);
+
+export const getRaidReport = async (channel: TextBasedChannel) => {
+  const all = await channel.messages.fetch();
+  const messages = [
+    ...all
+      .reverse()
+      .filter((m) => isRaidReportMessage(m))
+      .values(),
+  ];
+  if (messages.length === 0) {
+    throw new Error("Could not find raid reports.");
   }
 
-  const a = message.attachments.first();
+  const a = messages[0].attachments.first();
   if (!a) {
-    throw new Error("Could not find raid report attachment in the thread.");
+    throw new Error("Could not find raid report attachment");
   }
 
   const { data } = await axios({
@@ -53,7 +65,7 @@ export const getRaidReport = async (channel: ThreadChannel) => {
 
   return {
     report: new RaidReport(data),
-    message,
+    messages,
   };
 };
 
@@ -70,6 +82,34 @@ export class RaidReport {
       max(this.allAttendees.map((a) => a.length)) || 0;
   }
 
+  public async editMessages(messages: Message[]) {
+    const raidReportEmbeds = this.getRaidReportEmbeds();
+    if (raidReportEmbeds.length > messages.length) {
+      throw new Error(
+        "Insufficient messages for number of embeds. This should never happen"
+      );
+    }
+
+    try {
+      await Promise.all(
+        messages.map((m, i) => {
+          const embeds = [raidReportEmbeds[i]];
+          if (isRaidInstructionsMessage(m)) {
+            embeds.push(this.instructionsEmbed);
+          }
+          m.edit({
+            embeds,
+            files: i === 0 ? this.files : undefined,
+          });
+        })
+      );
+    } catch (err) {
+      throw new Error(
+        `Could not generate edited raid report with action values: ${err}`
+      );
+    }
+  }
+
   public get files(): MessageAttachment[] {
     return [
       new MessageAttachment(
@@ -80,13 +120,9 @@ export class RaidReport {
     ];
   }
 
-  public get embeds(): MessageEmbed[] {
-    return [this.raidReportEmbed, this.instructionsEmbed];
-  }
-
-  private get instructionsEmbed(): MessageEmbed {
+  public get instructionsEmbed(): MessageEmbed {
     return new MessageEmbed({
-      title: "Raider Instructions",
+      title: RAID_INSTRUCTIONS_TITLE,
       description: `Use the following commands to submit change requests. When a <@&${dkpDeputyRoleId}> confirms the change with ✅, it will be added to the Raid report.`,
     })
       .addField(
@@ -101,6 +137,34 @@ export class RaidReport {
         "Replace a name on raid ticks. Tick numbers are optional.",
         "`!rep Pumped on Iceburgh 2, 3`"
       );
+  }
+
+  public getRaidReportEmbeds(): MessageEmbed[] {
+    const report = `${this.data.raidTicks
+      .map((t, i) => this.renderRaidTick(t, i + 1))
+      .join("\n\n")}
+
+${this.attendance}`;
+
+    const pages: string[] = [""];
+    report.split("\n").forEach((line) => {
+      if (
+        pages[pages.length - 1].length + line.length >
+        THREAD_EMBED_CHAR_LIMIT
+      ) {
+        pages.push("");
+      }
+      pages[pages.length - 1] += `\n${line}`;
+    });
+
+    return pages.map(
+      (p) =>
+        new MessageEmbed({
+          title: RAID_REPORT_TITLE,
+          description: `${code}diff
+${p}${code}`,
+        })
+    );
   }
 
   public getEarned(tickNumber: number) {
@@ -202,28 +266,13 @@ export class RaidReport {
     return raidTick;
   }
 
-  private get raidReportEmbed(): MessageEmbed {
-    return new MessageEmbed({
-      title: RAID_REPORT_TITLE,
-      description: `${code}diff
-${this.raidTicks}
-${this.attendance}${code}`,
-    });
-  }
-
-  private get raidTicks(): string {
-    return this.data.raidTicks
-      .map((t, i) => this.renderRaidTick(t, i))
-      .join("\n\n");
-  }
-
-  private renderRaidTick(t: RaidTick, i: number) {
+  private renderRaidTick(t: RaidTick, tickNumber: number) {
     const ready = t.value !== undefined && t.event !== undefined;
     const all = "All".padEnd(this.attendanceColumnLength);
     const value = `+${this.getPaddedDkp(t.value)}`;
-    return `--- Tick ${i + 1} ---
-${ready ? "+" : "-"} ${all} ${value} (${t.event || "Unknown Event"})
-${this.renderTickLoot(t.loot)}`;
+    const loot = t.loot.length > 0 ? `\n${this.renderTickLoot(t.loot)}` : "";
+    return `--- Raid Tick ${tickNumber} (${t.name})---
+${ready ? "+" : "-"} ${all} ${value} (${t.event || "Unknown Event"})${loot}`;
   }
 
   private getAttendanceMap() {

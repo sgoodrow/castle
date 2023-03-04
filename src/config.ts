@@ -35,6 +35,7 @@ export const {
   removedChannelId,
   inviteListChannelId,
   dkpRecordsChannelId,
+  dkpRecordsBetaChannelId,
   applicationsChannelId,
   requestDumpThreadId,
 } = process.env as {
@@ -107,6 +108,7 @@ export const {
   removedChannelId: string;
   inviteListChannelId: string;
   dkpRecordsChannelId: string;
+  dkpRecordsBetaChannelId: string;
   applicationsChannelId: string;
   requestDumpThreadId: string;
 };

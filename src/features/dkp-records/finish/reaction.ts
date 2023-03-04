@@ -9,13 +9,13 @@ import {
   dkpDeputyRoleId,
   dkpRecordsChannelId,
   officerRoleId,
-} from "../../config";
+} from "../../../config";
 import {
   ReactionAction,
   reactionActionExecutor,
-} from "../../shared/action/reaction-action";
-import { code } from "../../shared/util";
-import { getRaidReport, isRaidReportMessage } from "./raid-report";
+} from "../../../shared/action/reaction-action";
+import { code } from "../../../shared/util";
+import { getRaidReport, isRaidInstructionsMessage } from "../raid-report";
 
 export const tryRaidReportFinishedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -47,7 +47,7 @@ class RaidReportFinishedReactionAction extends ReactionAction {
 
     // check that the message is the raid report
     const fullMessage = await this.message.fetch();
-    if (!isRaidReportMessage(fullMessage)) {
+    if (!isRaidInstructionsMessage(fullMessage)) {
       return;
     }
 
@@ -60,18 +60,6 @@ class RaidReportFinishedReactionAction extends ReactionAction {
       )
     ) {
       return;
-    }
-
-    // parse message
-    if (!this.message.content) {
-      throw new Error(
-        "Tried to finish a raid report, but the message has no content."
-      );
-    }
-    if (!this.message.author) {
-      throw new Error(
-        "Tried to finish a raid report, but the message has no author."
-      );
     }
 
     // get raid report
@@ -89,13 +77,19 @@ class RaidReportFinishedReactionAction extends ReactionAction {
           const earned = report.getEarned(i + 1);
           const spent = report.getSpent(i + 1);
           const net = earned - spent;
+          const result =
+            net === 0
+              ? "No change to economy"
+              : net > 0
+              ? `+ Economy DKP increase ${net}`
+              : `- Economy DKP decrease ${net}`;
           return new MessageEmbed({
             title: `Raid Tick ${i + 1} (${event})`,
             description: `Raid uploaded by ${reactor} ${code}diff
-+ DKP Earned        ${earned}
-- DKP Spent         ${spent}
---------------------
-${net === 0 ? " " : net > 0 ? "+" : "-"} DKP Net           ${net}${code}`,
+DKP Earned             ${earned}
+DKP Spent              ${spent}
+-------------------------------
+${result}${code}`,
             url: `https://castledkp.com/index.php/Raids/[green]-${eventType}-r${id}.html?s=`,
           });
         }),
@@ -105,7 +99,7 @@ ${net === 0 ? " " : net > 0 ? "+" : "-"} DKP Net           ${net}${code}`,
       this.message.channel.setName(`✅ ${this.message.channel.name}`);
     } catch (err) {
       throw new Error(
-        `Failed to upload raid ticks. Check for partial uploads!!`
+        `Failed to upload raid ticks: ${err}. Check for partial uploads!!`
       );
     }
   }
