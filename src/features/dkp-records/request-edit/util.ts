@@ -10,6 +10,7 @@ export const getRaidEditMessageContent = async (
   message: Message | PartialMessage
 ) => {
   if (
+    !message.channel.isThread() ||
     message.channel.isThread() &&
     message.channel.parentId !== dkpRecordsBetaChannelId
   ) {
