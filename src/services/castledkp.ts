@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosRetry from "axios-retry";
 import LRUCache from "lru-cache";
 import moment from "moment";
 import { castleDkpTokenRO } from "../config";
@@ -7,14 +8,20 @@ import { MINUTES, MONTHS } from "../shared/time";
 
 const route = (f: string) => `api.php?function=${f}`;
 
-const instance = axios.create({
+const client = axios.create({
   baseURL: "https://castledkp.com",
 });
+axiosRetry(client, { retries: 5, retryDelay: axiosRetry.exponentialDelay });
 
-instance.interceptors.request.use((config) => {
+client.interceptors.request.use((config) => {
   if (!castleDkpTokenRO) {
     throw new Error("Cannot query CastleDKP without an RO token.");
   }
+  console.log(
+    config.url,
+    JSON.stringify(config.params),
+    JSON.stringify(config.data)
+  );
   config.params = {
     ...config.params,
     atoken: castleDkpTokenRO,
@@ -45,7 +52,7 @@ const characters = new LRUCache<string, Character>({
 
 const events = new LRUCache<string, Event>({
   max: 200,
-  ttl: 1 * MINUTES,
+  ttl: 10 * MINUTES,
 });
 
 const DATE_FORMAT = "YYYY-MM-DD HH:mm";
@@ -57,7 +64,7 @@ const getEvents = async () => {
   if (events.size) {
     return events;
   }
-  const { data } = await instance.get<{ [_: string]: Event }>(route("events"));
+  const { data } = await client.get<{ [_: string]: Event }>(route("events"));
   delete data.status;
   Object.values(data).forEach((e) => {
     events.set(e.name.replace("[Green] ", ""), e);
@@ -90,33 +97,22 @@ export const castledkp = {
       tick.attendees.map((a) => castledkp.getCharacter(a).then((c) => c.id))
     );
 
-    console.log("retrieved character ids", characterIds);
-
     const event = await castledkp.getEvent(tick.event);
     if (!event) {
       throw new Error(`Tick event type was not recognized: ${tick.event}`);
     }
 
-    console.log("retrieved event id", event);
-
     // create raid
-    const { data } = await instance.post<{ raid_id: number }>(
-      route("add_raid"),
-      {
-        raid_date: moment().format(DATE_FORMAT),
-        raid_attendees: { member: characterIds },
-        raid_value: tick.value,
-        raid_event_id: event.id,
-        raid_note: `Tick ${tickNumber}. Details at ${threadUrl}`,
-      }
-    );
-
-    console.log("created raid", data.raid_id);
+    const { data } = await client.post<{ raid_id: number }>(route("add_raid"), {
+      raid_date: moment().format(DATE_FORMAT),
+      raid_attendees: { member: characterIds },
+      raid_value: tick.value,
+      raid_event_id: event.id,
+      raid_note: `Tick ${tickNumber}. Details at ${threadUrl}`,
+    });
 
     // add items to raid
     await Promise.all(tick.loot.map((l) => castledkp.addItem(data.raid_id, l)));
-
-    console.log("added items");
 
     return {
       event: tick.event,
@@ -133,7 +129,7 @@ export const castledkp = {
     if (character) {
       return character;
     }
-    const result = await instance
+    const result = await client
       .get<{ direct?: { [key: string]: Character } }>(route("search"), {
         params: {
           in: "charname",
@@ -161,7 +157,7 @@ export const castledkp = {
     }
   ) => {
     const character = await castledkp.getCharacter(loot.buyer);
-    return instance.post(route("add_item"), {
+    return client.post(route("add_item"), {
       item_date: moment().format(DATE_FORMAT),
       item_name: loot.item,
       item_buyers: { member: [character.id] },

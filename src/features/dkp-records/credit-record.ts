@@ -1,10 +1,23 @@
-import { Record } from "./record";
+export class CreditRecord {
+  protected readonly words: string[];
+  protected readonly record: string;
 
-// creditt Pumped on Bot
-// creditt Pumped reason
+  public constructor(record: string) {
+    if (record.endsWith('"')) {
+      record = record.substring(0, record.length - 1);
+    }
+    if (record.endsWith("'")) {
+      record = record.substring(0, record.length - 1);
+    }
+    const recordWords = record.split(" ");
+    const creditWordIndex = recordWords.findIndex((word) =>
+      word.includes(this.keyword)
+    );
+    this.words = recordWords.splice(creditWordIndex + 1);
+    this.record = this.words.join(" ");
+  }
 
-export class CreditRecord extends Record {
-  protected override get keyword() {
+  protected get keyword() {
     return "creditt";
   }
 

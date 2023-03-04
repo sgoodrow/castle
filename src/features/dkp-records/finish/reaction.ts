@@ -9,13 +9,13 @@ import {
   dkpDeputyRoleId,
   dkpRecordsChannelId,
   officerRoleId,
-} from "../../config";
+} from "../../../config";
 import {
   ReactionAction,
   reactionActionExecutor,
-} from "../../shared/action/reaction-action";
-import { code } from "../../shared/util";
-import { getRaidReport, isRaidReportMessage } from "./raid-report";
+} from "../../../shared/action/reaction-action";
+import { code } from "../../../shared/util";
+import { getRaidReport, isRaidInstructionsMessage } from "../raid-report";
 
 export const tryRaidReportFinishedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -47,7 +47,7 @@ class RaidReportFinishedReactionAction extends ReactionAction {
 
     // check that the message is the raid report
     const fullMessage = await this.message.fetch();
-    if (!isRaidReportMessage(fullMessage)) {
+    if (!isRaidInstructionsMessage(fullMessage)) {
       return;
     }
 
@@ -60,18 +60,6 @@ class RaidReportFinishedReactionAction extends ReactionAction {
       )
     ) {
       return;
-    }
-
-    // parse message
-    if (!this.message.content) {
-      throw new Error(
-        "Tried to finish a raid report, but the message has no content."
-      );
-    }
-    if (!this.message.author) {
-      throw new Error(
-        "Tried to finish a raid report, but the message has no author."
-      );
     }
 
     // get raid report

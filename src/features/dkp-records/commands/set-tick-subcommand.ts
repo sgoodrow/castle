@@ -8,10 +8,10 @@ import {
   dkpDeputyRoleId,
   dkpRecordsChannelId,
   officerRoleId,
-} from "../../config";
-import { castledkp } from "../../services/castledkp";
-import { Subcommand } from "../../shared/command/subcommand";
-import { getRaidReport } from "./raid-report";
+} from "../../../config";
+import { castledkp } from "../../../services/castledkp";
+import { Subcommand } from "../../../shared/command/subcommand";
+import { getRaidReport } from "../raid-report";
 
 enum Option {
   Tick = "tick",
@@ -42,7 +42,7 @@ export class SetTickSubcommand extends Subcommand {
     }
 
     // get raid report
-    const { report: raid, message } = await getRaidReport(interaction.channel);
+    const { report, messages } = await getRaidReport(interaction.channel);
 
     const event = String(this.getOption(Option.Event, interaction)?.value);
     const tick =
@@ -52,12 +52,9 @@ export class SetTickSubcommand extends Subcommand {
       (await castledkp.getEvent(event))?.value ||
       0;
 
-    const ticksUpdated = raid.updateRaidTick(event, value, tick);
+    const ticksUpdated = report.updateRaidTick(event, value, tick);
 
-    await message.edit({
-      embeds: raid.raidReportEmbeds,
-      files: raid.files,
-    });
+    await report.editMessages(messages);
 
     await interaction.editReply(
       `Identified tick ${ticksUpdated.join(", ")} as "${event} (${value})".`
