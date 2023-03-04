@@ -1,5 +1,5 @@
 import { Message, MessageAttachment } from "discord.js";
-import { dkpRecordsChannelId } from "../../../config";
+import { dkpRecordsBetaChannelId, dkpRecordsChannelId } from "../../../config";
 import {
   MessageAction,
   messageActionExecutor,
@@ -56,8 +56,19 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
       return;
     }
 
-    // start a thread
-    const thread = await this.message.startThread({
+    // create a message in the beta channel
+    const channels = await this.message.guild?.channels.fetch();
+    const betaChannel = channels?.find((c) => c.id === dkpRecordsBetaChannelId);
+    if (!betaChannel?.isText()) {
+      return;
+    }
+    const message = await betaChannel.send({
+      content:
+        "Creating message. When we're live, this will be the message with the XLSX file.",
+    });
+
+    // create a thread
+    const thread = await message.startThread({
       name,
       autoArchiveDuration: 60,
     });

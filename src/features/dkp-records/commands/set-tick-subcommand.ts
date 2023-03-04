@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import {
   dkpDeputyRoleId,
-  dkpRecordsChannelId,
+  dkpRecordsBetaChannelId,
   officerRoleId,
 } from "../../../config";
 import { castledkp } from "../../../services/castledkp";
@@ -31,7 +31,7 @@ export class SetTickSubcommand extends Subcommand {
     }
 
     // filter channel
-    if (interaction.channel.parentId !== dkpRecordsChannelId) {
+    if (interaction.channel.parentId !== dkpRecordsBetaChannelId) {
       return;
     }
 

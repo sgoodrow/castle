@@ -31,6 +31,7 @@ tasks:
       removedChannelId: "1077053969114861640"
       inviteListChannelId: "967640348274860043"
       dkpRecordsChannelId: "1077054041017823303"
+      dkpRecordsBetaChannelId: "1077054041017823303"
       applicationsChannelId: "1077322650839437403"
       requestDumpThreadId: "1077736628992352276"
     command: yarn dev
