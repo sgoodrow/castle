@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import {
   dkpDeputyRoleId,
-  dkpRecordsChannelId,
+  dkpRecordsBetaChannelId,
   officerRoleId,
 } from "../../../config";
 import {
@@ -31,7 +31,7 @@ class RaidReportFinishedReactionAction extends ReactionAction {
     }
 
     // filter channel
-    if (this.message.channel.parentId !== dkpRecordsChannelId) {
+    if (this.message.channel.parentId !== dkpRecordsBetaChannelId) {
       return;
     }
 

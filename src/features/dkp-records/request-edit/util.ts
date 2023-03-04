@@ -1,5 +1,5 @@
 import { Message, PartialMessage } from "discord.js";
-import { dkpRecordsChannelId } from "../../../config";
+import { dkpRecordsBetaChannelId } from "../../../config";
 import { AddAction } from "./add-action";
 import { ReplaceAction } from "./replace-action";
 import { RemoveAction } from "./remove-action";
@@ -11,7 +11,7 @@ export const getRaidEditMessageContent = async (
 ) => {
   if (
     message.channel.isThread() &&
-    message.channel.parentId !== dkpRecordsChannelId
+    message.channel.parentId !== dkpRecordsBetaChannelId
   ) {
     return;
   }

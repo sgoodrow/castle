@@ -7,6 +7,7 @@ import {
 import { read, utils, WorkSheet } from "xlsx";
 import axios from "axios";
 import { Loot, RaidReport, RaidTick } from "../raid-report";
+import { client } from "../../..";
 
 const supportedFormat =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -57,9 +58,9 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     }
 
     // create a message in the beta channel
-    const channels = await this.message.guild?.channels.fetch();
-    const betaChannel = channels?.find((c) => c.id === dkpRecordsBetaChannelId);
+    const betaChannel = client.channels.cache.get(dkpRecordsBetaChannelId);
     if (!betaChannel?.isText()) {
+      console.log("no beta channel or its not text");
       return;
     }
     const message = await betaChannel.send({
