@@ -1,5 +1,9 @@
 import { Message, MessageAttachment } from "discord.js";
-import { dkpRecordsBetaChannelId, dkpRecordsChannelId } from "../../../config";
+import {
+  dkpDeputyRoleId,
+  dkpRecordsBetaChannelId,
+  dkpRecordsChannelId,
+} from "../../../config";
 import {
   MessageAction,
   messageActionExecutor,
@@ -8,6 +12,8 @@ import { read, utils, WorkSheet } from "xlsx";
 import axios from "axios";
 import { Loot, RaidReport, RaidTick } from "../raid-report";
 import { client } from "../../..";
+import moment, { Moment } from "moment";
+import { addRoleToThread } from "../../../shared/command/util";
 
 const supportedFormat =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -58,15 +64,17 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     }
 
     // create a message in the beta channel
-    const betaChannel = client.channels.cache.get(dkpRecordsBetaChannelId);
-    if (!betaChannel?.isText()) {
-      console.log("no beta channel or its not text");
-      return;
+    let message = this.message;
+    if (dkpRecordsBetaChannelId !== dkpRecordsChannelId) {
+      const betaChannel = client.channels.cache.get(dkpRecordsBetaChannelId);
+      if (!betaChannel?.isText()) {
+        return;
+      }
+      message = await betaChannel.send({
+        content:
+          "When the feature is live, this will be the message with the `.xlsx` file.",
+      });
     }
-    const message = await betaChannel.send({
-      content:
-        "Creating message. When we're live, this will be the message with the XLSX file.",
-    });
 
     // create a thread
     const thread = await message.startThread({
@@ -86,10 +94,14 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
         })
     );
 
-    // add an message incase additions extend the report length to another embed, put instructions in it
+    // always end with a message containing the instructions embed
+    // this message can be used for raid report overflow from add actions
     await thread.send({
       embeds: [report.instructionsEmbed],
     });
+
+    // add deputies to thread
+    await addRoleToThread(dkpDeputyRoleId, thread);
   }
 
   private parseSheets(
@@ -119,6 +131,7 @@ class SheetParser implements RaidTick {
   public readonly event?: string;
   public readonly attendees: string[];
   public readonly loot: Loot[];
+  public readonly date: moment.Moment;
 
   /**
    * List of strings. Each string may be one of the following:
@@ -129,16 +142,28 @@ class SheetParser implements RaidTick {
    * 3b. creditt tell: "[wed feb 15 21:14:22 2023] PLAYER tells you, 'creditt MESSAGE'"`,
    */
   public constructor(
-    private readonly xlsxData: string[],
+    xlsxData: string[],
     public readonly name: string,
     public readonly tickNumber: number
   ) {
-    this.attendees = this.getAttendees();
-    this.loot = this.getLoot();
+    this.attendees = this.getAttendees(xlsxData);
+    this.loot = this.getLoot(xlsxData);
+    this.date = this.getDate(xlsxData);
   }
 
-  private getAttendees(): string[] {
-    return this.xlsxData
+  private getDate(xlsxData: string[]): Moment {
+    const logLine = xlsxData?.[0];
+    if (!logLine) {
+      throw new Error("No log lines found on sheet");
+    }
+    return moment(
+      logLine.substring(logLine.indexOf("[") + 1, logLine.indexOf("]")),
+      "ddd MMM DD HH:mm:ss YYYY"
+    );
+  }
+
+  private getAttendees(xlsxData: string[]): string[] {
+    return xlsxData
       .filter((r) => this.getRecordType(r) === "Attendance")
       .map(
         (r) =>
@@ -154,8 +179,8 @@ class SheetParser implements RaidTick {
       );
   }
 
-  private getLoot(): Loot[] {
-    return this.xlsxData
+  private getLoot(xlsxData: string[]): Loot[] {
+    return xlsxData
       .filter((r) => this.getRecordType(r) === "Loot")
       .map((r) => {
         // remove wrapping quotes and get the loot text

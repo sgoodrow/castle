@@ -6,6 +6,7 @@ import {
   TextBasedChannel,
 } from "discord.js";
 import { every, flatMap, max, range, sumBy } from "lodash";
+import moment from "moment";
 import { dkpDeputyRoleId } from "../../config";
 import { castledkp } from "../../services/castledkp";
 import { code } from "../../shared/util";
@@ -28,6 +29,7 @@ export interface RaidTick {
   event?: string;
   loot: Loot[];
   attendees: string[];
+  date: moment.Moment;
 }
 
 const RAID_REPORT_TITLE = "Raid Report";
@@ -46,7 +48,7 @@ export const getRaidReport = async (channel: TextBasedChannel) => {
   const messages = [
     ...all
       .reverse()
-      .filter((m) => isRaidReportMessage(m))
+      .filter((m) => isRaidReportMessage(m) || isRaidInstructionsMessage(m))
       .values(),
   ];
   if (messages.length === 0) {
@@ -93,11 +95,14 @@ export class RaidReport {
     try {
       await Promise.all(
         messages.map((m, i) => {
-          const embeds = [raidReportEmbeds[i]];
+          // since the messages include a buffer message, which may not have any raid report content in it,
+          // we need to verify there is actually an embed
+          const embed = raidReportEmbeds[i];
+          const embeds = embed ? [embed] : [];
           if (isRaidInstructionsMessage(m)) {
             embeds.push(this.instructionsEmbed);
           }
-          m.edit({
+          return m.edit({
             embeds,
             files: i === 0 ? this.files : undefined,
           });
@@ -135,7 +140,7 @@ export class RaidReport {
       )
       .addField(
         "Replace a name on raid ticks. Tick numbers are optional.",
-        "`!rep Pumped on Iceburgh 2, 3`"
+        "`!rep Pumped with Iceburgh 2, 3`"
       );
   }
 

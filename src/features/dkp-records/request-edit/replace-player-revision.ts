@@ -1,20 +1,22 @@
 import { some } from "lodash";
 import { RaidReport } from "../raid-report";
-import { Action } from "./action";
+import { RaidReportRevision } from "./raid-report-revision";
 
-export class ReplaceAction extends Action {
-  public execute(raid: RaidReport) {
+const verbs = ["on", "with"];
+
+export class ReplacePlayerRevision extends RaidReportRevision {
+  protected execute(raid: RaidReport) {
     const { replacer, replaced, tickNumbers } = this.validateArgs();
     raid.replacePlayer(replacer, replaced, tickNumbers);
   }
 
-  public validateArgs() {
-    const [replacer, on, replaced, ...ticks] = this.args;
+  protected validateArgs() {
+    const [replacer, verb, replaced, ...ticks] = this.args;
     if (!replacer) {
       throw this.getFormatError("missing replacer name");
     }
-    if (on !== "on") {
-      throw this.getFormatError("missing on keyword");
+    if (!verbs.includes(verb)) {
+      throw this.getFormatError("missing 'with' keyword");
     }
     if (!replaced) {
       throw this.getFormatError("missing replacement name");

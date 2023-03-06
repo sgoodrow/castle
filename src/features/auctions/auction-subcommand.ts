@@ -3,6 +3,7 @@ import {
   CacheType,
   CommandInteraction,
 } from "discord.js";
+import { getRoles } from "../..";
 import { auctionChannelId, raiderRoleId } from "../../config";
 import { Subcommand } from "../../shared/command/subcommand";
 import {
@@ -42,10 +43,10 @@ export class AuctionSubcommand extends Subcommand {
     await message.edit(`${thread}`);
 
     // add auction message to thread
-    const threadMessage = await thread.send(builder.message);
+    await thread.send(builder.message);
 
     // add members of role to thread
-    await addRoleToThread(raiderRoleId, threadMessage, interaction);
+    await addRoleToThread(raiderRoleId, thread);
     await interaction.editReply(`Started auction thread: ${thread}`);
   }
 

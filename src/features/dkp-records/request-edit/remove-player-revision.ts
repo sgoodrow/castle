@@ -1,14 +1,14 @@
 import { some } from "lodash";
 import { RaidReport } from "../raid-report";
-import { Action } from "./action";
+import { RaidReportRevision } from "./raid-report-revision";
 
-export class AddAction extends Action {
-  public execute(raid: RaidReport) {
+export class RemovePlayerRevision extends RaidReportRevision {
+  protected execute(raid: RaidReport) {
     const { player, tickNumbers } = this.validateArgs();
-    raid.addPlayer(player, tickNumbers);
+    raid.removePlayer(player, tickNumbers);
   }
 
-  public validateArgs() {
+  protected validateArgs() {
     const [player, ...ticks] = this.args;
     if (!player) {
       throw this.getFormatError("missing player name");

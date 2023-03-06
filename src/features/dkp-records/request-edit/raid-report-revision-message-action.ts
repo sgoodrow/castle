@@ -8,17 +8,21 @@ import {
   getRaidEditMessageContent as getRaidEditMessageContent,
 } from "./util";
 
-export const tryVerifyRaidEditMessageAction = (message: Message) =>
-  messageActionExecutor(new VerifyRaidEditMessageAction(message));
+export const tryRaidReportRevisionMessageAction = (message: Message) =>
+  messageActionExecutor(new RaidReportRevisionMessageAction(message));
 
-class VerifyRaidEditMessageAction extends MessageAction {
+class RaidReportRevisionMessageAction extends MessageAction {
   public async execute() {
     const content = await getRaidEditMessageContent(this.message);
     if (!content) {
       return;
     }
+    const actor = await this.members?.fetch(this.message.author.id);
+    if (!actor) {
+      return;
+    }
     try {
-      getAction(content).validateArgs();
+      await getAction(content).tryExecute(this.message, actor);
     } catch (err) {
       // warning emoji and ephemeral response
       await this.message.react("⚠️");
@@ -27,8 +31,5 @@ class VerifyRaidEditMessageAction extends MessageAction {
       );
       return;
     }
-
-    // show success
-    await this.message.react("👍");
   }
 }

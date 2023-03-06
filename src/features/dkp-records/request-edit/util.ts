@@ -1,24 +1,23 @@
 import { Message, PartialMessage } from "discord.js";
 import { dkpRecordsBetaChannelId } from "../../../config";
-import { AddAction } from "./add-action";
-import { ReplaceAction } from "./replace-action";
-import { RemoveAction } from "./remove-action";
+import { AddPlayerRevision } from "./add-player-revision";
+import { ReplacePlayerRevision } from "./replace-player-revision";
+import { RemovePlayerRevision } from "./remove-player-revision";
 
 const multipleSpaces = /\s+/;
 
 export const getRaidEditMessageContent = async (
   message: Message | PartialMessage
 ) => {
-  if (
-    !message.channel.isThread() ||
-    message.channel.isThread() &&
-    message.channel.parentId !== dkpRecordsBetaChannelId
-  ) {
+  const thread = message.channel.isThread();
+  if (!thread) {
+    return;
+  }
+  if (message.channel.parentId !== dkpRecordsBetaChannelId) {
     return;
   }
 
   const { content } = await message.fetch();
-
   if (!content.startsWith("!")) {
     return;
   }
@@ -33,11 +32,11 @@ export const getAction = (content: string) => {
 
   switch (actionType) {
     case "add":
-      return new AddAction(actionArguments);
+      return new AddPlayerRevision(actionArguments);
     case "rem":
-      return new RemoveAction(actionArguments);
+      return new RemovePlayerRevision(actionArguments);
     case "rep":
-      return new ReplaceAction(actionArguments);
+      return new ReplacePlayerRevision(actionArguments);
     default:
       throw new Error(
         `Could not verify raid edit because the action "${actionType}" is not supported.`

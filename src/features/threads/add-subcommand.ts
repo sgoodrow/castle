@@ -23,11 +23,7 @@ class Add extends Subcommand {
       throw new Error(`Channel (${interaction.channelId}) is not a thread.`);
     }
 
-    const message = await interaction.channel.send("Temporary message.");
-
-    const count = await addRoleToThread(roleId, message, interaction);
-
-    await message.delete();
+    const count = await addRoleToThread(roleId, interaction.channel);
 
     await interaction.editReply({
       content: `Added all (${count}) members of <@&${roleId}> to thread!`,

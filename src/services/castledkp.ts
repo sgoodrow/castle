@@ -17,11 +17,6 @@ client.interceptors.request.use((config) => {
   if (!castleDkpTokenRO) {
     throw new Error("Cannot query CastleDKP without an RO token.");
   }
-  console.log(
-    config.url,
-    JSON.stringify(config.params),
-    JSON.stringify(config.data)
-  );
   config.params = {
     ...config.params,
     atoken: castleDkpTokenRO,
@@ -104,7 +99,7 @@ export const castledkp = {
 
     // create raid
     const { data } = await client.post<{ raid_id: number }>(route("add_raid"), {
-      raid_date: moment().format(DATE_FORMAT),
+      raid_date: tick.date.format(DATE_FORMAT),
       raid_attendees: { member: characterIds },
       raid_value: tick.value,
       raid_event_id: event.id,

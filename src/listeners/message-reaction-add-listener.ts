@@ -9,7 +9,7 @@ import { tryAuctionFinishedReactionAction } from "../features/auctions/auction-f
 import { tryRaiderEnlistedReactionAction } from "../features/raider-enlistment/raider-enlisted-reaction";
 import { tryBankRequestFinishedReactionAction } from "../features/bank-request-info/bank-request-finished-reaction";
 import { tryInviteRequestFinishedReactionAction } from "../features/invite-list/invite-request-finished-reaction";
-import { tryVerifyRaidEditReactionAction } from "../features/dkp-records/request-edit/execute-action-reaction";
+import { tryApproveRaidReportRevisionReactionAction } from "../features/dkp-records/request-edit/approve-raid-report-revision-reaction";
 import { tryRaidReportFinishedReactionAction } from "../features/dkp-records/finish/reaction";
 
 const reactionActions = [
@@ -18,7 +18,7 @@ const reactionActions = [
   tryBankRequestFinishedReactionAction,
   tryInviteRequestFinishedReactionAction,
   tryRaiderEnlistedReactionAction,
-  tryVerifyRaidEditReactionAction,
+  tryApproveRaidReportRevisionReactionAction,
   tryRaidReportFinishedReactionAction,
 ];
 
