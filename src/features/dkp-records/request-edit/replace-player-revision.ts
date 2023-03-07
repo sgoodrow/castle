@@ -11,7 +11,7 @@ export class ReplacePlayerRevision extends RaidReportRevision {
   }
 
   protected validateArgs() {
-    const [replacer, verb, replaced, ...ticks] = this.args;
+    const [replaced, verb, replacer, ...ticks] = this.args;
     if (!replacer) {
       throw this.getFormatError("missing replacer name");
     }
