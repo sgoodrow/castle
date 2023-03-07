@@ -2,11 +2,16 @@ import {
   AutocompleteInteraction,
   ButtonInteraction,
   CacheType,
+  Collection,
   CommandInteraction,
+  GuildMember,
   GuildMemberRoleManager,
   Message,
   PermissionResolvable,
+  Role,
+  ThreadChannel,
 } from "discord.js";
+import { getMembers, getRoles } from "../..";
 
 export const requireInteractionMemberRole = (
   roleId: string,
@@ -129,13 +134,12 @@ export const listThreadMembers = async (
 
 export const addRoleToThread = async (
   roleId: string,
-  message: Message<boolean>,
-  interaction: CommandInteraction<CacheType>
+  channel: ThreadChannel
 ) => {
-  const roles = await fetchRole(interaction, roleId);
+  const roles = await getRoles();
+  const everyone = await getMembers();
+  const message = await channel.send("Temporary message.");
 
-  const content = message.content;
-  const everyone = await interaction.guild?.members.fetch();
   const members = everyone?.filter((m) => m.roles.cache.has(roleId));
   const usersToAdd = members
     ?.filter((m) => m.roles.cache.has(roleId))
@@ -171,8 +175,8 @@ export const addRoleToThread = async (
   // Final add
   await message.edit(`${contentSent}`);
 
-  // Edit the message back to normal
-  await message.edit(content);
+  // Delete the message
+  await message.delete();
 
   return names.length;
 };

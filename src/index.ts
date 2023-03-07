@@ -23,11 +23,23 @@ export const client = new Client({
   partials: ["MESSAGE", "REACTION"],
 });
 
-export const getMembers = async () => {
+export const getGuild = async () => {
   const guilds = await client.guilds.fetch();
   const guild = await guilds.get(guildId)?.fetch();
-  const members = await guild?.members.fetch();
-  return members;
+  if (!guild) {
+    throw new Error("Could not collect guild members");
+  }
+  return guild;
+};
+
+export const getMembers = async () => {
+  const guild = await getGuild();
+  return await guild.members.fetch();
+};
+
+export const getRoles = async () => {
+  const guild = await getGuild();
+  return await guild.roles.fetch();
 };
 
 client.login(token);

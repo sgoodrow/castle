@@ -1,10 +1,10 @@
 import { Message } from "discord.js";
 import { tryCreateRaidReportThreadAction } from "../features/dkp-records/create/create-raid-report-thread";
-import { tryVerifyRaidEditMessageAction } from "../features/dkp-records/request-edit/verify-action";
+import { tryRaidReportRevisionMessageAction } from "../features/dkp-records/request-edit/raid-report-revision-message-action";
 
 const messageActions = [
   tryCreateRaidReportThreadAction,
-  tryVerifyRaidEditMessageAction,
+  tryRaidReportRevisionMessageAction,
 ];
 
 export const messageCreateListener = async (reaction: Message) => {
