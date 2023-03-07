@@ -1,10 +1,10 @@
 interface BaseCredit {
-  player: string;
+  character: string;
 }
 
 interface PilotCredit extends BaseCredit {
   type: "PILOT";
-  character: string;
+  pilot: string;
 }
 
 interface ReasonCredit extends BaseCredit {
@@ -20,7 +20,7 @@ interface UnknownCredit extends BaseCredit {
 export type Credit = PilotCredit | ReasonCredit | UnknownCredit;
 
 export class CreditParser {
-  public readonly player: string;
+  public readonly character: string;
   protected readonly raw: string;
   protected readonly record: string;
 
@@ -34,7 +34,7 @@ export class CreditParser {
       .trim()
       // remove wrapping single quotes
       .replace(/'/g, "");
-    this.player = stripped.split(" ", 1)[0];
+    this.character = stripped.split(" ", 1)[0];
     const credit = stripped.toLowerCase().indexOf("creditt");
     this.raw = stripped.slice(credit);
     const words = this.raw.split(" ");
@@ -57,18 +57,18 @@ export class CreditParser {
     if (!this.record) {
       return "UNKNOWN";
     }
-    return this.record.split(" ")[0] === "on" ? "PILOT" : "REASON";
+    return this.record.split(" ")[0] === "pilot" ? "PILOT" : "REASON";
   }
 
   private get pilotCredit(): PilotCredit | UnknownCredit {
-    const character = this.record.split("on ")[1];
-    if (!this.player || !character) {
+    const pilot = this.record.split("pilot ")[1];
+    if (!this.character || !pilot) {
       return this.unknownCredit;
     }
     return {
       type: "PILOT",
-      player: this.player,
-      character: character,
+      character: this.character,
+      pilot,
     };
   }
 
@@ -79,14 +79,14 @@ export class CreditParser {
     return {
       type: "REASON",
       reason: this.record,
-      player: this.player,
+      character: this.character,
     };
   }
 
   private get unknownCredit(): UnknownCredit {
     return {
       type: "UNKNOWN",
-      player: this.player,
+      character: this.character,
       raw: this.raw,
     };
   }

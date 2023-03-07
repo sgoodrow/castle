@@ -3,14 +3,14 @@ import { CreditParser } from "./credit-parser";
 describe("pilot", () => {
   it("works for arrow tells", () => {
     const parser = new CreditParser(
-      "[Sat Feb 25 16:15:52 2023] Pumped -> Someone: creditt on Whatever"
+      "[Sat Feb 25 16:15:52 2023] Iceburgh -> Someone: creditt pilot Pumped"
     );
     const credit = parser.getCredit();
     expect(credit.type).toEqual("PILOT");
-    expect(credit.player).toEqual("Pumped");
+    expect(credit.character).toEqual("Iceburgh");
 
     if (credit.type === "PILOT") {
-      expect(credit.character).toEqual("Whatever");
+      expect(credit.pilot).toEqual("Pumped");
     }
   });
 });
@@ -22,7 +22,7 @@ describe("reason", () => {
     );
     const credit = parser.getCredit();
     expect(credit.type).toEqual("REASON");
-    expect(credit.player).toEqual("Pumped");
+    expect(credit.character).toEqual("Pumped");
 
     if (credit.type === "REASON") {
       expect(credit.reason).toEqual("for being a cleric on a CH chain");
@@ -35,7 +35,7 @@ describe("reason", () => {
     );
     const credit = parser.getCredit();
     expect(credit.type).toEqual("REASON");
-    expect(credit.player).toEqual("Pumped");
+    expect(credit.character).toEqual("Pumped");
 
     if (credit.type === "REASON") {
       expect(credit.reason).toEqual("dead from DT");
@@ -48,7 +48,7 @@ describe("reason", () => {
     );
     const credit = parser.getCredit();
     expect(credit.type).toEqual("UNKNOWN");
-    expect(credit.player).toEqual("Pumped");
+    expect(credit.character).toEqual("Pumped");
 
     if (credit.type === "UNKNOWN") {
       expect(credit.raw).toEqual("creditt");
@@ -61,7 +61,7 @@ describe("reason", () => {
     );
     const credit = parser.getCredit();
     expect(credit.type).toEqual("UNKNOWN");
-    expect(credit.player).toEqual("Pumped");
+    expect(credit.character).toEqual("Pumped");
 
     if (credit.type === "UNKNOWN") {
       expect(credit.raw).toEqual("credittt");
@@ -74,7 +74,7 @@ describe("reason", () => {
     );
     const credit = parser.getCredit();
     expect(credit.type).toEqual("UNKNOWN");
-    expect(credit.player).toEqual("Pumped");
+    expect(credit.character).toEqual("Pumped");
 
     if (credit.type === "UNKNOWN") {
       expect(credit.raw).toEqual("credittsomething");

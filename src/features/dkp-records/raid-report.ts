@@ -92,10 +92,10 @@ export class RaidReport {
       return a.concat(
         t.credits.map((c) => {
           return c.type === "UNKNOWN"
-            ? `⚠️ Unparsable credit: ${c.player} said '${c.raw}' during Raid Tick ${tickNumber}`
+            ? `⚠️ Unparsable credit: ${c.character} said '${c.raw}' during Raid Tick ${tickNumber}`
             : c.type === "PILOT"
-            ? `!rep ${c.character} with ${c.player} ${tickNumber}`
-            : `!add ${c.player} ${tickNumber} (${c.reason})`;
+            ? `!rep ${c.character} with ${c.pilot} ${tickNumber}`
+            : `!add ${c.character} ${tickNumber} (${c.reason})`;
         })
       );
     }, [] as string[]);
