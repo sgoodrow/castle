@@ -52,9 +52,10 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     const name = `${a.name?.replace("_", " - ").replace(".xlsx", "")}`;
 
     // parse the attachment into a raid report
+    const raidTicks = await this.parseSheets(SheetNames, Sheets);
     const report = new RaidReport({
       name,
-      raidTicks: this.parseSheets(SheetNames, Sheets),
+      raidTicks,
     });
 
     // get the raid report embeds
@@ -112,10 +113,10 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     await addRoleToThread(dkpDeputyRoleId, thread);
   }
 
-  private parseSheets(
+  private async parseSheets(
     names: string[],
     sheets: { [sheet: string]: WorkSheet }
-  ): SheetParser[] {
+  ) {
     // Throw away the unused sheet
     if (names?.[0] === "Creditt & Gratss") {
       names.shift();
@@ -135,12 +136,13 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
 }
 
 class SheetParser implements RaidTick {
-  public readonly value?: number;
   public readonly event?: string;
+  public readonly value?: number;
   public readonly attendees: string[];
   public readonly loot: Loot[];
   public readonly credits: Credit[];
-  public readonly date: moment.Moment;
+  public readonly date: string;
+  public readonly name: string;
 
   /**
    * List of strings. Each string may be one of the following:
@@ -152,16 +154,19 @@ class SheetParser implements RaidTick {
    */
   public constructor(
     xlsxData: string[],
-    public readonly name: string,
+    sheetName: string,
     public readonly tickNumber: number
   ) {
     this.attendees = this.getAttendees(xlsxData);
     this.loot = this.getLoot(xlsxData);
     this.date = this.getDate(xlsxData);
     this.credits = this.getCredits(xlsxData);
+    this.name = moment(sheetName, "YYYY.MM.DD HH.mm.ss A", true).isValid()
+      ? `Unknown`
+      : `Unknown (${sheetName}?)`;
   }
 
-  private getDate(xlsxData: string[]): Moment {
+  private getDate(xlsxData: string[]): string {
     const logLine = xlsxData?.[0];
     if (!logLine) {
       throw new Error("No log lines found on sheet");
@@ -169,7 +174,7 @@ class SheetParser implements RaidTick {
     return moment(
       logLine.substring(logLine.indexOf("[") + 1, logLine.indexOf("]")),
       "ddd MMM DD HH:mm:ss YYYY"
-    );
+    ).toString();
   }
 
   private getCredits(xlsxData: string[]): Credit[] {

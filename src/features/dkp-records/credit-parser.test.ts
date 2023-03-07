@@ -3,7 +3,7 @@ import { CreditParser } from "./credit-parser";
 describe("pilot", () => {
   it("works for arrow tells", () => {
     const parser = new CreditParser(
-      "[Sat Feb 25 16:15:52 2023] Iceburgh -> Someone: creditt pilot Pumped"
+      "[Sat Feb 25 16:15:52 2023] Iceburgh -> Someone: creditt botpilot Pumped"
     );
     const credit = parser.getCredit();
     expect(credit.type).toEqual("PILOT");

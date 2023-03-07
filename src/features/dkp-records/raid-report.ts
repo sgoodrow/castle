@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import { every, flatMap, max, range, sumBy } from "lodash";
 import moment from "moment";
-import { dkpDeputyRoleId } from "../../config";
+import { dkpDeputyRoleId, raiderRoleId } from "../../config";
 import { castledkp } from "../../services/castledkp";
 import { code } from "../../shared/util";
 import { Credit } from "./credit-parser";
@@ -25,25 +25,26 @@ export interface Attendee {
 }
 
 export interface RaidTick {
-  name: string;
+  tickNumber: number;
   value?: number;
   event?: string;
+  note?: string;
   loot: Loot[];
   attendees: string[];
-  date: moment.Moment;
+  date: string;
   credits: Credit[];
 }
 
 const RAID_REPORT_TITLE = "Raid Report";
-const RAID_INSTRUCTIONS_TITLE = "Raider Instructions";
-
+const INSTRUCTIONS_TITLE = "Instructions";
 const THREAD_EMBED_CHAR_LIMIT = 4000;
+const DKP_COLUMN_LENGTH = 6;
 
 export const isRaidReportMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
 
 export const isRaidInstructionsMessage = (m: Message) =>
-  !!m.embeds.find((e) => e.title === RAID_INSTRUCTIONS_TITLE);
+  !!m.embeds.find((e) => e.title === INSTRUCTIONS_TITLE);
 
 export const getRaidReport = async (channel: TextBasedChannel) => {
   const all = await channel.messages.fetch();
@@ -73,6 +74,8 @@ export const getRaidReport = async (channel: TextBasedChannel) => {
   };
 };
 
+const EVERYONE = "Everyone";
+
 export class RaidReport {
   private readonly attendanceColumnLength: number;
 
@@ -82,8 +85,9 @@ export class RaidReport {
       raidTicks: RaidTick[];
     }
   ) {
+    const attendanceNames = [...this.allAttendees, EVERYONE];
     this.attendanceColumnLength =
-      max(this.allAttendees.map((a) => a.length)) || 0;
+      max(attendanceNames.map((a) => a.length)) || 0;
   }
 
   public getCreditMessageContent(): string[] {
@@ -144,26 +148,31 @@ export class RaidReport {
 
   public get instructionsEmbed(): MessageEmbed {
     return new MessageEmbed({
-      title: RAID_INSTRUCTIONS_TITLE,
-      description: `Use the following commands to submit change requests. When a <@&${dkpDeputyRoleId}> confirms the change with ✅, it will be added to the Raid report.`,
+      title: INSTRUCTIONS_TITLE,
+      description: `• <@&${raiderRoleId}>s may use the \`!commands\` to submit change requests.
+• The bot will confirm (👍/⚠️) if the request was received properly.
+• A <@&${dkpDeputyRoleId}> will approve each request with ✅, adding it to the Raid report.
+• A <@&${dkpDeputyRoleId}> will assign raid tick values using the \`/raid tick\` command.
+• A <@&${dkpDeputyRoleId}> will ✅ this message to upload the raid.
+• Requests made by a <@&${dkpDeputyRoleId}> are automatically approved.`,
     })
       .addField(
         "Add a name to raid ticks. Tick numbers are optional.",
-        "`!add Pumped 2, 3`"
+        "`!add Pumped 2, 3 (ignored context)`"
       )
       .addField(
         "Remove a name from raid ticks. Tick numbers are optional.",
-        "`!rem Pumped 2, 3`"
+        "`!rem Pumped 2, 3 (ignored context)`"
       )
       .addField(
         "Replace a name on raid ticks. Tick numbers are optional.",
-        "`!rep Pumped with Iceburgh 2, 3`"
+        "`!rep Pumped with Iceburgh 2, 3 (ignored context)`"
       );
   }
 
   public getRaidReportEmbeds(): MessageEmbed[] {
     const report = `${this.data.raidTicks
-      .map((t, i) => this.renderRaidTick(t, i + 1))
+      .map((t) => this.renderRaidTick(t))
       .join("\n\n")}
 
 ${this.attendance}`;
@@ -187,6 +196,11 @@ ${this.attendance}`;
 ${p}${code}`,
         })
     );
+  }
+
+  public getTickName(tickNumber: number) {
+    const tick = this.getRaidTick(tickNumber);
+    return `Tick ${tickNumber}: ${tick.event || "Unknown"}`;
   }
 
   public getEarned(tickNumber: number) {
@@ -264,13 +278,19 @@ ${p}${code}`,
     );
   }
 
-  public updateRaidTick(event: string, value: number, tick?: number) {
+  public updateRaidTick(
+    event: string,
+    value: number,
+    tick?: number,
+    note?: string
+  ) {
     const ticks = tick ? [tick] : this.allTickNumbers;
     ticks
       .map((t) => this.getRaidTick(t))
       .forEach((t) => {
         t.event = event;
         t.value = value;
+        t.note = note;
       });
 
     return ticks;
@@ -288,13 +308,13 @@ ${p}${code}`,
     return raidTick;
   }
 
-  private renderRaidTick(t: RaidTick, tickNumber: number) {
+  private renderRaidTick(t: RaidTick) {
     const ready = t.value !== undefined && t.event !== undefined;
-    const all = "All".padEnd(this.attendanceColumnLength);
+    const all = EVERYONE.padEnd(this.attendanceColumnLength);
     const value = `+${this.getPaddedDkp(t.value)}`;
     const loot = t.loot.length > 0 ? `\n${this.renderTickLoot(t.loot)}` : "";
-    return `--- Raid Tick ${tickNumber} (${t.name})---
-${ready ? "+" : "-"} ${all} ${value} (${t.event || "Unknown Event"})${loot}`;
+    return `--- ${this.getTickName(t.tickNumber)} ---
+${ready ? "+" : "-"} ${all} ${value} (Attendance)${loot}`;
   }
 
   private getAttendanceMap() {
@@ -310,11 +330,11 @@ ${ready ? "+" : "-"} ${all} ${value} (${t.event || "Unknown Event"})${loot}`;
   private get attendance(): string {
     const attendanceMap = this.getAttendanceMap();
     const sorted = Object.keys(attendanceMap).sort();
-    return `--- Attendance ---
+    return `--- Tick Attendance ---
 ${sorted
   .map((name) =>
     this.renderAttendee(
-      name.padEnd(this.attendanceColumnLength),
+      name.padEnd(this.attendanceColumnLength + DKP_COLUMN_LENGTH + 2),
       attendanceMap[name]
     )
   )
@@ -327,19 +347,11 @@ ${sorted
 
   private getPaddedDkp(value?: number) {
     const s = value === undefined ? "?" : String(value);
-    return s.padEnd(6);
+    return s.padEnd(DKP_COLUMN_LENGTH);
   }
 
   private renderAttendee(attendee: string, tickNumbers: number[]): string {
-    const ticks = tickNumbers.map((i) => this.getRaidTick(i));
-    const dkp = ticks.reduce(
-      (s, t) => (t.value !== undefined ? s + t.value : s),
-      0
-    );
-    const calculatable = every(ticks, (t) => t.value !== undefined);
-    return `${calculatable ? "+" : "-"} ${attendee} +${this.getPaddedDkp(
-      calculatable ? dkp : undefined
-    )} (${tickNumbers.join(", ")})`;
+    return `+ ${attendee} (${tickNumbers.join(", ")})`;
   }
 
   private renderTickLoot(loot: Loot[]): string {

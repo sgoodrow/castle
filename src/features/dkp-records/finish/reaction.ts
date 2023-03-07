@@ -74,6 +74,7 @@ class RaidReportFinishedReactionAction extends ReactionAction {
       // provide receipt
       await this.message.reply({
         embeds: raidIds.map(({ event, eventType, id }, i) => {
+          const name = report.getTickName(i + 1);
           const earned = report.getEarned(i + 1);
           const spent = report.getSpent(i + 1);
           const net = earned - spent;
@@ -81,10 +82,10 @@ class RaidReportFinishedReactionAction extends ReactionAction {
             net === 0
               ? "No change to economy"
               : net > 0
-              ? `+ Economy DKP increase ${net}`
-              : `- Economy DKP decrease ${net}`;
+              ? `+ Economy increase     ${net}`
+              : `- Economy decrease     ${net}`;
           return new MessageEmbed({
-            title: `Raid Tick ${i + 1} (${event})`,
+            title: `${name} (${event})`,
             description: `Raid uploaded by ${reactor} ${code}diff
 DKP Earned             ${earned}
 DKP Spent              ${spent}

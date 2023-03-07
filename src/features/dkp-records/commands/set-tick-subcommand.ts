@@ -17,6 +17,7 @@ enum Option {
   Tick = "tick",
   Value = "value",
   Event = "event",
+  Note = "note",
 }
 
 export class SetTickSubcommand extends Subcommand {
@@ -45,6 +46,7 @@ export class SetTickSubcommand extends Subcommand {
     const { report, messages } = await getRaidReport(interaction.channel);
 
     const event = String(this.getOption(Option.Event, interaction)?.value);
+    const note = String(this.getOption(Option.Note, interaction)?.value);
     const tick =
       Number(this.getOption(Option.Tick, interaction)?.value) || undefined;
     const value =
@@ -52,7 +54,7 @@ export class SetTickSubcommand extends Subcommand {
       (await castledkp.getEvent(event))?.value ||
       0;
 
-    const ticksUpdated = report.updateRaidTick(event, value, tick);
+    const ticksUpdated = report.updateRaidTick(event, value, tick, note);
 
     await report.editMessages(messages);
 
@@ -83,6 +85,11 @@ export class SetTickSubcommand extends Subcommand {
           .setDescription(
             "A custom DKP value of the raid tick. If not set, the value is determined from the event type."
           )
+      )
+      .addStringOption((o) =>
+        o
+          .setName(Option.Note)
+          .setDescription("An optional note to be added to the raid tick.")
       );
   }
 

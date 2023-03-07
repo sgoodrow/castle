@@ -19,6 +19,8 @@ interface UnknownCredit extends BaseCredit {
 
 export type Credit = PilotCredit | ReasonCredit | UnknownCredit;
 
+const PILOT_KEYWORD = "botpilot";
+
 export class CreditParser {
   public readonly character: string;
   protected readonly raw: string;
@@ -57,11 +59,11 @@ export class CreditParser {
     if (!this.record) {
       return "UNKNOWN";
     }
-    return this.record.split(" ")[0] === "pilot" ? "PILOT" : "REASON";
+    return this.record.split(" ")[0] === PILOT_KEYWORD ? "PILOT" : "REASON";
   }
 
   private get pilotCredit(): PilotCredit | UnknownCredit {
-    const pilot = this.record.split("pilot ")[1];
+    const pilot = this.record.split(PILOT_KEYWORD)[1].trim();
     if (!this.character || !pilot) {
       return this.unknownCredit;
     }

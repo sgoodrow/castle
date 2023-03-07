@@ -33,7 +33,7 @@ interface Character {
   classname: string;
 }
 
-interface Event {
+export interface Event {
   name: string;
   value: number;
   id: number;
@@ -50,8 +50,8 @@ const events = new LRUCache<string, Event>({
   ttl: 10 * MINUTES,
 });
 
+const SHORT_DATE_FORMAT = "M/D";
 const DATE_FORMAT = "YYYY-MM-DD HH:mm";
-
 const CASTLE_DKP_EVENT_URL_STRIP = /[-()'\s]/g;
 
 const getEvents = async () => {
@@ -62,7 +62,7 @@ const getEvents = async () => {
   const { data } = await client.get<{ [_: string]: Event }>(route("events"));
   delete data.status;
   Object.values(data).forEach((e) => {
-    events.set(e.name.replace("[Green] ", ""), e);
+    events.set(e.name.replace("[Green] ", "").trim(), e);
   });
   return events;
 };
@@ -97,13 +97,23 @@ export const castledkp = {
       throw new Error(`Tick event type was not recognized: ${tick.event}`);
     }
 
+    // get note
+    const date = moment(tick.date);
+    let note = `${date.format(SHORT_DATE_FORMAT)} ${tick.event} Hour ${
+      tick.tickNumber
+    }`;
+    if (tick.note) {
+      note += ` (${tick.note})`;
+    }
+    note += ` ${threadUrl}`;
+
     // create raid
     const { data } = await client.post<{ raid_id: number }>(route("add_raid"), {
-      raid_date: tick.date.format(DATE_FORMAT),
+      raid_date: date.format(DATE_FORMAT),
       raid_attendees: { member: characterIds },
       raid_value: tick.value,
       raid_event_id: event.id,
-      raid_note: `Tick ${tickNumber}. Details at ${threadUrl}`,
+      raid_note: note,
     });
 
     // add items to raid
