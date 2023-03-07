@@ -24,12 +24,13 @@ class RaidReportRevisionMessageAction extends MessageAction {
     try {
       await getAction(content).tryExecute(this.message, actor);
     } catch (err) {
-      // warning emoji and ephemeral response
+      // warning emoji and dm
       await this.message.react("⚠️");
-      this.message.author.send(
-        `Command to request raid edit is invalid. \`${err}\``
-      );
-      return;
+      if (!this.message.author.bot) {
+        this.message.author.send(
+          `Command to request raid edit is invalid. \`${err}\``
+        );
+      }
     }
   }
 }

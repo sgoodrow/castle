@@ -14,6 +14,7 @@ import { Loot, RaidReport, RaidTick } from "../raid-report";
 import { client } from "../../..";
 import moment, { Moment } from "moment";
 import { addRoleToThread } from "../../../shared/command/util";
+import { Credit, CreditParser } from "../credit-parser";
 
 const supportedFormat =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -100,6 +101,13 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
       embeds: [report.instructionsEmbed],
     });
 
+    // add credit messages
+    await Promise.all(
+      report
+        .getCreditMessageContent()
+        .map((content) => thread.send({ content }))
+    );
+
     // add deputies to thread
     await addRoleToThread(dkpDeputyRoleId, thread);
   }
@@ -131,6 +139,7 @@ class SheetParser implements RaidTick {
   public readonly event?: string;
   public readonly attendees: string[];
   public readonly loot: Loot[];
+  public readonly credits: Credit[];
   public readonly date: moment.Moment;
 
   /**
@@ -149,6 +158,7 @@ class SheetParser implements RaidTick {
     this.attendees = this.getAttendees(xlsxData);
     this.loot = this.getLoot(xlsxData);
     this.date = this.getDate(xlsxData);
+    this.credits = this.getCredits(xlsxData);
   }
 
   private getDate(xlsxData: string[]): Moment {
@@ -160,6 +170,12 @@ class SheetParser implements RaidTick {
       logLine.substring(logLine.indexOf("[") + 1, logLine.indexOf("]")),
       "ddd MMM DD HH:mm:ss YYYY"
     );
+  }
+
+  private getCredits(xlsxData: string[]): Credit[] {
+    return xlsxData
+      .filter((r) => this.getRecordType(r) === "Credit")
+      .map((r) => new CreditParser(r).getCredit());
   }
 
   private getAttendees(xlsxData: string[]): string[] {

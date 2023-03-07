@@ -10,6 +10,7 @@ import moment from "moment";
 import { dkpDeputyRoleId } from "../../config";
 import { castledkp } from "../../services/castledkp";
 import { code } from "../../shared/util";
+import { Credit } from "./credit-parser";
 
 export interface Loot {
   item: string;
@@ -30,6 +31,7 @@ export interface RaidTick {
   loot: Loot[];
   attendees: string[];
   date: moment.Moment;
+  credits: Credit[];
 }
 
 const RAID_REPORT_TITLE = "Raid Report";
@@ -82,6 +84,21 @@ export class RaidReport {
   ) {
     this.attendanceColumnLength =
       max(this.allAttendees.map((a) => a.length)) || 0;
+  }
+
+  public getCreditMessageContent(): string[] {
+    return this.data.raidTicks.reduce((a, t, i) => {
+      const tickNumber = i + 1;
+      return a.concat(
+        t.credits.map((c) => {
+          return c.type === "UNKNOWN"
+            ? `⚠️ Unparsable credit: ${c.player} said '${c.raw}' during Raid Tick ${tickNumber}`
+            : c.type === "PILOT"
+            ? `!rep ${c.character} with ${c.player} ${tickNumber}`
+            : `!add ${c.player} ${tickNumber} (${c.reason})`;
+        })
+      );
+    }, [] as string[]);
   }
 
   public async editMessages(messages: Message[]) {

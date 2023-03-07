@@ -26,7 +26,10 @@ export const getRaidEditMessageContent = async (
 };
 
 export const getAction = (content: string) => {
-  const [actionType, ...actionArguments] = content
+  // remove parenthetical expressions
+  const stripped = content.replace(/\(.+?\)/g, "").trim();
+
+  const [actionType, ...actionArguments] = stripped
     .slice(1)
     .split(multipleSpaces);
 
