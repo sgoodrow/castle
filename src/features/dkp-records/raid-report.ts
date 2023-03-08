@@ -150,7 +150,7 @@ export class RaidReport {
     return new MessageEmbed({
       title: INSTRUCTIONS_TITLE,
       description: `• <@&${raiderRoleId}>s may use the \`!commands\` to submit change requests.
-• The bot will confirm (👍/⚠️) if the request was received properly.
+• The bot will react with ⚠️ if the request is invalid (wrong format).
 • A <@&${dkpDeputyRoleId}> will approve each request with ✅, adding it to the Raid report.
 • A <@&${dkpDeputyRoleId}> will assign raid tick values using the \`/raid tick\` command.
 • A <@&${dkpDeputyRoleId}> will ✅ this message to upload the raid.
@@ -253,7 +253,7 @@ ${p}${code}`,
       if (index < 0) {
         return;
       }
-      t.attendees.splice(index);
+      t.attendees.splice(index, 1);
     });
   }
 
@@ -267,8 +267,7 @@ ${p}${code}`,
       if (index < 0) {
         return;
       }
-      t.attendees.splice(index);
-      t.attendees.push(replacer);
+      t.attendees[index] = replacer;
     });
   }
 
@@ -330,7 +329,7 @@ ${ready ? "+" : "-"} ${all} ${value} (Attendance)${loot}`;
   private get attendance(): string {
     const attendanceMap = this.getAttendanceMap();
     const sorted = Object.keys(attendanceMap).sort();
-    return `--- Tick Attendance ---
+    return `--- Attendance (${sorted.length}) ---
 ${sorted
   .map((name) =>
     this.renderAttendee(

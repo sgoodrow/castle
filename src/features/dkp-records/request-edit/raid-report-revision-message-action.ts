@@ -23,7 +23,6 @@ class RaidReportRevisionMessageAction extends MessageAction {
     }
     try {
       await getAction(content).tryExecute(this.message, actor);
-      await this.message.react("👍");
     } catch (err) {
       // warning emoji and dm
       await this.message.react("⚠️");

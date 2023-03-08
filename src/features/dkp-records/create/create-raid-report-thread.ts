@@ -81,7 +81,7 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     // create a thread
     const thread = await message.startThread({
       name,
-      autoArchiveDuration: 60,
+      autoArchiveDuration: 4320,
     });
 
     // add files with the first report embed
