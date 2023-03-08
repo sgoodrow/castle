@@ -5,7 +5,7 @@ import {
 } from "../../../shared/action/message-action";
 import {
   getAction,
-  getRaidEditMessageContent as getRaidEditMessageContent,
+  getRaidRevisionMessageContent as getRaidRevisionMessageContent,
 } from "./util";
 
 export const tryRaidReportRevisionMessageAction = (message: Message) =>
@@ -13,7 +13,7 @@ export const tryRaidReportRevisionMessageAction = (message: Message) =>
 
 class RaidReportRevisionMessageAction extends MessageAction {
   public async execute() {
-    const content = await getRaidEditMessageContent(this.message);
+    const content = await getRaidRevisionMessageContent(this.message);
     if (!content) {
       return;
     }

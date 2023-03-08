@@ -1,6 +1,6 @@
 import { Message } from "discord.js";
 import { tryCreateRaidReportThreadAction } from "../features/dkp-records/create/create-raid-report-thread";
-import { tryRaidReportRevisionMessageAction } from "../features/dkp-records/request-edit/raid-report-revision-message-action";
+import { tryRaidReportRevisionMessageAction } from "../features/dkp-records/request-revision/raid-report-revision-message-action";
 
 const messageActions = [
   tryCreateRaidReportThreadAction,

@@ -6,7 +6,7 @@ import { RemovePlayerRevision } from "./remove-player-revision";
 
 const multipleSpaces = /\s+/;
 
-export const getRaidEditMessageContent = async (
+export const getRaidRevisionMessageContent = async (
   message: Message | PartialMessage
 ) => {
   const thread = message.channel.isThread();

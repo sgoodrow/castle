@@ -8,7 +8,7 @@ import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../../shared/action/reaction-action";
-import { getAction, getRaidEditMessageContent } from "./util";
+import { getAction, getRaidRevisionMessageContent } from "./util";
 
 export const tryApproveRaidReportRevisionReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -24,7 +24,7 @@ class ApproveRaidReportRevisionReactionAction extends ReactionAction {
       return;
     }
 
-    const content = await getRaidEditMessageContent(this.message);
+    const content = await getRaidRevisionMessageContent(this.message);
     if (!content) {
       return;
     }

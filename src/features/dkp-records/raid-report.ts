@@ -5,12 +5,11 @@ import {
   MessageEmbed,
   TextBasedChannel,
 } from "discord.js";
-import { every, flatMap, max, range, sumBy } from "lodash";
-import moment from "moment";
+import { flatMap, max, range, sumBy } from "lodash";
 import { dkpDeputyRoleId, raiderRoleId } from "../../config";
 import { castledkp } from "../../services/castledkp";
 import { code } from "../../shared/util";
-import { Credit } from "./credit-parser";
+import { Credit } from "./create/credit-parser";
 
 export interface Loot {
   item: string;
@@ -151,22 +150,25 @@ export class RaidReport {
       title: INSTRUCTIONS_TITLE,
       description: `• <@&${raiderRoleId}>s may use the \`!commands\` to submit change requests.
 • The bot will react with ⚠️ if the request is invalid (wrong format).
-• A <@&${dkpDeputyRoleId}> will approve each request with ✅, adding it to the Raid report.
-• A <@&${dkpDeputyRoleId}> will assign raid tick values using the \`/raid tick\` command.
-• A <@&${dkpDeputyRoleId}> will ✅ this message to upload the raid.
-• Requests made by a <@&${dkpDeputyRoleId}> are automatically approved.`,
+• Deputies will ✅ requests to add them the raid report.
+• Deputies will ✅ this message to upload the raid.
+• Requests made by deputies are automatically added to the raid report.`,
     })
       .addField(
-        "Add a name to raid ticks. Tick numbers are optional.",
-        "`!add Pumped 2, 3 (ignored context)`"
+        "Add a name to raid ticks. Tick numbers and context are optional.",
+        "`!add Pumped 2, 3 (context)`"
       )
       .addField(
-        "Remove a name from raid ticks. Tick numbers are optional.",
-        "`!rem Pumped 2, 3 (ignored context)`"
+        "Remove a name from raid ticks. Tick numbers and context are optional.",
+        "`!rem Pumped 2, 3 (context)`"
       )
       .addField(
-        "Replace a name on raid ticks. Tick numbers are optional.",
-        "`!rep Pumped with Iceburgh 2, 3 (ignored context)`"
+        "Replace a name on raid ticks. Tick numbers and context are optional.",
+        "`!rep Pumped with Iceburgh 2, 3 (context)`"
+      )
+      .addField(
+        `Deputies: Assign raid tick event types and values.`,
+        '`/raid tick tick: "1" event: "Cazic Thule" value: "3"`'
       );
   }
 
