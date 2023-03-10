@@ -89,8 +89,7 @@ class AuctionFinishedReactionAction extends ReactionAction {
         "Tried to finish an auction, but the message has no author."
       );
     }
-    const price = await this.getPrice(this.message.content);
-    const character = await this.getCharacter(this.message.content);
+    const { price, character } = await this.parseBid(this.message.content);
     const item = await this.getItem(name);
 
     // add item to raid
@@ -119,6 +118,18 @@ class AuctionFinishedReactionAction extends ReactionAction {
     this.message.channel.setName(`✅ ${name}`);
   }
 
+  private async parseBid(message: string) {
+    const reg = /^(\d)\s(dkp\s)?(\w+)$/.exec(message);
+    reg?.shift();
+    if (!reg?.length) {
+      throw new Error(`Could not parse bid.
+${this.example}`);
+    }
+    const price = this.getPrice(reg[0]);
+    const character = await this.getCharacter(reg[reg.length - 1]);
+    return { price, character };
+  }
+
   private async getItem(threadName: string) {
     // parse out the extra stuff
     return threadName.includes(" - ")
@@ -126,8 +137,7 @@ class AuctionFinishedReactionAction extends ReactionAction {
       : threadName;
   }
 
-  private async getPrice(messageContent: string) {
-    const [unparsedPrice] = messageContent.split(" ", 2);
+  private getPrice(unparsedPrice: string) {
     const price = Number(unparsedPrice);
     if (!Number.isInteger(price) || price < 1) {
       throw new Error(
@@ -138,14 +148,15 @@ ${this.example}`
     return price;
   }
 
-  private async getCharacter(messageContent: string) {
-    const name = messageContent.split(" ", 2)[1];
-    if (!name) {
+  private async getCharacter(unfixedName: string) {
+    if (!unfixedName) {
       throw new Error(
         `The bid does not have a character name specified.
 ${this.example}`
       );
     }
+
+    const name = unfixedName.charAt(0).toUpperCase() + unfixedName.slice(1);
 
     // get character ID from name
     try {
