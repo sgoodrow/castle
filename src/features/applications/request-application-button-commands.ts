@@ -31,9 +31,14 @@ export class RequestApplication extends ButtonCommand {
       ephemeral: true,
     });
 
-    const channel = interaction.guild?.channels.cache.get(requestDumpThreadId);
-    if (!channel?.isText()) {
-      throw new Error(`${"1077736628992352276"} is not a text channel.`);
+    const channel = await interaction.guild?.channels.fetch(
+      requestDumpThreadId
+    );
+    if (!channel) {
+      throw new Error("Could not locate the request dump channel");
+    }
+    if (!channel.isText()) {
+      throw new Error(`${requestDumpThreadId} is not a text channel.`);
     }
 
     await channel.send(
