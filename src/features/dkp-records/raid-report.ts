@@ -5,9 +5,10 @@ import {
   MessageEmbed,
   TextBasedChannel,
 } from "discord.js";
-import { flatMap, max, range, sumBy } from "lodash";
-import { dkpDeputyRoleId, raiderRoleId } from "../../config";
-import { castledkp } from "../../services/castledkp";
+import { flatMap, max, range, some, sumBy, uniq } from "lodash";
+import moment from "moment";
+import { raiderRoleId } from "../../config";
+import { castledkp, Event, SHORT_DATE_FORMAT } from "../../services/castledkp";
 import { code } from "../../shared/util";
 import { Credit } from "./create/credit-parser";
 
@@ -26,7 +27,7 @@ export interface Attendee {
 export interface RaidTick {
   tickNumber: number;
   value?: number;
-  event?: string;
+  event?: Event;
   note?: string;
   loot: Loot[];
   attendees: string[];
@@ -46,7 +47,22 @@ export const isRaidInstructionsMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === INSTRUCTIONS_TITLE);
 
 export const getRaidReport = async (channel: TextBasedChannel) => {
-  const all = await channel.messages.fetch();
+  if (!channel.isThread()) {
+    throw new Error(
+      "Could not find raid reports because channel is not a thread."
+    );
+  }
+
+  const starter = await channel.fetchStarterMessage();
+  if (!starter) {
+    throw new Error(
+      "Could not find raid reports because the thread starter message could not be found"
+    );
+  }
+  const all = await channel.messages.fetch({
+    after: starter.id,
+    limit: 10,
+  });
   const messages = [
     ...all
       .reverse()
@@ -87,6 +103,22 @@ export class RaidReport {
     const attendanceNames = [...this.allAttendees, EVERYONE];
     this.attendanceColumnLength =
       max(attendanceNames.map((a) => a.length)) || 0;
+  }
+
+  public get allTicksHaveEvent(): boolean {
+    return !some(
+      this.allTickNumbers.map((i) => this.getRaidTick(i).event === undefined)
+    );
+  }
+
+  public getThreadName(): string {
+    const shortDate = moment(this.data.raidTicks[0].date).format(
+      SHORT_DATE_FORMAT
+    );
+    const abreviations = uniq(
+      this.data.raidTicks.map(({ event }) => event?.abreviation)
+    ).join(", ");
+    return `${shortDate} - ${abreviations}`;
   }
 
   public getCreditMessageContent(): string[] {
@@ -152,7 +184,9 @@ export class RaidReport {
 • The bot will react with ⚠️ if the request is invalid (wrong format).
 • Deputies will ✅ requests to add them the raid report.
 • Deputies will ✅ this message to upload the raid.
-• Requests made by deputies are automatically added to the raid report.`,
+• Requests made by deputies are automatically added to the raid report.
+
+Kill bonus values: https://tinyurl.com/CastleBossBonuses`,
     })
       .addField(
         "Add a name to raid ticks. Tick numbers and context are optional.",
@@ -202,7 +236,7 @@ ${p}${code}`,
 
   public getTickName(tickNumber: number) {
     const tick = this.getRaidTick(tickNumber);
-    return `Tick ${tickNumber}: ${tick.event || "Unknown"}`;
+    return `Tick ${tickNumber}: ${tick.event?.shortName || "Unknown"}`;
   }
 
   public getEarned(tickNumber: number) {
@@ -280,7 +314,7 @@ ${p}${code}`,
   }
 
   public updateRaidTick(
-    event: string,
+    event: Event,
     value: number,
     tick?: number,
     note?: string
@@ -301,10 +335,10 @@ ${p}${code}`,
     return range(1, this.data.raidTicks.length + 1);
   }
 
-  private getRaidTick(tick: number): RaidTick {
-    const raidTick = this.data.raidTicks[tick - 1];
+  private getRaidTick(tickNumber: number): RaidTick {
+    const raidTick = this.data.raidTicks[tickNumber - 1];
     if (!raidTick) {
-      throw new Error(`Could not find a raid tick matching ${tick}`);
+      throw new Error(`Could not find a raid tick matching ${tickNumber}`);
     }
     return raidTick;
   }

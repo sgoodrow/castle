@@ -35,6 +35,8 @@ interface Character {
 
 export interface Event {
   name: string;
+  shortName: string;
+  abreviation: string;
   value: number;
   id: number;
 }
@@ -50,7 +52,7 @@ const events = new LRUCache<string, Event>({
   ttl: 10 * MINUTES,
 });
 
-const SHORT_DATE_FORMAT = "M/D";
+export const SHORT_DATE_FORMAT = "M-D";
 const DATE_FORMAT = "YYYY-MM-DD HH:mm";
 const CASTLE_DKP_EVENT_URL_STRIP = /[-()'\s]/g;
 
@@ -59,10 +61,23 @@ const getEvents = async () => {
   if (events.size) {
     return events;
   }
-  const { data } = await client.get<{ [_: string]: Event }>(route("events"));
+  const { data } = await client.get<{
+    [_: string]: { name: string; value: number; id: number };
+  }>(route("events"));
   delete data.status;
-  Object.values(data).forEach((e) => {
-    events.set(e.name.replace("[Green] ", "").trim(), e);
+  Object.values(data).forEach(({ id, name, value }) => {
+    const abreviation = name.substring(
+      name.indexOf("[") + 1,
+      name.indexOf("]")
+    );
+    const shortName = name.replace(`[${abreviation}]`, "").trim();
+    events.set(name.trim(), {
+      id,
+      value,
+      name,
+      abreviation,
+      shortName,
+    });
   });
   return events;
 };
@@ -73,9 +88,9 @@ export const castledkp = {
     return events.get(label);
   },
 
-  getEventLabels: async () => {
+  getEvents: async () => {
     const events = await getEvents();
-    return [...events.keys()];
+    return [...events.values()];
   },
 
   createRaid: async (tick: RaidTick, tickNumber: number, threadUrl: string) => {
@@ -92,16 +107,11 @@ export const castledkp = {
       tick.attendees.map((a) => castledkp.getCharacter(a).then((c) => c.id))
     );
 
-    const event = await castledkp.getEvent(tick.event);
-    if (!event) {
-      throw new Error(`Tick event type was not recognized: ${tick.event}`);
-    }
-
     // get note
     const date = moment(tick.date);
-    let note = `${date.format(SHORT_DATE_FORMAT)} ${tick.event} Hour ${
-      tick.tickNumber
-    }`;
+    let note = `${date.format(SHORT_DATE_FORMAT)} ${
+      tick.event.shortName
+    } Hour ${tick.tickNumber}`;
     if (tick.note) {
       note += ` (${tick.note})`;
     }
@@ -112,7 +122,7 @@ export const castledkp = {
       raid_date: date.format(DATE_FORMAT),
       raid_attendees: { member: characterIds },
       raid_value: tick.value,
-      raid_event_id: event.id,
+      raid_event_id: tick.event.id,
       raid_note: note,
     });
 
@@ -120,8 +130,7 @@ export const castledkp = {
     await Promise.all(tick.loot.map((l) => castledkp.addItem(data.raid_id, l)));
 
     return {
-      event: tick.event,
-      eventType: tick.event
+      eventUrlSlug: tick.event.name
         .toLowerCase()
         .replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
       id: data.raid_id,

@@ -37,4 +37,33 @@ export abstract class Subcommand extends BaseCommand {
   ) {
     return getOption(this.name, name, interaction);
   }
+
+  protected getOptionValue<T>(
+    name: string,
+    interaction:
+      | CommandInteraction<CacheType>
+      | AutocompleteInteraction<CacheType>
+  ) {
+    const o = this.getOption(name, interaction);
+    if (o?.value === undefined) {
+      return;
+    }
+    return o.value as unknown as T;
+  }
+
+  protected getRequiredOptionValue<T>(
+    name: string,
+    interaction:
+      | CommandInteraction<CacheType>
+      | AutocompleteInteraction<CacheType>
+  ) {
+    const o = this.getOption(name, interaction);
+    if (!o) {
+      throw new Error(`Option ${name} could not be found.`);
+    }
+    if (o.value == undefined) {
+      throw new Error(`Option ${name} is required but has an undefined value.`);
+    }
+    return o.value as unknown as T;
+  }
 }

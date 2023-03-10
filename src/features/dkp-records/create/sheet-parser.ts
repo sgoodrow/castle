@@ -1,9 +1,25 @@
 import moment from "moment";
 import { Credit, CreditParser } from "./credit-parser";
 import { Loot, RaidTick } from "../raid-report";
+import { Event } from "../../../services/castledkp";
+
+const EQ_DATE_FORMAT = "ddd MMM DD HH:mm:ss YYYY";
+
+/**
+ * Validate that the first cell contains a bracketed date string.
+ */
+export const isValidXlsxData = (xlsxData: string[]): boolean => {
+  if (!xlsxData.length) {
+    return false;
+  }
+  const search = new RegExp(/\[.+?\]/g).exec(xlsxData[0]);
+  const isValid = moment(search, EQ_DATE_FORMAT).isValid();
+  console.log(isValid);
+  return isValid;
+};
 
 export class SheetParser implements RaidTick {
-  public readonly event?: string;
+  public readonly event?: Event;
   public readonly value?: number;
   public readonly attendees: string[];
   public readonly loot: Loot[];
@@ -32,8 +48,8 @@ export class SheetParser implements RaidTick {
     }
     return moment(
       logLine.substring(logLine.indexOf("[") + 1, logLine.indexOf("]")),
-      "ddd MMM DD HH:mm:ss YYYY"
-    ).toString();
+      EQ_DATE_FORMAT
+    ).toISOString();
   }
 
   private getCredits(xlsxData: string[]): Credit[] {

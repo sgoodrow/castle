@@ -13,7 +13,7 @@ import axios from "axios";
 import { RaidReport } from "../raid-report";
 import { client } from "../../..";
 import { addRoleToThread } from "../../../shared/command/util";
-import { SheetParser } from "./sheet-parser";
+import { isValidXlsxData, SheetParser } from "./sheet-parser";
 
 const supportedFormat =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -129,6 +129,7 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
           })
           .split("\n")
       )
+      .filter((data) => isValidXlsxData(data))
       .map((data, i) => new SheetParser(data, i + 1));
   }
 }
