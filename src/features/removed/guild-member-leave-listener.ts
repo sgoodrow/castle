@@ -1,4 +1,5 @@
 import { GuildMember, PartialGuildMember } from "discord.js";
+import moment from "moment";
 import { membersAndAlliesRoleId, removedChannelId } from "../../config";
 
 export const guildMemberLeaveListener = async (
@@ -14,7 +15,8 @@ export const guildMemberLeaveListener = async (
     throw new Error(`${removedChannelId} is not a text channel.`);
   }
 
-  const name = `**${member.displayName}** (<@${member.id}>) has left the Discord.`;
+  const duration = moment(member.joinedAt).fromNow(true);
+  const name = `**${member.displayName}** (<@${member.id}>) left Discord after ${duration}.`;
 
   // get info
   const roles = member.roles.cache
