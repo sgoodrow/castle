@@ -61,7 +61,10 @@ export const getRaidReport = async (channel: TextBasedChannel) => {
   }
   const all = await channel.messages.fetch({
     after: starter.id,
-    limit: 10,
+    // 4 is the typical number of messages for a "very large" raid (e.g. 9 ticks on a quake)
+    // 7 has some nice buffer incase something crazy happens
+    // assumption: fewer = faster
+    limit: 7,
   });
   const messages = [
     ...all

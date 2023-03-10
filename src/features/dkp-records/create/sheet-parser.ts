@@ -13,9 +13,7 @@ export const isValidXlsxData = (xlsxData: string[]): boolean => {
     return false;
   }
   const search = new RegExp(/\[.+?\]/g).exec(xlsxData[0]);
-  const isValid = moment(search, EQ_DATE_FORMAT).isValid();
-  console.log(isValid);
-  return isValid;
+  return moment(search, EQ_DATE_FORMAT).isValid();
 };
 
 export class SheetParser implements RaidTick {
