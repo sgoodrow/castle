@@ -1,5 +1,6 @@
 import { ButtonInteraction, CacheType, Permissions } from "discord.js";
-import { inviteListChannelId } from "../../config";
+import { getGuild } from "../..";
+import { guildId, inviteListChannelId } from "../../config";
 import { dataSource } from "../../db/data-source";
 import { InviteSimple } from "../../db/invite-simple";
 import { ButtonCommand } from "../../shared/command/button-command";
@@ -34,9 +35,16 @@ class PingInviteListCommand extends ButtonCommand {
       throw new Error("There is nobody to invite.");
     }
 
+    const guild = await getGuild();
+    const statuses = await Promise.all(
+      users.map((u) => guild.members.cache.get(u)?.presence?.status)
+    );
+
     const alert = `**${interaction.member?.user} is available to send invites!**
 
-Attention: ${users.map((u) => `<@${u}>`).join(" ")}`;
+Attention: ${users
+      .map((u, i) => `<@${u}> (${statuses[i] || "unknown"})`)
+      .join(" ")}`;
 
     await interaction
       .editReply({ content: alert })
