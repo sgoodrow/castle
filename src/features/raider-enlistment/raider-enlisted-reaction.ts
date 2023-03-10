@@ -64,7 +64,11 @@ class RaiderEnlistedReactionAction extends ReactionAction {
         // its a reply to a message that is queued to be deleted
         newRaiderMessagesIds.includes(m.reference.messageId)
     );
-    newRaiderMessages.map((m) => m.delete());
-    repliesToNewRaiderMessages.map((m) => m.delete());
+    newRaiderMessages
+      .filter((m) => m.embeds.length === 0)
+      .map((m) => m.delete());
+    repliesToNewRaiderMessages
+      .filter((m) => m.embeds.length === 0)
+      .map((m) => m.delete());
   }
 }

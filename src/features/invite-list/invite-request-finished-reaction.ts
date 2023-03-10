@@ -60,7 +60,9 @@ class InviteRequestFinishedReactionAction extends ReactionAction {
         // its a reply to a message that is queued to be deleted
         requesterMessageIds.includes(m.reference.messageId)
     );
-    requesterMessages.map((m) => m.delete());
-    replies.map((m) => m.delete());
+    requesterMessages
+      .filter((m) => m.embeds.length === 0)
+      .map((m) => m.delete());
+    replies.filter((m) => m.embeds.length === 0).map((m) => m.delete());
   }
 }
