@@ -119,7 +119,7 @@ class AuctionFinishedReactionAction extends ReactionAction {
   }
 
   private async parseBid(message: string) {
-    const reg = /^(\d)\s(dkp\s)?(\w+)$/.exec(message);
+    const reg = /^(\d+)\s(dkp\s)?(\w+)$/.exec(message);
     reg?.shift();
     if (!reg?.length) {
       throw new Error(`Could not parse bid.
