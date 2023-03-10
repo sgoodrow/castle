@@ -1,6 +1,6 @@
 import { ButtonInteraction, CacheType, Permissions } from "discord.js";
 import { getGuild } from "../..";
-import { guildId, inviteListChannelId } from "../../config";
+import { inviteListChannelId } from "../../config";
 import { dataSource } from "../../db/data-source";
 import { InviteSimple } from "../../db/invite-simple";
 import { ButtonCommand } from "../../shared/command/button-command";
@@ -9,6 +9,42 @@ import {
   requireInteractionMemberPermission,
 } from "../../shared/command/util";
 import { HOURS } from "../../shared/time";
+
+const getPresenceIcon = (status = "unknown") => {
+  switch (status) {
+    case "online":
+      return "🟢";
+    case "idle":
+      return "🟠";
+    case "offline":
+      return "⭕";
+    case "unknown":
+      return "⭕";
+  }
+};
+
+export const getAttentionMessage = async (users: string[]) => {
+  if (!users.length) {
+    throw new Error("There is nobody to alert.");
+  }
+
+  const guild = await getGuild();
+  const statuses = await Promise.all(
+    users.map(async (user) => {
+      const { presence } = await guild.members.fetch({
+        user,
+        withPresences: true,
+      });
+      return {
+        user,
+        status: getPresenceIcon(presence?.status),
+      };
+    })
+  );
+
+  return `Attention:
+${statuses.map(({ user, status }) => `${status} <@${user}>`).join("\n")}`;
+};
 
 class PingInviteListCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {
@@ -31,20 +67,11 @@ class PingInviteListCommand extends ButtonCommand {
     });
 
     const users = await this.getPendingInviteUsers();
-    if (!users.length) {
-      throw new Error("There is nobody to invite.");
-    }
-
-    const guild = await getGuild();
-    const statuses = await Promise.all(
-      users.map((u) => guild.members.cache.get(u)?.presence?.status)
-    );
+    const attention = await getAttentionMessage(users);
 
     const alert = `**${interaction.member?.user} is available to send invites!**
 
-Attention: ${users
-      .map((u, i) => `<@${u}> (${statuses[i] || "unknown"})`)
-      .join(" ")}`;
+${attention}`;
 
     await interaction
       .editReply({ content: alert })

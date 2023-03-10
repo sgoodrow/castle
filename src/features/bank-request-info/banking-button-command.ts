@@ -1,10 +1,11 @@
-import { ButtonInteraction, CacheType } from "discord.js";
+import { ButtonInteraction, CacheType, User } from "discord.js";
 import { bankerRoleId, bankRequestsChannelId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 import {
   getChannel,
   requireInteractionMemberRole,
 } from "../../shared/command/util";
+import { getAttentionMessage } from "../invite-list/ping-invite-list-button-command";
 
 class BankingButtonCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {
@@ -25,17 +26,13 @@ class BankingButtonCommand extends ButtonCommand {
       ),
     ];
 
-    if (!users.length) {
-      await interaction.reply({
-        content: "There are no pending requests from non-bankers.",
-        ephemeral: true,
-      });
-      return;
-    }
+    const attention = await getAttentionMessage(
+      users.map((u) => (u as User).id)
+    );
 
     await interaction.reply(`**${interaction.member?.user} is now banking!**
 
-Attn: ${users.map((u) => `${u}`).join(" ")}`);
+${attention}`);
   }
 
   protected async authorize(interaction: ButtonInteraction<CacheType>) {
