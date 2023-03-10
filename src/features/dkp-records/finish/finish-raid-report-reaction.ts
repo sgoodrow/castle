@@ -73,7 +73,7 @@ class RaidReportFinishedReactionAction extends ReactionAction {
 
       // provide receipt
       await this.message.reply({
-        embeds: raidIds.map(({ event, eventType, id }, i) => {
+        embeds: raidIds.map(({ eventUrlSlug, id }, i) => {
           const name = report.getTickName(i + 1);
           const earned = report.getEarned(i + 1);
           const spent = report.getSpent(i + 1);
@@ -85,13 +85,13 @@ class RaidReportFinishedReactionAction extends ReactionAction {
               ? `+ Economy increase     ${net}`
               : `- Economy decrease     ${net}`;
           return new MessageEmbed({
-            title: `${name} (${event})`,
+            title: `${name}`,
             description: `Raid uploaded by ${reactor} ${code}diff
 DKP Earned             ${earned}
 DKP Spent              ${spent}
 -------------------------------
 ${result}${code}`,
-            url: `https://castledkp.com/index.php/Raids/[green]-${eventType}-r${id}.html?s=`,
+            url: `https://castledkp.com/index.php/Raids/[green]-${eventUrlSlug}-r${id}.html?s=`,
           });
         }),
       });

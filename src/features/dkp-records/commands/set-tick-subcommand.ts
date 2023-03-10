@@ -45,21 +45,38 @@ export class SetTickSubcommand extends Subcommand {
     // get raid report
     const { report, messages } = await getRaidReport(interaction.channel);
 
-    const event = String(this.getOption(Option.Event, interaction)?.value);
-    const note = String(this.getOption(Option.Note, interaction)?.value);
-    const tick =
-      Number(this.getOption(Option.Tick, interaction)?.value) || undefined;
-    const value =
-      Number(this.getOption(Option.Value, interaction)?.value) ||
-      (await castledkp.getEvent(event))?.value ||
-      0;
+    const eventName = this.getRequiredOptionValue<string>(
+      Option.Event,
+      interaction
+    );
+    const note = this.getOptionValue<string>(Option.Note, interaction);
+    const tick = this.getOptionValue<number>(Option.Tick, interaction);
+    let value = this.getOptionValue<number>(Option.Value, interaction);
+    if (value === undefined) {
+      const dkpEvent = await castledkp.getEvent(eventName);
+      value = dkpEvent?.value || 0;
+    }
+
+    const event = await castledkp.getEvent(eventName);
+    if (!event) {
+      throw new Error(`The event type "${eventName}" could not be found.`);
+    }
 
     const ticksUpdated = report.updateRaidTick(event, value, tick, note);
 
     await report.editMessages(messages);
 
+    if (report.allTicksHaveEvent) {
+      const threadName = report.getThreadName();
+      if (interaction.channel.name !== threadName) {
+        await interaction.channel.setName(threadName);
+      }
+    }
+
     await interaction.editReply(
-      `Identified tick ${ticksUpdated.join(", ")} as "${event} (${value})".`
+      `Identified ${ticksUpdated.join(", ")} as "${
+        event.shortName
+      } (${value})".`
     );
   }
 
@@ -98,9 +115,9 @@ export class SetTickSubcommand extends Subcommand {
   ): Promise<ApplicationCommandOptionChoice[] | undefined> {
     switch (option) {
       case Option.Event:
-        return (await castledkp.getEventLabels()).map((l) => ({
-          name: l,
-          value: l,
+        return (await castledkp.getEvents()).map((e) => ({
+          name: e.shortName,
+          value: e.name,
         }));
       default:
         return;
