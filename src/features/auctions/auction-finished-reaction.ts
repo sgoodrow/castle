@@ -157,14 +157,7 @@ ${this.example}`
     }
 
     const name = unfixedName.charAt(0).toUpperCase() + unfixedName.slice(1);
-
-    // get character ID from name
-    try {
-      const { id } = await castledkp.getCharacter(name);
-      return { name, id };
-    } catch (error) {
-      throw new Error(`The character (${name}) could not be found.`);
-    }
+    return await castledkp.getCharacter(name);
   }
 
   private get example() {

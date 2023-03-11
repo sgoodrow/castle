@@ -23,6 +23,7 @@ export class SheetParser implements RaidTick {
   public readonly loot: Loot[];
   public readonly credits: Credit[];
   public readonly date: string;
+  public readonly sheetName: string;
 
   /**
    * List of strings. Each string may be one of the following:
@@ -32,11 +33,18 @@ export class SheetParser implements RaidTick {
    * 3a. creditt tell: "[wed feb 15 20:11:23 2023] PLAYER -> NINJALOOTER: creditt MESSAGE"
    * 3b. creditt tell: "[wed feb 15 21:14:22 2023] PLAYER tells you, 'creditt MESSAGE'"`,
    */
-  public constructor(xlsxData: string[], public readonly tickNumber: number) {
+  public constructor(
+    xlsxData: string[],
+    public readonly tickNumber: number,
+    sheetName: string
+  ) {
     this.attendees = this.getAttendees(xlsxData);
     this.loot = this.getLoot(xlsxData);
     this.date = this.getDate(xlsxData);
     this.credits = this.getCredits(xlsxData);
+    // the default sheetname is a date, which isn't very useful, so throw it out
+    const sheetNameDate = moment(sheetName, "YYYY.MM.DD hh.mm.ss A", true);
+    this.sheetName = sheetNameDate.isValid() ? "" : `${sheetName}?`;
   }
 
   private getDate(xlsxData: string[]): string {

@@ -5,6 +5,7 @@ import {
   PartialUser,
   User,
 } from "discord.js";
+import { invalid } from "moment";
 import {
   dkpDeputyRoleId,
   dkpRecordsBetaChannelId,
@@ -73,7 +74,7 @@ class RaidReportFinishedReactionAction extends ReactionAction {
 
       // provide receipt
       await this.message.reply({
-        embeds: raidIds.map(({ eventUrlSlug, id }, i) => {
+        embeds: raidIds.map(({ eventUrlSlug, id, invalidNames }, i) => {
           const name = report.getTickName(i + 1);
           const earned = report.getEarned(i + 1);
           const spent = report.getSpent(i + 1);
@@ -84,13 +85,19 @@ class RaidReportFinishedReactionAction extends ReactionAction {
               : net > 0
               ? `+ Economy increase     ${net}`
               : `- Economy decrease     ${net}`;
+          const notIncluded =
+            invalidNames.length > 0
+              ? `These characters were not included because they do not exist ${invalidNames.join(
+                  ", "
+                )}`
+              : "";
           return new MessageEmbed({
             title: `${name}`,
             description: `Raid uploaded by ${reactor} ${code}diff
 DKP Earned             ${earned}
 DKP Spent              ${spent}
 -------------------------------
-${result}${code}`,
+${result}${code}${notIncluded}`,
             url: `https://castledkp.com/index.php/Raids/[green]-${eventUrlSlug}-r${id}.html?s=`,
           });
         }),
@@ -100,7 +107,7 @@ ${result}${code}`,
       this.message.channel.setName(`✅ ${this.message.channel.name}`);
     } catch (err) {
       throw new Error(
-        `Failed to upload raid ticks: ${err}. Check for partial uploads!!`
+        `Failed to upload raid ticks: ${err} Check for partial uploads!`
       );
     }
   }

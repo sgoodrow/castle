@@ -1,5 +1,6 @@
 import axios from "axios";
 import axiosRetry from "axios-retry";
+import { partition } from "lodash";
 import LRUCache from "lru-cache";
 import moment from "moment";
 import { castleDkpTokenRO } from "../config";
@@ -82,6 +83,30 @@ const getEvents = async () => {
   return events;
 };
 
+const getCharacter = async (name: string) => {
+  const character = characters.get(name);
+  if (character) {
+    return character;
+  }
+  const result = await client
+    .get<{ direct?: { [key: string]: Character } }>(route("search"), {
+      params: {
+        in: "charname",
+        for: name,
+      },
+    })
+    .then(({ data }) => {
+      if (!data.direct) {
+        return undefined;
+      }
+      return Object.values(data.direct)[0];
+    });
+  if (result) {
+    characters.set(name, result);
+  }
+  return result;
+};
+
 export const castledkp = {
   getEvent: async (label: string) => {
     const events = await getEvents();
@@ -103,9 +128,13 @@ export const castledkp = {
     }
 
     // get character ids
-    const characterIds = await Promise.all(
-      tick.attendees.map((a) => castledkp.getCharacter(a).then((c) => c.id))
+    const { characters, invalidNames } = await castledkp.getCharacters(
+      tick.attendees
     );
+    const characterIds = characters.map((v) => v.id);
+    if (!characterIds.length) {
+      throw new Error(`Tick has no valid characters.`);
+    }
 
     // get note
     const date = moment(tick.date);
@@ -135,31 +164,34 @@ export const castledkp = {
         .replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
       id: data.raid_id,
       tickNumber,
+      invalidNames,
+    };
+  },
+
+  getCharacters: async (names: string[]) => {
+    const [characters, invalidNames] = partition(
+      await Promise.all(
+        names.map(async (n) => ({
+          name: n,
+          character: await getCharacter(n),
+        }))
+      ),
+      (c) => !!c.character
+    );
+    return {
+      characters: characters.map((v) => v.character as unknown as Character),
+      invalidNames: invalidNames.map((v) => v.name),
     };
   },
 
   getCharacter: async (name: string) => {
-    const character = characters.get(name);
-    if (character) {
-      return character;
+    const character = await getCharacter(name);
+    if (!character) {
+      throw new Error(
+        `Character named '${name} does not exist on CastleDKP.com`
+      );
     }
-    const result = await client
-      .get<{ direct?: { [key: string]: Character } }>(route("search"), {
-        params: {
-          in: "charname",
-          for: name,
-        },
-      })
-      .then(({ data }) => {
-        if (!data.direct) {
-          throw new Error(
-            `LOOKUP FAILED: There is no character named '${name}'.`
-          );
-        }
-        return Object.values(data.direct)[0];
-      });
-    characters.set(name, result);
-    return result;
+    return character;
   },
 
   addItem: async (

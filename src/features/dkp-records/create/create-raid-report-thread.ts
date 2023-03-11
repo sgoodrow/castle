@@ -51,7 +51,7 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     const name = `${a.name?.replace("_", " - ").replace(".xlsx", "")}`;
 
     // parse the attachment into a raid report
-    const raidTicks = await this.parseSheets(SheetNames, Sheets);
+    const raidTicks = this.parseSheets(SheetNames, Sheets);
     const report = new RaidReport({
       name,
       raidTicks,
@@ -112,24 +112,22 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     await addRoleToThread(dkpDeputyRoleId, thread);
   }
 
-  private async parseSheets(
-    names: string[],
-    sheets: { [sheet: string]: WorkSheet }
-  ) {
+  private parseSheets(names: string[], sheets: { [sheet: string]: WorkSheet }) {
     // Throw away the unused sheet
     if (names?.[0] === "Creditt & Gratss") {
       names.shift();
     }
     return names
-      .map((name) =>
-        utils
+      .map((name) => ({
+        data: utils
           .sheet_to_csv(sheets[name], {
             forceQuotes: true,
             blankrows: false,
           })
-          .split("\n")
-      )
-      .filter((data) => isValidXlsxData(data))
-      .map((data, i) => new SheetParser(data, i + 1));
+          .split("\n"),
+        name,
+      }))
+      .filter(({ data }) => isValidXlsxData(data))
+      .map(({ data, name }, i) => new SheetParser(data, i + 1, name));
   }
 }

@@ -29,6 +29,7 @@ export interface RaidTick {
   value?: number;
   event?: Event;
   note?: string;
+  sheetName?: string;
   loot: Loot[];
   attendees: string[];
   date: string;
@@ -121,7 +122,7 @@ export class RaidReport {
     const abreviations = uniq(
       this.data.raidTicks.map(({ event }) => event?.abreviation)
     ).join(", ");
-    return `${shortDate} - ${abreviations}`;
+    return `${shortDate} ${abreviations}`;
   }
 
   public getCreditMessageContent(): string[] {
@@ -239,7 +240,9 @@ ${p}${code}`,
 
   public getTickName(tickNumber: number) {
     const tick = this.getRaidTick(tickNumber);
-    return `Tick ${tickNumber}: ${tick.event?.shortName || "Unknown"}`;
+    return `Tick ${tickNumber}: ${
+      tick.event?.shortName || tick.sheetName || "Unknown"
+    }`;
   }
 
   public getEarned(tickNumber: number) {
