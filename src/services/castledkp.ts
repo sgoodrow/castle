@@ -4,7 +4,10 @@ import { partition } from "lodash";
 import LRUCache from "lru-cache";
 import moment from "moment";
 import { castleDkpTokenRO } from "../config";
-import { RaidTick } from "../features/dkp-records/raid-report";
+import {
+  RaidTick,
+  UPLOAD_DATE_FORMAT,
+} from "../features/dkp-records/raid-tick";
 import { MINUTES, MONTHS } from "../shared/time";
 
 const route = (f: string) => `api.php?function=${f}`;
@@ -34,7 +37,7 @@ interface Character {
   classname: string;
 }
 
-export interface Event {
+export interface RaidEventData {
   name: string;
   shortName: string;
   abreviation: string;
@@ -48,13 +51,11 @@ const characters = new LRUCache<string, Character>({
   updateAgeOnGet: true,
 });
 
-const events = new LRUCache<string, Event>({
+const events = new LRUCache<string, RaidEventData>({
   max: 200,
   ttl: 10 * MINUTES,
 });
 
-export const SHORT_DATE_FORMAT = "M-D";
-const DATE_FORMAT = "YYYY-MM-DD HH:mm";
 const CASTLE_DKP_EVENT_URL_STRIP = /[-()'\s]/g;
 
 const getEvents = async () => {
@@ -82,6 +83,13 @@ const getEvents = async () => {
   });
   return events;
 };
+
+export interface CreateRaidResponse {
+  eventUrlSlug: string;
+  id: number;
+  tick: RaidTick;
+  invalidNames: string[];
+}
 
 const getCharacter = async (name: string) => {
   const character = characters.get(name);
@@ -118,52 +126,47 @@ export const castledkp = {
     return [...events.values()];
   },
 
-  createRaid: async (tick: RaidTick, tickNumber: number, threadUrl: string) => {
+  createRaid: async (
+    tick: RaidTick,
+    threadUrl: string
+  ): Promise<CreateRaidResponse> => {
     // validate ticks
-    if (tick.event === undefined) {
+    if (tick.data.event === undefined) {
       throw new Error(`Tick is missing an event type.`);
     }
-    if (tick.value === undefined) {
+    if (tick.data.value === undefined) {
       throw new Error(`Tick is missing a value.`);
     }
 
     // get character ids
     const { characters, invalidNames } = await castledkp.getCharacters(
-      tick.attendees
+      tick.data.attendees
     );
     const characterIds = characters.map((v) => v.id);
     if (!characterIds.length) {
       throw new Error(`Tick has no valid characters.`);
     }
 
-    // get note
-    const date = moment(tick.date);
-    let note = `${date.format(SHORT_DATE_FORMAT)} ${
-      tick.event.shortName
-    } Hour ${tick.tickNumber}`;
-    if (tick.note) {
-      note += ` (${tick.note})`;
-    }
-    note += ` ${threadUrl}`;
-
     // create raid
     const { data } = await client.post<{ raid_id: number }>(route("add_raid"), {
-      raid_date: date.format(DATE_FORMAT),
+      raid_date: tick.uploadDate,
       raid_attendees: { member: characterIds },
-      raid_value: tick.value,
-      raid_event_id: tick.event.id,
-      raid_note: note,
+      raid_value: tick.data.value,
+      raid_event_id: tick.data.event.id,
+      raid_note: tick.getUploadNote(threadUrl),
     });
 
     // add items to raid
-    await Promise.all(tick.loot.map((l) => castledkp.addItem(data.raid_id, l)));
+    await Promise.all(
+      tick.data.loot.map((l) => castledkp.addItem(data.raid_id, l))
+    );
 
     return {
-      eventUrlSlug: tick.event.name
+      eventUrlSlug: tick.data.event.name
         .toLowerCase()
         .replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
       id: data.raid_id,
-      tickNumber,
+      tick: tick,
       invalidNames,
     };
   },
@@ -204,7 +207,7 @@ export const castledkp = {
   ) => {
     const character = await castledkp.getCharacter(loot.buyer);
     return client.post(route("add_item"), {
-      item_date: moment().format(DATE_FORMAT),
+      item_date: moment().format(UPLOAD_DATE_FORMAT),
       item_name: loot.item,
       item_buyers: { member: [character.id] },
       item_raid_id: raidId,

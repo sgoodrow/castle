@@ -17,7 +17,7 @@ interface UnknownCredit extends BaseCredit {
   raw: string;
 }
 
-export type Credit = PilotCredit | ReasonCredit | UnknownCredit;
+export type CreditData = PilotCredit | ReasonCredit | UnknownCredit;
 
 const PILOT_KEYWORD = "botpilot";
 
@@ -44,7 +44,7 @@ export class CreditParser {
     this.record = words.join(" ").trim();
   }
 
-  public getCredit(): Credit {
+  public getCredit(): CreditData {
     switch (this.type) {
       case "PILOT":
         return this.pilotCredit;

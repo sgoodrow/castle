@@ -48,13 +48,13 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     });
     const { Sheets, SheetNames } = read(data);
 
-    const name = `${a.name?.replace("_", " - ").replace(".xlsx", "")}`;
+    const filename = a.name?.replace(".xlsx", "") || "raid";
 
     // parse the attachment into a raid report
-    const raidTicks = this.parseSheets(SheetNames, Sheets);
+    const ticks = this.parseSheets(SheetNames, Sheets);
     const report = new RaidReport({
-      name,
-      raidTicks,
+      filename,
+      ticks,
     });
 
     // get the raid report embeds
@@ -79,7 +79,7 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
 
     // create a thread
     const thread = await message.startThread({
-      name,
+      name: report.threadName,
       autoArchiveDuration: 4320,
     });
 
@@ -103,9 +103,7 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
 
     // add credit messages
     await Promise.all(
-      report
-        .getCreditMessageContent()
-        .map((content) => thread.send({ content }))
+      report.getCreditCommands().map((content) => thread.send({ content }))
     );
 
     // add deputies to thread
@@ -128,6 +126,6 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
         name,
       }))
       .filter(({ data }) => isValidXlsxData(data))
-      .map(({ data, name }, i) => new SheetParser(data, i + 1, name));
+      .map(({ data, name }, i) => new SheetParser(data, i + 1, name).data);
   }
 }

@@ -67,10 +67,7 @@ export class SetTickSubcommand extends Subcommand {
     await report.editMessages(messages);
 
     if (report.allTicksHaveEvent) {
-      const threadName = report.getThreadName();
-      if (interaction.channel.name !== threadName) {
-        await interaction.channel.setName(threadName);
-      }
+      await report.updateThreadName(interaction.channel);
     }
 
     await interaction.editReply(

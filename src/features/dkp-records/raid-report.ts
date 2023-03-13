@@ -1,47 +1,36 @@
 import axios from "axios";
 import {
+  GuildMember,
   Message,
   MessageAttachment,
   MessageEmbed,
   TextBasedChannel,
+  ThreadChannel,
 } from "discord.js";
-import { flatMap, max, range, some, sumBy, uniq } from "lodash";
-import moment from "moment";
+import { flatMap, max, some, uniq } from "lodash";
 import { raiderRoleId } from "../../config";
-import { castledkp, Event, SHORT_DATE_FORMAT } from "../../services/castledkp";
+import { CreateRaidResponse, RaidEventData } from "../../services/castledkp";
 import { code } from "../../shared/util";
-import { Credit } from "./create/credit-parser";
+import { EVERYONE, RaidTick, RaidTickData } from "./raid-tick";
 
-export interface Loot {
+export interface LootData {
   item: string;
   buyer: string;
   price: number;
   tickNumber: number;
 }
 
-export interface Attendee {
-  name: string;
-  tickNumbers: number[];
-}
-
-export interface RaidTick {
-  tickNumber: number;
-  value?: number;
-  event?: Event;
-  note?: string;
-  sheetName?: string;
-  loot: Loot[];
-  attendees: string[];
-  date: string;
-  credits: Credit[];
+interface RaidData {
+  filename: string;
+  ticks: RaidTickData[];
 }
 
 const RAID_REPORT_TITLE = "Raid Report";
 const INSTRUCTIONS_TITLE = "Instructions";
 const THREAD_EMBED_CHAR_LIMIT = 4000;
-const DKP_COLUMN_LENGTH = 6;
+const SECOND_COLUMN_LENGTH = 6;
 
-export const isRaidReportMessage = (m: Message) =>
+const isRaidReportMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
 
 export const isRaidInstructionsMessage = (m: Message) =>
@@ -87,57 +76,52 @@ export const getRaidReport = async (channel: TextBasedChannel) => {
     responseType: "json",
   });
 
+  console.log(data, a.url);
+
   return {
     report: new RaidReport(data),
     messages,
   };
 };
 
-const EVERYONE = "Everyone";
-
 export class RaidReport {
-  private readonly attendanceColumnLength: number;
+  private readonly firstColumnLength: number;
+  private readonly filename: string;
+  private readonly ticks: RaidTick[];
 
-  public constructor(
-    private data: {
-      name: string;
-      raidTicks: RaidTick[];
-    }
-  ) {
+  public constructor(data: RaidData) {
+    this.filename = data.filename;
+    console.log(data.ticks);
+    this.ticks = data.ticks.map((t) => new RaidTick(t));
+
     const attendanceNames = [...this.allAttendees, EVERYONE];
-    this.attendanceColumnLength =
-      max(attendanceNames.map((a) => a.length)) || 0;
+    this.firstColumnLength = max(attendanceNames.map((a) => a.length)) || 0;
   }
 
   public get allTicksHaveEvent(): boolean {
-    return !some(
-      this.allTickNumbers.map((i) => this.getRaidTick(i).event === undefined)
-    );
+    return !some(this.allTickNumbers.map((i) => this.getRaidTick(i).hasEvent));
   }
 
-  public getThreadName(): string {
-    const shortDate = moment(this.data.raidTicks[0].date).format(
-      SHORT_DATE_FORMAT
-    );
-    const abreviations = uniq(
-      this.data.raidTicks.map(({ event }) => event?.abreviation)
+  public async updateThreadName(channel: ThreadChannel) {
+    if (channel.name !== this.threadName) {
+      await channel.setName(this.threadName);
+    }
+  }
+
+  public get threadName(): string {
+    const emoji = some(this.ticks, (t) => !t.data.finished) ? "❔" : "✅";
+    const eventAbreviations = uniq(
+      this.ticks.map(({ eventAbreviation }) => eventAbreviation)
     ).join(", ");
-    return `${shortDate} ${abreviations}`;
+    const label =
+      eventAbreviations ||
+      `${this.filename.replace(/[^a-zA-Z]+/g, "")}?` ||
+      "Unidentified";
+    return `${emoji} ${this.ticks[0].shortDate} ${label}`;
   }
 
-  public getCreditMessageContent(): string[] {
-    return this.data.raidTicks.reduce((a, t, i) => {
-      const tickNumber = i + 1;
-      return a.concat(
-        t.credits.map((c) => {
-          return c.type === "UNKNOWN"
-            ? `⚠️ Unparsable credit: ${c.character} said '${c.raw}' during Raid Tick ${tickNumber}`
-            : c.type === "PILOT"
-            ? `!rep ${c.character} with ${c.pilot} ${tickNumber}`
-            : `!add ${c.character} ${tickNumber} (${c.reason})`;
-        })
-      );
-    }, [] as string[]);
+  public getCreditCommands(): string[] {
+    return flatMap(this.ticks, (t) => t.creditCommands);
   }
 
   public async editMessages(messages: Message[]) {
@@ -153,7 +137,7 @@ export class RaidReport {
         messages.map((m, i) => {
           // since the messages include a buffer message, which may not have any raid report content in it,
           // we need to verify there is actually an embed
-          const embed = raidReportEmbeds[i];
+          const embed: MessageEmbed = raidReportEmbeds[i];
           const embeds = embed ? [embed] : [];
           if (isRaidInstructionsMessage(m)) {
             embeds.push(this.instructionsEmbed);
@@ -171,12 +155,19 @@ export class RaidReport {
     }
   }
 
+  private get data(): RaidData {
+    return {
+      filename: this.filename,
+      ticks: this.ticks.map((t) => t.data),
+    };
+  }
+
   public get files(): MessageAttachment[] {
     return [
       new MessageAttachment(
         Buffer.from(JSON.stringify(this.data, null, 2), "utf-8")
       )
-        .setName(`${this.data.name}.json`)
+        .setName(`${this.filename}.json`)
         .setSpoiler(true),
     ];
   }
@@ -210,9 +201,27 @@ Kill bonus values: https://tinyurl.com/CastleBossBonuses`,
       );
   }
 
+  public getReceiptEmbeds(
+    created: CreateRaidResponse[],
+    failed: string[]
+  ): MessageEmbed[] {
+    const embeds = created.map(({ eventUrlSlug, id, invalidNames, tick }) =>
+      tick.getCreatedEmbed(eventUrlSlug, id, invalidNames)
+    );
+    if (failed.length > 0) {
+      embeds.push(
+        new MessageEmbed({
+          title: `${failed.length} ticks failed to upload.`,
+          description: failed.join("\n"),
+        })
+      );
+    }
+    return embeds;
+  }
+
   public getRaidReportEmbeds(): MessageEmbed[] {
-    const report = `${this.data.raidTicks
-      .map((t) => this.renderRaidTick(t))
+    const report = `${this.ticks
+      .map((t) => t.renderTick(this.firstColumnLength, SECOND_COLUMN_LENGTH))
       .join("\n\n")}
 
 ${this.attendance}`;
@@ -238,65 +247,33 @@ ${p}${code}`,
     );
   }
 
-  public getTickName(tickNumber: number) {
-    const tick = this.getRaidTick(tickNumber);
-    return `Tick ${tickNumber}: ${
-      tick.event?.shortName || tick.sheetName || "Unknown"
-    }`;
-  }
-
-  public getEarned(tickNumber: number) {
-    const tick = this.getRaidTick(tickNumber);
-    if (tick.value === undefined) {
-      return 0;
-    }
-    return tick.attendees.length * tick.value;
-  }
-
-  public getSpent(tickNumber: number) {
-    const tick = this.getRaidTick(tickNumber);
-    return sumBy(tick.loot, (l) => l.price);
-  }
-
-  public getItemCount(tickNumber: number) {
-    const tick = this.getRaidTick(tickNumber);
-    return tick.loot.length;
-  }
-
-  public getPlayerCount(tickNumber: number) {
-    const tick = this.getRaidTick(tickNumber);
-    return tick.attendees.length;
-  }
-
-  public getNetDKP(tickNumber: number) {
-    return this.getEarned(tickNumber) - this.getSpent(tickNumber);
-  }
-
-  public async uploadRaidTicks(threadUrl: string) {
-    return Promise.all(
-      this.data.raidTicks.map((t, i) =>
-        castledkp.createRaid(t, i + 1, threadUrl)
-      )
+  public async uploadRemainingRaidTicks(threadUrl: string) {
+    const settled = await Promise.allSettled(
+      this.ticks
+        .filter((t) => !t.data.finished)
+        .map((t) => t.uploadAsRaid(threadUrl))
     );
+
+    const created: CreateRaidResponse[] = [];
+    const failed: string[] = [];
+
+    settled.forEach((s) => {
+      if (s.status === "fulfilled") {
+        created.push(s.value);
+      } else {
+        failed.push(s.reason);
+      }
+    });
+
+    return { created, failed };
   }
 
   public addPlayer(name: string, tickNumbers: number[]) {
-    this.getRaidTicks(tickNumbers).forEach((t) => {
-      if (!t.attendees.includes(name)) {
-        t.attendees.push(name);
-        t.attendees.sort();
-      }
-    });
+    this.getRaidTicks(tickNumbers).forEach((t) => t.addPlayer(name));
   }
 
   public removePlayer(name: string, tickNumbers: number[]) {
-    this.getRaidTicks(tickNumbers).forEach((t) => {
-      const index = t.attendees.indexOf(name);
-      if (index < 0) {
-        return;
-      }
-      t.attendees.splice(index, 1);
-    });
+    this.getRaidTicks(tickNumbers).forEach((t) => t.removePlayer(name));
   }
 
   public replacePlayer(
@@ -304,13 +281,9 @@ ${p}${code}`,
     replaced: string,
     tickNumbers: number[]
   ) {
-    this.getRaidTicks(tickNumbers).forEach((t) => {
-      const index = t.attendees.indexOf(replaced);
-      if (index < 0) {
-        return;
-      }
-      t.attendees[index] = replacer;
-    });
+    this.getRaidTicks(tickNumbers).forEach((t) =>
+      t.replacePlayer(replacer, replaced)
+    );
   }
 
   private getRaidTicks(tickNumbers: number[]): RaidTick[] {
@@ -320,49 +293,33 @@ ${p}${code}`,
   }
 
   public updateRaidTick(
-    event: Event,
+    event: RaidEventData,
     value: number,
     tick?: number,
     note?: string
   ) {
-    const ticks = tick ? [tick] : this.allTickNumbers;
-    ticks
-      .map((t) => this.getRaidTick(t))
-      .forEach((t) => {
-        t.event = event;
-        t.value = value;
-        t.note = note;
-      });
-
-    return ticks;
+    const tickNumbers = tick ? [tick] : this.allTickNumbers;
+    tickNumbers.forEach((t) => this.getRaidTick(t).update(event, value, note));
+    return tickNumbers;
   }
 
   private get allTickNumbers(): number[] {
-    return range(1, this.data.raidTicks.length + 1);
+    return this.ticks.map((t) => t.data.tickNumber);
   }
 
   private getRaidTick(tickNumber: number): RaidTick {
-    const raidTick = this.data.raidTicks[tickNumber - 1];
+    const raidTick = this.ticks[tickNumber - 1];
     if (!raidTick) {
       throw new Error(`Could not find a raid tick matching ${tickNumber}`);
     }
     return raidTick;
   }
 
-  private renderRaidTick(t: RaidTick) {
-    const ready = t.value !== undefined && t.event !== undefined;
-    const all = EVERYONE.padEnd(this.attendanceColumnLength);
-    const value = `+${this.getPaddedDkp(t.value)}`;
-    const loot = t.loot.length > 0 ? `\n${this.renderTickLoot(t.loot)}` : "";
-    return `--- ${this.getTickName(t.tickNumber)} ---
-${ready ? "+" : "-"} ${all} ${value} (Attendance)${loot}`;
-  }
-
   private getAttendanceMap() {
     return this.allAttendees.reduce((m, a) => {
-      m[a] = this.data.raidTicks
+      m[a] = this.ticks
         .map((tick, tickIndex) => ({ tick, tickNumber: tickIndex + 1 }))
-        .filter(({ tick }) => tick.attendees.includes(a))
+        .filter(({ tick }) => tick.data.attendees.includes(a))
         .map(({ tickNumber }) => tickNumber);
       return m;
     }, {} as { [attendee: string]: number[] });
@@ -375,7 +332,7 @@ ${ready ? "+" : "-"} ${all} ${value} (Attendance)${loot}`;
 ${sorted
   .map((name) =>
     this.renderAttendee(
-      name.padEnd(this.attendanceColumnLength + DKP_COLUMN_LENGTH + 2),
+      name.padEnd(this.firstColumnLength + SECOND_COLUMN_LENGTH + 2),
       attendanceMap[name]
     )
   )
@@ -383,28 +340,10 @@ ${sorted
   }
 
   private get allAttendees() {
-    return flatMap(this.data.raidTicks, (t) => t.attendees);
-  }
-
-  private getPaddedDkp(value?: number) {
-    const s = value === undefined ? "?" : String(value);
-    return s.padEnd(DKP_COLUMN_LENGTH);
+    return flatMap(this.ticks, (t) => t.data.attendees);
   }
 
   private renderAttendee(attendee: string, tickNumbers: number[]): string {
     return `+ ${attendee} (${tickNumbers.join(", ")})`;
-  }
-
-  private renderTickLoot(loot: Loot[]): string {
-    return loot
-      .sort((a, b) => a.buyer.localeCompare(b.buyer))
-      .map((l) => this.renderSingleLoot(l, this.attendanceColumnLength))
-      .join("\n");
-  }
-
-  private renderSingleLoot(loot: Loot, padding: number) {
-    return `+ ${loot.buyer.padEnd(padding)} -${this.getPaddedDkp(
-      loot.price
-    )} (${loot.item})`;
   }
 }

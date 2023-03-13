@@ -1,21 +1,20 @@
 import {
-  MessageEmbed,
   MessageReaction,
   PartialMessageReaction,
   PartialUser,
   User,
 } from "discord.js";
-import { invalid } from "moment";
+import { partition } from "lodash";
 import {
   dkpDeputyRoleId,
   dkpRecordsBetaChannelId,
   officerRoleId,
 } from "../../../config";
+import { CreateRaidResponse } from "../../../services/castledkp";
 import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../../shared/action/reaction-action";
-import { code } from "../../../shared/util";
 import { getRaidReport, isRaidInstructionsMessage } from "../raid-report";
 
 export const tryRaidReportFinishedReactionAction = (
@@ -64,51 +63,23 @@ class RaidReportFinishedReactionAction extends ReactionAction {
     }
 
     // get raid report
-    const { report } = await getRaidReport(this.message.channel);
+    const { report, messages } = await getRaidReport(this.message.channel);
 
-    // add raid to castle
-    try {
-      const raidIds = await report.uploadRaidTicks(
-        `https://discord.com/channels/${this.message.guildId}/${this.message.channel.id}`
-      );
+    // create remaining raids
+    const { created, failed } = await report.uploadRemainingRaidTicks(
+      `https://discord.com/channels/${this.message.guildId}/${this.message.channel.id}`
+    );
 
-      // provide receipt
-      await this.message.reply({
-        embeds: raidIds.map(({ eventUrlSlug, id, invalidNames }, i) => {
-          const name = report.getTickName(i + 1);
-          const earned = report.getEarned(i + 1);
-          const spent = report.getSpent(i + 1);
-          const net = earned - spent;
-          const result =
-            net === 0
-              ? "No change to economy"
-              : net > 0
-              ? `+ Economy increase     ${net}`
-              : `- Economy decrease     ${net}`;
-          const notIncluded =
-            invalidNames.length > 0
-              ? `These characters were not included because they do not exist ${invalidNames.join(
-                  ", "
-                )}`
-              : "";
-          return new MessageEmbed({
-            title: `${name}`,
-            description: `Raid uploaded by ${reactor} ${code}diff
-DKP Earned             ${earned}
-DKP Spent              ${spent}
--------------------------------
-${result}${code}${notIncluded}`,
-            url: `https://castledkp.com/index.php/Raids/[green]-${eventUrlSlug}-r${id}.html?s=`,
-          });
-        }),
-      });
+    // provide receipt
+    await this.message.reply({
+      content: `Raids uploaded by ${reactor}`,
+      embeds: report.getReceiptEmbeds(created, failed),
+    });
 
-      // edit thread title
-      this.message.channel.setName(`✅ ${this.message.channel.name}`);
-    } catch (err) {
-      throw new Error(
-        `Failed to upload raid ticks: ${err} Check for partial uploads!`
-      );
-    }
+    // update report
+    await report.editMessages(messages);
+
+    // update thread title
+    await report.updateThreadName(this.message.channel);
   }
 }

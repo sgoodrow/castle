@@ -1,7 +1,7 @@
 import moment from "moment";
-import { Credit, CreditParser } from "./credit-parser";
-import { Loot, RaidTick } from "../raid-report";
-import { Event } from "../../../services/castledkp";
+import { CreditData, CreditParser } from "./credit-parser";
+import { LootData } from "../raid-report";
+import { RaidTickData } from "../raid-tick";
 
 const EQ_DATE_FORMAT = "ddd MMM DD HH:mm:ss YYYY";
 
@@ -16,15 +16,7 @@ export const isValidXlsxData = (xlsxData: string[]): boolean => {
   return moment(search, EQ_DATE_FORMAT).isValid();
 };
 
-export class SheetParser implements RaidTick {
-  public readonly event?: Event;
-  public readonly value?: number;
-  public readonly attendees: string[];
-  public readonly loot: Loot[];
-  public readonly credits: Credit[];
-  public readonly date: string;
-  public readonly sheetName: string;
-
+export class SheetParser {
   /**
    * List of strings. Each string may be one of the following:
    *
@@ -34,21 +26,28 @@ export class SheetParser implements RaidTick {
    * 3b. creditt tell: "[wed feb 15 21:14:22 2023] PLAYER tells you, 'creditt MESSAGE'"`,
    */
   public constructor(
-    xlsxData: string[],
-    public readonly tickNumber: number,
-    sheetName: string
-  ) {
-    this.attendees = this.getAttendees(xlsxData);
-    this.loot = this.getLoot(xlsxData);
-    this.date = this.getDate(xlsxData);
-    this.credits = this.getCredits(xlsxData);
-    // the default sheetname is a date, which isn't very useful, so throw it out
-    const sheetNameDate = moment(sheetName, "YYYY.MM.DD hh.mm.ss A", true);
-    this.sheetName = sheetNameDate.isValid() ? "" : `${sheetName}?`;
+    private readonly xlsxData: string[],
+    private readonly tickNumber: number,
+    private readonly sheetName: string
+  ) {}
+
+  public get data(): RaidTickData {
+    return {
+      finished: false,
+      // the default sheetname is a date, which isn't very useful, so throw it out
+      sheetName: moment(this.sheetName, "YYYY.MM.DD hh.mm.ss A", true).isValid()
+        ? "Unknown"
+        : `${this.sheetName}?`,
+      attendees: this.attendees,
+      credits: this.credits,
+      date: this.date,
+      loot: this.loot,
+      tickNumber: this.tickNumber,
+    };
   }
 
-  private getDate(xlsxData: string[]): string {
-    const logLine = xlsxData?.[0];
+  private get date(): string {
+    const logLine = this.xlsxData?.[0];
     if (!logLine) {
       throw new Error("No log lines found on sheet");
     }
@@ -58,14 +57,14 @@ export class SheetParser implements RaidTick {
     ).toISOString();
   }
 
-  private getCredits(xlsxData: string[]): Credit[] {
-    return xlsxData
+  private get credits(): CreditData[] {
+    return this.xlsxData
       .filter((r) => this.getRecordType(r) === "Credit")
       .map((r) => new CreditParser(r).getCredit());
   }
 
-  private getAttendees(xlsxData: string[]): string[] {
-    return xlsxData
+  private get attendees(): string[] {
+    return this.xlsxData
       .filter((r) => this.getRecordType(r) === "Attendance")
       .map(
         (r) =>
@@ -81,8 +80,8 @@ export class SheetParser implements RaidTick {
       );
   }
 
-  private getLoot(xlsxData: string[]): Loot[] {
-    return xlsxData
+  private get loot(): LootData[] {
+    return this.xlsxData
       .filter((r) => this.getRecordType(r) === "Loot")
       .map((r) => {
         // remove wrapping quotes and get the loot text
