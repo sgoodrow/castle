@@ -4,18 +4,15 @@ import { Icon, Service } from "./types";
 // todo: store this in database, populate and remove with command
 export const services: Service[] = [
   {
-    title: "Bounties",
+    title: "Bounties Spreadsheet",
     icon: Icon.Bought,
     requestFormats: ["Bounty: Item name, Item count"],
+    inventoryUrl:
+      "https://docs.google.com/spreadsheets/d/1IRXO4cRQXMAeMtFgZ-TGgADFi0A9z8-9uHvxJLPT3TQ/edit#gid=0",
     bullets: [
-      "Alligator Skin (200p _Rivervale Bank_)",
-      "Blue Diamond (Price on Jewelry Spreadsheet, _North Freeport Bank_)",
-      "Diamond (Price on Jewelry Spreadsheet, _North Freeport Bank_)",
-      "Iceball (10p _Thurgadin Bank_)",
-      "Polar Bear Skin (10p _Rivervale Bank_)",
-      "Scepter of the Forlorn (2 DKP, limit 2 per month)",
-      "Singed Scrolls (50% of winning DKP bid)",
-      "Staff of Elemental Mastery (50% of winning DKP bid)",
+      "The guild bank will purchase these items",
+      "Some are purhcased with platinum, and others with DKP",
+      "Some have player limits",
     ],
   },
   {
