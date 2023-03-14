@@ -11,6 +11,7 @@ export const interactionCreateListener = async (
 
   if (interaction.isButton()) {
     try {
+      await interaction.deferReply({ ephemeral: true });
       await getButton(interaction).execute(interaction);
       console.log(`/${interaction.customId} succeeded`);
     } catch (error) {

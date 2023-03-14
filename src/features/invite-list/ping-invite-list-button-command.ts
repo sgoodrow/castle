@@ -62,10 +62,6 @@ class PingInviteListCommand extends ButtonCommand {
       interaction
     );
 
-    await interaction.deferReply({
-      ephemeral: false,
-    });
-
     const users = await this.getPendingInviteUsers();
     const attention = await getAttentionMessage(users);
 
