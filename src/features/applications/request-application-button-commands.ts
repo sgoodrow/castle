@@ -26,9 +26,8 @@ export class RequestApplication extends ButtonCommand {
     interaction.user.send({
       content: this.content,
     });
-    await interaction.reply({
+    await interaction.editReply({
       content: `You have been DM'd the **${this.label}**.`,
-      ephemeral: true,
     });
 
     const channel = await interaction.guild?.channels.fetch(

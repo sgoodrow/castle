@@ -30,9 +30,8 @@ class JeweleryCleanupCommand extends ButtonCommand {
 
     // nothing to do
     if (!Object.keys(nonJewelerMessagesMap).length) {
-      await interaction.reply({
+      await interaction.editReply({
         content: "There are no pending requests from non-jewelers.",
-        ephemeral: true,
       });
       return;
     }

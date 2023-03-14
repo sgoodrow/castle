@@ -16,7 +16,7 @@ export const interactionCreateListener = async (
       console.log(`/${interaction.customId} succeeded`);
     } catch (error) {
       console.error(`/${interaction.customId} ${error}`);
-      await interaction.reply({ content: String(error), ephemeral: true });
+      await interaction.editReply({ content: String(error) });
     }
     return;
   }

@@ -15,9 +15,8 @@ class RemovePlayerInvite extends ButtonCommand {
     }
     await dataSource.manager.remove(invite);
     await updateInviteListInfo(interaction.client);
-    interaction.reply({
+    interaction.editReply({
       content: `Removed: ${invite.richLabel}`,
-      ephemeral: true,
     });
   }
 }

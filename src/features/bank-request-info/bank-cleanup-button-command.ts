@@ -30,9 +30,8 @@ class BankCleanupCommand extends ButtonCommand {
 
     // nothing to do
     if (!Object.keys(nonBankerMessagesMap).length) {
-      await interaction.reply({
+      await interaction.editReply({
         content: "There are no pending requests from non-bankers.",
-        ephemeral: true,
       });
       return;
     }

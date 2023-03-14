@@ -21,9 +21,8 @@ class AddPlayerButton extends ButtonCommand {
     await dataSource.manager.save(invite);
     await updateInviteListInfo(interaction.client);
 
-    interaction.reply({
+    interaction.editReply({
       content: `Added: ${invite.richLabel}`,
-      ephemeral: true,
     });
   }
 }

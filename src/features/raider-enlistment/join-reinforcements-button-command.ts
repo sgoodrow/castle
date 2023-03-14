@@ -1,11 +1,13 @@
-import { ButtonInteraction, CacheType, GuildMemberRoleManager } from "discord.js";
+import {
+  ButtonInteraction,
+  CacheType,
+  GuildMemberRoleManager,
+} from "discord.js";
 import { reinforcementsRoleId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 
 class JoinReinforcementsButton extends ButtonCommand {
-  public constructor(
-    public readonly customId: string,
-  ) {
+  public constructor(public readonly customId: string) {
     super(customId);
   }
 
@@ -18,9 +20,8 @@ class JoinReinforcementsButton extends ButtonCommand {
       throw new Error(`You are already in <@&${reinforcementsRoleId}>.`);
     }
     await roles.add(reinforcementsRoleId);
-    interaction.reply({
+    interaction.editReply({
       content: `Joined <@&${reinforcementsRoleId}>!`,
-      ephemeral: true,
     });
   }
 }

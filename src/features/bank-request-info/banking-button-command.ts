@@ -30,7 +30,7 @@ class BankingButtonCommand extends ButtonCommand {
       users.map((u) => (u as User).id)
     );
 
-    await interaction.reply(`**${interaction.member?.user} is now banking!**
+    await interaction.editReply(`**${interaction.member?.user} is now banking!**
 
 ${attention}`);
   }
