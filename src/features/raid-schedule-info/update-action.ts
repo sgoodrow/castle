@@ -1,7 +1,7 @@
 import { Client, MessageEmbed } from "discord.js";
 import { truncate } from "lodash";
 import { getGuild } from "../..";
-import { raidScheduleChannelId } from "../../config";
+import { raiderRoleId, raidScheduleChannelId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 import {
@@ -29,7 +29,6 @@ class UpdateRaidScheduleInfoAction extends InstructionsReadyAction {
   public async execute() {
     await this.createOrUpdateInstructions(
       {
-        content: "_ _",
         embeds: [await this.getScheduleEmbed()],
       },
       Name.RaidSchedule
@@ -61,13 +60,18 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
   private async getEvents(): Promise<Event[]> {
     const guild = await getGuild();
     const events = await guild.scheduledEvents.fetch();
+    const raiderRole = await guild.roles.fetch(raiderRoleId);
+    if (!raiderRole) {
+      throw new Error("Could not locate the raider role");
+    }
     return events
       .filter(
         (e) =>
           !!e.creator &&
           !!e.channel?.isVoice() &&
           !!e.scheduledStartTimestamp &&
-          ["SCHEDULED", "ACTIVE"].includes(e.status)
+          ["SCHEDULED", "ACTIVE"].includes(e.status) &&
+          e.channel.permissionsFor(raiderRole).has("VIEW_CHANNEL")
       )
       .map((e) => ({
         leader: e.creator?.toString() || "",
