@@ -1,8 +1,7 @@
-import { APIEmbedField } from "discord-api-types/v10";
-import { Client, MessageEmbed, StageChannel, VoiceChannel } from "discord.js";
+import { Client, MessageEmbed } from "discord.js";
 import { truncate } from "lodash";
 import { getGuild } from "../..";
-import { rolesChannelId } from "../../config";
+import { raidScheduleChannelId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 import {
@@ -10,18 +9,15 @@ import {
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
 import { HOURS } from "../../shared/time";
-import { code } from "../../shared/util";
 
 const NEWLINES = /[\r\n]+/g;
 
 interface Event {
-  eventLeader: string;
-  voiceChannel: StageChannel | VoiceChannel;
-  start: string;
-  end?: string;
+  startTime: number;
+  leader: string;
+  url: string;
   title: string;
   description: string;
-  url: string;
 }
 
 export const updateRaidSchedule = (
@@ -41,19 +37,25 @@ class UpdateRaidScheduleInfoAction extends InstructionsReadyAction {
   }
 
   private async getScheduleEmbed() {
-    const events = await this.getEvents();
+    const events = await this.getSortedEvents();
     return new MessageEmbed({
       title: "📅 Raid Schedule",
       description:
         events.length > 0
-          ? "Upcoming raids for the next 7 days."
+          ? `Upcoming raids for the next 7 days.
+
+${events.map((e) => this.renderEvent(e)).join("\n\n")}`
           : "There are no raids currently scheduled.",
-      fields: events.map((e) => this.renderEvent(e)),
       footer: {
         text: "All times are listed in your local timezone.",
       },
       color: "BLURPLE",
     });
+  }
+
+  private async getSortedEvents(): Promise<Event[]> {
+    const events = await this.getEvents();
+    return events.sort((a, b) => (a.startTime > b.startTime ? 1 : -1));
   }
 
   private async getEvents(): Promise<Event[]> {
@@ -62,23 +64,28 @@ class UpdateRaidScheduleInfoAction extends InstructionsReadyAction {
     return events
       .filter(
         (e) =>
-          ["SCHEDULED", "ACTIVE"].includes(e.status) && e.entityType === "VOICE"
+          !!e.creator &&
+          !!e.channel?.isVoice() &&
+          !!e.scheduledStartTimestamp &&
+          ["SCHEDULED", "ACTIVE"].includes(e.status)
       )
       .map((e) => ({
-        eventLeader: e.creator ? `<@${e.creator.id}>` : "Unknown",
-        voiceChannel: e.channel as StageChannel | VoiceChannel,
-        start: this.getStartTime(e.scheduledStartTimestamp || 0),
+        leader: e.creator?.toString() || "",
+        startTime: e.scheduledStartTimestamp || 0,
+        title: `${this.getStartTime(e.scheduledStartTimestamp)} [**${
+          e.name
+        }**](${e.url})${this.getUrgentTimeRemaining(
+          e.scheduledStartTimestamp
+        )}`,
         url: e.url,
-        title:
-          `${e.name}${
-            this.within24Hours(e.scheduledStartTimestamp || 0)
-              ? ` (<t:${Math.floor(
-                  (e.scheduledStartTimestamp || 0) / 1000
-                )}:R>)`
-              : ""
-          }` || "unknown",
-        description: `${e.description}` || "",
+        description: e.description || "",
       }));
+  }
+
+  private getUrgentTimeRemaining(t: number | null) {
+    return this.within24Hours(t || 0)
+      ? ` (<t:${Math.floor((t || 0) / 1000)}:R>)`
+      : "";
   }
 
   private within24Hours(t: number) {
@@ -86,7 +93,7 @@ class UpdateRaidScheduleInfoAction extends InstructionsReadyAction {
     return duration < 24 * HOURS;
   }
 
-  private getStartTime(t: number) {
+  private getStartTime(t: number | null) {
     if (!t) {
       return "unknown";
     }
@@ -94,26 +101,22 @@ class UpdateRaidScheduleInfoAction extends InstructionsReadyAction {
     return `<t:${time}>`;
   }
 
-  private renderEvent(e: Event): APIEmbedField {
+  private renderEvent(e: Event) {
     const description = e.description
       ? `\n• ${this.getTruncatedDescription(e)}`
       : "";
-    return {
-      name: e.title,
-      value: `• ${e.start} ${e.eventLeader}${description}
-• [info](${e.url})`,
-      inline: false,
-    };
+    return `${e.title}
+• Lead by ${e.leader}${description}`;
   }
 
   private getTruncatedDescription(e: Event) {
-    return truncate(e.description.replace(NEWLINES, " "), {
+    const description = e.description.replace(NEWLINES, " ");
+    return truncate(description, {
       length: 100,
     });
   }
 
   protected get channel() {
-    //  todo change this to schedule
-    return this.getChannel(rolesChannelId, "raid schedule");
+    return this.getChannel(raidScheduleChannelId, "raid schedule");
   }
 }
