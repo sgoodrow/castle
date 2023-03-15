@@ -3,7 +3,7 @@ import { CreditParser } from "./credit-parser";
 describe("pilot", () => {
   it("works for arrow tells", () => {
     const parser = new CreditParser(
-      "[Sat Feb 25 16:15:52 2023] Iceburgh -> Someone: creditt botpilot Pumped"
+      "[Sat Feb 25 16:15:52 2023] Iceburgh -> Someone: creditt botpilot Pumped because we needed him"
     );
     const credit = parser.getCredit();
     expect(credit.type).toEqual("PILOT");
@@ -11,7 +11,30 @@ describe("pilot", () => {
 
     if (credit.type === "PILOT") {
       expect(credit.pilot).toEqual("Pumped");
+      expect(credit.reason).toEqual("because we needed him");
     }
+  });
+
+  it("works if botpilot is second", () => {
+    const parser = new CreditParser(
+      "[Sat Feb 25 16:15:52 2023] Iceburgh -> Someone: creditt Pumped botpilot because we needed him"
+    );
+    const credit = parser.getCredit();
+    expect(credit.type).toEqual("PILOT");
+    expect(credit.character).toEqual("Iceburgh");
+
+    if (credit.type === "PILOT") {
+      expect(credit.pilot).toEqual("Pumped");
+      expect(credit.reason).toEqual("because we needed him");
+    }
+  });
+
+  it("doesn't work if pilot is missing", () => {
+    const parser = new CreditParser(
+      "[Sat Feb 25 16:15:52 2023] Iceburgh -> Someone: creditt botpilot"
+    );
+    const credit = parser.getCredit();
+    expect(credit.type).toEqual("UNKNOWN");
   });
 });
 

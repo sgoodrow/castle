@@ -5,6 +5,7 @@ interface BaseCredit {
 interface PilotCredit extends BaseCredit {
   type: "PILOT";
   pilot: string;
+  reason: string;
 }
 
 interface ReasonCredit extends BaseCredit {
@@ -59,18 +60,34 @@ export class CreditParser {
     if (!this.record) {
       return "UNKNOWN";
     }
-    return this.record.split(" ")[0] === PILOT_KEYWORD ? "PILOT" : "REASON";
+    const words = this.record.split(" ");
+    if ([words[0], words[1]].includes(PILOT_KEYWORD)) {
+      return "PILOT";
+    }
+    return "REASON";
   }
 
   private get pilotCredit(): PilotCredit | UnknownCredit {
-    const pilot = this.record.split(PILOT_KEYWORD)[1].trim();
-    if (!this.character || !pilot) {
-      return this.unknownCredit;
+    const words = this.record.split(" ");
+    if (words[0] === PILOT_KEYWORD && words[1] !== undefined) {
+      return {
+        type: "PILOT",
+        character: this.character,
+        pilot: words[1],
+        reason: words.slice(2).join(" "),
+      };
+    } else if (words[1] === PILOT_KEYWORD) {
+      return {
+        type: "PILOT",
+        character: this.character,
+        pilot: words[0],
+        reason: words.slice(2).join(" "),
+      };
     }
     return {
-      type: "PILOT",
+      type: "UNKNOWN",
       character: this.character,
-      pilot,
+      raw: this.raw,
     };
   }
 

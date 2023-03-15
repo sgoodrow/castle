@@ -181,7 +181,9 @@ ${result}${code}${notIncluded}`,
       c.type === "UNKNOWN"
         ? `⚠️ Unparsable credit: ${c.character} said '${c.raw}' during Raid Tick ${this.data.tickNumber}`
         : c.type === "PILOT"
-        ? `!rep ${c.character} with ${c.pilot} ${this.data.tickNumber}`
+        ? `!rep ${c.character} with ${c.pilot} ${this.data.tickNumber}${
+            c.reason ? `(${c.reason})` : ""
+          }`
         : `!add ${c.character} ${this.data.tickNumber} (${c.reason})`
     );
   }
