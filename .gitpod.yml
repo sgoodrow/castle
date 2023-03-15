@@ -22,6 +22,7 @@ tasks:
       akatsukiRoleId: "1077053438891925514"
 
       # Channels
+      raidScheduleChannelId: "1085361330149658684"
       auctionChannelId: "965137311929094154"
       bankRequestsChannelId: "965842541431885874"
       jewelryChannelId: "991929564613840927"

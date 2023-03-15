@@ -8,6 +8,7 @@ import { guildMemberAddListener } from "./features/gatehouse/guild-member-add-li
 import { guildMemberLeaveListener } from "./features/removed/guild-member-leave-listener";
 import { messageCreateListener } from "./listeners/message-create-listener";
 import https from "https";
+import { guildScheduledEventListener } from "./listeners/guild-scheduled-event-listener";
 
 // Global
 https.globalAgent.maxSockets = 5;
@@ -19,6 +20,7 @@ export const client = new Client({
     Intents.FLAGS.GUILD_PRESENCES,
     Intents.FLAGS.GUILD_MESSAGES,
     Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+    Intents.FLAGS.GUILD_SCHEDULED_EVENTS,
   ],
   partials: ["MESSAGE", "REACTION"],
 });
@@ -49,6 +51,9 @@ client.on("messageCreate", messageCreateListener);
 client.on("ready", readyListener);
 client.on("guildMemberAdd", guildMemberAddListener);
 client.on("guildMemberRemove", guildMemberLeaveListener);
+client.on("guildScheduledEventCreate", guildScheduledEventListener);
+client.on("guildScheduledEventDelete", guildScheduledEventListener);
+client.on("guildScheduledEventUpdate", guildScheduledEventListener);
 
 registerSlashCommands();
 

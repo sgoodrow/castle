@@ -26,6 +26,7 @@ export const {
   freyasChariotRoleId,
   blackLotusRoleId,
   akatsukiRoleId,
+  raidScheduleChannelId,
   auctionChannelId,
   bankRequestsChannelId,
   jewelryChannelId,
@@ -99,6 +100,7 @@ export const {
   akatsukiRoleId: string;
 
   // Channel IDs
+  raidScheduleChannelId: string;
   auctionChannelId: string;
   bankRequestsChannelId: string;
   jewelryChannelId: string;
