@@ -13,10 +13,9 @@ import { HOURS } from "../../shared/time";
 const NEWLINES = /[\r\n]+/g;
 
 interface Event {
-  startTime: number;
-  leader: string;
-  url: string;
-  title: string;
+  date: string;
+  event: string;
+  countdown: string;
   description: string;
 }
 
@@ -54,7 +53,7 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
 
   private async getSortedEvents(): Promise<Event[]> {
     const events = await this.getEvents();
-    return events.sort((a, b) => (a.startTime > b.startTime ? 1 : -1));
+    return events.sort((a, b) => (a.date > b.date ? 1 : -1));
   }
 
   private async getEvents(): Promise<Event[]> {
@@ -67,26 +66,24 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
     return events
       .filter(
         (e) =>
-          !!e.creator &&
           !!e.channel?.isVoice() &&
           !!e.scheduledStartTimestamp &&
           ["SCHEDULED", "ACTIVE"].includes(e.status) &&
           e.channel.permissionsFor(raiderRole).has("VIEW_CHANNEL")
       )
+      .sort(
+        (a, b) =>
+          (a.scheduledStartTimestamp || 0) - (b.scheduledStartTimestamp || 0)
+      )
       .map((e) => ({
-        leader: e.creator?.toString() || "",
-        startTime: e.scheduledStartTimestamp || 0,
-        title: `${this.getStartTime(e.scheduledStartTimestamp)} [**${
-          e.name
-        }**](${e.url})${this.getUrgentTimeRemaining(
-          e.scheduledStartTimestamp
-        )}`,
-        url: e.url,
-        description: e.description || "",
+        date: this.getDate(e.scheduledStartTimestamp),
+        event: this.getEvent(e.name, e.url),
+        countdown: this.getCountdown(e.scheduledStartTimestamp),
+        description: this.getDescription(e.description),
       }));
   }
 
-  private getUrgentTimeRemaining(t: number | null) {
+  private getCountdown(t: number | null) {
     return this.within24Hours(t || 0)
       ? ` (<t:${Math.floor((t || 0) / 1000)}:R>)`
       : "";
@@ -97,7 +94,11 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
     return duration < 24 * HOURS;
   }
 
-  private getStartTime(t: number | null) {
+  private getEvent(name: string, url: string) {
+    return `[**${name}**](${url})`;
+  }
+
+  private getDate(t: number | null) {
     if (!t) {
       return "unknown";
     }
@@ -106,18 +107,18 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
   }
 
   private renderEvent(e: Event) {
-    const description = e.description
-      ? `\n• ${this.getTruncatedDescription(e)}`
-      : "";
-    return `${e.title}
-• Lead by ${e.leader}${description}`;
+    return `${e.event}
+${e.date}${e.countdown}${e.description}`;
   }
 
-  private getTruncatedDescription(e: Event) {
-    const description = e.description.replace(NEWLINES, " ");
-    return truncate(description, {
+  private getDescription(description: string | null) {
+    if (!description) {
+      return "";
+    }
+    const replaced = description.replace(NEWLINES, " ");
+    return `\n• ${truncate(replaced, {
       length: 100,
-    });
+    })}`;
   }
 
   protected get channel() {
