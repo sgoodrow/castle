@@ -95,7 +95,7 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
   }
 
   private getEvent(name: string, url: string) {
-    return `[**${name}**](${url})`;
+    return `**[${name}](${url})**`;
   }
 
   private getDate(t: number | null) {
