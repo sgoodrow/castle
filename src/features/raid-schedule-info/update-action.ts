@@ -103,7 +103,7 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
       return "unknown";
     }
     const time = Math.floor(t / 1000);
-    return `<t:${time}>`;
+    return `<t:${time}:F>`;
   }
 
   private renderEvent(e: Event) {
