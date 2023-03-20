@@ -103,13 +103,13 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
       return "unknown";
     }
     const emoji = {
-      Sunday: "🟥",
-      Monday: "🟧",
-      Tuesday: "🟨",
-      Wednesday: "🟩",
-      Thursday: "🟦",
-      Friday: "🟪",
-      Saturday: "🟫",
+      Sunday: "⬜",
+      Monday: "🟥",
+      Tuesday: "🟧",
+      Wednesday: "🟨",
+      Thursday: "🟩",
+      Friday: "🟦",
+      Saturday: "🟪",
     }[new Date(t).toLocaleString("en", {
       weekday: "long",
       timeZone: "America/New_York"
