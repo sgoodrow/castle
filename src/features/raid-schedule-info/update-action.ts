@@ -14,6 +14,7 @@ const NEWLINES = /[\r\n]+/g;
 
 interface Event {
   date: string;
+  time: number;
   event: string;
   countdown: string;
   description: string;
@@ -35,7 +36,7 @@ class UpdateRaidScheduleInfoAction extends InstructionsReadyAction {
   }
 
   private async getScheduleEmbed() {
-    const events = await this.getSortedEvents();
+    const events = await this.getEvents();
     return new MessageEmbed({
       title: "📅 Raid Schedule",
       description:
@@ -49,11 +50,6 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
       },
       color: "BLURPLE",
     });
-  }
-
-  private async getSortedEvents(): Promise<Event[]> {
-    const events = await this.getEvents();
-    return events.sort((a, b) => (a.date > b.date ? 1 : -1));
   }
 
   private async getEvents(): Promise<Event[]> {
