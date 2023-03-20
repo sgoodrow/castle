@@ -14,7 +14,6 @@ const NEWLINES = /[\r\n]+/g;
 
 interface Event {
   date: string;
-  time: number;
   event: string;
   countdown: string;
   description: string;
