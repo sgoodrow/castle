@@ -102,8 +102,17 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
     if (!t) {
       return "unknown";
     }
+    const emoji = [
+      "🟥", // Sunday
+      "🟧", // Monday
+      "🟨", // Tuesday
+      "🟩", // Wednesday
+      "🟦", // Thursday
+      "🟪", // Friday
+      "🟫", // Saturday
+    ][new Date(t).getUTCDay()];
     const time = Math.floor(t / 1000);
-    return `<t:${time}:F>`;
+    return `${emoji} <t:${time}:F>`;
   }
 
   private renderEvent(e: Event) {
