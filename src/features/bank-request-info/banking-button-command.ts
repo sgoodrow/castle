@@ -30,9 +30,14 @@ class BankingButtonCommand extends ButtonCommand {
       users.map((u) => (u as User).id)
     );
 
-    await interaction.editReply(`**${interaction.member?.user} is now banking!**
+    await interaction.channel
+      ?.send(`**${interaction.member?.user} is now banking!**
 
 ${attention}`);
+
+    await interaction.editReply({
+      content: "The bank requesters have been notified",
+    });
   }
 
   protected async authorize(interaction: ButtonInteraction<CacheType>) {

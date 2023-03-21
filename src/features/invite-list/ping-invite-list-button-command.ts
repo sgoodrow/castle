@@ -69,9 +69,11 @@ class PingInviteListCommand extends ButtonCommand {
 
 ${attention}`;
 
-    await interaction
-      .editReply({ content: alert })
+    await interaction.channel
+      ?.send(alert)
       .then(() => setTimeout(() => interaction.deleteReply(), 1 * HOURS));
+
+    await interaction.editReply("The invite list has been notified.");
   }
 
   private async getPendingInviteUsers() {
