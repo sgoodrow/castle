@@ -39,7 +39,7 @@ class UpdateRaidScheduleInfoAction extends InstructionsReadyAction {
       title: "📅 Raid Schedule",
       description:
         events.length > 0
-          ? `Upcoming raids for the next 7 days.
+          ? `Upcoming raids for the next 7 days. Click the raid name for more details.
 
 ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
           : "There are no raids currently scheduled.",
@@ -50,37 +50,37 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
     });
   }
 
-private async getEvents(): Promise<Event[]> {
-  const guild = await getGuild();
-  const events = await guild.scheduledEvents.fetch();
-  const raiderRole = await guild.roles.fetch(raiderRoleId);
+  private async getEvents(): Promise<Event[]> {
+    const guild = await getGuild();
+    const events = await guild.scheduledEvents.fetch();
+    const raiderRole = await guild.roles.fetch(raiderRoleId);
 
-  if (!raiderRole) {
-    throw new Error("Could not locate the raider role");
+    if (!raiderRole) {
+      throw new Error("Could not locate the raider role");
+    }
+
+    const nextWeek = Date.now() + 7 * 24 * 60 * 60 * 1000;
+
+    return events
+      .filter(
+        (e) =>
+          !!e.channel?.isVoice() &&
+          !!e.scheduledStartTimestamp &&
+          ["SCHEDULED", "ACTIVE"].includes(e.status) &&
+          e.channel.permissionsFor(raiderRole).has("VIEW_CHANNEL") &&
+          e.scheduledStartTimestamp <= nextWeek // Added filter condition
+      )
+      .sort(
+        (a, b) =>
+          (a.scheduledStartTimestamp || 0) - (b.scheduledStartTimestamp || 0)
+      )
+      .map((e) => ({
+        date: this.getDate(e.scheduledStartTimestamp),
+        event: this.getEvent(e.name, e.url),
+        countdown: this.getCountdown(e.scheduledStartTimestamp),
+        description: this.getDescription(e.description, e.url),
+      }));
   }
-
-  const nextWeek = Date.now() + 7 * 24 * 60 * 60 * 1000;
-
-  return events
-    .filter(
-      (e) =>
-        !!e.channel?.isVoice() &&
-        !!e.scheduledStartTimestamp &&
-        ["SCHEDULED", "ACTIVE"].includes(e.status) &&
-        e.channel.permissionsFor(raiderRole).has("VIEW_CHANNEL") &&
-        e.scheduledStartTimestamp <= nextWeek // Added filter condition
-    )
-    .sort(
-      (a, b) =>
-        (a.scheduledStartTimestamp || 0) - (b.scheduledStartTimestamp || 0)
-    )
-    .map((e) => ({
-      date: this.getDate(e.scheduledStartTimestamp),
-      event: this.getEvent(e.name, e.url),
-      countdown: this.getCountdown(e.scheduledStartTimestamp),
-      description: this.getDescription(e.description),
-    }));
-}
 
   private getCountdown(t: number | null) {
     return this.within24Hours(t || 0)
@@ -94,7 +94,7 @@ private async getEvents(): Promise<Event[]> {
   }
 
   private getEvent(name: string, url: string) {
-    return `**[${name}](${url})**`;
+    return `__**[${name}](${url})**__`;
   }
 
   private getDate(t: number | null) {
@@ -124,11 +124,16 @@ private async getEvents(): Promise<Event[]> {
 ${e.date}${e.countdown}${e.description}`;
   }
 
-  private getDescription(description: string | null) {
+  private getDescription(description: string | null, url: string) {
     if (!description) {
       return "";
     }
-    return `\n• ${compactDescription(description)}`;
+    const compact = compactDescription(description);
+    let moreInfo = "";
+    if (compact.length < description.length) {
+      moreInfo = ` ([more info](${url}))`;
+    }
+    return `\n${compact}${moreInfo}`;
   }
 
   protected get channel() {
