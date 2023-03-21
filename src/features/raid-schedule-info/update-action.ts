@@ -50,32 +50,37 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
     });
   }
 
-  private async getEvents(): Promise<Event[]> {
-    const guild = await getGuild();
-    const events = await guild.scheduledEvents.fetch();
-    const raiderRole = await guild.roles.fetch(raiderRoleId);
-    if (!raiderRole) {
-      throw new Error("Could not locate the raider role");
-    }
-    return events
-      .filter(
-        (e) =>
-          !!e.channel?.isVoice() &&
-          !!e.scheduledStartTimestamp &&
-          ["SCHEDULED", "ACTIVE"].includes(e.status) &&
-          e.channel.permissionsFor(raiderRole).has("VIEW_CHANNEL")
-      )
-      .sort(
-        (a, b) =>
-          (a.scheduledStartTimestamp || 0) - (b.scheduledStartTimestamp || 0)
-      )
-      .map((e) => ({
-        date: this.getDate(e.scheduledStartTimestamp),
-        event: this.getEvent(e.name, e.url),
-        countdown: this.getCountdown(e.scheduledStartTimestamp),
-        description: this.getDescription(e.description),
-      }));
+private async getEvents(): Promise<Event[]> {
+  const guild = await getGuild();
+  const events = await guild.scheduledEvents.fetch();
+  const raiderRole = await guild.roles.fetch(raiderRoleId);
+
+  if (!raiderRole) {
+    throw new Error("Could not locate the raider role");
   }
+
+  const nextWeek = Date.now() + 7 * 24 * 60 * 60 * 1000;
+
+  return events
+    .filter(
+      (e) =>
+        !!e.channel?.isVoice() &&
+        !!e.scheduledStartTimestamp &&
+        ["SCHEDULED", "ACTIVE"].includes(e.status) &&
+        e.channel.permissionsFor(raiderRole).has("VIEW_CHANNEL") &&
+        e.scheduledStartTimestamp <= nextWeek // Added filter condition
+    )
+    .sort(
+      (a, b) =>
+        (a.scheduledStartTimestamp || 0) - (b.scheduledStartTimestamp || 0)
+    )
+    .map((e) => ({
+      date: this.getDate(e.scheduledStartTimestamp),
+      event: this.getEvent(e.name, e.url),
+      countdown: this.getCountdown(e.scheduledStartTimestamp),
+      description: this.getDescription(e.description),
+    }));
+}
 
   private getCountdown(t: number | null) {
     return this.within24Hours(t || 0)
