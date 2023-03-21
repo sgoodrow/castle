@@ -9,8 +9,7 @@ import {
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
 import { HOURS } from "../../shared/time";
-
-const NEWLINES = /[\r\n]+/g;
+import { compactDescription } from "../../shared/util";
 
 interface Event {
   date: string;
@@ -105,10 +104,12 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
       Thursday: "🟩",
       Friday: "🟦",
       Saturday: "🟪",
-    }[new Date(t).toLocaleString("en", {
-      weekday: "long",
-      timeZone: "America/New_York"
-    })];
+    }[
+      new Date(t).toLocaleString("en", {
+        weekday: "long",
+        timeZone: "America/New_York",
+      })
+    ];
     const time = Math.floor(t / 1000);
     return `${emoji} <t:${time}:F>`;
   }
@@ -122,10 +123,7 @@ ${e.date}${e.countdown}${e.description}`;
     if (!description) {
       return "";
     }
-    const replaced = description.replace(NEWLINES, " ");
-    return `\n• ${truncate(replaced, {
-      length: 100,
-    })}`;
+    return `\n• ${compactDescription(description)}`;
   }
 
   protected get channel() {

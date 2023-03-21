@@ -39,6 +39,7 @@ export const {
   dkpRecordsBetaChannelId,
   applicationsChannelId,
   requestDumpThreadId,
+  startedRaidsDumpThreadId,
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
@@ -113,4 +114,5 @@ export const {
   dkpRecordsBetaChannelId: string;
   applicationsChannelId: string;
   requestDumpThreadId: string;
+  startedRaidsDumpThreadId: string;
 };
