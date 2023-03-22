@@ -9,6 +9,7 @@
   "scripts": {
     "clean": "docker-compose down && rimraf postgres-db",
     "start": "ts-node .",
+    "format": "prettier-eslint --write \"src/**/*.ts\"",
     "build": "tsc",
     "predev": "docker-compose up -d --wait",
     "dev": "nodemon",

@@ -43,7 +43,7 @@ export class SetTickSubcommand extends Subcommand {
     }
 
     // get raid report
-    const { report, messages } = await getRaidReport(interaction.channel);
+    const { report } = await getRaidReport(interaction.channel);
 
     const eventName = this.getRequiredOptionValue<string>(
       Option.Event,

@@ -10,7 +10,7 @@ import { redisChannels, redisClient } from "../../redis/client";
 import { CreateRaidResponse, RaidEventData } from "../../services/castledkp";
 import { DAYS } from "../../shared/time";
 import { code } from "../../shared/util";
-import { EVERYONE, RaidTick, RaidTickData } from "./raid-tick";
+import { AdjustmentData, EVERYONE, RaidTick, RaidTickData } from "./raid-tick";
 
 export interface LootData {
   item: string;
@@ -87,8 +87,12 @@ export class RaidReport {
     this.filename = data.filename;
     this.ticks = data.ticks.map((t) => new RaidTick(t));
 
-    const attendanceNames = [...this.allAttendees, EVERYONE];
-    this.firstColumnLength = max(attendanceNames.map((a) => a.length)) || 0;
+    this.firstColumnLength =
+      max(
+        [...this.allAttendees, ...this.allAdjustees, EVERYONE].map(
+          (a) => a.length
+        )
+      ) || 0;
   }
 
   public get allTicksHaveEvent(): boolean {
@@ -191,6 +195,10 @@ Kill bonus values: https://tinyurl.com/CastleBossBonuses`,
         "`!rep Pumped with Iceburgh 2, 3 (context)`"
       )
       .addField(
+        "Add an adjustment to the first raid tick. Context is optional.",
+        "`!adj Pumped 5 reason (context)`"
+      )
+      .addField(
         `Deputies: Assign raid tick event types and values.`,
         '`/raid tick tick: "1" event: "Cazic Thule" value: "3"`'
       );
@@ -263,6 +271,10 @@ ${p}${code}`,
     return { created, failed };
   }
 
+  public addAdjustment(adjustment: AdjustmentData) {
+    this.getRaidTick(1).addAdjustment(adjustment);
+  }
+
   public addPlayer(name: string, tickNumbers: number[]) {
     this.getRaidTicks(tickNumbers).forEach((t) => t.addPlayer(name));
   }
@@ -327,7 +339,7 @@ ${p}${code}`,
 ${sorted
   .map((name) =>
     this.renderAttendee(
-      name.padEnd(this.firstColumnLength + SECOND_COLUMN_LENGTH + 2),
+      name.padEnd(this.firstColumnLength + SECOND_COLUMN_LENGTH + 1),
       attendanceMap[name]
     )
   )
@@ -336,6 +348,10 @@ ${sorted
 
   private get allAttendees() {
     return flatMap(this.ticks, (t) => t.data.attendees);
+  }
+
+  private get allAdjustees() {
+    return this.getRaidTick(1).data.adjustments?.map((a) => a.player) || [];
   }
 
   private renderAttendee(attendee: string, tickNumbers: number[]): string {

@@ -5,6 +5,7 @@ import LRUCache from "lru-cache";
 import moment from "moment";
 import { castleDkpTokenRO } from "../config";
 import {
+  AdjustmentData,
   RaidTick,
   UPLOAD_DATE_FORMAT,
 } from "../features/dkp-records/raid-tick";
@@ -139,9 +140,9 @@ export const castledkp = {
     }
 
     // get character ids
-    const { characters, invalidNames } = await castledkp.getCharacters(
-      tick.data.attendees
-    );
+    const { characters, invalidNames } = await castledkp.getCharacters([
+      ...tick.data.attendees,
+    ]);
     const characterIds = characters.map((v) => v.id);
     if (!characterIds.length) {
       throw new Error(`Tick has no valid characters.`);
@@ -159,6 +160,13 @@ export const castledkp = {
     // add items to raid
     await Promise.all(
       tick.data.loot.map((l) => castledkp.addItem(data.raid_id, l))
+    );
+
+    // add adjustments to raid
+    await Promise.all(
+      tick.data.adjustments?.map((a) =>
+        castledkp.addAdjustment(data.raid_id, a)
+      ) || []
     );
 
     return {
@@ -213,6 +221,17 @@ export const castledkp = {
       item_raid_id: raidId,
       item_value: loot.price,
       item_itempool_id: 1,
+    });
+  },
+
+  addAdjustment: async (raidId: number, adjustment: AdjustmentData) => {
+    const character = await castledkp.getCharacter(adjustment.player);
+    return client.post(route("add_adjustment"), {
+      adjustment_date: moment().format(UPLOAD_DATE_FORMAT),
+      adjustment_reason: adjustment.reason,
+      adjustment_members: { member: [character.id] },
+      adjustment_value: adjustment.value,
+      adjustment_raid_id: raidId,
     });
   },
 };

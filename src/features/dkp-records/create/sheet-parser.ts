@@ -43,6 +43,7 @@ export class SheetParser {
       date: this.date,
       loot: this.loot,
       tickNumber: this.tickNumber,
+      adjustments: [],
     };
   }
 

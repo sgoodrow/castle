@@ -23,10 +23,7 @@ class UpdateReinforcementsInfoAction extends InstructionsReadyAction {
   public async execute(): Promise<void> {
     await this.createOrUpdateInstructions(
       {
-        embeds: [
-          await this.getDescriptionEmbed(),
-          await this.getTldrEmbed(),
-        ],
+        embeds: [await this.getDescriptionEmbed(), await this.getTldrEmbed()],
         components: [await this.getButtons()],
       },
       Name.ReinforcementsInstructions

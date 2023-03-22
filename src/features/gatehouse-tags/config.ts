@@ -65,7 +65,6 @@ const CompetitorTagAction: ReactionConfig = {
   action: ActionType.Tag,
 };
 
-
 const InstructAction: ReactionConfig = {
   roles: [],
   action: ActionType.Instruct,

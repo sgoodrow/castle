@@ -3,6 +3,7 @@ import { dkpRecordsBetaChannelId } from "../../../config";
 import { AddPlayerRevision } from "./add-player-revision";
 import { ReplacePlayerRevision } from "./replace-player-revision";
 import { RemovePlayerRevision } from "./remove-player-revision";
+import { AddAdjustmentRevision } from "./add-adjustment-revision";
 
 const multipleSpaces = /\s+/;
 
@@ -40,6 +41,8 @@ export const getAction = (content: string) => {
       return new RemovePlayerRevision(actionArguments);
     case "rep":
       return new ReplacePlayerRevision(actionArguments);
+    case "adj":
+      return new AddAdjustmentRevision(actionArguments);
     default:
       throw new Error(
         `Could not verify raid edit because the action "${actionType}" is not supported.`

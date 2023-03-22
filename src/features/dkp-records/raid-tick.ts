@@ -9,6 +9,12 @@ import { LootData } from "./raid-report";
 export const UPLOAD_DATE_FORMAT = "YYYY-MM-DD HH:mm";
 export const EVERYONE = "Everyone";
 
+export interface AdjustmentData {
+  player: string;
+  value: number;
+  reason: string;
+}
+
 export interface RaidTickData {
   finished: boolean;
   tickNumber: number;
@@ -20,6 +26,13 @@ export interface RaidTickData {
   attendees: string[];
   date: string;
   credits: CreditData[];
+  adjustments?: AdjustmentData[];
+}
+
+interface Change {
+  person: string;
+  change: string;
+  reason: string;
 }
 
 export class RaidTick {
@@ -57,9 +70,10 @@ export class RaidTick {
   }
 
   public get earned(): number {
+    const adjustments = sumBy(this.data.adjustments, ({ value }) => value);
     return this.data.value === undefined
-      ? 0
-      : this.data.attendees.length * this.data.value;
+      ? 0 + adjustments
+      : this.data.attendees.length * this.data.value + adjustments;
   }
 
   public get uploadDate(): string {
@@ -77,6 +91,13 @@ export class RaidTick {
     const response = await castledkp.createRaid(this, threadUrl);
     this.data.finished = true;
     return response;
+  }
+
+  public addAdjustment(adjustment: AdjustmentData) {
+    if (!this.data.adjustments) {
+      this.data.adjustments = [];
+    }
+    this.data.adjustments.push(adjustment);
   }
 
   public addPlayer(name: string) {
@@ -112,17 +133,32 @@ export class RaidTick {
     const ready =
       this.data.value !== undefined && this.data.event !== undefined;
     const all = EVERYONE.padEnd(firstColumnLength);
-    const value = `+${this.getPaddedDkp(secondColumnLength, this.data.value)}`;
-    const loot =
-      this.data.loot.length > 0
-        ? `\n${this.renderLoots(
-            this.data.loot,
+    const attendanceValue = `${this.getPaddedDkp(
+      secondColumnLength,
+      this.data.value === undefined ? "+?" : String(this.data.value)
+    )}`;
+    const changes: Change[] = [
+      ...this.data.loot.map((l) => ({
+        person: l.buyer,
+        change: `-${l.price}`,
+        reason: l.item,
+      })),
+      ...(this.data.adjustments || []).map((a) => ({
+        person: a.player,
+        change: `+${a.value}`,
+        reason: a.reason,
+      })),
+    ];
+    const change =
+      changes.length > 0
+        ? `\n${this.renderChanges(
+            changes,
             firstColumnLength,
             secondColumnLength
           )}`
         : "";
     return `--- ${this.name} ---
-${ready ? "+" : "-"} ${all} ${value} (Attendance)${loot}`;
+${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${change}`;
   }
 
   public getCreatedEmbed(
@@ -154,26 +190,26 @@ ${result}${code}${notIncluded}`,
     });
   }
 
-  private renderLoots(
-    loot: LootData[],
+  private renderChanges(
+    changes: Change[],
     firstColumnLength: number,
     secondColumnLength: number
   ): string {
-    return loot
-      .sort((a, b) => a.buyer.localeCompare(b.buyer))
-      .map((l) => this.renderLoot(l, firstColumnLength, secondColumnLength))
+    return changes
+      .sort((a, b) => a.person.localeCompare(b.person))
+      .map((c) => this.renderChange(c, firstColumnLength, secondColumnLength))
       .join("\n");
   }
 
-  private renderLoot(
-    loot: LootData,
+  private renderChange(
+    { person, change, reason }: Change,
     firstColumnLength: number,
     secondColumnLength: number
   ) {
-    return `+ ${loot.buyer.padEnd(firstColumnLength)} -${this.getPaddedDkp(
+    return `+ ${person.padEnd(firstColumnLength)} ${this.getPaddedDkp(
       secondColumnLength,
-      loot.price
-    )} (${loot.item})`;
+      change
+    )} (${reason})`;
   }
 
   public get creditCommands(): string[] {
@@ -188,8 +224,7 @@ ${result}${code}${notIncluded}`,
     );
   }
 
-  private getPaddedDkp(secondColumnLength: number, value?: number) {
-    const s = value === undefined ? "?" : String(value);
-    return s.padEnd(secondColumnLength);
+  private getPaddedDkp(secondColumnLength: number, value: string) {
+    return value.padEnd(secondColumnLength);
   }
 }

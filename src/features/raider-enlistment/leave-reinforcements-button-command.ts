@@ -1,11 +1,13 @@
-import { ButtonInteraction, CacheType, GuildMemberRoleManager } from "discord.js";
+import {
+  ButtonInteraction,
+  CacheType,
+  GuildMemberRoleManager,
+} from "discord.js";
 import { reinforcementsRoleId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 
 class LeaveReinforcementsButton extends ButtonCommand {
-  public constructor(
-    public readonly customId: string,
-  ) {
+  public constructor(public readonly customId: string) {
     super(customId);
   }
 
