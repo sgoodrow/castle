@@ -4,13 +4,11 @@ import {
   PartialUser,
   User,
 } from "discord.js";
-import { partition } from "lodash";
 import {
   dkpDeputyRoleId,
   dkpRecordsBetaChannelId,
   officerRoleId,
 } from "../../../config";
-import { CreateRaidResponse } from "../../../services/castledkp";
 import {
   ReactionAction,
   reactionActionExecutor,
@@ -67,7 +65,7 @@ class RaidReportFinishedReactionAction extends ReactionAction {
 
     // create remaining raids
     const { created, failed } = await report.uploadRemainingRaidTicks(
-      `https://discord.com/channels/${this.message.guildId}/${this.message.channel.id}`
+      `https://discord.com/channels/${this.message.guildId}/${this.message.channelId}`
     );
 
     // provide receipt
@@ -77,9 +75,12 @@ class RaidReportFinishedReactionAction extends ReactionAction {
     });
 
     // update report
-    await report.editMessages(messages);
+    await report.updateMessages(messages);
 
     // update thread title
-    await report.updateThreadName(this.message.channel);
+    await report.tryUpdateThreadName(this.message.channel);
+
+    // cleanup redis
+    await report.delete(this.message.channelId);
   }
 }

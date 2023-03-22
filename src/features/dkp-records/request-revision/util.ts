@@ -33,7 +33,7 @@ export const getAction = (content: string) => {
     .slice(1)
     .split(multipleSpaces);
 
-  switch (actionType) {
+  switch (actionType.toLowerCase()) {
     case "add":
       return new AddPlayerRevision(actionArguments);
     case "rem":

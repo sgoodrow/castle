@@ -5,6 +5,8 @@
 Provides various features for the Castle EverQuest guild's Discord server.
 
 - **Volunteer Applications** - list of Castle jobs and how to apply for them
+- **Raid Schedule** - summarize upcoming Discord raid events
+- **EQ DKP Plus** - upload raids to an EQ DKP Plus instance
 - **Banking** - bank instructions and management tools
 - **Jewelry** - jewerly instructions and management tools
 - **Auctions** - commands to create and complete DKP auctions

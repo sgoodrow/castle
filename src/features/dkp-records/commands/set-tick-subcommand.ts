@@ -64,11 +64,9 @@ export class SetTickSubcommand extends Subcommand {
 
     const ticksUpdated = report.updateRaidTick(event, value, tick, note);
 
-    await report.editMessages(messages);
+    await report.save(interaction.channelId);
 
-    if (report.allTicksHaveEvent) {
-      await report.updateThreadName(interaction.channel);
-    }
+    await report.tryUpdateThreadName(interaction.channel);
 
     await interaction.editReply(
       `Identified ${ticksUpdated.join(", ")} as "${

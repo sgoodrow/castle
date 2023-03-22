@@ -5,6 +5,7 @@ dotenv.config();
 export const {
   DATABASE_URL,
   SSL,
+  UPSTASH_REDIS_URL,
   token,
   clientId,
   castleDkpTokenRO,
@@ -49,6 +50,11 @@ export const {
    * [Optional] Whether or not the server supports SSL connections. If unset, SSL is used. The development server sets it automatically.
    */
   SSL?: "false";
+
+  /**
+   * [Optional] Redis connection URL. Defaults to gitpod development instance.
+   */
+  UPSTASH_REDIS_URL?: string;
 
   /**
    * Discord bot OAuth2 token.

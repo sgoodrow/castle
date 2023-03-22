@@ -8,7 +8,7 @@ import {
   readyActionExecutor,
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
-import { HOURS } from "../../shared/time";
+import { DAYS, HOURS } from "../../shared/time";
 import { compactDescription } from "../../shared/util";
 
 interface Event {
@@ -59,7 +59,7 @@ ${events.map((e) => this.renderEvent(e)).join("\n\n")}`
       throw new Error("Could not locate the raider role");
     }
 
-    const nextWeek = Date.now() + 7 * 24 * 60 * 60 * 1000;
+    const nextWeek = Date.now() + 7 * DAYS;
 
     return events
       .filter(

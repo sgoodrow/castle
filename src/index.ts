@@ -12,6 +12,8 @@ import {
   guildScheduledEventListener,
   guildScheduledEventStartedListener,
 } from "./listeners/guild-scheduled-event-listener";
+import { redisChannels, redisListener } from "./redis/client";
+import { updateRaidReport } from "./features/dkp-records/update/update-raid-report";
 
 // Global
 https.globalAgent.maxSockets = 5;
@@ -60,5 +62,7 @@ client.on("guildScheduledEventUpdate", guildScheduledEventListener);
 client.on("guildScheduledEventUpdate", guildScheduledEventStartedListener);
 
 registerSlashCommands();
+
+redisListener.pSubscribe(redisChannels.raidReportChange(), updateRaidReport);
 
 console.log("Listening...");
