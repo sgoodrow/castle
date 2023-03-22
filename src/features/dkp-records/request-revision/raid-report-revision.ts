@@ -30,12 +30,13 @@ export abstract class RaidReportRevision {
     }
 
     // get raid report
-    const { report, messages } = await getRaidReport(message.channel);
+    const { report } = await getRaidReport(message.channel);
 
     // execute action on raid report
     this.execute(report);
 
-    await report.editMessages(messages);
+    // save to redis cache
+    await report.save(message.channelId);
 
     // show success
     await message.react("✅");

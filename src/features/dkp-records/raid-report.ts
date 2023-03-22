@@ -1,15 +1,14 @@
-import axios from "axios";
 import {
-  GuildMember,
   Message,
-  MessageAttachment,
   MessageEmbed,
   TextBasedChannel,
   ThreadChannel,
 } from "discord.js";
-import { flatMap, max, some, uniq } from "lodash";
+import { every, flatMap, max, some, uniq } from "lodash";
 import { raiderRoleId } from "../../config";
+import { redisChannels, redisClient } from "../../redis/client";
 import { CreateRaidResponse, RaidEventData } from "../../services/castledkp";
+import { DAYS } from "../../shared/time";
 import { code } from "../../shared/util";
 import { EVERYONE, RaidTick, RaidTickData } from "./raid-tick";
 
@@ -36,17 +35,17 @@ const isRaidReportMessage = (m: Message) =>
 export const isRaidInstructionsMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === INSTRUCTIONS_TITLE);
 
-export const getRaidReport = async (channel: TextBasedChannel) => {
+export const getRaidReportMessages = async (channel: TextBasedChannel) => {
   if (!channel.isThread()) {
     throw new Error(
-      "Could not find raid reports because channel is not a thread."
+      "Could not find raid report messages because channel is not a thread."
     );
   }
 
   const starter = await channel.fetchStarterMessage();
   if (!starter) {
     throw new Error(
-      "Could not find raid reports because the thread starter message could not be found"
+      "Could not find raid report messages because the thread starter message could not be found"
     );
   }
   const all = await channel.messages.fetch({
@@ -63,25 +62,20 @@ export const getRaidReport = async (channel: TextBasedChannel) => {
       .values(),
   ];
   if (messages.length === 0) {
-    throw new Error("Could not find raid reports.");
+    throw new Error("Could not find raid report messages.");
+  }
+  return messages;
+};
+
+export const getRaidReport = async (channel: TextBasedChannel) => {
+  const messages = await getRaidReportMessages(channel);
+
+  const serialized = await redisClient.get(channel.id);
+  if (!serialized) {
+    throw new Error("Could not find raid report in database.");
   }
 
-  const a = messages[0].attachments.first();
-  if (!a) {
-    throw new Error("Could not find raid report attachment");
-  }
-
-  const { data } = await axios({
-    url: a.url,
-    responseType: "json",
-  });
-
-  console.log(data, a.url);
-
-  return {
-    report: new RaidReport(data),
-    messages,
-  };
+  return { report: new RaidReport(JSON.parse(serialized)), messages };
 };
 
 export class RaidReport {
@@ -91,7 +85,6 @@ export class RaidReport {
 
   public constructor(data: RaidData) {
     this.filename = data.filename;
-    console.log(data.ticks);
     this.ticks = data.ticks.map((t) => new RaidTick(t));
 
     const attendanceNames = [...this.allAttendees, EVERYONE];
@@ -99,32 +92,32 @@ export class RaidReport {
   }
 
   public get allTicksHaveEvent(): boolean {
-    return !some(this.allTickNumbers.map((i) => this.getRaidTick(i).hasEvent));
+    return every(this.allTickNumbers.map((i) => this.getRaidTick(i).hasEvent));
   }
 
-  public async updateThreadName(channel: ThreadChannel) {
-    if (channel.name !== this.threadName) {
-      await channel.setName(this.threadName);
+  public async tryUpdateThreadName(channel: ThreadChannel) {
+    const name = this.getThreadName();
+    if (channel.name === name) {
+      return;
     }
+    await channel.setName(name);
   }
 
-  public get threadName(): string {
-    const emoji = some(this.ticks, (t) => !t.data.finished) ? "❔" : "✅";
-    const eventAbreviations = uniq(
-      this.ticks.map(({ eventAbreviation }) => eventAbreviation)
-    ).join(", ");
-    const label =
-      eventAbreviations ||
-      `${this.filename.replace(/[^a-zA-Z]+/g, "")}?` ||
-      "Unidentified";
-    return `${emoji} ${this.ticks[0].shortDate} ${label}`;
+  public getThreadName(): string {
+    const emoji = every(this.ticks, (t) => t.data.finished) ? "✅" : "❔";
+    const label = every(this.ticks, (t) => t.hasEvent)
+      ? uniq(this.ticks.map(({ eventAbreviation }) => eventAbreviation)).join(
+          ", "
+        )
+      : `${this.filename.replace(/[^a-zA-Z]+/g, "")}?`;
+    return `${emoji} ${this.ticks[0].shortDate} ${label || "Unidentified"}`;
   }
 
   public getCreditCommands(): string[] {
     return flatMap(this.ticks, (t) => t.creditCommands);
   }
 
-  public async editMessages(messages: Message[]) {
+  public async updateMessages(messages: Message[]) {
     const raidReportEmbeds = this.getRaidReportEmbeds();
     if (raidReportEmbeds.length > messages.length) {
       throw new Error(
@@ -144,7 +137,6 @@ export class RaidReport {
           }
           return m.edit({
             embeds,
-            files: i === 0 ? this.files : undefined,
           });
         })
       );
@@ -162,14 +154,17 @@ export class RaidReport {
     };
   }
 
-  public get files(): MessageAttachment[] {
-    return [
-      new MessageAttachment(
-        Buffer.from(JSON.stringify(this.data, null, 2), "utf-8")
-      )
-        .setName(`${this.filename}.json`)
-        .setSpoiler(true),
-    ];
+  public async save(threadId: string) {
+    const serialized = JSON.stringify(this.data);
+    const channel = redisChannels.raidReportChange(threadId);
+    await redisClient.set(threadId, serialized, {
+      EX: 90 * DAYS,
+    });
+    await redisClient.publish(channel, serialized);
+  }
+
+  public async delete(threadId: string) {
+    await redisClient.del(threadId);
   }
 
   public get instructionsEmbed(): MessageEmbed {

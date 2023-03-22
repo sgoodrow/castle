@@ -14,6 +14,7 @@ import { RaidReport } from "../raid-report";
 import { client } from "../../..";
 import { addRoleToThread } from "../../../shared/command/util";
 import { isValidXlsxData, SheetParser } from "./sheet-parser";
+import { redisChannels, redisClient } from "../../../redis/client";
 
 const supportedFormat =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -79,14 +80,16 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
 
     // create a thread
     const thread = await message.startThread({
-      name: report.threadName,
+      name: report.getThreadName(),
       autoArchiveDuration: 4320,
     });
+
+    // save report to redis
+    await report.save(thread.id);
 
     // add files with the first report embed
     await thread.send({
       embeds: [first],
-      files: report.files,
     });
     reportEmbeds.forEach(
       async (e) =>
