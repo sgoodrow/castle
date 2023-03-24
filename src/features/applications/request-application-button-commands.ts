@@ -53,7 +53,9 @@ export class RequestApplication extends ButtonCommand {
   }
 
   private get content() {
-    return `In Castle, leadership and volunteering are duties with no compensation or special privileges. ${
+    return `**DO NOT REPLY TO THIS MESSAGE. DM AN OFFICER.**
+
+In Castle, leadership and volunteering are duties with no compensation or special privileges. ${
       this.role
     }s are tasked with ${this.description}. ${
       this.role
