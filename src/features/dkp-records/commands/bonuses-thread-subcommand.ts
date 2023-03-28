@@ -10,6 +10,7 @@ import {
   dkpBonusesChannelId,
   dkpDeputyRoleId,
   officerRoleId,
+  raiderRoleId,
 } from "../../../config";
 import { redisClient } from "../../../redis/client";
 import { castledkp } from "../../../services/castledkp";
@@ -85,9 +86,24 @@ export class BonusesThreadSubcommand extends Subcommand {
       content: "_ _",
       embeds: [
         new MessageEmbed({
-          title: name,
+          title: `Raid: __${name}__`,
           url: getRaidUrl(raid.eventUrlSlug, raid.id),
         }),
+      ],
+    });
+
+    await thread.send({
+      embeds: [
+        new MessageEmbed({
+          title: "Instructions",
+          description: `• <@&${raiderRoleId}>s may use the \`!adj\` command to submit bonus requests.
+• The bot will react with ⚠️ if the request is invalid (wrong format).
+• Deputies will ✅ requests to add approve them.
+• Requests made by deputies are automatically approved.`,
+        }).addField(
+          "Add a raid adjustment bonus. Context is optional.",
+          "`!adj Pumped 5 reason (context)`"
+        ),
       ],
     });
 

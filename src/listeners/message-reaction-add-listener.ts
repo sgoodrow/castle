@@ -11,6 +11,7 @@ import { tryBankRequestFinishedReactionAction } from "../features/bank-request-i
 import { tryInviteRequestFinishedReactionAction } from "../features/invite-list/invite-request-finished-reaction";
 import { tryApproveRaidReportRevisionReactionAction } from "../features/dkp-records/request-revision/approve-raid-report-revision-reaction";
 import { tryRaidReportFinishedReactionAction } from "../features/dkp-records/finish/finish-raid-report-reaction";
+import { tryApproveRaidBonusRequestReactionAction } from "../features/dkp-records/request-bonus/approve-raid-bonus-request-reaction";
 
 const reactionActions = [
   tryGatehouseReactionAction,
@@ -19,6 +20,7 @@ const reactionActions = [
   tryInviteRequestFinishedReactionAction,
   tryRaiderEnlistedReactionAction,
   tryApproveRaidReportRevisionReactionAction,
+  tryApproveRaidBonusRequestReactionAction,
   tryRaidReportFinishedReactionAction,
 ];
 
