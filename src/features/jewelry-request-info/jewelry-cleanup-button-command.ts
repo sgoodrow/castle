@@ -49,14 +49,13 @@ ${messages.map((m) => this.getQuotedContent(m.content)).join("\n")}`);
       messages.forEach((m) => m.delete());
     });
 
-    await interaction.reply({
+    await interaction.editReply({
       content: `Removed stale jewelry requests from: ${Object.values(
         nonJewelerMessagesMap
       )
         .map(({ user }) => user)
         .map((u) => `${u}`)
         .join(" ")}`,
-      ephemeral: true,
     });
   }
 
