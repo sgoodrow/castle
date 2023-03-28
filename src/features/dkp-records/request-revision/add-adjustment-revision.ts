@@ -1,16 +1,17 @@
 import { capitalize } from "lodash";
+import { castledkp } from "../../../services/castledkp";
 import { RaidReport } from "../raid-report";
 import { RaidReportRevision } from "./raid-report-revision";
 
 export class AddAdjustmentRevision extends RaidReportRevision {
-  protected execute(raid: RaidReport) {
-    const { player, value, reason } = this.validateArgs();
+  protected async execute(raid: RaidReport) {
+    const { player, value, reason } = await this.validateArgs();
     raid.addAdjustment({ player, value, reason });
   }
 
-  protected validateArgs() {
-    const [player, valueString, ...reasonWords] = this.args;
-    if (!player) {
+  protected async validateArgs() {
+    const [playerRaw, valueString, ...reasonWords] = this.args;
+    if (!playerRaw) {
       throw this.getFormatError("missing player name");
     }
     const value = Number(valueString);
@@ -21,8 +22,10 @@ export class AddAdjustmentRevision extends RaidReportRevision {
     if (!reason) {
       throw this.getFormatError("missing reason");
     }
+    const player = capitalize(playerRaw);
+    await castledkp.getCharacter(player);
     return {
-      player: capitalize(player),
+      player,
       value,
       reason,
     };
