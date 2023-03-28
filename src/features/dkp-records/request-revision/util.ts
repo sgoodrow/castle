@@ -1,5 +1,5 @@
 import { Message, PartialMessage } from "discord.js";
-import { dkpRecordsBetaChannelId } from "../../../config";
+import { dkpRecordsChannelId } from "../../../config";
 import { AddPlayerRevision } from "./add-player-revision";
 import { ReplacePlayerRevision } from "./replace-player-revision";
 import { RemovePlayerRevision } from "./remove-player-revision";
@@ -14,7 +14,7 @@ export const getRaidRevisionMessageContent = async (
   if (!thread) {
     return;
   }
-  if (message.channel.parentId !== dkpRecordsBetaChannelId) {
+  if (message.channel.parentId !== dkpRecordsChannelId) {
     return;
   }
 

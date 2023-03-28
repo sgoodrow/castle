@@ -1,9 +1,5 @@
 import { Message, MessageAttachment } from "discord.js";
-import {
-  dkpDeputyRoleId,
-  dkpRecordsBetaChannelId,
-  dkpRecordsChannelId,
-} from "../../../config";
+import { dkpDeputyRoleId, dkpRecordsChannelId } from "../../../config";
 import {
   MessageAction,
   messageActionExecutor,
@@ -14,7 +10,6 @@ import { RaidReport } from "../raid-report";
 import { client } from "../../..";
 import { addRoleToThread } from "../../../shared/command/util";
 import { isValidXlsxData, SheetParser } from "./sheet-parser";
-import { redisChannels, redisClient } from "../../../redis/client";
 
 const supportedFormat =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -65,21 +60,8 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
       return;
     }
 
-    // create a message in the beta channel
-    let message = this.message;
-    if (dkpRecordsBetaChannelId !== dkpRecordsChannelId) {
-      const betaChannel = client.channels.cache.get(dkpRecordsBetaChannelId);
-      if (!betaChannel?.isText()) {
-        return;
-      }
-      message = await betaChannel.send({
-        content:
-          "When the feature is live, this will be the message with the `.xlsx` file.",
-      });
-    }
-
     // create a thread
-    const thread = await message.startThread({
+    const thread = await this.message.startThread({
       name: report.getThreadName(),
       autoArchiveDuration: 4320,
     });

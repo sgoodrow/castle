@@ -92,6 +92,10 @@ class AuctionFinishedReactionAction extends ReactionAction {
     const { price, character } = await this.parseBid(this.message.content);
     const item = await this.getItem(name);
 
+    if (!castleDkpAuctionRaidId) {
+      throw new Error("The CastleDKP Auction Raid ID is not set");
+    }
+
     // add item to raid
     await castledkp.addItem(Number(castleDkpAuctionRaidId), {
       item,

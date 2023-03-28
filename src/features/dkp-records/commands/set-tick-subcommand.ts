@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import {
   dkpDeputyRoleId,
-  dkpRecordsBetaChannelId,
+  dkpRecordsChannelId,
   officerRoleId,
 } from "../../../config";
 import { castledkp } from "../../../services/castledkp";
@@ -28,18 +28,18 @@ export class SetTickSubcommand extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     // filter non-threads
     if (!interaction.channel?.isThread()) {
-      return;
+      throw new Error("Must use this command in a raid thread");
     }
 
     // filter channel
-    if (interaction.channel.parentId !== dkpRecordsBetaChannelId) {
-      return;
+    if (interaction.channel.parentId !== dkpRecordsChannelId) {
+      throw new Error("Must use this command in a raid thread");
     }
 
     // authorize user
     const roles = interaction.member?.roles as GuildMemberRoleManager;
     if (!(roles.cache.has(dkpDeputyRoleId) || roles.cache.has(officerRoleId))) {
-      return;
+      throw new Error("Must be a DKP Deputy or Offier to use this command");
     }
 
     // get raid report

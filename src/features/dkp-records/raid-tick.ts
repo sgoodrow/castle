@@ -35,6 +35,9 @@ interface Change {
   reason: string;
 }
 
+export const getRaidUrl = (eventUrlSlug: string, raidId: number) =>
+  `https://castledkp.com/index.php/Raids/[green]-${eventUrlSlug}-r${raidId}.html?s=`;
+
 export class RaidTick {
   public constructor(public readonly data: RaidTickData) {}
 
@@ -61,10 +64,6 @@ export class RaidTick {
     } ${this.data.tickNumber}${this.note}`;
   }
 
-  public getUploadNote(threadUrl: string): string {
-    return `${this.name} ${threadUrl}`;
-  }
-
   public get note(): string {
     return this.data.note ? ` (${this.data.note})` : "";
   }
@@ -88,7 +87,7 @@ export class RaidTick {
     if (this.data.finished) {
       throw new Error(`${this.name} has already been uploaded.`);
     }
-    const response = await castledkp.createRaid(this, threadUrl);
+    const response = await castledkp.createRaidFromTick(this, threadUrl);
     this.data.finished = true;
     return response;
   }
@@ -186,7 +185,7 @@ DKP Earned             ${this.earned}
 DKP Spent              ${this.spent}
 -------------------------------
 ${result}${code}${notIncluded}`,
-      url: `https://castledkp.com/index.php/Raids/[green]-${eventUrlSlug}-r${id}.html?s=`,
+      url: getRaidUrl(eventUrlSlug, id),
     });
   }
 
