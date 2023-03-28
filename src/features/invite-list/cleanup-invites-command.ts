@@ -35,11 +35,10 @@ class CleanupInvitesCommand extends ButtonCommand {
     const removed = await this.removeFromInviteList(oldInvites);
 
     // summarize
-    await interaction.reply({
+    await interaction.editReply({
       content: `Cleanup removed the following invites:
 ${removed}
 `,
-      ephemeral: true,
     });
 
     // update
