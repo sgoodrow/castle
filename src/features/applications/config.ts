@@ -77,19 +77,6 @@ const dkpDeputyApplicationCommand = new RequestApplication(
   "current officers, and approved by the Castle Chief of Staff"
 );
 
-const quartermasterApplicationsCommand = new RequestApplication(
-  "Quartermaster",
-  "moving and procuring needed materials and reagents",
-  "any officer",
-  [
-    "Please describe what motivates you to volunteer as a Quartermaster.",
-    "Nearly all quartermaster tasks will involve interfacing with other Castle members for transfers of PP or materials.  Are you comfortable coordinating with others and do you have the flexibility of schedule necessary to do so? ",
-    "Can you be kind and patient when someone you are working with has made a mistake or forgotten an appointment?",
-    "While we should play the game and not be on-duty all the time, being a Quartermaster will indeed consume some of one's game time. Are you willing to dedicate some of your game time to being a Quartermaster of Castle? And do you have the wisdom to set aside time for yourself to enjoy the game? ",
-  ],
-  "current officers, and approved by the Castle Captain of the Guard"
-);
-
 export const castleOnlyRoles = [
   officerApplicationCommand,
   guardApplicationCommand,
@@ -101,7 +88,6 @@ export const castleOrAllyRoles = [
   dkpDeputyApplicationCommand,
   bankerApplicationCommand,
   jewelerApplicationCommand,
-  quartermasterApplicationsCommand,
 ];
 
 export const applicationCommands = [...castleOnlyRoles, ...castleOrAllyRoles];
