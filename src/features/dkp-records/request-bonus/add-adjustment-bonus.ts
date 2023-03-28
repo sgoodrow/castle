@@ -1,12 +1,11 @@
 import { capitalize } from "lodash";
 import { castledkp } from "../../../services/castledkp";
-import { RaidReport } from "../raid-report";
-import { RaidReportRevision } from "./raid-report-revision";
+import { RaidBonusRequest } from "./raid-bonus-request";
 
-export class AddAdjustmentRevision extends RaidReportRevision {
-  protected async execute(raid: RaidReport) {
-    const { player, value, reason } = await this.validateArgs();
-    raid.addAdjustment({ player, value, reason });
+export class AddAdjustmentBonus extends RaidBonusRequest {
+  protected async execute(raidId: number) {
+    const adjustment = await this.validateArgs();
+    await castledkp.addAdjustment(raidId, adjustment);
   }
 
   protected async validateArgs() {

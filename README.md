@@ -6,7 +6,8 @@ Provides various features for the Castle EverQuest guild's Discord server.
 
 - **Volunteer Applications** - list of Castle jobs and how to apply for them
 - **Raid Schedule** - summarize upcoming Discord raid events
-- **EQ DKP Plus** - upload raids to an EQ DKP Plus instance
+- **EQ DKP Plus Raid Import** - upload raids to an EQ DKP Plus instance
+- **EQ DKP Plus Raid Bonuses** - create bonuse raids in an EQ DKP Plus instance
 - **Banking** - bank instructions and management tools
 - **Jewelry** - jewerly instructions and management tools
 - **Auctions** - commands to create and complete DKP auctions
@@ -48,7 +49,8 @@ Some features connect to CastleDKP.com and manipulate DKP values. This connectiv
 | Environment Variable     | Purpose                                                              | Features                                  | How to Retrieve                    |
 | ------------------------ | -------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------- |
 | `castleDkpTokenRO`       | Admin token for making authenticated requests to CastleDKP.com       | Discord DKP Auctions, Discord DKP Uploads | Discuss with a CastleDKP.com Admin |
-| `castleDkpAuctionRaidID` | The ID of the current raid to upload Discord DKP auction results to. | Discord DKP Auctions                      | Discuss with a Castle DKP Deputy   |
+| `castleDkpAuctionRaidId` | The ID of the current raid to upload Discord DKP auction results to. | Discord DKP Auctions                      | Discuss with a Castle DKP Deputy   |
+| `castleDkpBonusesCharId` | The ID of a character to associate with DKP bonus raids              | Discord DKP Uploads                       | Discuss with a CastleDKP.com Admin |
 
 ### ⏺️ Local
 

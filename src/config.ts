@@ -10,6 +10,7 @@ export const {
   clientId,
   castleDkpTokenRO,
   castleDkpAuctionRaidId,
+  castleDkpBonusesCharId,
   commandSuffix,
   guildId,
   guardRoleId,
@@ -37,7 +38,7 @@ export const {
   removedChannelId,
   inviteListChannelId,
   dkpRecordsChannelId,
-  dkpRecordsBetaChannelId,
+  dkpBonusesChannelId,
   applicationsChannelId,
   requestDumpThreadId,
   startedRaidsDumpThreadId,
@@ -74,6 +75,11 @@ export const {
    * CastleDKP.com Raid ID for DKP auctions.
    */
   castleDkpAuctionRaidId?: string;
+
+  /**
+   * CastleDKP.com DKP Bonuses character ID.
+   */
+  castleDkpBonusesCharId?: string;
 
   /**
    * [Optional] Custom suffix for all Discord commands. Useful for running multiple instances of the bot in the same server simultaneously.
@@ -117,7 +123,7 @@ export const {
   removedChannelId: string;
   inviteListChannelId: string;
   dkpRecordsChannelId: string;
-  dkpRecordsBetaChannelId: string;
+  dkpBonusesChannelId: string;
   applicationsChannelId: string;
   requestDumpThreadId: string;
   startedRaidsDumpThreadId: string;

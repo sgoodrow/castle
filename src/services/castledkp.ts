@@ -128,6 +128,28 @@ export const castledkp = {
   },
 
   createRaid: async (
+    name: string,
+    event: RaidEventData,
+    characterId: string,
+    threadUrl: string
+  ) => {
+    const { data } = await client.post<{ raid_id: number }>(route("add_raid"), {
+      raid_date: moment().format(UPLOAD_DATE_FORMAT),
+      raid_attendees: { member: [Number(characterId)] },
+      raid_value: 0,
+      raid_event_id: event.id,
+      raid_note: `${name} ${threadUrl}`,
+    });
+
+    return {
+      eventUrlSlug: event.name
+        .toLowerCase()
+        .replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
+      id: data.raid_id,
+    };
+  },
+
+  createRaidFromTick: async (
     tick: RaidTick,
     threadUrl: string
   ): Promise<CreateRaidResponse> => {
@@ -154,7 +176,7 @@ export const castledkp = {
       raid_attendees: { member: characterIds },
       raid_value: tick.data.value,
       raid_event_id: tick.data.event.id,
-      raid_note: tick.getUploadNote(threadUrl),
+      raid_note: `${tick.name} ${threadUrl}`,
     });
 
     // add items to raid
