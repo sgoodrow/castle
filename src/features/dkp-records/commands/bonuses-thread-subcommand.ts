@@ -63,7 +63,7 @@ export class BonusesThreadSubcommand extends Subcommand {
       throw new Error("DKP bonuses channel is a thread");
     }
     const message = await channel.send({
-      content: `**${name}**`,
+      content: `_ _`,
     });
     const thread = await message.startThread({
       autoArchiveDuration: 4320,
@@ -81,19 +81,13 @@ export class BonusesThreadSubcommand extends Subcommand {
     // save to redis
     await redisClient.set(thread.id, raid.id);
 
-    // link to raid
-    await message.edit({
-      content: "_ _",
+    // link to raid with instructions
+    await thread.send({
       embeds: [
         new MessageEmbed({
           title: `Raid: __${name}__`,
           url: getRaidUrl(raid.eventUrlSlug, raid.id),
         }),
-      ],
-    });
-
-    await thread.send({
-      embeds: [
         new MessageEmbed({
           title: "Instructions",
           description: `• <@&${raiderRoleId}>s may use the \`!adj\` command to submit bonus requests.
