@@ -4,7 +4,7 @@ import {
   TextBasedChannel,
   ThreadChannel,
 } from "discord.js";
-import { every, flatMap, max, some, uniq } from "lodash";
+import { every, flatMap, max, uniq } from "lodash";
 import { raiderRoleId } from "../../config";
 import { redisChannels, redisClient } from "../../redis/client";
 import { CreateRaidResponse, RaidEventData } from "../../services/castledkp";
@@ -107,8 +107,12 @@ export class RaidReport {
     await channel.setName(name);
   }
 
+  public get finished(): boolean {
+    return every(this.ticks, (t) => t.data.finished);
+  }
+
   public getThreadName(): string {
-    const emoji = every(this.ticks, (t) => t.data.finished) ? "✅" : "❔";
+    const emoji = this.finished ? "✅" : "❔";
     const label = every(this.ticks, (t) => t.hasEvent)
       ? uniq(this.ticks.map(({ eventAbreviation }) => eventAbreviation)).join(
           ", "
@@ -167,8 +171,10 @@ export class RaidReport {
     await redisClient.publish(channel, serialized);
   }
 
-  public async delete(threadId: string) {
-    await redisClient.del(threadId);
+  public async tryDelete(threadId: string) {
+    if (this.finished) {
+      await redisClient.del(threadId);
+    }
   }
 
   public get instructionsEmbed(): MessageEmbed {

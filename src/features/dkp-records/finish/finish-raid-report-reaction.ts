@@ -81,6 +81,6 @@ class RaidReportFinishedReactionAction extends ReactionAction {
     await report.tryUpdateThreadName(this.message.channel);
 
     // cleanup redis
-    await report.delete(this.message.channelId);
+    await report.tryDelete(this.message.channelId);
   }
 }
