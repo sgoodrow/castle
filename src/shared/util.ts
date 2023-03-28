@@ -4,7 +4,7 @@ export const code = "```";
 
 const NEWLINES = /[\r\n]+/g;
 
-export const compactDescription = (description: string) =>
+export const compactDescription = (description: string, length?: number) =>
   truncate(description.replace(NEWLINES, " "), {
-    length: 100,
+    length,
   });

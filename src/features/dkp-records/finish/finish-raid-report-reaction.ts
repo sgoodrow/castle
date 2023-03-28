@@ -81,6 +81,10 @@ class RaidReportFinishedReactionAction extends ReactionAction {
     await report.tryUpdateThreadName(this.message.channel);
 
     // cleanup redis
-    await report.delete(this.message.channelId);
+    if (report.finished) {
+      await this.message.channel.setAutoArchiveDuration(4320);
+      await this.message.channel.setArchived(true);
+      await report.tryDelete(this.message.channelId);
+    }
   }
 }

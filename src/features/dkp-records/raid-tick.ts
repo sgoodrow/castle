@@ -50,7 +50,7 @@ export class RaidTick {
   }
 
   public get shortDate(): string {
-    return this.date.format("M-D");
+    return this.date.format("M-D H:m");
   }
 
   public get eventAbreviation(): string {
@@ -60,7 +60,7 @@ export class RaidTick {
   // todo maybe truncate this with ellipses based on param (for raid reports, since note can be long)
   public get name(): string {
     return `${this.data.finished ? "✅ " : ""}${this.shortDate} ${
-      this.data.event?.shortName || this.data.sheetName
+      this.eventAbreviation || this.data.sheetName
     } ${this.data.tickNumber}${this.note}`;
   }
 
@@ -134,7 +134,7 @@ export class RaidTick {
     const all = EVERYONE.padEnd(firstColumnLength);
     const attendanceValue = `${this.getPaddedDkp(
       secondColumnLength,
-      this.data.value === undefined ? "+?" : String(this.data.value)
+      this.data.value === undefined ? "+?" : `+${this.data.value}`
     )}`;
     const changes: Change[] = [
       ...this.data.loot.map((l) => ({

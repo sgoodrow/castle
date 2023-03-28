@@ -120,6 +120,9 @@ class AuctionFinishedReactionAction extends ReactionAction {
 
     // edit thread title
     this.message.channel.setName(`✅ ${name}`);
+
+    await this.message.channel.setAutoArchiveDuration(4320);
+    await this.message.channel.setArchived(true);
   }
 
   private async parseBid(message: string) {

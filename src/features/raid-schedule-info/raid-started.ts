@@ -1,6 +1,6 @@
-import { Client, GuildScheduledEvent } from "discord.js";
+import { Client, GuildScheduledEvent, MessageEmbed } from "discord.js";
 import { startedRaidsDumpThreadId } from "../../config";
-import { compactDescription } from "../../shared/util";
+import { EventRenderer } from "./event-renderer";
 
 export const recordRaidStarted = async (
   client: Client,
@@ -14,13 +14,11 @@ export const recordRaidStarted = async (
     throw new Error(`${startedRaidsDumpThreadId} is not a text channel.`);
   }
 
-  const description = raid.description
-    ? ` ${compactDescription(raid.description)}`
-    : "";
-
-  await channel.send(
-    `**${raid.name}** <t:${Math.floor(
-      (raid.scheduledStartTimestamp || 0) / 1000
-    )}:F> ${description}`
-  );
+  await channel.send({
+    embeds: [
+      new MessageEmbed({
+        description: new EventRenderer(raid).toString(),
+      }),
+    ],
+  });
 };
