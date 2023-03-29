@@ -50,7 +50,7 @@ export class RaidTick {
   }
 
   public get shortDate(): string {
-    return this.date.format("M-D H:m");
+    return this.date.format("M-D H:mm");
   }
 
   public get eventAbreviation(): string {
