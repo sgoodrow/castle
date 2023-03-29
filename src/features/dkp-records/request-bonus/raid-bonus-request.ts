@@ -1,6 +1,7 @@
 import { GuildMember, Message, PartialMessage } from "discord.js";
 import { dkpDeputyRoleId, officerRoleId } from "../../../config";
 import { redisClient } from "../../../redis/client";
+import { checkReactionFromClient } from "../request-revision/raid-report-revision";
 
 export abstract class RaidBonusRequest {
   public constructor(protected readonly args: string[]) {}
@@ -17,6 +18,10 @@ export abstract class RaidBonusRequest {
     message: PartialMessage | Message,
     actor?: GuildMember
   ) {
+    if (await checkReactionFromClient(message, "✅")) {
+      return;
+    }
+
     await this.validateArgs();
 
     // authorize execution
