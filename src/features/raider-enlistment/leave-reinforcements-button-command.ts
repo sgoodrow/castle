@@ -20,9 +20,8 @@ class LeaveReinforcementsButton extends ButtonCommand {
       throw new Error(`You are already not in <@&${reinforcementsRoleId}>.`);
     }
     await roles.remove(reinforcementsRoleId);
-    interaction.reply({
+    interaction.editReply({
       content: `Left <@&${reinforcementsRoleId}>!`,
-      ephemeral: true,
     });
   }
 }

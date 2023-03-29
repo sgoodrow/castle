@@ -26,14 +26,13 @@ class CraftingButtonCommand extends ButtonCommand {
     ];
 
     if (!users.length) {
-      await interaction.reply({
+      await interaction.editReply({
         content: "There are no pending requests from non-jewelers.",
-        ephemeral: true,
       });
       return;
     }
 
-    await interaction.reply(`**${
+    await interaction.editReply(`**${
       interaction.member?.user
     } is now handling jewelry requests!**
 

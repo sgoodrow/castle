@@ -7,7 +7,6 @@ import {
 import { read, utils, WorkSheet } from "xlsx";
 import axios from "axios";
 import { RaidReport } from "../raid-report";
-import { client } from "../../..";
 import { addRoleToThread } from "../../../shared/command/util";
 import { isValidXlsxData, SheetParser } from "./sheet-parser";
 

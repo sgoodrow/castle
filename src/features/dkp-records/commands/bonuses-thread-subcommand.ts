@@ -15,6 +15,7 @@ import {
 import { redisClient } from "../../../redis/client";
 import { castledkp } from "../../../services/castledkp";
 import { Subcommand } from "../../../shared/command/subcommand";
+import { addRoleToThread } from "../../../shared/command/util";
 import { getRaidUrl } from "../raid-tick";
 
 enum Option {
@@ -100,6 +101,9 @@ export class BonusesThreadSubcommand extends Subcommand {
         ),
       ],
     });
+
+    // add deputies to thread
+    await addRoleToThread(dkpDeputyRoleId, thread);
 
     // done!
     await interaction.editReply(

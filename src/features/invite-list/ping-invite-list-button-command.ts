@@ -71,7 +71,7 @@ ${attention}`;
 
     await interaction.channel
       ?.send(alert)
-      .then(() => setTimeout(() => interaction.deleteReply(), 1 * HOURS));
+      .then((m) => setTimeout(() => m.delete(), 1 * HOURS));
 
     await interaction.editReply("The invite list has been notified.");
   }
