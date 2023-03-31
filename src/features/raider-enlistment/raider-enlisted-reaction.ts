@@ -43,16 +43,22 @@ class RaiderEnlistedReactionAction extends ReactionAction {
       return;
     }
 
+    const newRaider = await this.message.member?.fetch();
+    if (!newRaider) {
+      console.log("Could not enlist message author because there is none.");
+      return;
+    }
+
     // add raider role
-    await this.message.member?.roles.add(raiderRoleId);
+    await newRaider.roles.add(raiderRoleId);
 
     // provide receipt
-    await this.message.member?.send("Welcome to the Castle raid force!");
+    await newRaider.send("Welcome to the Castle raid force!");
 
     // delete all of their messages and the replies to their messages
     const messages = await this.message.channel.messages.fetch();
     const newRaiderMessages = messages.filter(
-      (m) => m.member?.id === this.message.member?.id
+      (m) => m.author.id === newRaider.id
     );
     const newRaiderMessagesIds = newRaiderMessages.map((m) => m.id);
     const repliesToNewRaiderMessages = messages.filter(
