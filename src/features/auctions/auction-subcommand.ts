@@ -2,9 +2,15 @@ import {
   ApplicationCommandOptionChoice,
   CacheType,
   CommandInteraction,
+  GuildMemberRoleManager,
 } from "discord.js";
 import { getRoles } from "../..";
-import { auctionChannelId, raiderRoleId } from "../../config";
+import {
+  auctionChannelId,
+  bankerRoleId,
+  officerRoleId,
+  raiderRoleId,
+} from "../../config";
 import { Subcommand } from "../../shared/command/subcommand";
 import {
   addRoleToThread,
@@ -122,7 +128,14 @@ export class AuctionSubcommand extends Subcommand {
       throw new Error("The auction channel is not a text channel.");
     }
 
-    requireInteractionMemberRole(raiderRoleId, interaction);
+    const roles = interaction.member?.roles as GuildMemberRoleManager;
+    if (!roles) {
+      throw new Error("Could not determine your roles.");
+    }
+
+    if (!(roles.cache.has(bankerRoleId) || roles.cache.has(raiderRoleId))) {
+      throw new Error("Must be either a banker or raider.");
+    }
 
     return auctionChannel;
   }

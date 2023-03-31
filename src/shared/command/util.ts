@@ -2,13 +2,9 @@ import {
   AutocompleteInteraction,
   ButtonInteraction,
   CacheType,
-  Collection,
   CommandInteraction,
-  GuildMember,
   GuildMemberRoleManager,
-  Message,
   PermissionResolvable,
-  Role,
   ThreadChannel,
 } from "discord.js";
 import { getMembers, getRoles } from "../..";
