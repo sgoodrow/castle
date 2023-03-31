@@ -51,14 +51,14 @@ Send a message in this channel with the following information and a Knight will 
 3. Say **"I have read and agree to follow the raider requirements and behaviors."**
 
 ❓ **What if I don't follow the required raider requirements or behaviors?**
-A leader will DM you with a reminder, then a warning, then 3 1-DKP penalties, and finally a 2-week raid suspension.`,
+Leadership will DM you with a reminder warning, then a 1 DKP penalty, followed by a 1-week suspension, and finally dismissal from raider status.`,
     });
   }
 
   private async getTldrEmbed() {
     return new MessageEmbed({
       title: "⚠️ TL;DR",
-      description: `Join the raid force and follow the expected raider behaviors -- if you don't you may get a warning, lose DKP or get a raid suspension`,
+      description: `Join the raid force and follow the expected raider behaviors -- if you don't you may get a warning, lose DKP or worse`,
       color: "ORANGE",
     });
   }
