@@ -254,6 +254,7 @@ export const castledkp = {
       adjustment_members: { member: [character.id] },
       adjustment_value: adjustment.value,
       adjustment_raid_id: raidId,
+      adjustment_event_id: 20,
     });
   },
 };
