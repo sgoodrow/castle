@@ -22,7 +22,7 @@ enum Option {
 
 export class SetTickSubcommand extends Subcommand {
   public constructor(name: string, description: string) {
-    super(name, description);
+    super(name, description, false);
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {

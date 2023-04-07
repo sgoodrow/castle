@@ -23,7 +23,8 @@ export const interactionCreateListener = async (
 
   if (interaction.isCommand()) {
     try {
-      await interaction.deferReply({ ephemeral: true });
+      const command = getCommand(interaction);
+      await interaction.deferReply({ ephemeral: command.ephemeral });
       await getCommand(interaction).execute(interaction);
       console.log(`/${interaction.commandName} succeeded`);
     } catch (error) {

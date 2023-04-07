@@ -112,7 +112,7 @@ export class RaidReport {
   }
 
   public getThreadName(): string {
-    const emoji = this.finished ? "✅" : "❔";
+    const emoji = this.finished ? "✅" : this.allTicksHaveEvent ? "❕" : "❔";
     const label = every(this.ticks, (t) => t.hasEvent)
       ? uniq(this.ticks.map(({ eventAbreviation }) => eventAbreviation)).join(
           ", "
