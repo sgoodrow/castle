@@ -22,7 +22,7 @@ enum Option {
 
 export class SetTickSubcommand extends Subcommand {
   public constructor(name: string, description: string) {
-    super(name, description, false);
+    super(name, description);
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -68,11 +68,13 @@ export class SetTickSubcommand extends Subcommand {
 
     await report.tryUpdateThreadName(interaction.channel);
 
-    await interaction.editReply(
-      `Identified ${ticksUpdated.join(", ")} as "${
-        event.shortName
-      } (${value})".`
-    );
+    const message = `${interaction.user} identified ${ticksUpdated.join(
+      ", "
+    )} as "${event.shortName} (${value})".`;
+
+    await interaction.channel.send(message);
+
+    await interaction.editReply("Done");
   }
 
   public get command() {
