@@ -47,11 +47,13 @@ class UpdateRaiderInfoAction extends InstructionsReadyAction {
 Send a message in this channel with the following information and a Knight will give you the role.
 
 1. Include a screenshot of your Castle- or alliance- tagged character with their name, guild and level visible. Also include /time in the chat.
-2. Include a link to your CastleDKP.com raiding character profile (NOT the MyCharacters page).
+2. Include a link to your CastleDKP.com raiding character profile (NOT the MyCharacters page). Please use first name only for your character.
 3. Say **"I have read and agree to follow the raider requirements and behaviors."**
 
 ❓ **What if I don't follow the required raider requirements or behaviors?**
-Leadership will DM you with a reminder warning, then a 1 DKP penalty, followed by a 1-week suspension, and finally dismissal from raider status.`,
+Leadership will DM you with a reminder warning, then a 1 DKP penalty, followed by a 1-week suspension, and finally dismissal from raider status.
+
+Periodically the ${this.role} roster will be reviewed, and if you have been inactive for more than three months (ie: not attended a raid tick), then you will be converted from "Raider" to "Inactive Raider".  You can request reactivation by posting in this channel. All DKP will be maintained.`,
     });
   }
 
