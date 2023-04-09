@@ -62,7 +62,7 @@ export const services: Service[] = [
     ],
   },
   {
-    title: "PP4DKP,
+    title: "PP4DKP",
     icon: Icon.Sold,
     requestFormats: ["PP4DKP #K Platinum"],    
     bullets: [
