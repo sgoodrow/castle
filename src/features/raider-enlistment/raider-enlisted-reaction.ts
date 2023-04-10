@@ -50,11 +50,11 @@ class RaiderEnlistedReactionAction extends ReactionAction {
       return;
     }
 
-    // add raider role
-    await newRaider.roles.add(raiderRoleId);
-
     // remove inactive raider role
     await newRaider.roles.remove(inactiveRaiderRoleId);
+
+    // add raider role
+    await newRaider.roles.add(raiderRoleId);
 
     // provide receipt
     await newRaider.send("Welcome to the Castle raid force!");
