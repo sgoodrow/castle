@@ -45,6 +45,7 @@ export const {
   requestDumpThreadId,
   startedRaidsDumpThreadId,
   raiderEnlistedThreadId,
+  bankInventoryChannelId,
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
@@ -133,4 +134,5 @@ export const {
   requestDumpThreadId: string;
   startedRaidsDumpThreadId: string;
   raiderEnlistedThreadId: string;
+  bankInventoryChannelId: string;
 };

@@ -39,6 +39,7 @@ tasks:
       requestDumpThreadId: "1077736628992352276"
       startedRaidsDumpThreadId: "1077736628992352276"
       raiderEnlistedThreadId: "1077736628992352276"
+      bankInventoryChannelId: "1094849532963078194"
     command: yarn dev
 
 vscode:
