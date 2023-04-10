@@ -21,6 +21,10 @@ export const recordRaiderEnlisted = async (
     .map((r) => `<@&${r.id}>`)
     .join(", ");
 
-  await channel.send(`${name}
+  // send message
+  const message = await channel.send(name);
+
+  // edit in roles (silent)
+  await message.edit(`${name}
 ${roles}`);
 };
