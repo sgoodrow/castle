@@ -5,6 +5,7 @@ import {
   User,
 } from "discord.js";
 import {
+  inactiveRaiderRoleId,
   knightRoleId,
   officerRoleId,
   raiderEnlistmentChannelId,
@@ -51,6 +52,9 @@ class RaiderEnlistedReactionAction extends ReactionAction {
 
     // add raider role
     await newRaider.roles.add(raiderRoleId);
+
+    // remove inactive raider role
+    await newRaider.roles.remove(inactiveRaiderRoleId);
 
     // provide receipt
     await newRaider.send("Welcome to the Castle raid force!");
