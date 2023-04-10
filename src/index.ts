@@ -14,6 +14,7 @@ import {
 } from "./listeners/guild-scheduled-event-listener";
 import { redisChannels, redisListener } from "./redis/client";
 import { updateRaidReport } from "./features/dkp-records/update/update-raid-report";
+import { guildMemberUpdateListener } from "./listeners/guild-member-update-listener";
 
 // Global
 https.globalAgent.maxSockets = 5;
@@ -56,6 +57,7 @@ client.on("messageCreate", messageCreateListener);
 client.on("ready", readyListener);
 client.on("guildMemberAdd", guildMemberAddListener);
 client.on("guildMemberRemove", guildMemberLeaveListener);
+client.on("guildMemberUpdate", guildMemberUpdateListener);
 client.on("guildScheduledEventCreate", guildScheduledEventListener);
 client.on("guildScheduledEventDelete", guildScheduledEventListener);
 client.on("guildScheduledEventUpdate", guildScheduledEventListener);

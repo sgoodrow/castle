@@ -36,6 +36,7 @@ tasks:
       applicationsChannelId: "1077322650839437403"
       requestDumpThreadId: "1077736628992352276"
       startedRaidsDumpThreadId: "1077736628992352276"
+      raiderEnlistedThreadId: "1077736628992352276"
     command: yarn dev
 
 vscode:
