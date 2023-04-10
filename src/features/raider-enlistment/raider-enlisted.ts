@@ -22,7 +22,7 @@ export const recordRaiderEnlisted = async (
     .join(", ");
 
   // send message
-  const message = await channel.send(name);
+  const message = await channel.send("New raider added!");
 
   // edit in roles (silent)
   await message.edit(`${name}
