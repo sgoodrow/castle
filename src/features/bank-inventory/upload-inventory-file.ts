@@ -9,17 +9,17 @@ import axios from "axios";
 import { addRoleToThread } from "../../shared/command/util";
 import { bankInventoryChannelId } from "../../config";
 
-const supportedFormat = "text/csv";
+const supportedFormat = "text/plain";
 
 export const tryParseInventoryAction = (message: Message) =>
   messageActionExecutor(new UploadInventoryMessageAction(message));
 
 class UploadInventoryMessageAction extends MessageAction {
   public async execute() {
-    // filter channel
-    if (this.message.channel.id !== bankInventoryChannelId) {
-      return;
-    }
+    // if (this.message.channel.id !== bankInventoryChannelId) {
+    //   //TODO: not reading my config var for some reason
+    //   return;
+    // }
 
     // filter non-attachments
     if (this.message.attachments.size === 0) {
@@ -29,7 +29,7 @@ class UploadInventoryMessageAction extends MessageAction {
     // parse attachments
     await Promise.all(
       [...this.message.attachments.values()]
-        .filter((a) => a.contentType === supportedFormat)
+        // .filter((a) => a.contentType === supportedFormat)
         .map((a) => this.tryParseInventoryOutput(a))
     );
   }
@@ -37,12 +37,20 @@ class UploadInventoryMessageAction extends MessageAction {
   private async tryParseInventoryOutput(a: MessageAttachment) {
     const { data } = await axios({
       url: a.url,
-      responseType: "arraybuffer",
     });
     const filename = a.name || "Inventory";
 
-    const inventoryData = read(data);
+    const inventoryData = this.parseTsv(data);
 
-    console.log(inventoryData);
+    console.log("inv data:", filename, inventoryData);
+  }
+
+  private parseTsv(str: string) {
+    const arr = [];
+    const x = str.split("\r\n");
+    for (let i = 0; i < x.length; i++) {
+      arr.push(x[i].split("\t"));
+    }
+    return arr;
   }
 }
