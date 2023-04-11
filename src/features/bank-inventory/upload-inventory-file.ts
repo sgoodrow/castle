@@ -4,10 +4,9 @@ import {
   MessageAction,
   messageActionExecutor,
 } from "../../shared/action/message-action";
-import { read, utils } from "xlsx";
 import axios from "axios";
-import { addRoleToThread } from "../../shared/command/util";
 import { bankInventoryChannelId } from "../../config";
+import { setBankItem } from "./bank-items";
 
 const supportedFormat = "text/plain";
 
@@ -16,8 +15,8 @@ export const tryParseInventoryAction = (message: Message) =>
 
 class UploadInventoryMessageAction extends MessageAction {
   public async execute() {
+    // bankinventory channel only
     // if (this.message.channel.id !== bankInventoryChannelId) {
-    //   //TODO: not reading my config var for some reason
     //   return;
     // }
 
@@ -38,19 +37,40 @@ class UploadInventoryMessageAction extends MessageAction {
     const { data } = await axios({
       url: a.url,
     });
-    const filename = a.name || "Inventory";
-
-    const inventoryData = this.parseTsv(data);
+    const filename = a.name || "unknown";
+    const inventoryData = this.parseInventoryFile(filename, data);
 
     console.log("inv data:", filename, inventoryData);
   }
 
-  private parseTsv(str: string) {
-    const arr = [];
-    const x = str.split("\r\n");
-    for (let i = 0; i < x.length; i++) {
-      arr.push(x[i].split("\t"));
-    }
-    return arr;
+  private parseInventoryFile(fileName: string, data: string) {
+    const obj: { [k: string]: object } = {};
+    const charName = fileName.split("-")[0];
+    const rows = data.split("\r\n");
+    rows.forEach((row, idx) => {
+      console.log(row, idx);
+      if (idx > 0) {
+        setBankItem(charName, row);
+      }
+    });
+
+    // let keys: string[] = [];
+    // for (let i = 0; i < rows.length; i++) {
+    //   if (rows[i]) {
+    //     const d = rows[i].split("\t");
+    //     if (i === 0) {
+    //       keys = d;
+    //     } else {
+    //       const itm: { [k: string]: string } = {
+    //         character: charName,
+    //       };
+    //       keys.forEach((val: string, idx: number) => {
+    //         itm[val.toLowerCase()] = d[idx];
+    //       });
+    //       obj[d[1]] = itm;
+    //     }
+    //   }
+    // }
+    // return obj;
   }
 }
