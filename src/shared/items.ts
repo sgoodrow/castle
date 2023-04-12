@@ -1,6 +1,6 @@
 import { replaceAll } from "./string-util";
 
-const itemsData = {
+export const itemsData = {
   "10 DOSE ADRENALINE TAP": "/10_Dose_Adrenaline_Tap",
   "10 DOSE ANT'S POTION": "/10_Dose_Ant%27s_Potion",
   "10 DOSE BLOOD OF THE WOLF": "/10_Dose_Blood_of_the_Wolf",
