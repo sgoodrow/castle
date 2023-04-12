@@ -40,34 +40,33 @@ export const setBankItem = async function (character: string, rowStr: string) {
       },
     ],
   };
-  const key = "bank-item." + encodeURIComponent(item.name);
   try {
-    const cachedItem = await getBankItem(key);
+    const cachedItem = await getBankItem(item.name);
     const matchStock = cachedItem.itemData.stock.find(
       (s) => s.character === character
     );
-    console.log(matchStock);
+    // console.log(matchStock);
     if (!matchStock) {
       cachedItem.itemData.stock.push(item.stock[0]);
       item = cachedItem.itemData;
     } else {
-      console.log("Stock accounted for.");
+      console.log(item.name + ": Item stock accounted for.");
     }
   } catch (e: any) {
     console.log(e.message);
-  }
-
-  console.log("set", key, item);
-  // todo: should maybe use redis.multi() instead and refactor
-  try {
-    await redisClient.set(key, JSON.stringify(item));
-  } catch (e) {
-    console.log(e);
+    const key = "bank-item." + encodeURIComponent(item.name);
+    console.log("set", key, item);
+    // todo: should maybe use redis.multi() instead and refactor
+    try {
+      await redisClient.set(key, JSON.stringify(item));
+    } catch (e) {
+      console.log(e);
+    }
   }
 };
 
 export class BankItem {
-  private countAvailable: number;
+  public countAvailable: number;
   public itemData: BankItemData;
   public constructor(itemData: BankItemData) {
     this.itemData = itemData;
