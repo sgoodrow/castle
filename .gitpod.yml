@@ -35,6 +35,7 @@ tasks:
       dkpRecordsChannelId: "1077054041017823303"
       dkpBonusesChannelId: "1090143526999818341"
       applicationsChannelId: "1077322650839437403"
+      officerVotesChannelId: "1077322650839437403"
       requestDumpThreadId: "1077736628992352276"
       startedRaidsDumpThreadId: "1077736628992352276"
       raiderEnlistedThreadId: "1077736628992352276"

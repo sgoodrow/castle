@@ -21,7 +21,7 @@ export const interactionCreateListener = async (
     return;
   }
 
-  if (interaction.isCommand()) {
+  if (interaction.isChatInputCommand()) {
     try {
       const command = getCommand(interaction);
       await interaction.deferReply({ ephemeral: command.ephemeral });

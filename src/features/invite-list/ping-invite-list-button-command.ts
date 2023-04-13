@@ -1,4 +1,10 @@
-import { ButtonInteraction, CacheType, Permissions } from "discord.js";
+import {
+  ButtonInteraction,
+  CacheType,
+  ChannelType,
+  PermissionFlagsBits,
+  Permissions,
+} from "discord.js";
 import { getGuild } from "../..";
 import { inviteListChannelId } from "../../config";
 import { dataSource } from "../../db/data-source";
@@ -53,12 +59,12 @@ class PingInviteListCommand extends ButtonCommand {
       interaction
     );
 
-    if (!inviteListChannel?.isText()) {
+    if (inviteListChannel?.type !== ChannelType.GuildText) {
       throw new Error("The invite list channel is not a text channel.");
     }
 
     requireInteractionMemberPermission(
-      Permissions.FLAGS.MANAGE_ROLES,
+      PermissionFlagsBits.ManageRoles,
       interaction
     );
 

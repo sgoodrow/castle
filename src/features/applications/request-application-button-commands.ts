@@ -1,8 +1,9 @@
 import {
   ButtonInteraction,
   CacheType,
-  MessageButton,
-  MessageButtonStyle,
+  ButtonBuilder,
+  ButtonStyle,
+  ChannelType,
 } from "discord.js";
 import { requestDumpThreadId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
@@ -36,7 +37,7 @@ export class RequestApplication extends ButtonCommand {
     if (!channel) {
       throw new Error("Could not locate the request dump channel");
     }
-    if (!channel.isText()) {
+    if (channel.type !== ChannelType.GuildText) {
       throw new Error(`${requestDumpThreadId} is not a text channel.`);
     }
 
@@ -45,8 +46,8 @@ export class RequestApplication extends ButtonCommand {
     );
   }
 
-  public getMessageButton(style: MessageButtonStyle) {
-    return new MessageButton()
+  public getButtonBuilder(style: ButtonStyle) {
+    return new ButtonBuilder()
       .setCustomId(this.customId)
       .setStyle(style)
       .setLabel(this.label);

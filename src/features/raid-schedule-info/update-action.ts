@@ -1,4 +1,11 @@
-import { Client, MessageEmbed } from "discord.js";
+import {
+  ChannelType,
+  Client,
+  Colors,
+  EmbedBuilder,
+  GuildScheduledEventStatus,
+  PermissionFlagsBits,
+} from "discord.js";
 import { getGuild } from "../..";
 import { raiderRoleId, raidScheduleChannelId } from "../../config";
 import { Name } from "../../db/instructions";
@@ -27,7 +34,7 @@ class UpdateRaidScheduleInfoAction extends InstructionsReadyAction {
 
   private async getScheduleEmbed() {
     const events = await this.getEvents();
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: "📅 Raid Schedule",
       description:
         events.length > 0
@@ -38,7 +45,7 @@ ${events.map((e) => e.toString()).join("\n\n")}`
       footer: {
         text: "All times are listed in your local timezone.",
       },
-      color: "BLURPLE",
+      color: Colors.Blurple,
     });
   }
 
@@ -56,10 +63,15 @@ ${events.map((e) => e.toString()).join("\n\n")}`
     return events
       .filter(
         (e) =>
-          !!e.channel?.isVoice() &&
+          e.channel?.type === ChannelType.GuildVoice &&
           !!e.scheduledStartTimestamp &&
-          ["SCHEDULED", "ACTIVE"].includes(e.status) &&
-          e.channel.permissionsFor(raiderRole).has("VIEW_CHANNEL") &&
+          [
+            GuildScheduledEventStatus.Scheduled,
+            GuildScheduledEventStatus.Active,
+          ].includes(e.status) &&
+          e.channel
+            .permissionsFor(raiderRole)
+            .has(PermissionFlagsBits.ViewChannel) &&
           e.scheduledStartTimestamp <= nextWeek // Added filter condition
       )
       .sort(
