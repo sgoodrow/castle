@@ -67,7 +67,7 @@ export abstract class InstructionsReadyAction extends ReadyAction {
       throw new Error(`Could not find ${label} channel`);
     }
     if (c.type !== ChannelType.GuildText) {
-      throw new Error(`Invite ${label} is not a text channel`);
+      throw new Error(`Channel ${label} is not a text channel`);
     }
     return c;
   }

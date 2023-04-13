@@ -9,7 +9,7 @@ export const recordRaiderEnlisted = async (
   if (!channel) {
     throw new Error("Could not locate the raider enlisted dump channel");
   }
-  if (channel.type !== ChannelType.GuildText) {
+  if (channel.type !== ChannelType.PublicThread) {
     throw new Error(`${raiderEnlistedThreadId} is not a text channel.`);
   }
 

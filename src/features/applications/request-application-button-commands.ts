@@ -37,7 +37,7 @@ export class RequestApplication extends ButtonCommand {
     if (!channel) {
       throw new Error("Could not locate the request dump channel");
     }
-    if (channel.type !== ChannelType.GuildText) {
+    if (channel.type !== ChannelType.PublicThread) {
       throw new Error(`${requestDumpThreadId} is not a text channel.`);
     }
 
