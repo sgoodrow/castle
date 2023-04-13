@@ -1,9 +1,9 @@
-import { GuildMember } from "discord.js";
+import { ChannelType, GuildMember } from "discord.js";
 import { gatehouseChannelId } from "../../config";
 
 export const guildMemberAddListener = async (member: GuildMember) => {
   const channel = member.guild.channels.cache.get(gatehouseChannelId);
-  if (!channel?.isText()) {
+  if (channel?.type !== ChannelType.GuildText) {
     throw new Error(`${gatehouseChannelId} is not a text channel.`);
   }
 

@@ -1,4 +1,4 @@
-import { MessageEmbed } from "discord.js";
+import { EmbedBuilder } from "discord.js";
 import { sumBy } from "lodash";
 import moment, { Moment } from "moment";
 import { castledkp, RaidEventData } from "../../services/castledkp";
@@ -164,7 +164,7 @@ ${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${change}`;
     eventUrlSlug: string,
     id: number,
     invalidNames: string[]
-  ): MessageEmbed {
+  ): EmbedBuilder {
     const net = this.earned - this.spent;
     const result =
       net === 0
@@ -178,7 +178,7 @@ ${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${change}`;
             ", "
           )}`
         : "";
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: `${this.name}`,
       description: `${code}diff
 DKP Earned             ${this.earned}

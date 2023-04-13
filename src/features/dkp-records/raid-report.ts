@@ -1,6 +1,6 @@
 import {
   Message,
-  MessageEmbed,
+  EmbedBuilder,
   TextBasedChannel,
   ThreadChannel,
 } from "discord.js";
@@ -138,7 +138,7 @@ export class RaidReport {
         messages.map((m, i) => {
           // since the messages include a buffer message, which may not have any raid report content in it,
           // we need to verify there is actually an embed
-          const embed: MessageEmbed = raidReportEmbeds[i];
+          const embed: EmbedBuilder = raidReportEmbeds[i];
           const embeds = embed ? [embed] : [];
           if (isRaidInstructionsMessage(m)) {
             embeds.push(this.instructionsEmbed);
@@ -177,8 +177,8 @@ export class RaidReport {
     }
   }
 
-  public get instructionsEmbed(): MessageEmbed {
-    return new MessageEmbed({
+  public get instructionsEmbed(): EmbedBuilder {
+    return new EmbedBuilder({
       title: INSTRUCTIONS_TITLE,
       description: `• <@&${raiderRoleId}>s may use the \`!commands\` to submit change requests.
 • The bot will react with ⚠️ if the request is invalid (wrong format).
@@ -187,39 +187,40 @@ export class RaidReport {
 • Requests made by deputies are automatically added to the raid report.
 
 Kill bonus values: https://tinyurl.com/CastleBossBonuses`,
-    })
-      .addField(
-        "Add a name to raid ticks. Tick numbers and context are optional.",
-        "`!add Pumped 2, 3 (context)`"
-      )
-      .addField(
-        "Remove a name from raid ticks. Tick numbers and context are optional.",
-        "`!rem Pumped 2, 3 (context)`"
-      )
-      .addField(
-        "Replace a name on raid ticks. Tick numbers and context are optional.",
-        "`!rep Pumped with Iceburgh 2, 3 (context)`"
-      )
-      .addField(
-        "Add an adjustment to the first raid tick. Context is optional.",
-        "`!adj Pumped 5 reason (context)`"
-      )
-      .addField(
-        `Deputies: Assign raid tick event types and values.`,
-        '`/raid tick tick: "1" event: "Cazic Thule" value: "3"`'
-      );
+    }).addFields([
+      {
+        name: "Add a name to raid ticks. Tick numbers and context are optional.",
+        value: "`!add Pumped 2, 3 (context)`",
+      },
+      {
+        name: "Remove a name from raid ticks. Tick numbers and context are optional.",
+        value: "`!rem Pumped 2, 3 (context)`",
+      },
+      {
+        name: "Replace a name on raid ticks. Tick numbers and context are optional.",
+        value: "`!rep Pumped with Iceburgh 2, 3 (context)`",
+      },
+      {
+        name: "Add an adjustment to the first raid tick. Context is optional.",
+        value: "`!adj Pumped 5 reason (context)`",
+      },
+      {
+        name: `Deputies: Assign raid tick event types and values.`,
+        value: '`/raid tick tick: "1" event: "Cazic Thule" value: "3"`',
+      },
+    ]);
   }
 
   public getReceiptEmbeds(
     created: CreateRaidResponse[],
     failed: string[]
-  ): MessageEmbed[] {
+  ): EmbedBuilder[] {
     const embeds = created.map(({ eventUrlSlug, id, invalidNames, tick }) =>
       tick.getCreatedEmbed(eventUrlSlug, id, invalidNames)
     );
     if (failed.length > 0) {
       embeds.push(
-        new MessageEmbed({
+        new EmbedBuilder({
           title: `${failed.length} ticks failed to upload.`,
           description: failed.join("\n"),
         })
@@ -228,7 +229,7 @@ Kill bonus values: https://tinyurl.com/CastleBossBonuses`,
     return embeds;
   }
 
-  public getRaidReportEmbeds(): MessageEmbed[] {
+  public getRaidReportEmbeds(): EmbedBuilder[] {
     const report = `${this.ticks
       .map((t) => t.renderTick(this.firstColumnLength, SECOND_COLUMN_LENGTH))
       .join("\n\n")}
@@ -248,7 +249,7 @@ ${this.attendance}`;
 
     return pages.map(
       (p) =>
-        new MessageEmbed({
+        new EmbedBuilder({
           title: RAID_REPORT_TITLE,
           description: `${code}diff
 ${p}${code}`,
