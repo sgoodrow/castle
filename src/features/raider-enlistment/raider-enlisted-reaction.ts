@@ -46,8 +46,7 @@ class RaiderEnlistedReactionAction extends ReactionAction {
 
     const newRaider = await this.message.member?.fetch();
     if (!newRaider) {
-      console.log("Could not enlist message author because there is none.");
-      return;
+      throw new Error("Could not enlist message author because there is none.");
     }
 
     // remove inactive raider role

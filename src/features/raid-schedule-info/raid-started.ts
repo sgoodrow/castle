@@ -15,7 +15,7 @@ export const recordRaidStarted = async (
   if (!channel) {
     throw new Error("Could not locate the started raids dump channel");
   }
-  if (channel.type !== ChannelType.GuildText) {
+  if (channel.type !== ChannelType.PublicThread) {
     throw new Error(`${startedRaidsDumpThreadId} is not a text channel.`);
   }
 
