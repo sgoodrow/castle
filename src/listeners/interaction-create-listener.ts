@@ -10,13 +10,20 @@ export const interactionCreateListener = async (
   }
 
   if (interaction.isButton()) {
+    const button = getButton(interaction);
     try {
-      await interaction.deferReply({ ephemeral: true });
+      if (button.defer) {
+        await interaction.deferReply({ ephemeral: true });
+      }
       await getButton(interaction).execute(interaction);
       console.log(`/${interaction.customId} succeeded`);
     } catch (error) {
       console.error(`/${interaction.customId} ${error}`);
-      await interaction.editReply({ content: String(error) });
+      if (button.defer) {
+        await interaction.editReply({ content: String(error) });
+      } else {
+        await interaction.reply({ content: String(error) });
+      }
     }
     return;
   }
