@@ -41,10 +41,10 @@ class UploadInventoryMessageAction extends MessageAction {
     const filename = a.name || "unknown";
     const inventoryData = this.parseInventoryFile(filename, data);
 
-    console.log("inv data:", filename, inventoryData);
+    // console.log("inv data:", filename, inventoryData);
   }
 
-  private parseInventoryFile(fileName: string, data: string) {
+  private async parseInventoryFile(fileName: string, data: string) {
     const obj: { [k: string]: object } = {};
     const charName = fileName.split("-")[0];
     const rows = data.split("\r\n");
@@ -54,7 +54,7 @@ class UploadInventoryMessageAction extends MessageAction {
     }
     rows.forEach((rowStr, idx) => {
       if (idx > 0) {
-        console.log(rowStr, idx);
+        // console.log(rowStr, idx);
         const row = rowStr.split("\t");
         if (row[1] && row[1] !== "Empty") {
           const itemData: inventoryItem = {
