@@ -6,7 +6,8 @@ import {
 } from "../../shared/action/message-action";
 import axios from "axios";
 import { bankInventoryChannelId } from "../../config";
-import { setBankItem } from "./bank-items";
+import { inventoryItem, bankerInventory, addBankItem, updateBankerInventory } from "./bank-items";
+
 
 const supportedFormat = "text/plain";
 
@@ -16,9 +17,9 @@ export const tryParseInventoryAction = (message: Message) =>
 class UploadInventoryMessageAction extends MessageAction {
   public async execute() {
     // bankinventory channel only
-    // if (this.message.channel.id !== bankInventoryChannelId) {
-    //   return;
-    // }
+    if (this.message.channel.id !== bankInventoryChannelId) {
+      return;
+    }
 
     // filter non-attachments
     if (this.message.attachments.size === 0) {
@@ -47,30 +48,27 @@ class UploadInventoryMessageAction extends MessageAction {
     const obj: { [k: string]: object } = {};
     const charName = fileName.split("-")[0];
     const rows = data.split("\r\n");
-    rows.forEach((row, idx) => {
-      console.log(row, idx);
+    const bankerInventory: bankerInventory = {
+      character: charName,
+      items: []
+    }
+    rows.forEach((rowStr, idx) => {
       if (idx > 0) {
-        setBankItem(charName, row);
+        console.log(rowStr, idx);
+        const row = rowStr.split("\t");
+        if (row[1] && row[1] !== "Empty") {
+          const itemData: inventoryItem = {
+            character: charName,
+            location: row[0],
+            name: row[1],
+            id: row[2],
+            count: parseInt(row[3])
+          }
+          bankerInventory.items.push(itemData)
+          addBankItem(itemData);          
+        }
       }
     });
-
-    // let keys: string[] = [];
-    // for (let i = 0; i < rows.length; i++) {
-    //   if (rows[i]) {
-    //     const d = rows[i].split("\t");
-    //     if (i === 0) {
-    //       keys = d;
-    //     } else {
-    //       const itm: { [k: string]: string } = {
-    //         character: charName,
-    //       };
-    //       keys.forEach((val: string, idx: number) => {
-    //         itm[val.toLowerCase()] = d[idx];
-    //       });
-    //       obj[d[1]] = itm;
-    //     }
-    //   }
-    // }
-    // return obj;
+    updateBankerInventory(bankerInventory);
   }
 }
