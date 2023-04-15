@@ -30,7 +30,7 @@ export interface bankerInventory {
 
 export const getBankerInventory = async function (charname: string) {
   const key = "banker-inventory." + encodeURIComponent(charname.toLowerCase());
-  console.log('get banker', key)
+  // console.log('get banker', key)
   const serialized = await redisClient.get(key);
   // console.log(serialized);
   if (!serialized) {
@@ -99,7 +99,7 @@ export const addBankItem = async function (inventoryItem: inventoryItem) {
       cachedItem.itemData.stock.push(item.stock[0]);
       item = cachedItem.itemData;
     } else {
-      console.log(item.name + ": Item stock accounted for.");
+      // console.log(item.name + ": Item stock accounted for.");
     }
   } catch (e: any) {
     console.log(e.message);
