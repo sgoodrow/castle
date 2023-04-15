@@ -44,6 +44,8 @@ export const {
   startedRaidsDumpThreadId,
   raiderEnlistedThreadId,
   bankInventoryChannelId,
+  GOOGLE_CLIENT_EMAIL,
+  GOOGLE_PRIVATE_KEY,
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
@@ -131,4 +133,9 @@ export const {
   startedRaidsDumpThreadId: string;
   raiderEnlistedThreadId: string;
   bankInventoryChannelId: string;
+
+  // Google Auth
+  GOOGLE_CLIENT_EMAIL: string;
+  GOOGLE_PRIVATE_KEY: string;
+  
 };

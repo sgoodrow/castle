@@ -106,6 +106,5 @@ dist
 # TernJS port file
 .tern-port
 
-#google account credentials
-src/google/credentials.json
-src/google/token.json
+#google account credentials json
+src/google/*.json
