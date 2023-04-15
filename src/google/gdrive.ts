@@ -1,6 +1,5 @@
 import { google } from "googleapis";
-import { authorize } from "./authentication";
-import { find } from "lodash";
+import { authorize } from "./jwt-authentication";
 
 export enum BankFolderIds {
   castleBank = "1ZuFMIZ1yt2dWz3siiVMOhTVlukzL1lUx",
@@ -30,8 +29,8 @@ export async function findFileByName(filename: string) {
 
 export async function findFiles(query: any) {
   console.log(query);
-  let authClient = await authorize();
-  const drive = google.drive({version: 'v3', auth: authClient});
+  let auth = await authorize();
+  const drive = google.drive({version: 'v3', auth});
   const res = await drive.files.list({
     q: query,
     pageSize: 20,
@@ -51,8 +50,8 @@ export async function findFiles(query: any) {
 // export async updateFile()
 
 export async function uploadFileToFolder(file: driveFile, folder: BankFolderIds) {
-  let authClient = await authorize();
-  const drive = google.drive({version: 'v3', auth: authClient});
+  let auth = await authorize();
+  const drive = google.drive({version: 'v3', auth});
   const fileMetadata = {
     name: file.filename,
     parents: [folder],
@@ -68,7 +67,7 @@ export async function uploadFileToFolder(file: driveFile, folder: BankFolderIds)
     },
     media: media,
     fields: 'id',
-  }, (err, upload: any) => {
+  }, (err: any, upload: any) => {
     if (err) {
       console.error('Error uploading file:', err);
       return null;
@@ -78,8 +77,8 @@ export async function uploadFileToFolder(file: driveFile, folder: BankFolderIds)
 }
 
 export async function updateFile(fileId: string, file: driveFile) {
-  let authClient = await authorize();
-  const drive = google.drive({version: 'v3', auth: authClient});
+  let auth = await authorize();
+  const drive = google.drive({version: 'v3', auth});
   const media = {
     mimeType: file.mimetype,
     body: file.contents,

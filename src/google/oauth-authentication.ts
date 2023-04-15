@@ -51,7 +51,7 @@ async function saveCredentials(client: OAuth2Client) {
 }
 
 /**
- * Load or request or authorization to call APIs.
+ * OAuth Authorize
  *
  */
 export async function authorize() {
