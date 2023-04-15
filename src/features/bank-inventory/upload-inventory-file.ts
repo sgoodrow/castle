@@ -7,9 +7,15 @@ import {
 import axios from "axios";
 import { bankInventoryChannelId } from "../../config";
 import { inventoryItem, bankerInventory, addBankItem, updateBankerInventory } from "./bank-items";
+import { 
+  uploadFileToFolder, 
+  driveFile, 
+  BankFolderIds, 
+  findFiles,
+  updateFile,
+} from "../../google/gdrive";
 
-
-const supportedFormat = "text/plain";
+const supportedFormat = "text/plain; charset=utf-8";
 
 export const tryParseInventoryAction = (message: Message) =>
   messageActionExecutor(new UploadInventoryMessageAction(message));
@@ -29,7 +35,7 @@ class UploadInventoryMessageAction extends MessageAction {
     // parse attachments
     await Promise.all(
       [...this.message.attachments.values()]
-        // .filter((a) => a.contentType === supportedFormat)
+        .filter((a) => a.contentType === supportedFormat)
         .map((a) => this.tryParseInventoryOutput(a))
     );
   }
@@ -38,10 +44,10 @@ class UploadInventoryMessageAction extends MessageAction {
     const { data } = await axios({
       url: a.url,
     });
+    console.log(a.contentType);
     const filename = a.name || "unknown";
-    const inventoryData = this.parseInventoryFile(filename, data);
-
-    // console.log("inv data:", filename, inventoryData);
+    await this.parseInventoryFile(filename, data);    
+    await this.uploadToGDrive(filename, data);
   }
 
   private async parseInventoryFile(fileName: string, data: string) {
@@ -70,5 +76,26 @@ class UploadInventoryMessageAction extends MessageAction {
       }
     });
     updateBankerInventory(bankerInventory);
+  }
+
+  private async uploadToGDrive(filename: string, data: string){
+    const file: driveFile = {
+      filename: filename,
+      mimetype: "text/plain",
+      contents: data
+    }
+    try {
+      // const outputfiles = await findFiles(`'${BankFolderIds.outputfiles}' in parents and name='${filename}' and trashed=false`);
+      const outputfiles = await findFiles(`name='${filename}' and trashed=false`);
+      console.log(filename, outputfiles);
+      // if found, update it
+      outputfiles.forEach(async (val: any) => {
+         await updateFile(val.id, file);
+      })
+    } catch (err: any) {
+      console.log(err.message);
+      // if not found, upload it to test (maybe rename to 'unsorted')
+      await uploadFileToFolder(file, BankFolderIds.test);
+    }
   }
 }

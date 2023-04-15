@@ -15,7 +15,7 @@ class BankRequest extends Subcommand {
     }
     // console.log(interaction, item);
     const match = await getBankItem(String(item.value));  // this is probably a .ts hack..
-    console.log(match)
+    // console.log(match)
     interaction.editReply(`${match.countAvailable} ${match.itemData.name} found.`)
     // TODO: add buttons: [Request Item]  [Cancel]
     // IF no match, [Request Anyway] [Cancel]
