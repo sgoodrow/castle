@@ -54,7 +54,7 @@ class UploadInventoryMessageAction extends MessageAction {
     }
     rows.forEach((rowStr, idx) => {
       if (idx > 0) {
-        // console.log(rowStr, idx);
+        console.log(rowStr, idx);
         const row = rowStr.split("\t");
         if (row[1] && row[1] !== "Empty") {
           const itemData: inventoryItem = {
