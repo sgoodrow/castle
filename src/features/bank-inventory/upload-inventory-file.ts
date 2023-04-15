@@ -13,6 +13,7 @@ import {
   BankFolderIds, 
   findFiles,
   updateFile,
+  findFileInFolders,
 } from "../../google/gdrive";
 
 const supportedFormat = "text/plain; charset=utf-8";
@@ -85,8 +86,9 @@ class UploadInventoryMessageAction extends MessageAction {
       contents: data
     }
     try {
-      // const outputfiles = await findFiles(`'${BankFolderIds.outputfiles}' in parents and name='${filename}' and trashed=false`);
+      // note: limiting this to a folder doesn't seem to be working well, it will replace a file anywhere in the drive with the same name. careful.
       const outputfiles = await findFiles(`name='${filename}' and trashed=false`);
+      // const outputfiles = await findFileInFolders(filename, "outputfiles");
       console.log(filename, outputfiles);
       // if found, update it
       outputfiles.forEach(async (val: any) => {

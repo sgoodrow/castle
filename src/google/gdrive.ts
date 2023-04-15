@@ -27,6 +27,23 @@ export async function findFileByName(filename: string) {
   return findFiles(`name='${filename}' and trashed=false`)
 }
 
+export async function findFileInFolders(filename: string, foldername: string) {
+  const folders = await findFiles(`name='${foldername}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+  const folderIds = folders.map((folder) => folder.id);
+
+  // Build the query to search for the file in the specified folder(s) and their subfolders
+  let query = `name='${filename}' and trashed=false and (`;
+  folderIds.forEach((folderId, index) => {
+    query += `'${folderId}' in parents`;
+    if (index !== folderIds.length - 1) {
+      query += ' or ';
+    }
+  });
+  query += ')';
+
+  return findFiles(query);
+}
+
 export async function findFiles(query: any) {
   console.log(query);
   let auth = await authorize();
