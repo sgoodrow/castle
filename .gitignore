@@ -107,5 +107,5 @@ dist
 .tern-port
 
 #google account credentials
-src/google/credentials.js
-src/google/token.js
+src/google/credentials.json
+src/google/token.json
