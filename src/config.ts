@@ -45,6 +45,7 @@ export const {
   raiderEnlistedThreadId,
   bankInventoryChannelId,
   bankTransactionsChannelId,
+  bankOfficeChannelId,
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
 } = process.env as {
@@ -135,6 +136,7 @@ export const {
   raiderEnlistedThreadId: string;
   bankInventoryChannelId: string;
   bankTransactionsChannelId: string;
+  bankOfficeChannelId: string,
 
   // Google Auth
   GOOGLE_CLIENT_EMAIL: string;
