@@ -18,7 +18,6 @@ class BankerInventory extends Subcommand {
     let text = "Inventories are too big.. coming soon.";
     interaction.editReply(text)
     const inventoryText = match.items.reduce((text: string, item: inventoryItem) => {
-      console.log(item)
       return text + `${item.name} (${item.count}) [${item.location}] \n`;
     })
     console.log(inventoryText)
