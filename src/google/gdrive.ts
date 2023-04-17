@@ -57,10 +57,10 @@ export async function findFiles(query: any) {
   if (!files || files.length === 0) {
     throw new Error(`No files found for ${query}`);
   }
-  console.log('Files:');
-  files.map((file: any) => {
-    console.log(`${file.name} (${file.id})`);
-  });
+  // console.log('Files:');
+  // files.map((file: any) => {
+  //   console.log(`${file.name} (${file.id})`);
+  // });
   return files;
 }
 

@@ -49,6 +49,7 @@ class UploadInventoryMessageAction extends MessageAction {
     const filename = a.name || "unknown";
     await this.parseInventoryFile(filename, data);    
     await this.uploadToGDrive(filename, data);
+    message.reply(`${filename} parsed and uploaded.`);
     // message.edit(`${filename} parsed and uploaded.`); // send new response message?
   }
 
