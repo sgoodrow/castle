@@ -1,4 +1,4 @@
-import { CacheType, CommandInteraction } from "discord.js";
+import { CacheType, CommandInteraction, MessageEmbed } from "discord.js";
 // import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
 import { getBankerInventory, inventoryItem } from "./bank-items";
@@ -15,14 +15,18 @@ class BankerInventory extends Subcommand {
     }
     console.log(interaction, banker);
     const match = await getBankerInventory(String(banker.value));
-    console.log(match)
-    let text = "Sending inventory...";
-    // todo: figure out these fancy "embed" replies.
-    // match.items.forEach((obj: inventoryItem)=>{
-    //   console.log(obj)
-    //   text.concat(Object.values(obj).join("") + "/r")
-    // })
+    let text = "Inventories are too big.. coming soon.";
     interaction.editReply(text)
+    const inventoryText = match.items.reduce((text: string, item: inventoryItem) => {
+      console.log(item)
+      return text + `${item.name} (${item.count}) [${item.location}] \n`;
+    })
+    console.log(inventoryText)
+    const embed = new MessageEmbed({
+      title: `${banker.value} Inventory`,
+      description: inventoryText
+    })
+    // interaction.channel?.send({ embeds: [embed]})  // these are too big..
   }
 
   public get command() {

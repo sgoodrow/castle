@@ -37,18 +37,19 @@ class UploadInventoryMessageAction extends MessageAction {
     await Promise.all(
       [...this.message.attachments.values()]
         .filter((a) => a.contentType === supportedFormat)
-        .map((a) => this.tryParseInventoryOutput(a))
+        .map((a) => this.tryParseInventoryOutput(a, this.message))
     );
   }
 
-  private async tryParseInventoryOutput(a: MessageAttachment) {
+  private async tryParseInventoryOutput(a: MessageAttachment, message: Message) {
     const { data } = await axios({
       url: a.url,
     });
-    console.log(a.contentType);
+    // console.log(a.contentType);
     const filename = a.name || "unknown";
     await this.parseInventoryFile(filename, data);    
     await this.uploadToGDrive(filename, data);
+    // message.edit(`${filename} parsed and uploaded.`); // send new response message?
   }
 
   private async parseInventoryFile(fileName: string, data: string) {
@@ -61,7 +62,7 @@ class UploadInventoryMessageAction extends MessageAction {
     }
     rows.forEach((rowStr, idx) => {
       if (idx > 0) {
-        console.log(rowStr, idx);
+        // console.log(rowStr, idx);
         const row = rowStr.split("\t");
         if (row[1] && row[1] !== "Empty") {
           const itemData: inventoryItem = {
@@ -89,7 +90,7 @@ class UploadInventoryMessageAction extends MessageAction {
       // note: limiting this to a folder doesn't seem to be working well, it will replace a file anywhere in the drive with the same name. careful.
       const outputfiles = await findFiles(`name='${filename}' and trashed=false`);
       // const outputfiles = await findFileInFolders(filename, "outputfiles");
-      console.log(filename, outputfiles);
+      // console.log(filename, outputfiles);
       // if found, update it
       outputfiles.forEach(async (val: any) => {
          await updateFile(val.id, file);

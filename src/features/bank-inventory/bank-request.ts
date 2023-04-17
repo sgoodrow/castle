@@ -2,6 +2,7 @@ import { CacheType, CommandInteraction } from "discord.js";
 // import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
 import { getBankItem } from "./bank-items";
+import { bankRequestsChannelId } from "../../config";
 
 enum Option {
   Item = "item"
@@ -9,6 +10,13 @@ enum Option {
 
 class BankRequest extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
+
+    if (!interaction.channel 
+      // || interaction.channelId !== bankRequestsChannelId
+      ) {
+      throw new Error("Must use this command in a channel");
+    }
+
     const item = this.getOption(Option.Item, interaction);
     if (!item) {
       throw new Error(`An item is required.`);
@@ -16,7 +24,13 @@ class BankRequest extends Subcommand {
     // console.log(interaction, item);
     const match = await getBankItem(String(item.value));  // this is probably a .ts hack..
     // console.log(match)
-    interaction.editReply(`${match.countAvailable} ${match.itemData.name} found.`)
+    const itemName = match.data.name;
+    const instock = match.data.stock[0];
+    const message = `${interaction.user} requests: ${itemName} (${match.countAvailable()}) [${instock.character}, ${instock.location}]`;
+
+    await interaction.channel.send(message);
+    interaction.editReply("Item found.")
+    // interaction.editReply(`${match.countAvailable} ${match.data.name} found.`)
     // TODO: add buttons: [Request Item]  [Cancel]
     // IF no match, [Request Anyway] [Cancel]
   }

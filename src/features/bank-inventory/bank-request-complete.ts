@@ -8,13 +8,15 @@ import {
   bankRequestsChannelId,
   bankerRoleId,
   officerRoleId,
+  bankTransactionsChannelId,
 } from "../../config";
 import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../shared/action/reaction-action";
+import { getTextChannel } from "../../shared/command/util";
 
-export const tryBankRequestFinishedReactionAction = (
+export const tryBankRequestComplete = (
   reaction: MessageReaction | PartialMessageReaction,
   user: User | PartialUser
 ) =>
@@ -42,25 +44,13 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     ) {
       return;
     }
+    
+    const bankTransactionsChannel = await getTextChannel(bankTransactionsChannelId);
+    // console.log(bankTransactionsChannelId, bankTransactionsChannel)
+    const messageId = this.message.member?.id;
+    const transactionContent = this.message.content + ` -- approved by ${this.user.username}`;
+    bankTransactionsChannel?.send(transactionContent);
+    this.message.delete();
 
-    // delete all of their messages and the replies to their messages
-    const messages = await this.message.channel.messages.fetch();
-    const requesterMessages = messages.filter(
-      (m) => m.member?.id === this.message.member?.id
-    );
-    const requesterMessageIds = requesterMessages.map((m) => m.id);
-    const replies = messages.filter(
-      (m) =>
-        // its a reply
-        !!m.reference?.messageId &&
-        // its not already queued to be deleted
-        !requesterMessageIds.includes(m.id) &&
-        // its a reply to a message that is queued to be deleted
-        requesterMessageIds.includes(m.reference.messageId)
-    );
-    requesterMessages
-      .filter((m) => m.embeds.length === 0)
-      .map((m) => m.delete());
-    replies.filter((m) => m.embeds.length === 0).map((m) => m.delete());
   }
 }
