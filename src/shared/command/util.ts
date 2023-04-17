@@ -7,7 +7,7 @@ import {
   PermissionResolvable,
   ThreadChannel,
 } from "discord.js";
-import { getMembers, getRoles } from "../..";
+import { getMembers, getRoles, client } from "../..";
 
 export const requireInteractionMemberRole = (
   roleId: string,
@@ -37,12 +37,20 @@ export const requireInteractionMemberPermission = (
   }
 };
 
-export const getChannel = async (
+export const getChannel = async (  // should probably make this more generic
   channelId: string,
   interaction: ButtonInteraction<CacheType>
 ) => {
   return await interaction.guild?.channels.fetch(channelId);
 };
+
+export const getTextChannel = async (channelId: string) => {
+  const channel = client.channels.cache.get(channelId);
+  if (!channel?.isText()) {
+    throw new Error(`${channel} is not a text channel.`);
+  }
+  return channel;
+}
 
 export const getRole = (
   roleId: string,
