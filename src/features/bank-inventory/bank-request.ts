@@ -2,7 +2,7 @@ import { CacheType, CommandInteraction } from "discord.js";
 // import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
 import { getBankItem } from "./bank-items";
-import { bankRequestsChannelId } from "../../config";
+import { bankRequestsChannelId, bankOfficeChannelId } from "../../config";
 
 enum Option {
   Item = "item"
@@ -12,9 +12,10 @@ class BankRequest extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
 
     if (!interaction.channel 
-      // || interaction.channelId !== bankRequestsChannelId
+      || interaction.channelId !== bankRequestsChannelId
+      || interaction.channelId !== bankOfficeChannelId
       ) {
-      throw new Error("Must use this command in a channel");
+      throw new Error("Must use this command in the bank request channel");
     }
 
     const item = this.getOption(Option.Item, interaction);
