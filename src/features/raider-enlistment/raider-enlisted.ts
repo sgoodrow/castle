@@ -15,16 +15,9 @@ export const recordRaiderEnlisted = async (
 
   const name = `**${member.displayName}** (<@${member.id}>) is now a raider.`;
 
-  // get info
-  const roles = member.roles.cache
-    .filter((r) => r.name !== "@everyone")
-    .map((r) => `<@&${r.id}>`)
-    .join(", ");
-
   // send message
   const message = await channel.send("New raider added!");
 
   // edit in roles (silent)
-  await message.edit(`${name}
-${roles}`);
+  await message.edit(`${name}`);
 };
