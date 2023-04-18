@@ -44,7 +44,7 @@ class UpdateRaiderInfoAction extends InstructionsReadyAction {
 10. **Only discuss raid targets in raid voice.** Targets get sniped. Keep our strategy and tactics close to the chest.
 
 ❓ **How do I join ${this.role}?**
-Send a message in this channel with the following information and a Knight will give you the role.
+Each player must send a message in this channel with the following information and a Knight will give you the role.
 
 1. Include a screenshot of your Castle- or alliance- tagged character with their name, guild and level visible. Also include /time in the chat.
 2. Include a link to your CastleDKP.com raiding character profile (NOT the MyCharacters page). Please use first name only for your character.
