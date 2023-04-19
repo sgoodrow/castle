@@ -14,6 +14,7 @@ import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../shared/action/reaction-action";
+import { getTextChannel } from "../../";
 
 export const tryBankRequestComplete = (
   reaction: MessageReaction | PartialMessageReaction,

@@ -140,10 +140,9 @@ export const {
   raiderEnlistedThreadId: string;
   bankInventoryChannelId: string;
   bankTransactionsChannelId: string;
-  bankOfficeChannelId: string,
+  bankOfficeChannelId: string;
 
   // Google Auth
   GOOGLE_CLIENT_EMAIL: string;
   GOOGLE_PRIVATE_KEY: string;
-  
 };
