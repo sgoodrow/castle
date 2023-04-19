@@ -95,6 +95,7 @@ export const addBankItem = async function (inventoryItem: inventoryItem) {
     );
     console.log(matchStock);
     if (!matchStock) {
+      console.log("Add stock:", item.name);
       cachedItem.data.stock.push(item.stock[0]);
       item = cachedItem.data;
     } else {
@@ -104,8 +105,8 @@ export const addBankItem = async function (inventoryItem: inventoryItem) {
     console.log(e.message);
   }
   const key = "bank-item." + encodeURIComponent(item.name.toLowerCase());
-  // console.log("set", key, item);
   try {
+    console.log("Add item:", item.name);
     await redisClient.set(key, JSON.stringify(item));
   } catch (e) {
     console.log(e);
@@ -122,7 +123,7 @@ export const removeBankItem = async function(inventoryItem: inventoryItem) {
     if (matchIdx > -1) {
       cachedItem.data.stock.splice(matchIdx, 1);
       const key = "bank-item." + encodeURIComponent(cachedItem.data.name.toLowerCase());
-      // console.log("removed match", key, cachedItem);
+      console.log("Reduce stock:", cachedItem.data.name);
       await redisClient.set(key, JSON.stringify(cachedItem));
     }
   } catch (e: any) {
