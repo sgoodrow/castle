@@ -106,10 +106,5 @@ dist
 # TernJS port file
 .tern-port
 
-<<<<<<< HEAD
 #google account credentials
 src/google/*
-=======
-#google account credentials json
-src/google/*.json
->>>>>>> 57748e0 (google service account auth)
