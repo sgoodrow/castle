@@ -1,4 +1,10 @@
-import { Client, MessageActionRow, MessageEmbed } from "discord.js";
+import {
+  Client,
+  ActionRowBuilder,
+  EmbedBuilder,
+  MessageActionRowComponentBuilder,
+  ButtonStyle,
+} from "discord.js";
 import { chunk } from "lodash";
 import { applicationsChannelId } from "../../config";
 import { Name } from "../../db/instructions";
@@ -22,7 +28,11 @@ class UpdateApplicationInfoAction extends InstructionsReadyAction {
         // There is a limit of 5 buttons per action row. (hence: chunk)
         // There is a limit of 5 action rows. (note: no protection for this yet)
         components: chunk(this.getButtons(), 5).map(
-          (buttons) => new MessageActionRow({ type: 1, components: buttons })
+          (buttons) =>
+            new ActionRowBuilder<MessageActionRowComponentBuilder>({
+              type: 1,
+              components: buttons,
+            })
         ),
       },
       Name.ApplicationInstructions
@@ -30,7 +40,7 @@ class UpdateApplicationInfoAction extends InstructionsReadyAction {
   }
 
   private volunteerRoles() {
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: "Volunteer Applications",
       description: `Castle is a casual-friendly guild and that applies to volunteer and leadership roles as well. We have many volunteer roles that help keep the guild running smoothly.
 
@@ -56,8 +66,10 @@ class UpdateApplicationInfoAction extends InstructionsReadyAction {
 
   private getButtons() {
     return [
-      ...castleOrAllyRoles.map((r) => r.getMessageButton("SECONDARY")),
-      ...castleOnlyRoles.map((r) => r.getMessageButton("DANGER")),
+      ...castleOrAllyRoles.map((r) =>
+        r.getButtonBuilder(ButtonStyle.Secondary)
+      ),
+      ...castleOnlyRoles.map((r) => r.getButtonBuilder(ButtonStyle.Danger)),
     ];
   }
 

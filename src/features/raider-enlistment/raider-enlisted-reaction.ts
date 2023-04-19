@@ -5,6 +5,7 @@ import {
   User,
 } from "discord.js";
 import {
+  inactiveRaiderRoleId,
   knightRoleId,
   officerRoleId,
   raiderEnlistmentChannelId,
@@ -45,9 +46,11 @@ class RaiderEnlistedReactionAction extends ReactionAction {
 
     const newRaider = await this.message.member?.fetch();
     if (!newRaider) {
-      console.log("Could not enlist message author because there is none.");
-      return;
+      throw new Error("Could not enlist message author because there is none.");
     }
+
+    // remove inactive raider role
+    await newRaider.roles.remove(inactiveRaiderRoleId);
 
     // add raider role
     await newRaider.roles.add(raiderRoleId);
@@ -56,7 +59,14 @@ class RaiderEnlistedReactionAction extends ReactionAction {
     await newRaider.send("Welcome to the Castle raid force!");
 
     // delete all of their messages and the replies to their messages
-    const messages = await this.message.channel.messages.fetch();
+    const messages = [
+      ...(
+        await this.message.channel.messages.fetch({
+          around: this.message.id,
+          limit: 100,
+        })
+      ).values(),
+    ];
     const newRaiderMessages = messages.filter(
       (m) => m.author.id === newRaider.id
     );

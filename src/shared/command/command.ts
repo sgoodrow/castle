@@ -1,7 +1,7 @@
 import {
   AutocompleteInteraction,
   CacheType,
-  CommandInteraction,
+  ChatInputCommandInteraction,
 } from "discord.js";
 import { BaseCommand } from "./base-command";
 import { Subcommand } from "./subcommand";
@@ -30,7 +30,7 @@ export class Command extends BaseCommand {
     }, {} as { [name: string]: Subcommand });
   }
 
-  public async execute(interaction: CommandInteraction<CacheType>) {
+  public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
     const subcommand = interaction.options.getSubcommand(true);
     await this.subcommands[subcommand].execute(interaction);
   }

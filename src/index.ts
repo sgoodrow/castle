@@ -1,4 +1,4 @@
-import { Client, Intents } from "discord.js";
+import { Client, GatewayIntentBits, Partials } from "discord.js";
 import { interactionCreateListener } from "./listeners/interaction-create-listener";
 import { guildId, token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
@@ -21,14 +21,15 @@ https.globalAgent.maxSockets = 5;
 
 export const client = new Client({
   intents: [
-    Intents.FLAGS.GUILDS,
-    Intents.FLAGS.GUILD_MEMBERS,
-    Intents.FLAGS.GUILD_PRESENCES,
-    Intents.FLAGS.GUILD_MESSAGES,
-    Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
-    Intents.FLAGS.GUILD_SCHEDULED_EVENTS,
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildPresences,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.GuildScheduledEvents,
   ],
-  partials: ["MESSAGE", "REACTION"],
+  partials: [Partials.Message, Partials.Reaction],
 });
 
 export const getGuild = async () => {

@@ -1,5 +1,5 @@
 import {
-  MessageEmbed,
+  EmbedBuilder,
   MessageReaction,
   PartialMessageReaction,
   PartialUser,
@@ -106,7 +106,7 @@ class AuctionFinishedReactionAction extends ReactionAction {
     // provide receipt
     await this.message.reply({
       embeds: [
-        new MessageEmbed({
+        new EmbedBuilder({
           title: `Purchase Receipt`,
           description: `Auction complete, grats!${code}diff
 + ${character.name} ${item}

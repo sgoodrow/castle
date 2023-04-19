@@ -1,4 +1,4 @@
-import { GuildMember, PartialGuildMember } from "discord.js";
+import { ChannelType, GuildMember, PartialGuildMember } from "discord.js";
 import moment from "moment";
 import { membersAndAlliesRoleId, removedChannelId } from "../../config";
 
@@ -11,7 +11,7 @@ export const guildMemberLeaveListener = async (
   }
 
   const channel = member.guild.channels.cache.get(removedChannelId);
-  if (!channel?.isText()) {
+  if (channel?.type !== ChannelType.GuildText) {
     throw new Error(`${removedChannelId} is not a text channel.`);
   }
 

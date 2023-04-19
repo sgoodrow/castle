@@ -1,4 +1,4 @@
-import { Message, MessageAttachment } from "discord.js";
+import { Message, Attachment } from "discord.js";
 import { dkpDeputyRoleId, dkpRecordsChannelId } from "../../../config";
 import {
   MessageAction,
@@ -36,7 +36,7 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     );
   }
 
-  private async tryCreateRaidThread(a: MessageAttachment) {
+  private async tryCreateRaidThread(a: Attachment) {
     const { data } = await axios({
       url: a.url,
       responseType: "arraybuffer",

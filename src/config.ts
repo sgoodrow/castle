@@ -19,6 +19,7 @@ export const {
   jewelerRoleId,
   bankerRoleId,
   raiderRoleId,
+  inactiveRaiderRoleId,
   knightRoleId,
   reinforcementsRoleId,
   castleRoleId,
@@ -40,6 +41,7 @@ export const {
   dkpRecordsChannelId,
   dkpBonusesChannelId,
   applicationsChannelId,
+  officerVotesChannelId,
   requestDumpThreadId,
   startedRaidsDumpThreadId,
   raiderEnlistedThreadId,
@@ -107,6 +109,7 @@ export const {
 
   // Raider role IDs
   raiderRoleId: string;
+  inactiveRaiderRoleId: string;
   reinforcementsRoleId: string;
 
   // Guild role IDs
@@ -131,6 +134,7 @@ export const {
   dkpRecordsChannelId: string;
   dkpBonusesChannelId: string;
   applicationsChannelId: string;
+  officerVotesChannelId: string;
   requestDumpThreadId: string;
   startedRaidsDumpThreadId: string;
   raiderEnlistedThreadId: string;

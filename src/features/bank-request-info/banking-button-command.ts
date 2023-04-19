@@ -1,4 +1,4 @@
-import { ButtonInteraction, CacheType, User } from "discord.js";
+import { ButtonInteraction, CacheType, ChannelType, User } from "discord.js";
 import { bankerRoleId, bankRequestsChannelId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 import {
@@ -42,7 +42,7 @@ ${attention}`);
 
   protected async authorize(interaction: ButtonInteraction<CacheType>) {
     const channel = await getChannel(bankRequestsChannelId, interaction);
-    if (!channel?.isText()) {
+    if (channel?.type !== ChannelType.GuildText) {
       throw new Error("The bank requests channel is not a text channel.");
     }
 

@@ -2,9 +2,12 @@ import {
   Client,
   Collection,
   GuildMember,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
+  ActionRowBuilder,
+  ButtonBuilder,
+  EmbedBuilder,
+  MessageActionRowComponentBuilder,
+  ButtonStyle,
+  Colors,
 } from "discord.js";
 import { getMembers } from "../..";
 import { inviteListChannelId } from "../../config";
@@ -53,7 +56,7 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
   }
 
   private async getCommandInstructions() {
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: "Guard Commands",
     }).addFields([
       {
@@ -73,7 +76,7 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
   }
 
   private async getFAQ() {
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: "Frequently Asked Questions",
       description: `**Someone wants to join, what do I tell them?**
 Tell them to introduce themselves in our Discord (https://tinyurl.com/castle-discord). A guard will give them a brief interview.
@@ -87,33 +90,33 @@ A guard or officer will notify you in Discord when they are performing invites. 
   }
 
   private async getButtons() {
-    return new MessageActionRow().addComponents(
-      new MessageButton()
+    return new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+      new ButtonBuilder()
         .setCustomId(addPlayerInviteButtonCommand.customId)
-        .setStyle("PRIMARY")
+        .setStyle(ButtonStyle.Primary)
         .setLabel("Add Self to Invite List"),
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(addAltInviteButtonCommand.customId)
-        .setStyle("PRIMARY")
+        .setStyle(ButtonStyle.Primary)
         .setLabel("Add Alt to Invite List"),
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(removePlayerInviteButtonCommand.customId)
-        .setStyle("SECONDARY")
+        .setStyle(ButtonStyle.Secondary)
         .setLabel("Remove from Invite List"),
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(pingInviteListButtonCommand.customId)
-        .setStyle("SUCCESS")
+        .setStyle(ButtonStyle.Success)
         .setLabel("Inviter Is In"),
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(cleanupInvitesCommand.customId)
-        .setStyle("DANGER")
+        .setStyle(ButtonStyle.Danger)
         .setLabel("Cleanup Old")
     );
   }
 
   private async getInviteEmbed(members: Members) {
     const needInvite = await dataSource.getRepository(InviteSimple).findBy({});
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: `Need Invite (${needInvite.length})`,
       description: needInvite
         .sort(sortInvites)
@@ -123,10 +126,10 @@ A guard or officer will notify you in Discord when they are performing invites. 
   }
 
   private async getTldrEmbed() {
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: "⚠️ TL;DR",
       description: `Add yourself to the invite list and coordinate here for an invite. If you don't get one in 2 weeks, you will need to ask for Discord access again.`,
-      color: "ORANGE",
+      color: Colors.Orange,
     });
   }
 

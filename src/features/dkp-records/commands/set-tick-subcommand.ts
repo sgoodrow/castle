@@ -1,5 +1,4 @@
 import {
-  ApplicationCommandOptionChoice,
   CacheType,
   CommandInteraction,
   GuildMemberRoleManager,
@@ -107,9 +106,7 @@ export class SetTickSubcommand extends Subcommand {
       );
   }
 
-  public async getOptionAutocomplete(
-    option: string
-  ): Promise<ApplicationCommandOptionChoice[] | undefined> {
+  public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Event:
         return (await castledkp.getEvents()).map((e) => ({
