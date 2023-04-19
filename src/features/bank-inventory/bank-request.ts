@@ -5,7 +5,7 @@ import { getBankItem } from "./bank-items";
 import { bankRequestsChannelId, bankOfficeChannelId } from "../../config";
 
 enum Option {
-  Item = "item",
+  Item = "bankitem",
 }
 
 class BankRequest extends Subcommand {
