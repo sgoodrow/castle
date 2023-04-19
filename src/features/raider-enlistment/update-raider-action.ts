@@ -1,4 +1,4 @@
-import { Client, MessageEmbed } from "discord.js";
+import { Client, Colors, EmbedBuilder } from "discord.js";
 import { raiderEnlistmentChannelId, raiderRoleId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
@@ -23,7 +23,7 @@ class UpdateRaiderInfoAction extends InstructionsReadyAction {
   }
 
   private async getRequirements() {
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: `Join the Raid Force`,
       description: `📜 **Requirements**
 • Level 46.5+ for most raids; 52+ for raids beyond Siren's Grotto
@@ -58,10 +58,10 @@ Periodically the ${this.role} roster will be reviewed, and if you have been inac
   }
 
   private async getTldrEmbed() {
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: "⚠️ TL;DR",
       description: `Join the raid force and follow the expected raider behaviors -- if you don't you may get a warning, lose DKP or worse`,
-      color: "ORANGE",
+      color: Colors.Orange,
     });
   }
 

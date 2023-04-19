@@ -1,4 +1,10 @@
-import { ButtonInteraction, CacheType, Message, User } from "discord.js";
+import {
+  ButtonInteraction,
+  CacheType,
+  ChannelType,
+  Message,
+  User,
+} from "discord.js";
 import { jewelerRoleId, jewelryChannelId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 import {
@@ -69,7 +75,7 @@ ${messages.map((m) => this.getQuotedContent(m.content)).join("\n")}`);
 
   protected async authorize(interaction: ButtonInteraction<CacheType>) {
     const channel = await getChannel(jewelryChannelId, interaction);
-    if (!channel?.isText()) {
+    if (channel?.type !== ChannelType.GuildText) {
       throw new Error("The jewelry requests channel is not a text channel.");
     }
 

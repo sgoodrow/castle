@@ -1,8 +1,11 @@
 import {
   Client,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
+  ActionRowBuilder,
+  ButtonBuilder,
+  EmbedBuilder,
+  MessageActionRowComponentBuilder,
+  ButtonStyle,
+  Colors,
 } from "discord.js";
 import { raiderEnlistmentChannelId, reinforcementsRoleId } from "../../config";
 import { Name } from "../../db/instructions";
@@ -32,7 +35,7 @@ class UpdateReinforcementsInfoAction extends InstructionsReadyAction {
 
   private async getDescriptionEmbed() {
     const role = `<@&${reinforcementsRoleId}>`;
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: "Join the Reinforcements",
       description: `The ${role} role is **optional**. Are you available to assist with ad hoc targets of opportunity that typically require 1-2 groups such as Scout, VSR, Ragefire, etc? Join the reinforcements!
 
@@ -58,23 +61,23 @@ class UpdateReinforcementsInfoAction extends InstructionsReadyAction {
   }
 
   private async getButtons() {
-    return new MessageActionRow().addComponents(
-      new MessageButton()
+    return new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+      new ButtonBuilder()
         .setCustomId(joinReinforcementsButtonCommand.customId)
-        .setStyle("PRIMARY")
+        .setStyle(ButtonStyle.Primary)
         .setLabel("Join Reinforcements"),
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(leaveReinforcementsButtonCommand.customId)
-        .setStyle("DANGER")
+        .setStyle(ButtonStyle.Danger)
         .setLabel("Leave Reinforcements")
     );
   }
 
   private async getTldrEmbed() {
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: "⚠️ TL;DR",
       description: `Opt-in and out of the role to help others. Get and send notifications for ad hoc fights. Set loot rules and be fair or you'll be removed from reinforcements.`,
-      color: "ORANGE",
+      color: Colors.Orange,
     });
   }
 

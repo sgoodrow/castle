@@ -46,7 +46,14 @@ class InviteRequestFinishedReactionAction extends ReactionAction {
     await removePlayer(this.authorId, this.message.client);
 
     // delete all of their messages and the replies to their messages
-    const messages = await this.message.channel.messages.fetch();
+    const messages = [
+      ...(
+        await this.message.channel.messages.fetch({
+          around: this.message.id,
+          limit: 100,
+        })
+      ).values(),
+    ];
     const requesterMessages = messages.filter(
       (m) => m.member?.id === this.message.member?.id
     );

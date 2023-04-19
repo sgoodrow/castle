@@ -1,8 +1,11 @@
 import {
   Client,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
+  ActionRowBuilder,
+  ButtonBuilder,
+  EmbedBuilder,
+  MessageActionRowComponentBuilder,
+  ButtonStyle,
+  Colors,
 } from "discord.js";
 import { jewelryChannelId } from "../../config";
 import { Name } from "../../db/instructions";
@@ -36,34 +39,34 @@ class UpdateJewelryRequestInfoAction extends InstructionsReadyAction {
   }
 
   private async getButtons() {
-    return new MessageActionRow().addComponents(
-      new MessageButton()
+    return new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+      new ButtonBuilder()
         .setCustomId(craftingButtonCommand.customId)
-        .setStyle("PRIMARY")
+        .setStyle(ButtonStyle.Primary)
         .setLabel("Notify Jewelry Requesters"),
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(jewelryCleanupButtonCommand.customId)
-        .setStyle("DANGER")
+        .setStyle(ButtonStyle.Danger)
         .setLabel("Remove Old Requests")
     );
   }
 
   private async getInstructionsEmbed() {
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: "Instructions",
       description: `Always be courteous and patient with your jewelers. Reach out to an officer if you want to help with jewelcrafting.
 • Use the ${Icon.Request} request format.
 • Make jewelry requests when you are available and state how long you will be available.
 • Requests are processed at the **North Freeport Bank**.
 • Delete requests when you are no longer available.`,
-      color: "GREEN",
+      color: Colors.Green,
     });
   }
 
   private async getServicesEmbeds() {
     return services.map(
       ({ title, icon, requestFormats, inventoryUrl, bullets }) =>
-        new MessageEmbed({
+        new EmbedBuilder({
           title: `${icon} ${inventoryUrl ? "__" : ""}${title}${
             inventoryUrl ? "__" : ""
           }`,

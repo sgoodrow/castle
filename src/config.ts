@@ -41,6 +41,7 @@ export const {
   dkpRecordsChannelId,
   dkpBonusesChannelId,
   applicationsChannelId,
+  officerVotesChannelId,
   requestDumpThreadId,
   startedRaidsDumpThreadId,
   raiderEnlistedThreadId,
@@ -133,6 +134,7 @@ export const {
   dkpRecordsChannelId: string;
   dkpBonusesChannelId: string;
   applicationsChannelId: string;
+  officerVotesChannelId: string;
   requestDumpThreadId: string;
   startedRaidsDumpThreadId: string;
   raiderEnlistedThreadId: string;

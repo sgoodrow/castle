@@ -1,21 +1,12 @@
 import {
-  ApplicationCommandOptionChoice,
   CacheType,
+  ChannelType,
   CommandInteraction,
   GuildMemberRoleManager,
 } from "discord.js";
-import { getRoles } from "../..";
-import {
-  auctionChannelId,
-  bankerRoleId,
-  officerRoleId,
-  raiderRoleId,
-} from "../../config";
+import { auctionChannelId, bankerRoleId, raiderRoleId } from "../../config";
 import { Subcommand } from "../../shared/command/subcommand";
-import {
-  addRoleToThread,
-  requireInteractionMemberRole,
-} from "../../shared/command/util";
+import { addRoleToThread } from "../../shared/command/util";
 import { Item, itemsMapById } from "../../shared/items";
 import { spellsMapById } from "../../shared/spells";
 import { AuctionThreadBuilder } from "./auction-thread-builder";
@@ -91,9 +82,7 @@ export class AuctionSubcommand extends Subcommand {
     return command;
   }
 
-  public async getOptionAutocomplete(
-    option: string
-  ): Promise<ApplicationCommandOptionChoice[] | undefined> {
+  public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Name:
         return await this.autocompleteName();
@@ -124,7 +113,7 @@ export class AuctionSubcommand extends Subcommand {
 
   private async authorize(interaction: CommandInteraction<CacheType>) {
     const auctionChannel = await this.getAuctionChannel(interaction);
-    if (!auctionChannel?.isText()) {
+    if (auctionChannel?.type !== ChannelType.GuildText) {
       throw new Error("The auction channel is not a text channel.");
     }
 

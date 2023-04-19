@@ -79,7 +79,7 @@ export const getButton = (interaction: ButtonInteraction<CacheType>) => {
 };
 
 export const registerSlashCommands = () => {
-  const rest = new REST({ version: "9" }).setToken(token);
+  const rest = new REST({ version: "10" }).setToken(token);
 
   // assign new commmands
   rest

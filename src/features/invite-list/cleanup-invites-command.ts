@@ -1,4 +1,4 @@
-import { ButtonInteraction, CacheType, Permissions } from "discord.js";
+import { ButtonInteraction, CacheType, PermissionFlagsBits } from "discord.js";
 import { partition } from "lodash";
 import { membersAndAlliesRoleId } from "../../config";
 import { dataSource } from "../../db/data-source";
@@ -18,7 +18,7 @@ const OLD_LIMIT = 2 * WEEKS;
 class CleanupInvitesCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {
     requireInteractionMemberPermission(
-      Permissions.FLAGS.MANAGE_ROLES,
+      PermissionFlagsBits.ManageRoles,
       interaction
     );
 

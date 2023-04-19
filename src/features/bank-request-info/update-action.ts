@@ -1,8 +1,11 @@
 import {
   Client,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
+  ActionRowBuilder,
+  ButtonBuilder,
+  EmbedBuilder,
+  ButtonStyle,
+  Colors,
+  MessageActionRowComponentBuilder,
 } from "discord.js";
 import { bankRequestsChannelId } from "../../config";
 import { BankHour } from "../../db/bank-hour";
@@ -38,14 +41,14 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
   }
 
   private async getButtons() {
-    return new MessageActionRow().addComponents(
-      new MessageButton()
+    return new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+      new ButtonBuilder()
         .setCustomId(bankingButtonCommand.customId)
-        .setStyle("PRIMARY")
+        .setStyle(ButtonStyle.Primary)
         .setLabel("Notify Bank Requesters"),
-      new MessageButton()
+      new ButtonBuilder()
         .setCustomId(bankCleanupButtonCommand.customId)
-        .setStyle("DANGER")
+        .setStyle(ButtonStyle.Danger)
         .setLabel("Remove Old Requests")
     );
   }
@@ -53,7 +56,7 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
   private async getServicesEmbeds() {
     return services.map(
       ({ title, icon, requestFormats, inventoryUrl, bullets }) =>
-        new MessageEmbed({
+        new EmbedBuilder({
           title: `${icon} ${inventoryUrl ? "__" : ""}${title}${
             inventoryUrl ? "__" : ""
           }`,
@@ -88,10 +91,10 @@ ${bankHour
 We have many bankers that are available at their convenience throughout the day but do not have set banking hours.${
       bankHour.length ? bankHourDescription : "."
     }`;
-    return new MessageEmbed({
+    return new EmbedBuilder({
       title: "Instructions",
       description,
-      color: "GREEN",
+      color: Colors.Green,
     });
   }
 

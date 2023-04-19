@@ -1,9 +1,9 @@
 import {
-  ApplicationCommandOptionChoice,
   CacheType,
   CommandInteraction,
   GuildMemberRoleManager,
-  MessageEmbed,
+  EmbedBuilder,
+  ChannelType,
 } from "discord.js";
 import {
   castleDkpBonusesCharId,
@@ -57,7 +57,7 @@ export class BonusesThreadSubcommand extends Subcommand {
     if (!channel) {
       throw new Error("Could not find DKP bonuses channel");
     }
-    if (!channel.isText()) {
+    if (channel.type !== ChannelType.GuildText) {
       throw new Error("DKP bonuses channel is not a text channel");
     }
     if (channel.isThread()) {
@@ -85,20 +85,22 @@ export class BonusesThreadSubcommand extends Subcommand {
     // link to raid with instructions
     await thread.send({
       embeds: [
-        new MessageEmbed({
+        new EmbedBuilder({
           title: `Raid: __${name}__`,
           url: getRaidUrl(raid.eventUrlSlug, raid.id),
         }),
-        new MessageEmbed({
+        new EmbedBuilder({
           title: "Instructions",
           description: `• <@&${raiderRoleId}>s may use the \`!adj\` command to submit bonus requests.
 • The bot will react with ⚠️ if the request is invalid (wrong format).
 • Deputies will ✅ requests to add approve them.
 • Requests made by deputies are automatically approved.`,
-        }).addField(
-          "Add a raid adjustment bonus. Context is optional.",
-          "`!adj Pumped 5 reason (context)`"
-        ),
+        }).addFields([
+          {
+            name: "Add a raid adjustment bonus. Context is optional.",
+            value: "`!adj Pumped 5 reason (context)`",
+          },
+        ]),
       ],
     });
 
@@ -128,9 +130,7 @@ export class BonusesThreadSubcommand extends Subcommand {
       );
   }
 
-  public async getOptionAutocomplete(
-    option: string
-  ): Promise<ApplicationCommandOptionChoice[] | undefined> {
+  public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Event:
         return (await castledkp.getEvents()).map((e) => ({

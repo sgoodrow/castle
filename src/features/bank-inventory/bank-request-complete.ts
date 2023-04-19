@@ -51,6 +51,5 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     const transactionContent = this.message.content + ` -- approved by ${this.user.username}`;
     bankTransactionsChannel?.send(transactionContent);
     this.message.delete();
-
   }
 }
