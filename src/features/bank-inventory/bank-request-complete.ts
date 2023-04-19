@@ -14,7 +14,6 @@ import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../shared/action/reaction-action";
-import { getTextChannel } from "../../shared/command/util";
 
 export const tryBankRequestComplete = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -49,7 +48,6 @@ class BankRequestFinishedReactionAction extends ReactionAction {
       bankTransactionsChannelId
     );
     // console.log(bankTransactionsChannelId, bankTransactionsChannel)
-    const messageId = this.message.member?.id;
     const transactionContent =
       this.message.content + ` -- approved by ${this.user.username}`;
     bankTransactionsChannel?.send(transactionContent);

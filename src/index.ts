@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, Partials } from "discord.js";
+import { ChannelType, Client, GatewayIntentBits, Partials } from "discord.js";
 import { interactionCreateListener } from "./listeners/interaction-create-listener";
 import { guildId, token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
@@ -39,6 +39,23 @@ export const getGuild = async () => {
     throw new Error("Could not collect guild members");
   }
   return guild;
+};
+
+export const getChannel = async (channelId: string) => {
+  const guild = await getGuild();
+  const channel = await guild.channels.fetch(channelId);
+  if (!channel) {
+    throw new Error(`Channel ${channelId} does not exist`);
+  }
+  return channel;
+};
+
+export const getTextChannel = async (channelId: string) => {
+  const channel = await getChannel(channelId);
+  if (channel.type !== ChannelType.GuildText) {
+    throw new Error(`Channel ${channelId} is not a text channel`);
+  }
+  return channel;
 };
 
 export const getMembers = async () => {
