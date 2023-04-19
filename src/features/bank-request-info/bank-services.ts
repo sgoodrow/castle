@@ -53,7 +53,7 @@ export const services: Service[] = [
       "Various Items, see spreadsheet (80% market rate, bags not for sale)",
       "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk OR 500p _Rivervale Bank_)",
       "Burnished Wooden Stave (100p _North Freeport Bank_)",
-      "Jade Reaver (1000p _North Freeport Bank_, must have VSR stone)
+      "Jade Reaver (1000p _North Freeport Bank_, must have VSR stone)",
       "Mind Melt (500p _Thurgadin_)",
       "Iceball (free _Thurgadin_)",
       "Seahorse Scales (free _Thurgadin_)",
@@ -63,7 +63,7 @@ export const services: Service[] = [
   {
     title: "PP4DKP",
     icon: Icon.Sold,
-    requestFormats: ["PP4DKP #K Platinum"],    
+    requestFormats: ["PP4DKP #K Platinum"],
     bullets: [
       "_NFP Bank or EC Tunnel_",
       "PP4DKP (Platinum Pieces for Dragon Kill Points) Fundraising",
