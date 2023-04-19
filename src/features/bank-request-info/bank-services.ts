@@ -39,6 +39,7 @@ export const services: Service[] = [
       "_West Commons Lake, South Inn_",
       "Leatherfoot Raiders Skullcap (180p)",
       "Ring of Shadows (36p)",
+      "Thin Bones Wand (5p)",
       "Wort Potions (750p, scheduled events only)",
       "Various Items, see spreadsheet",
     ],
@@ -49,12 +50,10 @@ export const services: Service[] = [
     requestFormats: ["Misc item: Item name (Mule name)"],
     inventoryUrl: "https://tinyurl.com/castle-misc-list",
     bullets: [
+      "Various Items, see spreadsheet (80% market rate, bags not for sale)",
       "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk OR 500p _Rivervale Bank_)",
-      "Puppet Strings Charge (1750p _The Overthere_)",
-      "Black Sapphire (500p _North Freeport Bank_)",
-      "Burnished Wooden Stave (400p _North Freeport Bank_)",
-      "Jade Reaver (1000p _North Freeport Bank_, must have VSR stone)",
-      "Various Items, see spreadsheet (80% market rate, bags not for sale)",    
+      "Burnished Wooden Stave (100p _North Freeport Bank_)",
+      "Jade Reaver (1000p _North Freeport Bank_, must have VSR stone)
       "Mind Melt (500p _Thurgadin_)",
       "Iceball (free _Thurgadin_)",
       "Seahorse Scales (free _Thurgadin_)",
@@ -116,7 +115,7 @@ export const services: Service[] = [
     icon: Icon.Jewelry,
     requestFormats: ["Raid Reagents: Item name, Item count"],
     bullets: [
-      "_West Commons, Wizard Spire_",
+      "_West Commons, Wizard Spire_ or _ToV, Entrance_",
       "The following reagents are free **for raid purposes only**.",
       "Peridots (Clerics, Enchanters, Wizards with giant-bane nuke)",
       "Hate Stones (Wizards)",
