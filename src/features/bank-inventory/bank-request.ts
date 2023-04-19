@@ -3,6 +3,7 @@ import { CacheType, CommandInteraction } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { getBankItem } from "./bank-items";
 import { bankRequestsChannelId, bankOfficeChannelId } from "../../config";
+import { getTextChannel } from "../../shared/command/util";
 
 enum Option {
   Item = "item"
@@ -11,27 +12,23 @@ enum Option {
 class BankRequest extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
 
-    if (!interaction.channel 
-      || interaction.channelId !== bankRequestsChannelId
-      || interaction.channelId !== bankOfficeChannelId
-      ) {
-      throw new Error("Must use this command in the bank request channel");
-    }
-
     const item = this.getOption(Option.Item, interaction);
     if (!item) {
       throw new Error(`An item is required.`);
     }
     // console.log(interaction, item);
-    const match = await getBankItem(String(item.value));  // this is probably a .ts hack..
+    const match = await getBankItem(String(item.value)); 
     // console.log(match)
     const itemName = match.data.name;
     const instock = match.data.stock[0];
+    if (!instock) {
+      throw new Error(`${itemName} is not in stock.`); // not sure if we should allow it anyway. maybe?
+    }
     const message = `${interaction.user} requests: ${itemName} (${match.countAvailable()}) [${instock.character}, ${instock.location}]`;
 
-    await interaction.channel.send(message);
-    interaction.editReply("Item found.")
-    // interaction.editReply(`${match.countAvailable} ${match.data.name} found.`)
+    const bankRequestsChannel = await getTextChannel(bankRequestsChannelId);
+    await bankRequestsChannel.send(message);
+    interaction.editReply("Item found, creating request.")
     // TODO: add buttons: [Request Item]  [Cancel]
     // IF no match, [Request Anyway] [Cancel]
   }
