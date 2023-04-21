@@ -23,11 +23,12 @@ export const services: Service[] = [
       "OT Hammer Event: Date, Time (include timezone)",
     ],
     bullets: [
-      "_The Overthere, Outpost_ (Thursday <t:1670518800:t>)",
+      "_The Overthere, Outpost_ Look for monthly threads for date/time",
       "Bring 1 Jade and either 1750pp (members and allies) or 2500p (non-allies)",
       "Payment may be delivered at _North Freeport Bank_ or _Hammer Hill_",
       "Charisma gear, Tash and Malo will be provided",
       "Requires more people to facilitate, so this is a request to schedule event",
+      "Some exceptions may be made. DM @Lokosmotion for scheduling",
     ],
   },
   {
