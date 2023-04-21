@@ -18,9 +18,9 @@ class ItemStock extends Subcommand {
     }
     // console.log(interaction, item);
     const item = await getBankItem(String(query.value));
-    console.log(item.data, item.getCountAvailable())
+    // console.log(item.data, item.countAvailable)
 
-    let description = `${item.getCountAvailable()} in stock. \n\n`
+    let description = `${item.countAvailable} in stock. \n\n`
     
     item.data.stock.forEach((val) => {
       description += `${val.character} (${val.count}) [${val.location}] \n`

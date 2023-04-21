@@ -26,7 +26,7 @@ class BankRequest extends Subcommand {
     }
     const message = `${
       interaction.user
-    } requests: ${itemName} (${instock.count}/${match.getCountAvailable()}) [${
+    } requests: ${itemName} (${instock.count}/${match.countAvailable}) [${
       instock.character
     }, ${instock.location}]`;
 
@@ -51,5 +51,5 @@ class BankRequest extends Subcommand {
 
 export const bankRequest = new BankRequest(
   "request",
-  "Request an item from the build bank."
+  "Request an item from the guild bank."
 );

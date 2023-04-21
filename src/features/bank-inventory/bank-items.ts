@@ -128,11 +128,10 @@ const removeBankStock= async function(inventoryItem: InventoryItem) {
 
 
 export class BankItem {
-  public data: BankItemData;
-  public constructor(itemData: BankItemData) {
-    this.data = itemData;
+  public constructor(public readonly data: BankItemData) {
+    this.data = data;
   }
-  public getCountAvailable = () => {
+  get countAvailable () {
     let available = 0;
     this.data.stock.forEach((val) => {
       available = available + val.count;
