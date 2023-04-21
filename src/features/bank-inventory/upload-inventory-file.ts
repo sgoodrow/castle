@@ -7,10 +7,8 @@ import {
 import axios from "axios";
 import { bankInventoryChannelId } from "../../config";
 import {
-  inventoryItem,
-  bankerInventory,
-  addBankItem,
-  updateBankerInventory,
+  InventoryItem,
+  updateBankItem,
 } from "./bank-items";
 import {
   uploadFileToFolder,
@@ -60,28 +58,19 @@ class UploadInventoryMessageAction extends MessageAction {
   private async parseInventoryFile(fileName: string, data: string) {
     const charName = fileName.split("-")[0];
     const rows = data.split("\r\n");
-    const bankerInventory: bankerInventory = {
-      character: charName,
-      items: [],
-    };
-    rows.forEach((rowStr, idx) => {
-      if (idx > 0) {
-        // console.log(rowStr, idx);
-        const row = rowStr.split("\t");
-        if (row[1] && row[1] !== "Empty") {
-          const itemData: inventoryItem = {
-            character: charName,
-            location: row[0],
-            name: row[1],
-            id: row[2],
-            count: parseInt(row[3]),
-          };
-          bankerInventory.items.push(itemData);
-          addBankItem(itemData);
-        }
+    for (let i=1; i<rows.length; i++) {
+      const row = rows[i].split("\t");
+      if (row[1]) {
+        const itemData: InventoryItem = {
+          character: charName,
+          location: row[0],
+          name: row[1],
+          id: row[2],
+          count: parseInt(row[3]),
+        };
+        await updateBankItem(itemData);
       }
-    });
-    updateBankerInventory(bankerInventory);
+    }
   }
 
   private async uploadToGDrive(filename: string, data: string) {

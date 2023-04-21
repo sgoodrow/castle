@@ -1,11 +1,12 @@
 import { bankerRoleId } from "../../config";
 import { redisClient } from "../../redis/client";
 import { bankerInventory } from "./banker-request";
-import { differenceBy } from "lodash";
+import { differenceBy, isMatch } from "lodash";
 
 interface BankItemData {
   name: string;
   id: string;
+  price: string;
   stock: [
     {
       character: string;
@@ -15,7 +16,7 @@ interface BankItemData {
   ];
 }
 
-export interface inventoryItem {
+export interface InventoryItem {
   character: string;
   name: string;
   id: string;
@@ -23,52 +24,48 @@ export interface inventoryItem {
   count: number;
 }
 
-export interface bankerInventory {
-  character: string;
-  items: inventoryItem[];
-}
 
-export const getBankerInventory = async function (charname: string) {
-  const key = "banker-inventory." + encodeURIComponent(charname.toLowerCase());
-  // console.log('get banker', key)
-  const serialized = await redisClient.get(key);
-  // console.log(serialized);
-  if (!serialized) {
-    throw new Error("Banker not found: " + charname);
-  }
-  return JSON.parse(serialized);
-};
-
-export const setBankerInventory = async function(inventory: bankerInventory) {
+export const updateBankItem = async function(inventoryItem: InventoryItem) {
+  // console.log('update bank item', inventoryItem.name)
   try {
-    const key = "banker-inventory." + encodeURIComponent(inventory.character.toLowerCase());
-    // console.log("set inventory for ", key);
-    await redisClient.set(key, JSON.stringify(inventory));
-    return "Inventory set for " + inventory.character;
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-export async function updateBankerInventory(inventory: bankerInventory) {
-  try {
-    const cachedInventory = await getBankerInventory(inventory.character);    
-    const diff = differenceBy(cachedInventory.items, inventory.items, "name");
-    if(diff && diff.length > 0) {
-      diff.forEach((item:any) => {  // typescript hates me.
-        removeBankItem(item);
-      })
+    const cachedInventoryItem = await getInventoryItem(inventoryItem);
+    // console.log('Inventory item cached.')
+    if(isMatch(cachedInventoryItem, inventoryItem)) {
+      // console.log("Cache matches, no update necessary.");
+    } else {
+      // console.log("Cache doesn't match: set new inventory, remove bankItem.")
+      await setInventoryItem(inventoryItem);
+      await removeBankStock(inventoryItem);
     }
-  } catch (e: any) {
-    console.log(e.message);
+  } catch (e: unknown) {
+    // console.log("Item not found in cache.")
+    await setInventoryItem(inventoryItem);
+    await addBankStock(inventoryItem);
   }
-  return await setBankerInventory(inventory);
+}
+
+const inventoryItemKey = function (item: InventoryItem) {
+  return 'c:' + item.character.toLowerCase() 
+  + ":l:" + item.location.toLowerCase();
+}
+
+const setInventoryItem = async function(item: InventoryItem) {
+  return await redisClient.set(inventoryItemKey(item),  JSON.stringify(item));
+}
+
+const getInventoryItem = async function (item: InventoryItem) {
+  const serialized = await redisClient.get(inventoryItemKey(item));
+  if (!serialized) { throw new Error ("Iventory item not found.")}
+  return JSON.parse(serialized);
+}
+
+
+function itemKey(itemName: string) {
+  return "bi:" + encodeURIComponent(itemName.toLowerCase())
 }
 
 export const getBankItem = async function (itemName: string) {
-  const serialized = await redisClient.get(
-    "bank-item." + encodeURIComponent(itemName.toLowerCase())
-  );
+  const serialized = await redisClient.get(itemKey(itemName));
   // console.log(serialized);
   if (!serialized) {
     throw new Error("Item not found: " + itemName);
@@ -76,66 +73,72 @@ export const getBankItem = async function (itemName: string) {
   return new BankItem(JSON.parse(serialized));
 };
 
-export const addBankItem = async function (inventoryItem: inventoryItem) {
-  let item: BankItemData = {
-    name: inventoryItem.name,
-    id: inventoryItem.id,
-    stock: [
-      {
-        character: inventoryItem.character,
-        location: inventoryItem.location,
-        count: inventoryItem.count,
-      },
-    ],
-  };
+const setBankItem = async function (bankItemData: BankItemData) {
   try {
-    const cachedItem = await getBankItem(item.name);
-    const matchStock = cachedItem.data.stock.find(
-      (s) => s.character === inventoryItem.character
-    );
-    console.log(matchStock);
-    if (!matchStock) {
-      console.log("Add stock:", item.name);
-      cachedItem.data.stock.push(item.stock[0]);
-      item = cachedItem.data;
-    } else {
-      // console.log(item.name + ": Item stock accounted for.");
-    }
-  } catch (e: any) {
-    console.log(e.message);
-  }
-  const key = "bank-item." + encodeURIComponent(item.name.toLowerCase());
-  try {
-    console.log("Add item:", item.name);
-    await redisClient.set(key, JSON.stringify(item));
+    // console.log("Set bank item:", bankItemData);
+    await redisClient.set(itemKey(bankItemData.name), JSON.stringify(bankItemData));
   } catch (e) {
     console.log(e);
   }
+}
+
+const addBankStock = async function (inventoryItem: InventoryItem) {
+  if(inventoryItem.name === "Empty") { return; }
+  try { 
+    const bankItem = await getBankItem(inventoryItem.name);
+    // bank item found, add inventory to stock
+    // console.log('add stock: ', inventoryItem.name);
+    bankItem.data.stock.push(inventoryItem);
+    setBankItem(bankItem.data);
+  } catch (e: any) {
+    // console.log("create new bank item: ", inventoryItem.name)
+    // bank item not found, create it
+    const newItem: BankItemData = {
+      name: inventoryItem.name,
+      id: inventoryItem.id,
+      price: '',
+      stock: [
+        {
+          character: inventoryItem.character,
+          location: inventoryItem.location,
+          count: inventoryItem.count,
+        },
+      ],
+    };
+    setBankItem(newItem);
+  }
+
 };
 
-export const removeBankItem = async function(inventoryItem: inventoryItem) {
-  // remove item stock if banker matches
+const removeBankStock= async function(inventoryItem: InventoryItem) {
   try {
-    const cachedItem = await getBankItem(inventoryItem.name);
-    const matchIdx = cachedItem.data.stock.findIndex(
-      (s) => s.character === inventoryItem.character
+    const bankItem = await getBankItem(inventoryItem.name);
+    const matchIdx = bankItem.data.stock.findIndex(
+      (s) => isMatch(s, inventoryItem)
     );
     if (matchIdx > -1) {
-      cachedItem.data.stock.splice(matchIdx, 1);
-      const key = "bank-item." + encodeURIComponent(cachedItem.data.name.toLowerCase());
-      console.log("Reduce stock:", cachedItem.data.name);
-      await redisClient.set(key, JSON.stringify(cachedItem));
+      bankItem.data.stock.splice(matchIdx, 1);
+      console.log("Remove stock:", bankItem.data.name);
+      await setBankItem(bankItem.data);
     }
   } catch (e: any) {
     console.log(e.message);
   }
 }
+
 
 export class BankItem {
   public data: BankItemData;
   public constructor(itemData: BankItemData) {
     this.data = itemData;
   }
-  public countAvailable = () => this.data.stock.length;
+  public getCountAvailable = () => {
+    let available = 0;
+    this.data.stock.forEach((val) => {
+      available = available + val.count;
+    })
+    return available;
+  }
   // add prices?
 }
+

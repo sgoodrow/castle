@@ -18,7 +18,7 @@ class BankRequest extends Subcommand {
     }
     // console.log(interaction, item);
     const match = await getBankItem(String(item.value));
-    // console.log(match)
+    console.log(match)
     const itemName = match.data.name;
     const instock = match.data.stock[0];
     if (!instock) {
@@ -26,7 +26,7 @@ class BankRequest extends Subcommand {
     }
     const message = `${
       interaction.user
-    } requests: ${itemName} (${match.countAvailable()}) [${
+    } requests: ${itemName} (${instock.count}/${match.getCountAvailable()}) [${
       instock.character
     }, ${instock.location}]`;
 
