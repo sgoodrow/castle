@@ -79,7 +79,6 @@ ${bankHour
   .join("\n")}`;
     const description = `Always be courteous and patient with your bankers.
 • Use the ${Icon.Request} request format
-• Make bank requests when you are available
 • State how long you will be available.
 • Reimbursement, Recharge, and Auction requests remain open until fulfilled.
 • All other requests will remain open for 3 days and then closed.
