@@ -1,7 +1,7 @@
 import { CacheType, CommandInteraction } from "discord.js";
 // import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
-import { getBankItem } from "./bank-items";
+import { getBankItem, getItemsSet } from "./bank-items";
 import { bankRequestsChannelId, bankOfficeChannelId } from "../../config";
 import { getTextChannel } from "../..";
 enum Option {
@@ -32,7 +32,7 @@ class BankRequest extends Subcommand {
 
     const bankRequestsChannel = await getTextChannel(bankRequestsChannelId);
     await bankRequestsChannel.send(message);
-    interaction.editReply("Item found, creating request.")
+    interaction.editReply(`${itemName} found, ${match.countAvailable} available. Creating request.`)
   }
 
   public get command() {
@@ -41,11 +41,22 @@ class BankRequest extends Subcommand {
         .setName(Option.Item)
         .setDescription("The item you wish to request")
         .setRequired(true)
+        .setAutocomplete(true)
     );
   }
 
-  public async getOptionAutocomplete() {
-    return [];
+  public async getOptionAutocomplete(option: string) {
+    if (option === Option.Item) {
+      return await this.autoCompleteItems();
+    }
+  }
+
+  private async autoCompleteItems() {
+    const itemsSet = await getItemsSet();
+    return itemsSet.map((s) => ({
+      name: s,
+      value: s
+    }));
   }
 }
 

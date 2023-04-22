@@ -24,6 +24,19 @@ export interface InventoryItem {
   count: number;
 }
 
+export class BankItem {
+  public constructor(public readonly data: BankItemData) {
+    this.data = data;
+  }
+  get countAvailable () {
+    let available = 0;
+    this.data.stock.forEach((val) => {
+      available = available + val.count;
+    })
+    return available;
+  }
+  // add prices?
+}
 
 export const updateBankItem = async function(inventoryItem: InventoryItem) {
   // console.log('update bank item', inventoryItem.name)
@@ -44,6 +57,15 @@ export const updateBankItem = async function(inventoryItem: InventoryItem) {
   }
 }
 
+export const getBankItem = async (itemName: string) => {
+  const serialized = await redisClient.get(itemKey(itemName));
+  // console.log(serialized);
+  if (!serialized) {
+    throw new Error("Item not found: " + itemName);
+  }
+  return new BankItem(JSON.parse(serialized));
+};
+
 const inventoryItemKey = function (item: InventoryItem) {
   return 'c:' + item.character.toLowerCase() 
   + ":l:" + item.location.toLowerCase();
@@ -53,7 +75,7 @@ const setInventoryItem = async function(item: InventoryItem) {
   return await redisClient.set(inventoryItemKey(item),  JSON.stringify(item));
 }
 
-const getInventoryItem = async function (item: InventoryItem) {
+const getInventoryItem = async (item: InventoryItem) => {
   const serialized = await redisClient.get(inventoryItemKey(item));
   if (!serialized) { throw new Error ("Iventory item not found.")}
   return JSON.parse(serialized);
@@ -64,16 +86,7 @@ function itemKey(itemName: string) {
   return "bi:" + encodeURIComponent(itemName.toLowerCase())
 }
 
-export const getBankItem = async function (itemName: string) {
-  const serialized = await redisClient.get(itemKey(itemName));
-  // console.log(serialized);
-  if (!serialized) {
-    throw new Error("Item not found: " + itemName);
-  }
-  return new BankItem(JSON.parse(serialized));
-};
-
-const setBankItem = async function (bankItemData: BankItemData) {
+const setBankItem = async (bankItemData: BankItemData) => {
   try {
     // console.log("Set bank item:", bankItemData);
     await redisClient.set(itemKey(bankItemData.name), JSON.stringify(bankItemData));
@@ -82,7 +95,15 @@ const setBankItem = async function (bankItemData: BankItemData) {
   }
 }
 
-const addBankStock = async function (inventoryItem: InventoryItem) {
+const pushToItemsSet = async (name: string) => {
+  await redisClient.sAdd('set:bank-items', name);
+}
+
+export const getItemsSet = async () => {
+  return await redisClient.sMembers('set:bank-items');
+}
+
+const addBankStock = async (inventoryItem: InventoryItem) => {
   if(inventoryItem.name === "Empty") { return; }
   try { 
     const bankItem = await getBankItem(inventoryItem.name);
@@ -105,6 +126,7 @@ const addBankStock = async function (inventoryItem: InventoryItem) {
         },
       ],
     };
+    pushToItemsSet(newItem.name);
     setBankItem(newItem);
   }
 
@@ -126,18 +148,8 @@ const removeBankStock= async function(inventoryItem: InventoryItem) {
   }
 }
 
-
-export class BankItem {
-  public constructor(public readonly data: BankItemData) {
-    this.data = data;
-  }
-  get countAvailable () {
-    let available = 0;
-    this.data.stock.forEach((val) => {
-      available = available + val.count;
-    })
-    return available;
-  }
-  // add prices?
+async function test() {
+  const itemsSet = await getItemsSet();
+  console.log(itemsSet);
 }
-
+test();
