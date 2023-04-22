@@ -28,7 +28,7 @@ export const services: Service[] = [
       "Payment may be delivered at _North Freeport Bank_ or _Hammer Hill_",
       "Charisma gear, Tash and Malo will be provided",
       "Requires more people to facilitate, so this is a request to schedule event",
-      "Some exceptions may be made. DM @Lokosmotion for scheduling",
+      "Some exceptions may be made. DM Treasurer for info.",
     ],
   },
   {
@@ -52,6 +52,7 @@ export const services: Service[] = [
     inventoryUrl: "https://tinyurl.com/castle-misc-list",
     bullets: [
       "Various Items, see spreadsheet (80% market rate, bags not for sale)",
+      "Tradeskilling INT Gear check in/out (free _Thurgadin_)",
       "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk OR 500p _Rivervale Bank_)",
       "Burnished Wooden Stave (100p _North Freeport Bank_)",
       "Jade Reaver (1000p _North Freeport Bank_, must have VSR stone)",
