@@ -11,13 +11,22 @@ const onError = (err: Error) =>
     : console.error("Redis client error", err);
 
 export const redisClient = createClient({ url: UPSTASH_REDIS_URL });
-redisClient.connect();
-SocketClosedUnexpectedlyError;
-redisClient.on("error", onError);
+try {
+  redisClient.connect();
+  SocketClosedUnexpectedlyError;
+  redisClient.on("error", onError);
+} catch (err) {
+  console.error(err);
+}
+
 
 export const redisListener = redisClient.duplicate();
-redisListener.connect();
-redisListener.on("error", onError);
+try {
+  redisListener.connect();
+  redisListener.on("error", onError);
+} catch (err) {
+  console.error(err);
+}
 
 // flush utility
 export const flushKeys = async (pattern: string) => {
