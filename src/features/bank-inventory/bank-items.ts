@@ -98,6 +98,7 @@ const setBankItem = async (bankItemData: BankItemData) => {
     console.log(e);
   }
 }
+
 const pushToItemsSet = async (name: string) => {
   await redisClient.sAdd('set:bank-items', name);
 }
