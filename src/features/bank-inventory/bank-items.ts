@@ -57,6 +57,10 @@ export const updateBankItem = async function(inventoryItem: InventoryItem) {
   }
 }
 
+export const updateItemsSet = async (set: string[]) => {
+  await redisClient.sAdd('set:bank-items', set);
+}
+
 export const getBankItem = async (itemName: string) => {
   const serialized = await redisClient.get(itemKey(itemName));
   // console.log(serialized);
@@ -94,7 +98,6 @@ const setBankItem = async (bankItemData: BankItemData) => {
     console.log(e);
   }
 }
-
 const pushToItemsSet = async (name: string) => {
   await redisClient.sAdd('set:bank-items', name);
 }
@@ -126,7 +129,6 @@ const addBankStock = async (inventoryItem: InventoryItem) => {
         },
       ],
     };
-    pushToItemsSet(newItem.name);
     setBankItem(newItem);
   }
 
