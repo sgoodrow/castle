@@ -147,9 +147,3 @@ const removeBankStock= async function(inventoryItem: InventoryItem) {
     console.log(e.message);
   }
 }
-
-async function test() {
-  const itemsSet = await getItemsSet();
-  console.log(itemsSet);
-}
-test();
