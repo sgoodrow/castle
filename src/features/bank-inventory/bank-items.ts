@@ -63,7 +63,10 @@ export const updateBankItems = async function(newInventory: BankInventory) {
       }
     })
   } catch (err) {
-    // banker inventory not cached
+    // try to add all if inventory is not cached.
+    newInventory.items.forEach((item) => {
+      addBankStock(item);
+    })
   }
   // console.log('set bank inventory', newInventory)
   setBankInventory(newInventory);
@@ -121,10 +124,14 @@ const addBankStock = async (inventoryItem: InventoryItem) => {
   if(inventoryItem.name === "Empty") { return; }
   try { 
     const bankItem = await getBankItem(inventoryItem.name);
-    // bank item found, add inventory to stock
+    // bank item found, add inventory to stock if not already there.
     // console.log('add stock: ', inventoryItem.name);
-    bankItem.data.stock.push(inventoryItem);
-    setBankItem(bankItem.data);
+    if (!bankItem.data.stock.find((s)=>{
+      return isMatch(s, inventoryItem);
+    })) {
+      bankItem.data.stock.push(inventoryItem);
+      setBankItem(bankItem.data);
+    }
   } catch (e: any) {
     // console.log("create new bank item: ", inventoryItem.name)
     // bank item not found, create it
