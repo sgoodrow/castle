@@ -6,5 +6,5 @@ import { bankerInventory } from "./banker-request";
 export const bankCommand = new Command(
   "bank",
   "Use the guild bank.",
-  [bankRequest, itemStock],  // bankerInventory removed for now.
+  [bankRequest, itemStock] // bankerInventory removed for now.
 );
