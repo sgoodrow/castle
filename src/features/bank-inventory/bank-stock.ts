@@ -1,7 +1,7 @@
 import { CacheType, CommandInteraction, EmbedBuilder } from "discord.js";
 // import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
-import { getBankItem } from "./bank-items";
+import { getBankItem, getItemsSet } from "./bank-items";
 import { bankRequestsChannelId, bankOfficeChannelId } from "../../config";
 import { getTextChannel } from "../..";
 enum Option {
@@ -42,11 +42,22 @@ class ItemStock extends Subcommand {
         .setName(Option.Item)
         .setDescription("The item you wish to request")
         .setRequired(true)
+        .setAutocomplete(true)
     );
   }
 
-  public async getOptionAutocomplete() {
-    return [];
+  public async getOptionAutocomplete(option: string) {
+    if (option === Option.Item) {
+      return await this.autoCompleteItems();
+    }
+  }
+
+  private async autoCompleteItems() {
+    const itemsSet = await getItemsSet();
+    return itemsSet.map((s) => ({
+      name: s,
+      value: s
+    }));
   }
 }
 
