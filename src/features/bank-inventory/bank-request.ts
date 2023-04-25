@@ -10,29 +10,25 @@ enum Option {
 
 class BankRequest extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-
-
     const item = this.getOption(Option.Item, interaction);
     if (!item) {
       throw new Error(`An item is required.`);
     }
     // console.log(interaction, item);
     const match = await getBankItem(String(item.value));
-    console.log(match)
+    console.log(match);
     const itemName = match.data.name;
     const instock = match.data.stock[0];
     if (!instock) {
       throw new Error(`${itemName} is not in stock.`); // not sure if we should allow it anyway. maybe?
     }
-    const message = `${
-      interaction.user
-    } requests: ${itemName} (${instock.count}/${match.countAvailable}) [${
-      instock.character
-    }, ${instock.location}]`;
+    const message = `${interaction.user} requests: ${itemName} (${instock.count}/${match.countAvailable}) [${instock.character}, ${instock.location}]`;
 
     const bankRequestsChannel = await getTextChannel(bankRequestsChannelId);
     await bankRequestsChannel.send(message);
-    interaction.editReply(`${itemName} found, ${match.countAvailable} available. Creating request.`)
+    interaction.editReply(
+      `${itemName} found, ${match.countAvailable} available. Creating request.`
+    );
   }
 
   public get command() {
@@ -55,7 +51,7 @@ class BankRequest extends Subcommand {
     const itemsSet = await getItemsSet();
     return itemsSet.map((s) => ({
       name: s,
-      value: s
+      value: s,
     }));
   }
 }

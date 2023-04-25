@@ -10,8 +10,6 @@ enum Option {
 
 class ItemStock extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-
-
     const query = this.getOption(Option.Item, interaction);
     if (!query) {
       throw new Error(`An item is required.`);
@@ -20,20 +18,18 @@ class ItemStock extends Subcommand {
     const item = await getBankItem(String(query.value));
     // console.log(item.data, item.countAvailable)
 
-    let description = `${item.countAvailable} in stock. \n\n`
-    
+    let description = `${item.countAvailable} in stock. \n\n`;
+
     item.data.stock.forEach((val) => {
-      description += `${val.character} (${val.count}) [${val.location}] \n`
-    })
+      description += `${val.character} (${val.count}) [${val.location}] \n`;
+    });
 
     const embed = new EmbedBuilder({
       title: `Item: ${item.data.name}`,
-      description: description
+      description: description,
     });
 
- 
-
-    interaction.channel?.send({ embeds: [embed]})  
+    interaction.channel?.send({ embeds: [embed] });
   }
 
   public get command() {
@@ -56,12 +52,12 @@ class ItemStock extends Subcommand {
     const itemsSet = await getItemsSet();
     return itemsSet.map((s) => ({
       name: s,
-      value: s
+      value: s,
     }));
   }
 }
 
-export const itemStock = new ItemStock (
+export const itemStock = new ItemStock(
   "item",
   "Request item stock information."
 );

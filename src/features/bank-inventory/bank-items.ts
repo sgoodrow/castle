@@ -23,58 +23,63 @@ export interface InventoryItem {
 }
 
 export interface BankInventory {
-  banker: string,
-  items: InventoryItem[]
+  banker: string;
+  items: InventoryItem[];
 }
 
 export class BankItem {
   public constructor(public readonly data: BankItemData) {
     this.data = data;
   }
-  get countAvailable () {
+  get countAvailable() {
     let available = 0;
     this.data.stock.forEach((val) => {
       available = available + val.count;
-    })
+    });
     return available;
   }
   // add prices?
 }
 
-export const updateBankItems = async function(newInventory: BankInventory) {
+export const updateBankItems = async (newInventory: BankInventory) => {
   try {
     const cachedInventory = await getBankInventory(newInventory.banker);
-    if(isMatch(cachedInventory, newInventory)) {
+    if (isMatch(cachedInventory, newInventory)) {
       return console.log("no changes in inventory found.");
     }
     newInventory.items.forEach((newItem) => {
-      const cachedItem = cachedInventory.items.find((cachedItem: InventoryItem) => {
-        return newItem.location === cachedItem.location;
-      })
+      const cachedItem = cachedInventory.items.find(
+        (cachedItem: InventoryItem) => {
+          return newItem.location === cachedItem.location;
+        }
+      );
       if (cachedItem) {
         // inventory slot exists in cache
-        if (cachedItem.name !== newItem.name || cachedItem.count !== newItem.count) {
+        if (
+          cachedItem.name !== newItem.name ||
+          cachedItem.count !== newItem.count
+        ) {
           console.log("slot exists and is changed:", cachedItem);
           removeBankStock(cachedItem);
         }
       }
-      if (!isMatch(cachedItem, newItem) && newItem.name !== "Empty"){
+      if (!isMatch(cachedItem, newItem) && newItem.name !== "Empty") {
         addBankStock(newItem);
       }
-    })
+    });
   } catch (err) {
     // try to add all if inventory is not cached.
     newInventory.items.forEach((item) => {
       addBankStock(item);
-    })
+    });
   }
   // console.log('set bank inventory', newInventory)
   setBankInventory(newInventory);
-}
+};
 
 export const updateItemsSet = async (set: string[]) => {
-  await redisClient.sAdd('set:bank-items', set);
-}
+  await redisClient.sAdd("set:bank-items", set);
+};
 
 export const getBankItem = async (itemName: string) => {
   const serialized = await redisClient.get(itemKey(itemName));
@@ -85,60 +90,65 @@ export const getBankItem = async (itemName: string) => {
   return new BankItem(JSON.parse(serialized));
 };
 
-const bankInventoryKey = function (banker: string) {
-  return 'bank:inventory:' + banker.toLowerCase();
-}
+const bankInventoryKey = (banker: string) =>
+  "bank:inventory:" + banker.toLowerCase();
 
 const getBankInventory = async (banker: string) => {
   const serialized = await redisClient.get(bankInventoryKey(banker));
-  if (!serialized) { throw new Error ("Iventory item not found.")}
+  if (!serialized) {
+    throw new Error("Iventory item not found.");
+  }
   return JSON.parse(serialized);
-}
+};
 
-const setBankInventory = async function(inventory: BankInventory) {
-  return await redisClient.set(bankInventoryKey(inventory.banker),  JSON.stringify(inventory));
-}
+const setBankInventory = async (inventory: BankInventory) =>
+  await redisClient.set(
+    bankInventoryKey(inventory.banker),
+    JSON.stringify(inventory)
+  );
 
-function itemKey(itemName: string) {
-  return "bi:" + encodeURIComponent(itemName.toLowerCase())
-}
+const itemKey = (itemName: string) =>
+  "bi:" + encodeURIComponent(itemName.toLowerCase());
 
 const setBankItem = async (bankItemData: BankItemData) => {
   try {
     console.log("Set bank item:", bankItemData);
-    await redisClient.set(itemKey(bankItemData.name), JSON.stringify(bankItemData));
+    await redisClient.set(
+      itemKey(bankItemData.name),
+      JSON.stringify(bankItemData)
+    );
   } catch (e) {
-    console.log(e);
+    console.error(e);
   }
-}
-
-const pushToItemsSet = async (name: string) => {
-  await redisClient.sAdd('set:bank-items', name);
-}
+};
 
 export const getItemsSet = async () => {
-  return await redisClient.sMembers('set:bank-items');
-}
+  return await redisClient.sMembers("set:bank-items");
+};
 
 const addBankStock = async (inventoryItem: InventoryItem) => {
-  if(inventoryItem.name === "Empty") { return; }
-  try { 
+  if (inventoryItem.name === "Empty") {
+    return;
+  }
+  try {
     const bankItem = await getBankItem(inventoryItem.name);
     // bank item found, add inventory to stock if not already there.
     // console.log('add stock: ', inventoryItem.name);
-    if (!bankItem.data.stock.find((s)=>{
-      return isMatch(s, inventoryItem);
-    })) {
+    if (
+      !bankItem.data.stock.find((s) => {
+        return isMatch(s, inventoryItem);
+      })
+    ) {
       bankItem.data.stock.push(inventoryItem);
       setBankItem(bankItem.data);
     }
-  } catch (e: any) {
+  } catch (e) {
     // console.log("create new bank item: ", inventoryItem.name)
     // bank item not found, create it
     const newItem: BankItemData = {
       name: inventoryItem.name,
       id: inventoryItem.id,
-      price: '',
+      price: "",
       stock: [
         {
           character: inventoryItem.character,
@@ -149,21 +159,20 @@ const addBankStock = async (inventoryItem: InventoryItem) => {
     };
     setBankItem(newItem);
   }
-
 };
 
-const removeBankStock= async function(inventoryItem: InventoryItem) {
+const removeBankStock = async (inventoryItem: InventoryItem) => {
   try {
     const bankItem = await getBankItem(inventoryItem.name);
-    const matchIdx = bankItem.data.stock.findIndex(
-      (s) => isMatch(s, inventoryItem)
+    const matchIdx = bankItem.data.stock.findIndex((s) =>
+      isMatch(s, inventoryItem)
     );
     if (matchIdx > -1) {
       bankItem.data.stock.splice(matchIdx, 1);
       console.log("Remove stock:", bankItem.data.name);
       await setBankItem(bankItem.data);
     }
-  } catch (e: any) {
-    console.log(e.message);
+  } catch (e) {
+    console.error(e);
   }
-}
+};

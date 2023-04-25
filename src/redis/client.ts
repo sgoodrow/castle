@@ -19,7 +19,6 @@ try {
   console.error(err);
 }
 
-
 export const redisListener = redisClient.duplicate();
 try {
   redisListener.connect();
@@ -30,13 +29,13 @@ try {
 
 // flush utility
 export const flushKeys = async (pattern: string) => {
-  console.log('flush keys matching, ', pattern)
+  console.log("flush keys matching, ", pattern);
   for await (const key of redisClient.scanIterator({
-    TYPE: 'string', // `SCAN` only
+    TYPE: "string", // `SCAN` only
     MATCH: pattern,
-    COUNT: 10000
+    COUNT: 10000,
   })) {
-    console.log('redis delete: ', key)
+    console.log("redis delete: ", key);
     await redisClient.del(key);
   }
-}
+};
