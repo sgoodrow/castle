@@ -8,7 +8,7 @@ import axios from "axios";
 import { bankInventoryChannelId } from "../../config";
 import {
   InventoryItem,
-  updateBankItem,
+  updateBankItems,
   updateItemsSet,
 } from "./bank-items";
 import {
@@ -60,21 +60,25 @@ class UploadInventoryMessageAction extends MessageAction {
     const charName = fileName.split("-")[0];
     const rows = data.split("\r\n");
     const itemNames: string[] = [];
+    const inventoryItems: InventoryItem[] = [];
     for (let i=1; i<rows.length; i++) {
       const row = rows[i].split("\t");
       if (row[1]) {
         itemNames.push(row[1]);
-        const itemData: InventoryItem = {
+        inventoryItems.push({
           character: charName,
           location: row[0],
           name: row[1],
           id: row[2],
           count: parseInt(row[3]),
-        };
-        await updateItemsSet(itemNames);
-        await updateBankItem(itemData);
+        });
       }
     }
+    await updateBankItems({
+      banker: charName,
+      items: inventoryItems
+    });
+    await updateItemsSet(itemNames);
   }
 
   private async uploadToGDrive(filename: string, data: string) {
