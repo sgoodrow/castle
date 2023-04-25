@@ -5,6 +5,7 @@ export enum Name {
   JewelryRequestInstructions = "jewelryRequestInstructions",
   RaidSchedule = "raidSchedule",
   ApplicationInstructions = "applicationInstructions",
+  BotInstructions = "botInstructions",
   KnightInstructions = "knightInstructions",
   RaiderInstructions = "raiderInstructions",
   ReinforcementsInstructions = "reinforcementsInstructions",

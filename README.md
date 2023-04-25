@@ -46,13 +46,14 @@ Development typically happens in a [Gitpod](https://www.gitpod.io/)-provisioned 
 
 Some features connect to CastleDKP.com and manipulate DKP values. This connectivity is enabled by the following configuration variables, and if they are not set, the features will not work.
 
-| Environment Variable     | Purpose                                                              | Features                                  | How to Retrieve                  |
-| ------------------------ | -------------------------------------------------------------------- | ----------------------------------------- | -------------------------------- |
-| `castleDkpTokenRO`       | Admin token for making authenticated requests to CastleDKP.com       | Discord DKP Auctions, Discord DKP Uploads | Discuss with a Castle Moderator  |
-| `castleDkpAuctionRaidId` | The ID of the current raid to upload Discord DKP auction results to. | Discord DKP Auctions                      | Discuss with a Castle DKP Deputy |
-| `castleDkpBonusesCharId` | The ID of a character to associate with DKP bonus raids              | Discord DKP Uploads                       | Discuss with a Castle Moderator  |
-| `GOOGLE_CLIENT_EMAIL`    | The Google Drive account for accessing guild resources               | Banking, Shared Characters                | Discuss with a Castle Moderator  |
-| `GOOGLE_PRIVATE_KEY`     | The Google Drive account key for accessing guild resources           | Banking, Shared Characters                | Discuss with a Castle Moderator  |
+| Environment Variable                                                                                       | Purpose                                                              | Features                                  | How to Retrieve                  |
+| ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------- | -------------------------------- |
+| `castleDkpTokenRO`                                                                                         | Admin token for making authenticated requests to CastleDKP.com       | Discord DKP Auctions, Discord DKP Uploads | Discuss with a Castle Moderator  |
+| `castleDkpAuctionRaidId`                                                                                   | The ID of the current raid to upload Discord DKP auction results to. | Discord DKP Auctions                      | Discuss with a Castle DKP Deputy |
+| `castleDkpBonusesCharId`                                                                                   | The ID of a character to associate with DKP bonus raids              | Discord DKP Uploads                       | Discuss with a Castle Moderator  |
+| `GOOGLE_CLIENT_EMAIL`                                                                                      | The Google Drive account for accessing guild resources               | Banking, Shared Characters                | Discuss with a Castle Moderator  |
+| `GOOGLE_PRIVATE_KEY`                                                                                       | The Google Drive account key for accessing guild resources           | Banking, Shared Characters                | Discuss with a Castle Moderator  |
+| `sharedCharactersGoogleSheetId` The Google Drive spreadsheet ID that contains the Castle shared characters | Shared Characters                                                    | Discuss with a Castle Moderator           |
 
 ### ⏺️ Local
 
