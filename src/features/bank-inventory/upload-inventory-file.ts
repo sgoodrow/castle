@@ -6,18 +6,14 @@ import {
 } from "../../shared/action/message-action";
 import axios from "axios";
 import { bankInventoryChannelId } from "../../config";
-import {
-  InventoryItem,
-  updateBankItems,
-  updateItemsSet,
-} from "./bank-items";
+import { InventoryItem, updateBankItems, updateItemsSet } from "./bank-items";
 import {
   uploadFileToFolder,
-  driveFile,
+  DriveFile,
   BankFolderIds,
   findFiles,
   updateFile,
-} from "../../google/gdrive";
+} from "../../services/gdrive";
 
 const supportedFormat = "text/plain; charset=utf-8";
 
@@ -61,7 +57,7 @@ class UploadInventoryMessageAction extends MessageAction {
     const rows = data.split("\r\n");
     const itemNames: string[] = [];
     const inventoryItems: InventoryItem[] = [];
-    for (let i=1; i<rows.length; i++) {
+    for (let i = 1; i < rows.length; i++) {
       const row = rows[i].split("\t");
       if (row[1]) {
         itemNames.push(row[1]);
@@ -76,16 +72,16 @@ class UploadInventoryMessageAction extends MessageAction {
     }
     await updateBankItems({
       banker: charName,
-      items: inventoryItems
+      items: inventoryItems,
     });
     await updateItemsSet(itemNames);
   }
 
-  private async uploadToGDrive(filename: string, data: string) {
-    const file: driveFile = {
-      filename: filename,
+  private async uploadToGDrive(filename: string, contents: string) {
+    const file: DriveFile = {
+      filename,
+      contents,
       mimetype: "text/plain",
-      contents: data,
     };
     try {
       // note: limiting this to a folder doesn't seem to be working well, it will replace a file anywhere in the drive with the same name. careful.
@@ -95,11 +91,12 @@ class UploadInventoryMessageAction extends MessageAction {
       // const outputfiles = await findFileInFolders(filename, "outputfiles");
       // console.log(filename, outputfiles);
       // if found, update it
-      outputfiles.forEach(async (val: any) => {
-        await updateFile(val.id, file);
+      outputfiles.forEach(async (val) => {
+        if (val.id) {
+          updateFile(val.id, file);
+        }
       });
-    } catch (err: any) {
-      console.log(err.message);
+    } catch (err) {
       // if not found, upload it to test (maybe rename to 'unsorted')
       await uploadFileToFolder(file, BankFolderIds.test);
     }
