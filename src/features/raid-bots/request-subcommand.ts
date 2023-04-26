@@ -35,7 +35,9 @@ export class RequestSubcommand extends Subcommand {
 
       await interaction.user.send(`${details.characters} (${details.purpose})
           Account: ${details.accountName}
-          Password: ${spoiler(details.password)}`);
+          Password: ${spoiler(details.password)}
+
+**If a bot can be moved**, and you move it, please update the location in: https://docs.google.com/spreadsheets/d/1hS01upyJZW5_n8ffPCRjro1IS4Z9YwIl7vcSFM9ms7M`);
 
       await interaction.editReply(
         `The credentials for ${name} have been DM'd to you.`
