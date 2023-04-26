@@ -32,31 +32,36 @@ enum SPREADSHEET_COLUMNS {
 
 const sheet = new GoogleSpreadsheet(sharedCharactersGoogleSheetId);
 
-const getRequiredRoleIds = (row: GoogleSpreadsheetRow) => {
-  const roles: string[] = [];
+const getRequiredRoles = (row: GoogleSpreadsheetRow) => {
+  const roles: Role[] = [];
   if (row[SPREADSHEET_COLUMNS.AllowOfficers]) {
-    roles.push(officerRoleId);
+    roles.push({ name: "Officer", id: officerRoleId });
   }
   if (row[SPREADSHEET_COLUMNS.AllowKnights]) {
-    roles.push(knightRoleId);
+    roles.push({ name: "Knight", id: knightRoleId });
   }
   if (row[SPREADSHEET_COLUMNS.AllowGuards]) {
-    roles.push(guardRoleId);
+    roles.push({ name: "Guard", id: guardRoleId });
   }
   if (row[SPREADSHEET_COLUMNS.AllowBankers]) {
-    roles.push(bankerRoleId);
+    roles.push({ name: "Banker", id: bankerRoleId });
   }
   if (row[SPREADSHEET_COLUMNS.AllowRaiders]) {
-    roles.push(raiderRoleId);
+    roles.push({ name: "Raider", id: raiderRoleId });
   }
   return roles;
 };
+
+interface Role {
+  name: string;
+  id: string;
+}
 
 interface Character {
   character: string;
   account: string;
   password: string;
-  requiredRoleIds: string[];
+  requiredRoles: Role[];
   class?: string;
   level?: string;
 }
@@ -84,7 +89,7 @@ const getCharacters = async () => {
       level: r[SPREADSHEET_COLUMNS.Level],
       account: r[SPREADSHEET_COLUMNS.Account],
       password: r[SPREADSHEET_COLUMNS.Password],
-      requiredRoleIds: getRequiredRoleIds(r),
+      requiredRoles: getRequiredRoles(r),
     };
     if (c.character && c.account && c.password) {
       cache.set(c.character, c);
@@ -97,7 +102,7 @@ export const characters = {
   getRaiderCharacters: async (): Promise<Character[]> => {
     const characters = await getCharacters();
     return [...characters.values()].filter((c) =>
-      c.requiredRoleIds.includes(raiderRoleId)
+      c.requiredRoles.map((r) => r.id).includes(raiderRoleId)
     );
   },
 
@@ -107,9 +112,9 @@ export const characters = {
     const characters = await getCharacters();
     return [...characters.values()].map((c) => ({
       name: truncate(
-        `${c.character} - ${c.class} ${c.level} (${c.requiredRoleIds.join(
-          ", "
-        )})`,
+        `${c.character} - ${c.class} ${c.level} (${c.requiredRoles
+          .map((r) => r.name)
+          .join(", ")})`,
         {
           length: 100,
         }
@@ -127,7 +132,9 @@ export const characters = {
     if (!d) {
       throw new Error(`${name} is not a shared character`);
     }
-    const hasRole = some(d.requiredRoleIds.map((id) => roles.cache.has(id)));
+    const hasRole = some(
+      d.requiredRoles.map((r) => r.id).map((id) => roles.cache.has(id))
+    );
     if (!hasRole) {
       throw new Error(`You do not have the required role to access ${name}`);
     }

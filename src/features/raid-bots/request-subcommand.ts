@@ -6,8 +6,7 @@ import {
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { characters } from "../../services/characters";
-import { getTextChannel } from "../..";
-import { raidBotsChannelId } from "../../config";
+import { botInstructions } from "./update-bots";
 
 export enum Option {
   Name = "name",
@@ -21,25 +20,38 @@ export class RequestSubcommand extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     const name = this.getOption(Option.Name, interaction)?.value as string;
 
-    // get character
-    // TODO handle errors (log but dont DM)
-    const details = await characters.getCharacterDetails(
-      name,
-      interaction.member?.roles as GuildMemberRoleManager
-    );
+    const thread = await botInstructions.getThread();
+    if (!thread) {
+      throw new Error(`Could not locate bot request thread.`);
+    }
 
-    // dm
-    await interaction.user.send(`${details.character} (${details.class} - ${
-      details.level
-    })
-        Account: ${details.account}
-        Password: ${spoiler(details.password)}`);
+    let status = "✅ ";
 
-    // log it
-    // TODO: in a thread
-    const channel = await getTextChannel(raidBotsChannelId);
-    await channel.send(
-      `${interaction.user} requested access to ${details.character}`
+    try {
+      const details = await characters.getCharacterDetails(
+        name,
+        interaction.member?.roles as GuildMemberRoleManager
+      );
+
+      await interaction.user.send(`${details.character} (${details.class} - ${
+        details.level
+      })
+          Account: ${details.account}
+          Password: ${spoiler(details.password)}`);
+
+      await interaction.editReply(
+        `The credentials for ${name} have been DM'd to you.`
+      );
+    } catch (err) {
+      status = "❌";
+
+      await interaction.editReply(
+        `You do not have the correct permissions to access ${name}.`
+      );
+    }
+
+    await thread.send(
+      `${interaction.user} requested access to ${name} ${status}`
     );
   }
 

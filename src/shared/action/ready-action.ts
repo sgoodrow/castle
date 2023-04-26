@@ -1,9 +1,15 @@
 import { Client } from "discord.js";
 
+/**
+ * @deprecated
+ */
 export interface ReadyActionExecutorOptions {
   repeatDuration?: number;
 }
 
+/**
+ * @deprecated
+ */
 export const readyActionExecutor = async (
   action: ReadyAction,
   options: ReadyActionExecutorOptions = {}
@@ -19,6 +25,9 @@ export const readyActionExecutor = async (
   }
 };
 
+/**
+ * @deprecated
+ */
 export abstract class ReadyAction {
   constructor(protected readonly client: Client) {}
   public abstract execute(): Promise<void>;

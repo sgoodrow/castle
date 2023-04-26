@@ -12,6 +12,9 @@ import { dataSource } from "../../db/data-source";
 import { Instructions, Name } from "../../db/instructions";
 import { ReadyAction } from "./ready-action";
 
+/**
+ * @deprecated
+ */
 export abstract class InstructionsReadyAction extends ReadyAction {
   protected abstract get channel():
     | DMChannel
