@@ -30,14 +30,17 @@ export const updateBotsInfo = (options: Options) =>
 Use the \`/bot request\` command in ANY channel to receive their credentials in a DM. Messages are not allowed in this channel. Some characters are restricted to volunteer roles.
 
 ❗**What are the rules for playing bots?**
-All bots should be used for the benefit of the guild, not personal use. Helping with corpse recoveries (yours and others) does count! Do not use them to farm. Tip generously when getting a port or res.
+All bots should be used for the benefit of the guild, not personal use. Helping with corpse recoveries (yours and others) is ok unless the bot is not to be moved! Do not use them to farm. Do not sell their equipment or items. Tip generously when getting a port or res.
 
-• **Leveling Raid Bot** Currently being leveled. Help level them to earn DKP!
-• **COTH Bot (Station)** COTH bot ready to be piloted, stationed at various locations. Do not move without Knight approval.
-• **DPS Bot** Damage-dealing bot ready to be piloted. Do not move without Knight approval.
-• **CH Bot** Chain-healing bot ready to be piloted. Do not move without Knight approval.
-• **Port Bot (Bind)** Teleporting bot ready to be piloted.
-• **Rez Bot (Bind)** Resurrecting bot ready to be piloted.
+• **Guild Porting** Used to port members of the guild.
+• **Guild Tracking** Used to track targets of opportunity, or hunt down mobs.
+• **Guild CRs** Used to recover corpses.
+• **Raid DPS** Damage-dealing bot ready to be piloted. Do not move without Knight approval.
+• **Raid Tank** Tank bot ready to be piloted. Do not move without Knight approval.
+• **Raid Cleric** Chain-healing bot ready to be piloted. Do not move without Knight approval.
+• **Raid CotH** Magician with Call of the Hero. Do not move without Knight approval.
+• **Raid Sky Ports** Wizard with Portal: Plane of Sky necklace.
+• **Raid Pulling** Bot positioned for races and raid pulling. Do not move without Knight approval.
 
 ⚠️ **Note**
 All credential requests are logged for our protection.`,
