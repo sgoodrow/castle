@@ -31,21 +31,23 @@ enum SPREADSHEET_COLUMNS {
 
 const sheet = new GoogleSpreadsheet(sharedCharactersGoogleSheetId);
 
+const CHECKED = "TRUE";
+
 const getRequiredRoles = (row: GoogleSpreadsheetRow) => {
   const roles: Role[] = [];
-  if (row[SPREADSHEET_COLUMNS.AllowOfficers]) {
+  if (row[SPREADSHEET_COLUMNS.AllowOfficers] === CHECKED) {
     roles.push({ name: "Officer", id: officerRoleId });
   }
-  if (row[SPREADSHEET_COLUMNS.AllowKnights]) {
+  if (row[SPREADSHEET_COLUMNS.AllowKnights] === CHECKED) {
     roles.push({ name: "Knight", id: knightRoleId });
   }
-  if (row[SPREADSHEET_COLUMNS.AllowGuards]) {
+  if (row[SPREADSHEET_COLUMNS.AllowGuards] === CHECKED) {
     roles.push({ name: "Guard", id: guardRoleId });
   }
-  if (row[SPREADSHEET_COLUMNS.AllowBankers]) {
+  if (row[SPREADSHEET_COLUMNS.AllowBankers] === CHECKED) {
     roles.push({ name: "Banker", id: bankerRoleId });
   }
-  if (row[SPREADSHEET_COLUMNS.AllowRaiders]) {
+  if (row[SPREADSHEET_COLUMNS.AllowRaiders] === CHECKED) {
     roles.push({ name: "Raider", id: raiderRoleId });
   }
   return roles;
