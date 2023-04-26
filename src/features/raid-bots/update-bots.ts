@@ -19,7 +19,11 @@ export const botInstructions = new InstructionsReadyAction(
 export const updateBotsInfo = (options: Options) =>
   readyActionExecutor(async () => {
     const raiderAccounts = await accounts.getAccountsForRole(raiderRoleId);
-    const sorted = sortBy(raiderAccounts, (b) => b.purpose);
+    const sorted = sortBy(
+      raiderAccounts,
+      (b) => b.purpose,
+      (b) => b.characters
+    );
     await botInstructions.createOrUpdateInstructions({
       embeds: [
         new EmbedBuilder({
