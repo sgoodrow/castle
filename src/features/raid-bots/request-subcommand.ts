@@ -5,7 +5,7 @@ import {
   spoiler,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { characters } from "../../services/characters";
+import { accounts } from "../../services/accounts";
 import { botInstructions } from "./update-bots";
 
 export enum Option {
@@ -28,15 +28,13 @@ export class RequestSubcommand extends Subcommand {
     let status = "✅ ";
 
     try {
-      const details = await characters.getCharacterDetails(
+      const details = await accounts.getAccount(
         name,
         interaction.member?.roles as GuildMemberRoleManager
       );
 
-      await interaction.user.send(`${details.character} (${details.class} - ${
-        details.level
-      })
-          Account: ${details.account}
+      await interaction.user.send(`${details.characters} (${details.purpose})
+          Account: ${details.accountName}
           Password: ${spoiler(details.password)}`);
 
       await interaction.editReply(
@@ -69,7 +67,7 @@ export class RequestSubcommand extends Subcommand {
   public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Name:
-        return await characters.getCharacterList();
+        return await accounts.getOptions();
       default:
         return;
     }

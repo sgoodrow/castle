@@ -18,9 +18,8 @@ import {
 import { some, truncate } from "lodash";
 
 enum SPREADSHEET_COLUMNS {
-  CharacterName = "Bot / Toon Name",
-  Class = "Class",
-  Level = "Level",
+  Characters = "Characters",
+  Purpose = "Purpose",
   Account = "Account",
   Password = "Password",
   AllowOfficers = "Officers",
@@ -57,21 +56,20 @@ interface Role {
   id: string;
 }
 
-interface Character {
-  character: string;
-  account: string;
+interface Account {
+  characters: string;
+  accountName: string;
   password: string;
   requiredRoles: Role[];
-  class?: string;
-  level?: string;
+  purpose?: string;
 }
 
-const cache = new LRUCache<string, Character>({
+const cache = new LRUCache<string, Account>({
   max: 200,
   ttl: 5 * MINUTES,
 });
 
-const getCharacters = async () => {
+const getAccounts = async () => {
   cache.purgeStale();
   if (cache.size) {
     return cache;
@@ -83,54 +81,53 @@ const getCharacters = async () => {
   await sheet.loadInfo();
   const rows = await sheet.sheetsByIndex[0].getRows();
   rows.forEach((r) => {
-    const c: Character = {
-      character: r[SPREADSHEET_COLUMNS.CharacterName],
-      class: r[SPREADSHEET_COLUMNS.Class],
-      level: r[SPREADSHEET_COLUMNS.Level],
-      account: r[SPREADSHEET_COLUMNS.Account],
+    const a: Account = {
+      characters: r[SPREADSHEET_COLUMNS.Characters],
+      purpose: r[SPREADSHEET_COLUMNS.Purpose],
+      accountName: r[SPREADSHEET_COLUMNS.Account],
       password: r[SPREADSHEET_COLUMNS.Password],
       requiredRoles: getRequiredRoles(r),
     };
-    if (c.character && c.account && c.password) {
-      cache.set(c.character, c);
+    if (a.characters && a.accountName && a.password) {
+      cache.set(a.characters, a);
     }
   });
   return cache;
 };
 
-export const characters = {
-  getRaiderCharacters: async (): Promise<Character[]> => {
-    const characters = await getCharacters();
-    return [...characters.values()].filter((c) =>
-      c.requiredRoles.map((r) => r.id).includes(raiderRoleId)
+export const accounts = {
+  getAccountsForRole: async (roleId: string): Promise<Account[]> => {
+    const accounts = await getAccounts();
+    return [...accounts.values()].filter((c) =>
+      c.requiredRoles.map((r) => r.id).includes(roleId)
     );
   },
 
-  getCharacterList: async (): Promise<
+  getOptions: async (): Promise<
     ApplicationCommandOptionChoiceData<string>[]
   > => {
-    const characters = await getCharacters();
-    return [...characters.values()].map((c) => ({
+    const accounts = await getAccounts();
+    return [...accounts.values()].map((c) => ({
       name: truncate(
-        `${c.character} - ${c.class} ${c.level} (${c.requiredRoles
+        `${c.characters} - ${c.purpose} (${c.requiredRoles
           .map((r) => r.name)
           .join(", ")})`,
         {
           length: 100,
         }
       ),
-      value: c.character,
+      value: c.characters,
     }));
   },
 
-  getCharacterDetails: async (
+  getAccount: async (
     name: string,
     roles: GuildMemberRoleManager
-  ): Promise<Character> => {
-    const characters = await getCharacters();
-    const d = characters.get(name);
+  ): Promise<Account> => {
+    const accounts = await getAccounts();
+    const d = accounts.get(name);
     if (!d) {
-      throw new Error(`${name} is not a shared character`);
+      throw new Error(`${name} is not a shared account`);
     }
     const hasRole = some(
       d.requiredRoles.map((r) => r.id).map((id) => roles.cache.has(id))
