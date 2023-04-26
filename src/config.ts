@@ -11,6 +11,7 @@ export const {
   castleDkpTokenRO,
   castleDkpAuctionRaidId,
   castleDkpBonusesCharId,
+  sharedCharactersGoogleSheetId,
   commandSuffix,
   guildId,
   guardRoleId,
@@ -48,6 +49,7 @@ export const {
   bankInventoryChannelId,
   bankTransactionsChannelId,
   bankOfficeChannelId,
+  raidBotsChannelId,
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
 } = process.env as {
@@ -88,6 +90,13 @@ export const {
    * CastleDKP.com DKP Bonuses character ID.
    */
   castleDkpBonusesCharId?: string;
+
+  /**
+   * ID of Google Spreadsheet with shared character details.
+   *
+   * Expected columns by index are defined in TODO
+   */
+  sharedCharactersGoogleSheetId?: string;
 
   /**
    * [Optional] Custom suffix for all Discord commands. Useful for running multiple instances of the bot in the same server simultaneously.
@@ -141,6 +150,7 @@ export const {
   bankInventoryChannelId: string;
   bankTransactionsChannelId: string;
   bankOfficeChannelId: string;
+  raidBotsChannelId: string;
 
   // Google Auth
   GOOGLE_CLIENT_EMAIL: string;

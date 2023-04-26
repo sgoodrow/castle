@@ -27,10 +27,12 @@ import { leaveReinforcementsButtonCommand } from "../features/raider-enlistment/
 import { threadUtilCommand } from "../features/threads/command";
 import { raidCommand } from "../features/dkp-records/commands/raid-command";
 import { bankCommand } from "../features/bank-inventory/command";
+import { botCommand } from "../features/raid-bots/command";
 
 const slashCommands = [
   bankHourCommand,
   auctionCommand,
+  botCommand,
   invitedCommand,
   threadUtilCommand,
   raidCommand,
