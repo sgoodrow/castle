@@ -78,7 +78,7 @@ const getCharacters = async () => {
   }
   await sheet.useServiceAccountAuth({
     client_email: GOOGLE_CLIENT_EMAIL,
-    private_key: GOOGLE_PRIVATE_KEY,
+    private_key: GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
   });
   await sheet.loadInfo();
   const rows = await sheet.sheetsByIndex[0].getRows();

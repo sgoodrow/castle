@@ -33,7 +33,7 @@ ${sorted
   .map((b) => `${b.character.padEnd(18)} ${b.class?.padEnd(12)} ${b.level}`)
   .join("\n")}${code}
 ❗**How do I use a bot?**
-Use the \`/bot request\` command to receive their credentials.
+Use the \`/bot request\` command in ANY channel to receive their credentials in a DM. Messages are not allowed in this channel.
 
 ⚠️ **Note**
 All credential requests are logged.`,
