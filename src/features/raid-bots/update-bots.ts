@@ -50,7 +50,7 @@ All bots should be used for the benefit of the guild, not personal use. Helping 
 All credential requests are logged for our protection.`,
         }),
         new EmbedBuilder({
-          title: "Raiding Bots",
+          title: "Bots available to all Raiders",
           description: `${code}
 ${sorted
   .map((b) => `${b.characters.padEnd(18)} ${b.purpose}`)
