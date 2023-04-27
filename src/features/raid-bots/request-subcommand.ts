@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { accounts } from "../../services/accounts";
-import { botInstructions } from "./update-bots";
+import { raidBotInstructions } from "./update-bots";
 
 export enum Option {
   Name = "name",
@@ -20,7 +20,7 @@ export class RequestSubcommand extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     const name = this.getOption(Option.Name, interaction)?.value as string;
 
-    const thread = await botInstructions.getThread();
+    const thread = await raidBotInstructions.getThread();
     if (!thread) {
       throw new Error(`Could not locate bot request thread.`);
     }

@@ -10,7 +10,10 @@ export class InstructionsReadyAction {
     private readonly threadName?: string
   ) {}
 
-  public async createOrUpdateInstructions(options: BaseMessageOptions) {
+  public async createOrUpdateInstructions(
+    options: BaseMessageOptions,
+    pin = false
+  ) {
     let message = await this.getInstructionsMessage();
 
     if (!message) {
@@ -23,6 +26,10 @@ export class InstructionsReadyAction {
       await dataSource.manager.save(instructions);
     } else {
       message.edit(options);
+    }
+
+    if (pin && !message.pinned) {
+      await message.pin();
     }
 
     if (this.threadName && !message.hasThread) {

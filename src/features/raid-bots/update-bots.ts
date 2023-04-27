@@ -1,5 +1,10 @@
 import { EmbedBuilder } from "discord.js";
-import { raidBotsChannelId, raiderRoleId } from "../../config";
+import {
+  bankOfficeChannelId,
+  bankerRoleId,
+  raidBotsChannelId,
+  raiderRoleId,
+} from "../../config";
 import { Name } from "../../db/instructions";
 import { accounts } from "../../services/accounts";
 import {
@@ -10,13 +15,13 @@ import { InstructionsReadyAction } from "../../shared/action/instructions-ready-
 import { sortBy } from "lodash";
 import { code } from "../../shared/util";
 
-export const botInstructions = new InstructionsReadyAction(
-  Name.BotInstructions,
+export const raidBotInstructions = new InstructionsReadyAction(
+  Name.RaidBotInstructions,
   raidBotsChannelId,
   "Request Log"
 );
 
-export const updateBotsInfo = (options: Options) =>
+export const updateRaidBotsInfo = (options: Options) =>
   readyActionExecutor(async () => {
     const raiderAccounts = await accounts.getAccountsForRole(raiderRoleId);
     const sorted = sortBy(
@@ -24,7 +29,7 @@ export const updateBotsInfo = (options: Options) =>
       (b) => b.purpose,
       (b) => b.characters
     );
-    await botInstructions.createOrUpdateInstructions({
+    await raidBotInstructions.createOrUpdateInstructions({
       embeds: [
         new EmbedBuilder({
           title: "Raid Bot Instructions",
@@ -58,4 +63,35 @@ ${sorted
         }),
       ],
     });
+  }, options);
+
+const bankBotInstructions = new InstructionsReadyAction(
+  Name.BankBotInstructions,
+  bankOfficeChannelId
+);
+
+export const updateBankBotInfo = (options: Options) =>
+  readyActionExecutor(async () => {
+    const bankerAccounts = await accounts.getAccountsForRole(bankerRoleId);
+    const sorted = sortBy(
+      bankerAccounts,
+      (b) => b.purpose,
+      (b) => b.characters
+    );
+    await bankBotInstructions.createOrUpdateInstructions(
+      {
+        embeds: [
+          new EmbedBuilder({
+            title: "Bank Bot Credentials",
+            description:
+              "The guild bank is collectively stored across the following characters. Do not share with non-bankers.",
+            fields: sorted.map((b) => ({
+              name: `${b.purpose} - ${b.characters}`,
+              value: `${b.accountName} / ${b.password}`,
+            })),
+          }),
+        ],
+      },
+      true
+    );
   }, options);

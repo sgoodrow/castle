@@ -6,7 +6,10 @@ import { updateRaiderInfo } from "../features/raider-enlistment/update-raider-ac
 import { updateReinforcementInfo } from "../features/raider-enlistment/update-reinforcement-action";
 import { updateApplicationInfo as updateApplicationInfo } from "../features/applications/update-applications";
 import { updateRaidSchedule } from "../features/raid-schedule-info/update-action";
-import { updateBotsInfo } from "../features/raid-bots/update-bots";
+import {
+  updateBankBotInfo,
+  updateRaidBotsInfo,
+} from "../features/raid-bots/update-bots";
 import { HOURS } from "../shared/time";
 
 export const updateOptions = { repeatDuration: 1 * HOURS };
@@ -16,7 +19,8 @@ export const readyListener = async (client: Client) => {
     updateRaidSchedule(client, updateOptions),
     updateBankRequestInfo(client, updateOptions),
     updateApplicationInfo(client, updateOptions),
-    updateBotsInfo(updateOptions),
+    updateRaidBotsInfo(updateOptions),
+    updateBankBotInfo(updateOptions),
     updateInviteListInfo(client, updateOptions),
     updateJewelryRequestInfo(client, updateOptions),
     updateRaiderInfo(client, updateOptions),
