@@ -8,6 +8,7 @@ import { updateApplicationInfo as updateApplicationInfo } from "../features/appl
 import { updateRaidSchedule } from "../features/raid-schedule-info/update-action";
 import {
   updateBankBotInfo,
+  updateGuardBotInfo,
   updateRaidBotsInfo,
 } from "../features/raid-bots/update-bots";
 import { HOURS } from "../shared/time";
@@ -21,6 +22,7 @@ export const readyListener = async (client: Client) => {
     updateApplicationInfo(client, updateOptions),
     updateRaidBotsInfo(updateOptions),
     updateBankBotInfo(updateOptions),
+    updateGuardBotInfo(updateOptions),
     updateInviteListInfo(client, updateOptions),
     updateJewelryRequestInfo(client, updateOptions),
     updateRaiderInfo(client, updateOptions),

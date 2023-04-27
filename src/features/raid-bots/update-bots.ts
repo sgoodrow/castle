@@ -2,6 +2,8 @@ import { EmbedBuilder } from "discord.js";
 import {
   bankOfficeChannelId,
   bankerRoleId,
+  guardOfficeChannelId,
+  guardRoleId,
   raidBotsChannelId,
   raiderRoleId,
 } from "../../config";
@@ -85,6 +87,37 @@ export const updateBankBotInfo = (options: Options) =>
             title: "Bank Bot Credentials",
             description:
               "The guild bank is collectively stored across the following characters. Do not share with non-bankers.",
+            fields: sorted.map((b) => ({
+              name: `${b.purpose} - ${b.characters}`,
+              value: `${b.accountName} / ${b.password}`,
+            })),
+          }),
+        ],
+      },
+      true
+    );
+  }, options);
+
+const guardBotInstructions = new InstructionsReadyAction(
+  Name.GuardBotInstructions,
+  guardOfficeChannelId
+);
+
+export const updateGuardBotInfo = (options: Options) =>
+  readyActionExecutor(async () => {
+    const guardAccounts = await accounts.getAccountsForRole(guardRoleId);
+    const sorted = sortBy(
+      guardAccounts,
+      (b) => b.purpose,
+      (b) => b.characters
+    );
+    await bankBotInstructions.createOrUpdateInstructions(
+      {
+        embeds: [
+          new EmbedBuilder({
+            title: "Guard Bot Credentials",
+            description:
+              "Invites are made easier by using the following characters. Do not share with non-guards.",
             fields: sorted.map((b) => ({
               name: `${b.purpose} - ${b.characters}`,
               value: `${b.accountName} / ${b.password}`,

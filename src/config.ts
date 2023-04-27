@@ -49,6 +49,7 @@ export const {
   bankInventoryChannelId,
   bankTransactionsChannelId,
   bankOfficeChannelId,
+  guardOfficeChannelId,
   raidBotsChannelId,
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
@@ -150,6 +151,7 @@ export const {
   bankInventoryChannelId: string;
   bankTransactionsChannelId: string;
   bankOfficeChannelId: string;
+  guardOfficeChannelId: string;
   raidBotsChannelId: string;
 
   // Google Auth

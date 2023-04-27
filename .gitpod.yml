@@ -26,6 +26,8 @@ tasks:
       raidScheduleChannelId: "1085361330149658684"
       auctionChannelId: "965137311929094154"
       bankRequestsChannelId: "965842541431885874"
+      bankOfficeChannelId: "965842541431885874"
+      guardOfficeChannelId: "965842541431885874"
       jewelryChannelId: "991929564613840927"
       rolesChannelId: "970450382209810454"
       raiderEnlistmentChannelId: "1049922085608243272"
