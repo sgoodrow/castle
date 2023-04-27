@@ -111,7 +111,7 @@ export const updateGuardBotInfo = (options: Options) =>
       (b) => b.purpose,
       (b) => b.characters
     );
-    await bankBotInstructions.createOrUpdateInstructions(
+    await guardBotInstructions.createOrUpdateInstructions(
       {
         embeds: [
           new EmbedBuilder({
