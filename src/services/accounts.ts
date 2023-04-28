@@ -91,7 +91,7 @@ const getAccounts = async () => {
       requiredRoles: getRequiredRoles(r),
     };
     if (a.characters && a.accountName && a.password) {
-      cache.set(a.characters, a);
+      cache.set(a.characters.toLowerCase(), a);
     }
   });
   return cache;
@@ -127,7 +127,7 @@ export const accounts = {
     roles: GuildMemberRoleManager
   ): Promise<Account> => {
     const accounts = await getAccounts();
-    const d = accounts.get(name);
+    const d = accounts.get(name.toLowerCase());
     if (!d) {
       throw new Error(`${name} is not a shared account`);
     }
