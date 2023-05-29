@@ -34,7 +34,7 @@ const knightApplicationCommand = new RequestApplication(
     "Knights must set a shining example of the guild while interacting with raiders. Are you willing to hold yourself to the highest standards of decorum while representing Castle to new members?",
     "While we should play the game and not be on-duty all the time, being a Knight will indeed consume some of one's game time. Are you willing to dedicate some of your game time to being a Knight of Castle? And do you have the wisdom to set aside time for yourself to enjoy the game?",
   ],
-  "current knights and officers, and approved by the Castle Knight Commander"
+  "the current Knight Commander and a conversation ensues regarding what you want to support. Then, current officers vote, and the application is approved by the Castle Knight Commander"
 );
 
 const bankerApplicationCommand = new RequestApplication(
