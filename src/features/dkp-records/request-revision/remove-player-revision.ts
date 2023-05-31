@@ -19,7 +19,7 @@ export class RemovePlayerRevision extends RaidReportRevision {
       throw this.getFormatError("invalid tick numbers");
     }
     const player = capitalize(playerRaw);
-    await castledkp.getCharacter(player);
+    await castledkp.getCharacter(player, false);
     return { player, tickNumbers };
   }
 }
