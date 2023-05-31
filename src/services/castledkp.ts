@@ -217,9 +217,9 @@ export const castledkp = {
     };
   },
 
-  getCharacter: async (name: string) => {
+  getCharacter: async (name: string, requireExists = true) => {
     const character = await getCharacter(name);
-    if (!character) {
+    if (!character && requireExists ) {
       throw new Error(
         `Character named '${name} does not exist on CastleDKP.com`
       );
