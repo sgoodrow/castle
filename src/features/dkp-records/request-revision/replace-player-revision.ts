@@ -27,7 +27,7 @@ export class ReplacePlayerRevision extends RaidReportRevision {
       throw this.getFormatError("invalid tick numbers");
     }
     const replaced = capitalize(replacedRaw);
-    await castledkp.getCharacter(replaced);
+    await castledkp.getCharacter(replaced, false);
     const replacer = capitalize(replacerRaw);
     await castledkp.getCharacter(replacer);
     return {
