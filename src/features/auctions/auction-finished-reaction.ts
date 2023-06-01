@@ -133,7 +133,12 @@ class AuctionFinishedReactionAction extends ReactionAction {
 ${this.example}`);
     }
     const price = this.getPrice(reg[0]);
-    const character = await this.getCharacter(reg[reg.length - 1]);
+    const name = reg[reg.length - 1];
+    const character = await this.getCharacter(name);
+    if (!character) {
+      throw new Error(`Cannot finish auction because character ${name} does not exist`);
+    }
+
     return { price, character };
   }
 
