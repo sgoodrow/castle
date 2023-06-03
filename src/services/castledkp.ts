@@ -118,7 +118,7 @@ const getCharacter = async (name: string) => {
 
 export const castledkp = {
   getPointsByCharacter: async (characterId: number) => {
-    const { data } = await client.post<{
+    const { data } = await client.get<{
       filter: "character";
       filterid: number;
     }>(route("points"), {
