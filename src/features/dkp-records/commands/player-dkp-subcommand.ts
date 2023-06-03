@@ -25,7 +25,7 @@ export class PlayerDkpSubcommand extends Subcommand {
     await interaction.channel?.send({
       files: [
         {
-          name: `Points for ${characterName}`,
+          name: `${characterName}.json`,
           contentType: "application/json",
           attachment: Buffer.from(JSON.stringify(points)),
         },
