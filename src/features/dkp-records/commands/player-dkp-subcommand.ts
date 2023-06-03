@@ -27,7 +27,7 @@ export class PlayerDkpSubcommand extends Subcommand {
   }
 
   public get command() {
-    return super.command.addNumberOption((o) =>
+    return super.command.addStringOption((o) =>
       o
         .setName(Option.Character)
         .setDescription(
