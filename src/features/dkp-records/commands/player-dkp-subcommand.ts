@@ -1,4 +1,4 @@
-import { CacheType, CommandInteraction } from "discord.js";
+import { AttachmentBuilder, CacheType, CommandInteraction } from "discord.js";
 import { castledkp } from "../../../services/castledkp";
 import { Subcommand } from "../../../shared/command/subcommand";
 
@@ -22,7 +22,15 @@ export class PlayerDkpSubcommand extends Subcommand {
     }
     const points = await castledkp.getPointsByCharacter(character.id);
 
-    await interaction.channel?.send(JSON.stringify(points, null, 2));
+    await interaction.channel?.send({
+      files: [
+        {
+          name: `Points for ${characterName}`,
+          contentType: "application/json",
+          attachment: Buffer.from(JSON.stringify(points)),
+        },
+      ],
+    });
     await interaction.editReply("Done");
   }
 

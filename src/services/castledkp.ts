@@ -229,9 +229,9 @@ export const castledkp = {
 
   getCharacter: async (name: string, requireExists = true) => {
     const character = await getCharacter(name);
-    if (!character && requireExists ) {
+    if (!character && requireExists) {
       throw new Error(
-        `Character named '${name} does not exist on CastleDKP.com`
+        `Character named '${name}' does not exist on CastleDKP.com`
       );
     }
     return character;
@@ -247,7 +247,9 @@ export const castledkp = {
   ) => {
     const character = await castledkp.getCharacter(loot.buyer);
     if (!character) {
-      throw new Error(`Cannot add item to non-existent character ${loot.buyer}`);
+      throw new Error(
+        `Cannot add item to non-existent character ${loot.buyer}`
+      );
     }
     return client.post(route("add_item"), {
       item_date: moment().format(UPLOAD_DATE_FORMAT),
@@ -262,7 +264,9 @@ export const castledkp = {
   addAdjustment: async (raidId: number, adjustment: AdjustmentData) => {
     const character = await castledkp.getCharacter(adjustment.player);
     if (!character) {
-      throw new Error(`Cannot add adjustment to non-existent character ${adjustment.player}`);
+      throw new Error(
+        `Cannot add adjustment to non-existent character ${adjustment.player}`
+      );
     }
     return client.post(route("add_adjustment"), {
       adjustment_date: moment().format(UPLOAD_DATE_FORMAT),
