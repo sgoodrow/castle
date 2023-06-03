@@ -117,6 +117,17 @@ const getCharacter = async (name: string) => {
 };
 
 export const castledkp = {
+  getPointsByCharacter: async (characterId: number) => {
+    const { data } = await client.post<{
+      filter: "character";
+      filterid: number;
+    }>(route("points"), {
+      filter: "character",
+      filterid: characterId,
+    });
+    return data;
+  },
+
   getEvent: async (label: string) => {
     const events = await getEvents();
     return events.get(label);
