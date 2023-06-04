@@ -53,7 +53,7 @@ export const services: Service[] = [
     bullets: [
       "Various Items, see spreadsheet (80% market rate, bags not for sale)",
       "Tradeskilling INT Gear check in/out (free _Thurgadin_)",
-      "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk OR 500p _Rivervale Bank_)",
+      "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk _Rivervale Bank_)",
       "Burnished Wooden Stave (100p _North Freeport Bank_)",
       "Jade Reaver (1000p _North Freeport Bank_, must have VSR stone)",
       "Mind Melt (500p _Thurgadin_)",
