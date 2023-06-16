@@ -2,6 +2,7 @@ import { EmbedBuilder } from "discord.js";
 import {
   bankOfficeChannelId,
   bankerRoleId,
+  clientId,
   guardOfficeChannelId,
   guardRoleId,
   raidBotsChannelId,
@@ -82,6 +83,15 @@ const bankBotInstructions = new InstructionsReadyAction(
   bankOfficeChannelId
 );
 
+const hidePassword = (password: string) => {
+  // TODO: this makes the bot not reusable, but also protects the leaking of sensitive information
+  const isProduction = clientId === "965499971317149737";
+  if (isProduction) {
+    return password;
+  }
+  return "\\*".repeat(10);
+};
+
 export const updateBankBotInfo = (options: Options) =>
   readyActionExecutor(async () => {
     try {
@@ -107,7 +117,7 @@ export const updateBankBotInfo = (options: Options) =>
               "The guild bank is collectively stored across the following characters. Do not share with non-bankers.",
             fields: sorted.map((b) => ({
               name: `${b.purpose} - ${b.characters}`,
-              value: `${b.accountName} / ${b.password}`,
+              value: `${b.accountName} / ${hidePassword(b.password)}`,
             })),
           }),
         ],
@@ -146,7 +156,7 @@ export const updateGuardBotInfo = (options: Options) =>
               "Invites are made easier by using the following characters. Do not share with non-guards.",
             fields: sorted.map((b) => ({
               name: `${b.purpose} - ${b.characters}`,
-              value: `${b.accountName} / ${b.password}`,
+              value: `${b.accountName} / ${hidePassword(b.password)}`,
             })),
           }),
         ],
