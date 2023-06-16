@@ -1,9 +1,6 @@
 import { CacheType, CommandInteraction, EmbedBuilder } from "discord.js";
-// import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
 import { getBankItem, getItemsSet } from "./bank-items";
-import { bankRequestsChannelId, bankOfficeChannelId } from "../../config";
-import { getTextChannel } from "../..";
 enum Option {
   Item = "bankitem",
 }
@@ -14,9 +11,7 @@ class ItemStock extends Subcommand {
     if (!query) {
       throw new Error(`An item is required.`);
     }
-    // console.log(interaction, item);
     const item = await getBankItem(String(query.value));
-    // console.log(item.data, item.countAvailable)
 
     let description = `${item.countAvailable} in stock. \n\n`;
 

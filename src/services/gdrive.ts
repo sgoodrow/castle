@@ -53,14 +53,11 @@ export const uploadFileToFolder = async (
       },
       fields: "id",
     },
-    (err, upload) => {
+    (err) => {
       if (err) {
         console.error("Error uploading file:", err);
         return null;
       }
-      console.log(
-        `File '${file.filename}' (${upload?.data.id}) uploaded to folder with ID ${folder}.`
-      );
     }
   );
 };
@@ -81,15 +78,10 @@ export const updateFile = async (fileId: string, file: DriveFile) => {
       media: media,
       fields: "id",
     },
-    (err, updated) => {
+    (err) => {
       if (err) {
         console.error("Error replacing file:", err);
         return;
-      }
-      if (updated) {
-        console.log(
-          `File '${file.filename}' (${updated.data.id}) replaced in Google Drive.`
-        );
       }
     }
   );

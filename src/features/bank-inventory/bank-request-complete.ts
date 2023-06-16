@@ -48,7 +48,6 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     const bankTransactionsChannel = await getTextChannel(
       bankTransactionsChannelId
     );
-    // console.log(bankTransactionsChannelId, bankTransactionsChannel)
     const transactionContent =
       this.message.content + ` -- approved by ${this.user.username}`;
     bankTransactionsChannel?.send(transactionContent);

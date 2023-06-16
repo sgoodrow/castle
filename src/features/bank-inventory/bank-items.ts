@@ -45,7 +45,7 @@ export const updateBankItems = async (newInventory: BankInventory) => {
   try {
     const cachedInventory = await getBankInventory(newInventory.banker);
     if (isMatch(cachedInventory, newInventory)) {
-      return console.log("no changes in inventory found.");
+      return;
     }
     newInventory.items.forEach((newItem) => {
       const cachedItem = cachedInventory.items.find(
@@ -59,7 +59,6 @@ export const updateBankItems = async (newInventory: BankInventory) => {
           cachedItem.name !== newItem.name ||
           cachedItem.count !== newItem.count
         ) {
-          console.log("slot exists and is changed:", cachedItem);
           removeBankStock(cachedItem);
         }
       }
@@ -73,7 +72,6 @@ export const updateBankItems = async (newInventory: BankInventory) => {
       addBankStock(item);
     });
   }
-  // console.log('set bank inventory', newInventory)
   setBankInventory(newInventory);
 };
 
@@ -83,7 +81,6 @@ export const updateItemsSet = async (set: string[]) => {
 
 export const getBankItem = async (itemName: string) => {
   const serialized = await redisClient.get(itemKey(itemName));
-  // console.log(serialized);
   if (!serialized) {
     throw new Error("Item not found: " + itemName);
   }
@@ -112,7 +109,6 @@ const itemKey = (itemName: string) =>
 
 const setBankItem = async (bankItemData: BankItemData) => {
   try {
-    console.log("Set bank item:", bankItemData);
     await redisClient.set(
       itemKey(bankItemData.name),
       JSON.stringify(bankItemData)
@@ -133,7 +129,6 @@ const addBankStock = async (inventoryItem: InventoryItem) => {
   try {
     const bankItem = await getBankItem(inventoryItem.name);
     // bank item found, add inventory to stock if not already there.
-    // console.log('add stock: ', inventoryItem.name);
     if (
       !bankItem.data.stock.find((s) => {
         return isMatch(s, inventoryItem);
@@ -143,7 +138,6 @@ const addBankStock = async (inventoryItem: InventoryItem) => {
       setBankItem(bankItem.data);
     }
   } catch (e) {
-    // console.log("create new bank item: ", inventoryItem.name)
     // bank item not found, create it
     const newItem: BankItemData = {
       name: inventoryItem.name,
@@ -169,7 +163,6 @@ const removeBankStock = async (inventoryItem: InventoryItem) => {
     );
     if (matchIdx > -1) {
       bankItem.data.stock.splice(matchIdx, 1);
-      console.log("Remove stock:", bankItem.data.name);
       await setBankItem(bankItem.data);
     }
   } catch (e) {

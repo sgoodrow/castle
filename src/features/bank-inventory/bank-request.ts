@@ -1,8 +1,7 @@
 import { CacheType, CommandInteraction } from "discord.js";
-// import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
 import { getBankItem, getItemsSet } from "./bank-items";
-import { bankRequestsChannelId, bankOfficeChannelId } from "../../config";
+import { bankRequestsChannelId } from "../../config";
 import { getTextChannel } from "../..";
 enum Option {
   Item = "bankitem",
@@ -14,9 +13,7 @@ class BankRequest extends Subcommand {
     if (!item) {
       throw new Error(`An item is required.`);
     }
-    // console.log(interaction, item);
     const match = await getBankItem(String(item.value));
-    console.log(match);
     const itemName = match.data.name;
     const instock = match.data.stock[0];
     if (!instock) {

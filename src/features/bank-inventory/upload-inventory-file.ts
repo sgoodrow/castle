@@ -44,12 +44,10 @@ class UploadInventoryMessageAction extends MessageAction {
     const { data } = await axios({
       url: a.url,
     });
-    // console.log(a.contentType);
     const filename = a.name || "unknown";
     await this.parseInventoryFile(filename, data);
     await this.uploadToGDrive(filename, data);
     message.react("✅");
-    // message.reply(`${filename} parsed and uploaded.`);
   }
 
   private async parseInventoryFile(fileName: string, data: string) {
@@ -89,7 +87,6 @@ class UploadInventoryMessageAction extends MessageAction {
         `name='${filename}' and trashed=false`
       );
       // const outputfiles = await findFileInFolders(filename, "outputfiles");
-      // console.log(filename, outputfiles);
       // if found, update it
       outputfiles.forEach(async (val) => {
         if (val.id) {

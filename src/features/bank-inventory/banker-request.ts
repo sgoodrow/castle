@@ -1,14 +1,11 @@
-import { CacheType, CommandInteraction, EmbedBuilder } from "discord.js";
-// import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
-// import { getBankerInventory, inventoryItem } from "./bank-items";
 
 enum Option {
   Banker = "banker",
 }
 
 class BankerInventory extends Subcommand {
-  public async execute(interaction: CommandInteraction<CacheType>) {
+  public async execute() {
     // const banker = this.getOption(Option.Banker, interaction);
     // if (!banker) {
     //   throw new Error(`A banker name required.`);
