@@ -3,7 +3,7 @@ import axiosRetry from "axios-retry";
 import { partition } from "lodash";
 import LRUCache from "lru-cache";
 import moment from "moment";
-import { castleDkpTokenRO } from "../config";
+import { castleDkpTokenRO, dkpBonusesChannelId } from "../config";
 import {
   AdjustmentData,
   RaidTick,
@@ -118,13 +118,22 @@ const getCharacter = async (name: string) => {
 
 export const castledkp = {
   getPointsByCharacter: async (characterId: number) => {
-    const { data } = await client.get<unknown>(route("points"), {
+    const { data } = await client.get(route("points"), {
       params: {
         filter: "character",
         filterid: characterId,
       },
     });
-    return data;
+    const character = data?.players?.[`player:${characterId}`];
+    const dkp = character?.points?.[`multidkp_points:1`];
+    return {
+      characterId: characterId,
+      characterName: character.name as string,
+      class: character.class_name as string,
+      currentDkp: Number(dkp.points_current),
+      lifetimeDkp: Number(dkp.points_earned) + Number(dkp.points_adjustment),
+      spentDkp: Number(dkp.points_spent),
+    };
   },
 
   getEvent: async (label: string) => {

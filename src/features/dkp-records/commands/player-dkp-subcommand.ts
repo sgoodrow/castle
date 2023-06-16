@@ -1,6 +1,13 @@
-import { AttachmentBuilder, CacheType, CommandInteraction } from "discord.js";
+import {
+  AttachmentBuilder,
+  CacheType,
+  CommandInteraction,
+  TimestampStyles,
+  time,
+} from "discord.js";
 import { castledkp } from "../../../services/castledkp";
 import { Subcommand } from "../../../shared/command/subcommand";
+import { code } from "../../../shared/util";
 
 enum Option {
   Character = "character",
@@ -21,17 +28,23 @@ export class PlayerDkpSubcommand extends Subcommand {
       throw new Error(`Character ${characterName} does not exist.`);
     }
     const points = await castledkp.getPointsByCharacter(character.id);
-
-    await interaction.channel?.send({
-      files: [
-        {
-          name: `${characterName}.json`,
-          contentType: "application/json",
-          attachment: Buffer.from(JSON.stringify(points)),
-        },
-      ],
+    const net = points.currentDkp;
+    const result =
+      net === 0
+        ? "0"
+        : net > 0
+        ? `+                      ${net}`
+        : `-                      ${net}`;
+    await interaction.editReply({
+      content: `**${points.characterName}** DKP as of ${time(
+        Date.now(),
+        TimestampStyles.ShortDateTime
+      )}${code}diff
++ DKP Earned          ${points.lifetimeDkp}
+- DKP Spent           ${points.spentDkp}
+----------------------------
+${result}${code}`,
     });
-    await interaction.editReply("Done");
   }
 
   public get command() {
