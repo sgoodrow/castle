@@ -20,34 +20,6 @@ export interface DriveFile {
   contents: string;
 }
 
-export const getFolderFiles = async (id: BankFolderIds) =>
-  findFiles(`'${id}' in parents and trashed = false`);
-
-export const findFileByName = async (filename: string) =>
-  findFiles(`name='${filename}' and trashed=false`);
-
-export const findFileInFolders = async (
-  filename: string,
-  foldername: string
-) => {
-  const folders = await findFiles(
-    `name='${foldername}' and mimeType='application/vnd.google-apps.folder' and trashed=false`
-  );
-  const folderIds = folders.map((folder) => folder.id);
-
-  // Build the query to search for the file in the specified folder(s) and their subfolders
-  let query = `name='${filename}' and trashed=false and (`;
-  folderIds.forEach((folderId, index) => {
-    query += `'${folderId}' in parents`;
-    if (index !== folderIds.length - 1) {
-      query += " or ";
-    }
-  });
-  query += ")";
-
-  return findFiles(query);
-};
-
 export const findFiles = async (query: string) => {
   const auth = await authorize();
   const drive = google.drive({ version: "v3", auth });
@@ -123,18 +95,26 @@ export const updateFile = async (fileId: string, file: DriveFile) => {
   );
 };
 
-const auth = new JWT({
-  email: GOOGLE_CLIENT_EMAIL,
-  key: GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-  scopes: "https://www.googleapis.com/auth/drive",
-});
+export const checkGoogleCredentials = () => {
+  if (!GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {
+    throw new Error(
+      "Cannot authenticate to the Castle Google Account without account credentials."
+    );
+  }
+};
 
 const authorize = async () => {
   try {
+    checkGoogleCredentials();
+    const auth = new JWT({
+      email: GOOGLE_CLIENT_EMAIL,
+      key: (GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+      scopes: "https://www.googleapis.com/auth/drive",
+    });
     await auth.authorize();
+    return auth;
   } catch (err) {
     console.error("Authentication failed.");
     throw err;
   }
-  return auth;
 };

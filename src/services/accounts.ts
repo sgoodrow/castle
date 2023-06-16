@@ -16,6 +16,7 @@ import {
   GuildMemberRoleManager,
 } from "discord.js";
 import { some, truncate } from "lodash";
+import { checkGoogleCredentials } from "./gdrive";
 
 enum SPREADSHEET_COLUMNS {
   Characters = "Characters",
@@ -71,15 +72,20 @@ const cache = new LRUCache<string, Account>({
   ttl: 5 * MINUTES,
 });
 
+const authorize = async (sheet: GoogleSpreadsheet) => {
+  checkGoogleCredentials();
+  return sheet.useServiceAccountAuth({
+    client_email: GOOGLE_CLIENT_EMAIL,
+    private_key: (GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+  });
+};
+
 const getAccounts = async () => {
   cache.purgeStale();
   if (cache.size) {
     return cache;
   }
-  await sheet.useServiceAccountAuth({
-    client_email: GOOGLE_CLIENT_EMAIL,
-    private_key: GOOGLE_PRIVATE_KEY.replace(/\\n/g, "\n"),
-  });
+  await authorize(sheet);
   await sheet.loadInfo();
   const rows = await sheet.sheetsByIndex[0].getRows();
   rows.forEach((r) => {
