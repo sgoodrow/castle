@@ -76,7 +76,7 @@ const authorize = async (sheet: GoogleSpreadsheet) => {
   checkGoogleCredentials();
   return sheet.useServiceAccountAuth({
     client_email: GOOGLE_CLIENT_EMAIL,
-    private_key: (GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+    private_key:(GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join('\n'),
   });
 };
 
@@ -84,7 +84,7 @@ const getAccounts = async () => {
   cache.purgeStale();
   if (cache.size) {
     return cache;
-  }
+  }1
   await authorize(sheet);
   await sheet.loadInfo();
   const rows = await sheet.sheetsByIndex[0].getRows();

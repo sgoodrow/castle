@@ -100,7 +100,7 @@ const authorize = async () => {
     checkGoogleCredentials();
     const auth = new JWT({
       email: GOOGLE_CLIENT_EMAIL,
-      key: (GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+      key: (GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join('\n'),
       scopes: "https://www.googleapis.com/auth/drive",
     });
     await auth.authorize();
