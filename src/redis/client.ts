@@ -1,5 +1,5 @@
 import { createClient, SocketClosedUnexpectedlyError } from "redis";
-import { UPSTASH_REDIS_URL } from "../config";
+import { REDIS_URL } from "../config";
 
 export const redisChannels = {
   raidReportChange: (threadId = "*") => `raid.${threadId}`,
@@ -10,7 +10,7 @@ const onError = (err: Error) =>
     ? null
     : console.error("Redis client error", err);
 
-export const redisClient = createClient({ url: UPSTASH_REDIS_URL });
+export const redisClient = createClient({ url: REDIS_URL });
 try {
   redisClient.connect();
   SocketClosedUnexpectedlyError;
