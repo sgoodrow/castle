@@ -92,7 +92,7 @@ export class SetTickSubcommand extends Subcommand {
             "The raid tick number, starting at 1. If not set, all ticks are assigned."
           )
       )
-      .addIntegerOption((o) =>
+      .addNumberOption((o) =>
         o
           .setName(Option.Value)
           .setDescription(
