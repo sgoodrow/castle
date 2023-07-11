@@ -12,6 +12,7 @@ export const {
   castleDkpAuctionRaidId,
   castleDkpBonusesCharId,
   sharedCharactersGoogleSheetId,
+  publicCharactersGoogleSheetId,
   commandSuffix,
   guildId,
   guardRoleId,
