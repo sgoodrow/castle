@@ -84,7 +84,7 @@ const getAccounts = async () => {
   cache.purgeStale();
   if (cache.size) {
     return cache;
-  }1
+  }
   await authorize(sheet);
   await sheet.loadInfo();
   const rows = await sheet.sheetsByIndex[0].getRows();
