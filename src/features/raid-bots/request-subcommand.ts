@@ -7,6 +7,7 @@ import {
 import { Subcommand } from "../../shared/command/subcommand";
 import { accounts } from "../../services/accounts";
 import { raidBotInstructions } from "./update-bots";
+import { PublicAccountService } from "../../services/public-accounts";
 
 export enum Option {
   Name = "name",
@@ -53,6 +54,19 @@ export class RequestSubcommand extends Subcommand {
     await thread.send(
       `${interaction.user} requested access to ${name} ${status}`
     );
+
+    // Update public record
+    try {
+    const guildUser = await interaction.guild?.members.fetch(
+      interaction.user.id
+    );
+    await PublicAccountService.getInstance().updateBotPilot(
+      name,
+      guildUser?.user.username!
+    );
+    } catch (err) {
+      throw new Error("Failed to update public record, check the configuration");
+    }
   }
 
   public get command() {

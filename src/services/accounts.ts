@@ -76,7 +76,7 @@ const authorize = async (sheet: GoogleSpreadsheet) => {
   checkGoogleCredentials();
   return sheet.useServiceAccountAuth({
     client_email: GOOGLE_CLIENT_EMAIL,
-    private_key: (GOOGLE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
+    private_key:(GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join('\n'),
   });
 };
 
