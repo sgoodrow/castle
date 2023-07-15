@@ -34,11 +34,13 @@ export class RequestSubcommand extends Subcommand {
         interaction.member?.roles as GuildMemberRoleManager
       );
 
-      await interaction.user.send(`${details.characters} (${details.purpose})
+      await interaction.user.send(`You MUST add a message in https://discord.com/channels/539189546630381579/1129579809006178384 when you log onto a bot.
+
+${details.characters} (${details.purpose})
           Account: ${details.accountName}
           Password: ${spoiler(details.password)}
 
-**If a bot can be moved**, and you move it, please update the location in: https://docs.google.com/spreadsheets/d/1hS01upyJZW5_n8ffPCRjro1IS4Z9YwIl7vcSFM9ms7M`);
+**If a bot can be moved**, and you move it, please update the location in when you log off: https://docs.google.com/spreadsheets/d/1hS01upyJZW5_n8ffPCRjro1IS4Z9YwIl7vcSFM9ms7M`);
 
       await interaction.editReply(
         `The credentials for ${name} have been DM'd to you.`
