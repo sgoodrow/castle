@@ -12,6 +12,7 @@ export const {
   castleDkpAuctionRaidId,
   castleDkpBonusesCharId,
   sharedCharactersGoogleSheetId,
+  publicCharactersGoogleSheetId,
   commandSuffix,
   guildId,
   guardRoleId,
@@ -53,6 +54,7 @@ export const {
   raidBotsChannelId,
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
+  GOOGLE_KEY_FILE
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
@@ -98,6 +100,11 @@ export const {
    * Expected columns by index are defined in TODO
    */
   sharedCharactersGoogleSheetId?: string;
+
+  /*
+   * Publically accessible bot info sheet
+   */
+  publicCharactersGoogleSheetId?: string;
 
   /**
    * [Optional] Custom suffix for all Discord commands. Useful for running multiple instances of the bot in the same server simultaneously.
@@ -157,4 +164,5 @@ export const {
   // Google Auth
   GOOGLE_CLIENT_EMAIL: string;
   GOOGLE_PRIVATE_KEY: string;
+  GOOGLE_KEY_FILE: string;
 };
