@@ -72,7 +72,10 @@ export class PublicAccountService implements IPublicAccountService {
     );
   }
 
-  public async updateBotCheckoutTime(botName: string, dateTime: moment.Moment | null) {
+  public async updateBotCheckoutTime(
+    botName: string,
+    dateTime: moment.Moment | null
+  ) {
     await this.updatePublicAccountSheet(
       botName,
       SPREADSHEET_COLUMNS.CheckoutTime,
@@ -93,9 +96,11 @@ export class PublicAccountService implements IPublicAccountService {
       );
       if (botRowIndex !== -1) {
         // do update
-        let row = rows.at(botRowIndex)!;
-        row[cell] = value;
-        await row.save();
+        const row = rows.at(botRowIndex);
+        if (row) {
+          row[cell] = value;
+          await row.save();
+        }
       } else {
         throw Error(`Bot ${botName} not found`);
       }
@@ -109,35 +114,38 @@ export class PublicAccountService implements IPublicAccountService {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.sheet.sheetsByIndex[0].getRows();
-      let botRowIndex = -1
+      let botRowIndex = -1;
       if (location) {
         botRowIndex = rows.findIndex(
-          (r) => (r[SPREADSHEET_COLUMNS.Class] &&
-                (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() === botClass.toUpperCase() && 
-                !r[SPREADSHEET_COLUMNS.CurrentPilot] &&
-                (r[SPREADSHEET_COLUMNS.CurrentLocation] as string).includes(location))
+          (r) =>
+            r[SPREADSHEET_COLUMNS.Class] &&
+            (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
+              botClass.toUpperCase() &&
+            !r[SPREADSHEET_COLUMNS.CurrentPilot] &&
+            (r[SPREADSHEET_COLUMNS.CurrentLocation] as string).includes(
+              location
+            )
         );
       } else {
         botRowIndex = rows.findIndex(
-          (r) => (
-              r[SPREADSHEET_COLUMNS.Class] &&
-              (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() === botClass.toUpperCase() && 
-              !r[SPREADSHEET_COLUMNS.CurrentPilot])
+          (r) =>
+            r[SPREADSHEET_COLUMNS.Class] &&
+            (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
+              botClass.toUpperCase() &&
+            !r[SPREADSHEET_COLUMNS.CurrentPilot]
         );
       }
-      
+
       if (botRowIndex !== -1) {
         let row = rows.at(botRowIndex)!;
-        return row[SPREADSHEET_COLUMNS.Name]
+        return row[SPREADSHEET_COLUMNS.Name];
       } else {
         throw Error(`No ${botClass} was available`);
       }
     }
   }
 
-  public async getCurrentBotPilot(
-    botName: string
-  ) {
+  public async getCurrentBotPilot(botName: string) {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.sheet.sheetsByIndex[0].getRows();
@@ -147,7 +155,7 @@ export class PublicAccountService implements IPublicAccountService {
       if (botRowIndex !== -1) {
         // do update
         let row = rows.at(botRowIndex)!;
-        return row[SPREADSHEET_COLUMNS.CurrentPilot]
+        return row[SPREADSHEET_COLUMNS.CurrentPilot];
       } else {
         throw Error(`Bot ${botName} not found`);
       }
