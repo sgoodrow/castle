@@ -112,7 +112,7 @@ export class PublicAccountService implements IPublicAccountService {
       let botRowIndex = -1
       if (location) {
         botRowIndex = rows.findIndex(
-          (r) => ((r[SPREADSHEET_COLUMNS.Class] as string).toLowerCase() === botClass.toLowerCase() && 
+          (r) => ((r[SPREADSHEET_COLUMNS.Class] as string) === botClass && 
                 !r[SPREADSHEET_COLUMNS.CurrentPilot] &&
                 (r[SPREADSHEET_COLUMNS.CurrentLocation] as string).includes(location))
         );
