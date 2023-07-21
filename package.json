@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "clean": "docker-compose down && rimraf postgres-db",
-    "start": "tsc && ts-node .",
+    "start": "tsc && nodemon",
     "format": "prettier-eslint --write \"src/**/*.ts\"",
     "build": "tsc",
     "predev": "docker-compose up -d --wait",

@@ -8,6 +8,7 @@ import { Subcommand } from "../../shared/command/subcommand";
 import { accounts } from "../../services/accounts";
 import { raidBotInstructions } from "./update-bots";
 import { PublicAccountService } from "../../services/public-accounts";
+import moment from "moment";
 
 export enum Option {
   Name = "name",
@@ -41,10 +42,13 @@ ${details.characters} (${details.purpose})
           Password: ${spoiler(details.password)}
 
 **If a bot can be moved**, and you move it, please update the location in when you log off: https://docs.google.com/spreadsheets/d/1hS01upyJZW5_n8ffPCRjro1IS4Z9YwIl7vcSFM9ms7M`);
-
-      await interaction.editReply(
-        `The credentials for ${name} have been DM'd to you.`
-      );
+        let response = "";
+        let currentPilot = await PublicAccountService.getInstance().getCurrentBotPilot(name);
+        if (currentPilot) {
+          response += `** Please note that ${currentPilot} is marked as the pilot of ${name} and you may not be able to log in **\n\n`
+        }
+        response += `The credentials for ${name} have been DM'd to you.`
+      await interaction.editReply(response);
     } catch (err) {
       status = "❌";
 
@@ -59,13 +63,9 @@ ${details.characters} (${details.purpose})
 
     // Update public record
     try {
-    const guildUser = await interaction.guild?.members.fetch(
-      interaction.user.id
-    );
-    await PublicAccountService.getInstance().updateBotPilot(
-      name,
-      guildUser?.user.username!
-    );
+      const guildUser = await interaction.guild?.members.fetch(interaction.user.id);
+      await PublicAccountService.getInstance().updateBotPilot(name, guildUser?.user.username!);
+      await PublicAccountService.getInstance().updateBotCheckoutTime(name, moment());
     } catch (err) {
       throw new Error("Failed to update public record, check the configuration");
     }

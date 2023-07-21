@@ -1,9 +1,10 @@
 import { Command } from "../../shared/command/command";
 import { requestSubcommand } from "./request-subcommand";
-import { releaseSubCommand } from "./release-subcommand";
+import { parkSubCommand } from "./park-subcommand";
+import { requestClassSubcommand } from "./requestclass-subcommand"
 
 export const botCommand = new Command(
   "bot",
   "Retrieve information about bots.",
-  [requestSubcommand, releaseSubCommand]
+  [requestSubcommand, requestClassSubcommand, parkSubCommand]
 );
