@@ -112,13 +112,17 @@ export class PublicAccountService implements IPublicAccountService {
       let botRowIndex = -1
       if (location) {
         botRowIndex = rows.findIndex(
-          (r) => ((r[SPREADSHEET_COLUMNS.Class] as string) === botClass && 
+          (r) => (r[SPREADSHEET_COLUMNS.Class] &&
+                (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() === botClass.toUpperCase() && 
                 !r[SPREADSHEET_COLUMNS.CurrentPilot] &&
                 (r[SPREADSHEET_COLUMNS.CurrentLocation] as string).includes(location))
         );
       } else {
         botRowIndex = rows.findIndex(
-          (r) => (r[SPREADSHEET_COLUMNS.Class] === botClass && !r[SPREADSHEET_COLUMNS.CurrentPilot])
+          (r) => (
+              r[SPREADSHEET_COLUMNS.Class] &&
+              (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() === botClass.toUpperCase() && 
+              !r[SPREADSHEET_COLUMNS.CurrentPilot])
         );
       }
       
