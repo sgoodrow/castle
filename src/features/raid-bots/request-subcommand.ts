@@ -35,19 +35,21 @@ export class RequestSubcommand extends Subcommand {
         interaction.member?.roles as GuildMemberRoleManager
       );
 
-      await interaction.user.send(`You MUST add a message in https://discord.com/channels/539189546630381579/1129579809006178384 when you log onto a bot.
+      await interaction.user
+        .send(`You MUST add a message in https://discord.com/channels/539189546630381579/1129579809006178384 when you log onto a bot.
 
 ${details.characters} (${details.purpose})
           Account: ${details.accountName}
           Password: ${spoiler(details.password)}
 
 **If a bot can be moved**, and you move it, please update the location in when you log off: https://docs.google.com/spreadsheets/d/1hS01upyJZW5_n8ffPCRjro1IS4Z9YwIl7vcSFM9ms7M`);
-        let response = "";
-        let currentPilot = await PublicAccountService.getInstance().getCurrentBotPilot(name);
-        if (currentPilot) {
-          response += `** Please note that ${currentPilot} is marked as the pilot of ${name} and you may not be able to log in **\n\n`
-        }
-        response += `The credentials for ${name} have been DM'd to you.`
+      let response = "";
+      const currentPilot =
+        await PublicAccountService.getInstance().getCurrentBotPilot(name);
+      if (currentPilot) {
+        response += `** Please note that ${currentPilot} is marked as the pilot of ${name} and you may not be able to log in **\n\n`;
+      }
+      response += `The credentials for ${name} have been DM'd to you.`;
       await interaction.editReply(response);
     } catch (err) {
       status = "❌";
@@ -62,12 +64,24 @@ ${details.characters} (${details.purpose})
     );
 
     // Update public record
-    try {
-      const guildUser = await interaction.guild?.members.fetch(interaction.user.id);
-      await PublicAccountService.getInstance().updateBotPilot(name, guildUser?.user.username!);
-      await PublicAccountService.getInstance().updateBotCheckoutTime(name, moment());
-    } catch (err) {
-      throw new Error("Failed to update public record, check the configuration");
+    if (await PublicAccountService.getInstance().isBotPublic(name)) {
+      try {
+        const guildUser = await interaction.guild?.members.fetch(
+          interaction.user.id
+        );
+        await PublicAccountService.getInstance().updateBotPilot(
+          name,
+          guildUser?.user.username || "UNKNOWN USER"
+        );
+        await PublicAccountService.getInstance().updateBotCheckoutTime(
+          name,
+          moment()
+        );
+      } catch (err) {
+        throw new Error(
+          "Failed to update public record, check the configuration"
+        );
+      }
     }
   }
 
