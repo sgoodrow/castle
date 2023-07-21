@@ -13,7 +13,7 @@ export enum Option {
   Location = "location",
 }
 
-export class ReleaseSubcommand extends Subcommand {
+export class ParkSubcommand extends Subcommand {
   publicAccountService: PublicAccountService;
   public constructor(name: string, description: string) {
     super(name, description);
@@ -40,6 +40,7 @@ export class ReleaseSubcommand extends Subcommand {
 
       // do move
       await this.publicAccountService.updateBotPilot(name, "");
+      await this.publicAccountService.updateBotCheckoutTime(name, null);
       if (location) {
         await this.publicAccountService.updateBotLocation(name, location);
         await interaction.editReply(
@@ -84,7 +85,7 @@ export class ReleaseSubcommand extends Subcommand {
   }
 }
 
-export const releaseSubCommand = new ReleaseSubcommand(
-  "release",
-  "Checkout of a guild bot, optionally updating its location"
+export const parkSubCommand = new ParkSubcommand(
+  "park",
+  "Check out of a guild bot, optionally updating its location"
 );
