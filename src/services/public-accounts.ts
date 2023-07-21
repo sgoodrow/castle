@@ -162,6 +162,17 @@ export class PublicAccountService implements IPublicAccountService {
     }
   }
 
+  public async isBotPublic(botName: string) {
+    await this.loadBots();
+    if (this.sheet) {
+      const rows = await this.sheet.sheetsByIndex[0].getRows();
+      const botRowIndex = rows.findIndex(
+        (r) => r[SPREADSHEET_COLUMNS.Name] === botName
+      );
+      return botRowIndex !== -1;
+    }
+  }
+
   public async getBotsForRole(roleId: string): Promise<Bot[]> {
     await this.loadBots();
     const allowedAccounts = await accounts.getAccountsForRole(roleId);
