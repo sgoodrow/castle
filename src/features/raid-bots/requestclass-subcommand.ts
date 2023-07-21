@@ -38,7 +38,7 @@ export class RequestClassSubcommand extends Subcommand {
     } catch (err) {
       status = "❌";
       await interaction.editReply(`No bot was found matching the provided criteria.`);
-      
+
       let response = `${interaction.user} requested access to the first ${botClass}`
       if (location) {
         response += ` in ${location}`
@@ -83,7 +83,7 @@ export class RequestClassSubcommand extends Subcommand {
     }
 
     await thread.send(
-      `${interaction.user} requested access to the first ${botClass} and got ${firstBot} ${status}`
+      `${interaction.user} requested access to the first available ${botClass} and got ${firstBot} ${status}`
     );    
   }
 
