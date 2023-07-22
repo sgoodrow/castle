@@ -35,21 +35,18 @@ export class RequestSubcommand extends Subcommand {
         interaction.member?.roles as GuildMemberRoleManager
       );
 
-      await interaction.user
-        .send(`You MUST add a message in https://discord.com/channels/539189546630381579/1129579809006178384 when you log onto a bot.
+      await interaction.user.send(`${details.characters} (${details.purpose})
+Account: ${details.accountName}
+Password: ${spoiler(details.password)}
 
-${details.characters} (${details.purpose})
-          Account: ${details.accountName}
-          Password: ${spoiler(details.password)}
-
-**If a bot can be moved**, and you move it, please update the location in when you log off: https://docs.google.com/spreadsheets/d/1hS01upyJZW5_n8ffPCRjro1IS4Z9YwIl7vcSFM9ms7M`);
+**If a bot can be moved**, and you move it, please include the location in your /bot park`);
       let response = "";
       const currentPilot =
         await PublicAccountService.getInstance().getCurrentBotPilot(name);
       if (currentPilot) {
         response += `** Please note that ${currentPilot} is marked as the pilot of ${name} and you may not be able to log in **\n\n`;
       }
-      response += `The credentials for ${name} have been DM'd to you.`;
+      response += `The credentials for ${name} have been DM'd to you. Please remember to /bot park when you are done!`;
       await interaction.editReply(response);
     } catch (err) {
       status = "❌";
