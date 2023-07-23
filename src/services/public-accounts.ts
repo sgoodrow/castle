@@ -122,9 +122,9 @@ export class PublicAccountService implements IPublicAccountService {
             (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
               botClass.toUpperCase() &&
             !r[SPREADSHEET_COLUMNS.CurrentPilot] &&
-            (r[SPREADSHEET_COLUMNS.CurrentLocation] as string).includes(
-              location
-            )
+            (r[SPREADSHEET_COLUMNS.CurrentLocation] as string)
+              .toUpperCase()
+              .includes(location.toUpperCase())
         );
       } else {
         botRowIndex = rows.findIndex(
@@ -137,8 +137,10 @@ export class PublicAccountService implements IPublicAccountService {
       }
 
       if (botRowIndex !== -1) {
-        let row = rows.at(botRowIndex)!;
-        return row[SPREADSHEET_COLUMNS.Name];
+        const row = rows.at(botRowIndex);
+        if (row) {
+          return row[SPREADSHEET_COLUMNS.Name];
+        }
       } else {
         throw Error(`No ${botClass} was available`);
       }
@@ -154,8 +156,10 @@ export class PublicAccountService implements IPublicAccountService {
       );
       if (botRowIndex !== -1) {
         // do update
-        let row = rows.at(botRowIndex)!;
-        return row[SPREADSHEET_COLUMNS.CurrentPilot];
+        const row = rows.at(botRowIndex);
+        if (row) {
+          return row[SPREADSHEET_COLUMNS.CurrentPilot];
+        }
       } else {
         throw Error(`Bot ${botName} not found`);
       }
