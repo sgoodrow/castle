@@ -58,8 +58,25 @@ If you don't want to use a Gitpod (or have run out of credits 😅), extract the
 
 ## 🚀 Release
 
-This bot is [deployed to Heroku](https://dashboard.heroku.com/apps/castle-banker-bot-prod/settings).
+This bot is deployed to a Dokku instance running on Linode with the application name `castle-discord-bot`.
 
-Successful merge into `main` will automatically deploy into production using the [Release](https://github.com/sgoodrow/castle/actions/workflows/release.yml) GitHub action.
+The application is deployed automatically with GitHub Actions on a push to the 'dokku' branch.
 
-If an issue occurs, revert or branch off the last known working commit and manually run the action on that branch.
+With appropriate SSH access, Dokku can be managed through the CLI at:
+
+  `ssh -t dokku@172.105.106.208 "help"`
+
+Be sure to specify the "castle-discord-bot" applications in your commands.
+
+
+Dokku logs can be tailed with: 
+
+  `ssh -t dokku@172.105.106.208 "logs castle-discord-bot -t"`
+
+
+Environment variables are set in Dokku with:
+
+  `ssh -t dokku@172.105.106.208 'config:set castle-discord-bot VAR="Value" VAR2="Val2'`
+
+`update-dokku-env.sh` can be used to update the full castle-discord-bot Dokku config from a local .env file.
+
