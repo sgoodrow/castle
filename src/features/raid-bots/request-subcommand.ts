@@ -29,6 +29,9 @@ export class RequestSubcommand extends Subcommand {
 
     let status = "✅ ";
 
+    const currentPilot =
+      await PublicAccountService.getInstance().getCurrentBotPilot(name);
+
     try {
       const details = await accounts.getAccount(
         name,
@@ -41,10 +44,9 @@ Password: ${spoiler(details.password)}
 
 **If a bot can be moved**, and you move it, please include the location in your /bot park`);
       let response = "";
-      const currentPilot =
-        await PublicAccountService.getInstance().getCurrentBotPilot(name);
+
       if (currentPilot) {
-        response += `** Please note that ${currentPilot} is marked as the pilot of ${name} and you may not be able to log in **\n\n`;
+        response += `** Please note that ${currentPilot} is marked as the pilot of ${name} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
       }
       response += `The credentials for ${name} have been DM'd to you. Please remember to /bot park when you are done!`;
       await interaction.editReply(response);
@@ -56,9 +58,8 @@ Password: ${spoiler(details.password)}
       );
     }
 
-    await thread.send(
-      `${interaction.user} requested access to ${name} ${status}`
-    );
+    const logMsg = await thread.send("OK");
+    logMsg.edit(`${interaction.user} requested access to ${name} ${status}`);
 
     // Update public record
     if (await PublicAccountService.getInstance().isBotPublic(name)) {
@@ -66,14 +67,17 @@ Password: ${spoiler(details.password)}
         const guildUser = await interaction.guild?.members.fetch(
           interaction.user.id
         );
-        await PublicAccountService.getInstance().updateBotPilot(
-          name,
-          guildUser?.user.username || "UNKNOWN USER"
-        );
-        await PublicAccountService.getInstance().updateBotCheckoutTime(
-          name,
-          moment()
-        );
+
+        if (!currentPilot) {
+          await PublicAccountService.getInstance().updateBotPilot(
+            name,
+            guildUser?.user.username || "UNKNOWN USER"
+          );
+          await PublicAccountService.getInstance().updateBotCheckoutTime(
+            name,
+            moment()
+          );
+        }
       } catch (err) {
         throw new Error(
           "Failed to update public record, check the configuration"

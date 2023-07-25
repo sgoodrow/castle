@@ -10,6 +10,7 @@ import { raidBotInstructions } from "./update-bots";
 import { PublicAccountService } from "../../services/public-accounts";
 import moment from "moment";
 import { Class } from "../../shared/classes";
+import { capitalize } from "../../shared/util";
 
 export enum Option {
   Class = "class",
@@ -22,7 +23,9 @@ export class RequestClassSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const botClass = this.getOption(Option.Class, interaction)?.value as string;
+    const botClass = capitalize(
+      this.getOption(Option.Class, interaction)?.value as string
+    );
     const location = this.getOption(Option.Location, interaction)
       ?.value as string;
     const thread = await raidBotInstructions.getThread();
@@ -45,11 +48,11 @@ export class RequestClassSubcommand extends Subcommand {
         `No bot was found matching the provided criteria.`
       );
 
-      let response = `${interaction.user} requested access to the first ${botClass}`;
+      let response = `${interaction.user} requested access to the first available ${botClass}`;
       if (location) {
         response += ` in ${location}`;
       }
-      response += ` and got nothing ${status}`;
+      response += ` and got nothing ${status} (${err})`;
       await thread.send(response);
       return;
     }
@@ -95,11 +98,12 @@ When you are finished with the bot, please use /bot park <name> <location if you
       status = "❌";
 
       await interaction.editReply(
-        `You do not have the correct permissions to access ${name}.`
+        `You do not have the correct permissions to access ${firstBot}.`
       );
     }
 
-    await thread.send(
+    const logMsg = await thread.send("OK");
+    logMsg.edit(
       `${interaction.user} requested access to the first available ${botClass} and got ${firstBot} ${status}`
     );
   }
