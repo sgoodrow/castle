@@ -13,3 +13,7 @@ export const compactDescription = (description: string, length?: number) => {
     length,
   });
 };
+
+export const capitalize = (text: string): string => {
+  return text.toLowerCase().charAt(0).toUpperCase() + text.slice(1);
+};
