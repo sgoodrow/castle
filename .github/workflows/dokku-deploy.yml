@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0
 
       - name: Dokku
-        uses: dokku/github-action@1.4.0
+        uses: dokku/github-action@v1.4.0
         with:
           git_remote_url: 'ssh://dokku@172.105.106.208:22/castle-discord-bot'
           ssh_private_key: ${{ secrets.DOKKU_PRIVATE_KEY }}
