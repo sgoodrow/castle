@@ -1,17 +1,15 @@
-import { GoogleSpreadsheet, GoogleSpreadsheetRow } from "google-spreadsheet";
+import { GoogleSpreadsheet } from "google-spreadsheet";
 import {
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
-  sharedCharactersGoogleSheetId,
   publicCharactersGoogleSheetId,
+  publicCharactersSheetCleanupInterval,
+  publicCharactersStaleTime,
 } from "../config";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../shared/time";
-import {
-  ApplicationCommandOptionChoiceData,
-  GuildMemberRoleManager,
-} from "discord.js";
-import { some, truncate } from "lodash";
+import { ApplicationCommandOptionChoiceData } from "discord.js";
+import { truncate } from "lodash";
 import { checkGoogleCredentials } from "./gdrive";
 import { Class } from "../shared/classes";
 import { accounts } from "./accounts";
@@ -47,6 +45,37 @@ export class PublicAccountService implements IPublicAccountService {
       );
     }
     this.sheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
+    this.startStaleCheckoutCleanup();
+  }
+
+  private async startStaleCheckoutCleanup() {
+    const interval = Number.parseInt(
+      publicCharactersSheetCleanupInterval ?? "15"
+    );
+    setInterval(async () => {
+      await this.loadBots();
+      if (this.sheet) {
+        const rows = await this.sheet.sheetsByIndex[0].getRows();
+        rows.forEach(async (row) => {
+          const checkoutTime = moment(row[SPREADSHEET_COLUMNS.CheckoutTime]);
+          if (checkoutTime.isValid()) {
+            // Compare with now
+            if (
+              checkoutTime.diff(moment(), "minutes") >
+              Number.parseInt(publicCharactersStaleTime ?? "240")
+            ) {
+              // Notify user
+              const user = row[SPREADSHEET_COLUMNS.CurrentPilot];
+
+              // Update sheet
+              row[SPREADSHEET_COLUMNS.CheckoutTime] = "";
+              row[SPREADSHEET_COLUMNS.CurrentPilot] = "";
+              await row.save();
+            }
+          }
+        });
+      }
+    }, interval);
   }
 
   public static getInstance() {
@@ -86,7 +115,7 @@ export class PublicAccountService implements IPublicAccountService {
   private async updatePublicAccountSheet(
     botName: string,
     cell: SPREADSHEET_COLUMNS,
-    value: any
+    value: string
   ) {
     await this.loadBots();
     if (this.sheet) {
@@ -182,13 +211,13 @@ export class PublicAccountService implements IPublicAccountService {
     const allowedAccounts = await accounts.getAccountsForRole(roleId);
     // possibly a list?
     const allowedCharacters = allowedAccounts.map((acc) => acc.characters);
-    let filteredBots = allowedCharacters.map((char) => this.getBot(char));
+    const filteredBots = allowedCharacters.map((char) => this.getBot(char));
     return filteredBots;
   }
 
   async getOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]> {
     await this.loadBots();
-    let bots = this.getBots();
+    const bots = this.getBots();
     return bots.map((b) => ({
       name: truncate(`${b.name} (${b.level} ${b.class})`, { length: 100 }),
       value: b.name,
@@ -203,7 +232,7 @@ export class PublicAccountService implements IPublicAccountService {
     }
 
     await this.sheet.loadInfo();
-    let rows = await this.sheet.sheetsByIndex[0].getRows();
+    const rows = await this.sheet.sheetsByIndex[0].getRows();
     rows.forEach((r) => {
       const bot: Bot = {
         class: r[SPREADSHEET_COLUMNS.Class],
@@ -221,8 +250,8 @@ export class PublicAccountService implements IPublicAccountService {
   }
 
   private getBots(): Bot[] {
-    let bots: Bot[] = [];
-    for (let bot of this.botCache.values()) {
+    const bots: Bot[] = [];
+    for (const bot of this.botCache.values()) {
       bots.push(bot);
     }
     return bots;

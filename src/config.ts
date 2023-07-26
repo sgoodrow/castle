@@ -13,6 +13,8 @@ export const {
   castleDkpBonusesCharId,
   sharedCharactersGoogleSheetId,
   publicCharactersGoogleSheetId,
+  publicCharactersStaleTime,
+  publicCharactersSheetCleanupInterval,
   commandSuffix,
   guildId,
   guardRoleId,
@@ -54,7 +56,6 @@ export const {
   raidBotsChannelId,
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
-  GOOGLE_KEY_FILE
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
@@ -105,6 +106,16 @@ export const {
    * Publically accessible bot info sheet
    */
   publicCharactersGoogleSheetId?: string;
+
+  /*
+   * Number of minutes used to decide if a bot checkout is too old and should be cleaned up
+   */
+  publicCharactersStaleTime?: string;
+
+  /*
+   * Number of minutes between public sheet cleanup runs
+   */
+  publicCharactersSheetCleanupInterval?: string;
 
   /**
    * [Optional] Custom suffix for all Discord commands. Useful for running multiple instances of the bot in the same server simultaneously.
@@ -164,5 +175,4 @@ export const {
   // Google Auth
   GOOGLE_CLIENT_EMAIL: string;
   GOOGLE_PRIVATE_KEY: string;
-  GOOGLE_KEY_FILE: string;
 };
