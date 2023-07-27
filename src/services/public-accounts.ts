@@ -16,7 +16,6 @@ import { checkGoogleCredentials } from "./gdrive";
 import { Class } from "../shared/classes";
 import { accounts } from "./accounts";
 import moment from "moment";
-import { Mutex } from "async-mutex";
 
 enum SPREADSHEET_COLUMNS {
   Class = "Class",
@@ -40,7 +39,6 @@ export class PublicAccountService implements IPublicAccountService {
     max: 200,
     ttl: 5 * MINUTES,
   });
-  private mutex: Mutex;
 
   private constructor() {
     if (!publicCharactersGoogleSheetId) {
@@ -49,7 +47,6 @@ export class PublicAccountService implements IPublicAccountService {
       );
     }
     this.sheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
-    this.mutex = new Mutex();
   }
 
   public static getInstance() {
@@ -115,43 +112,38 @@ export class PublicAccountService implements IPublicAccountService {
     location?: string
   ) {
     await this.loadBots();
-
     if (this.sheet) {
-      this.mutex.runExclusive(async () => {
-        // Load fresh cell data
-        this.sheet.loadInfo(true);
-        const rows = await this.sheet.sheetsByIndex[0].getRows();
-        let botRowIndex = -1;
-        if (location) {
-          botRowIndex = rows.findIndex(
-            (r) =>
-              r[SPREADSHEET_COLUMNS.Class] &&
-              (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
-                botClass.toUpperCase() &&
-              !r[SPREADSHEET_COLUMNS.CurrentPilot] &&
-              (r[SPREADSHEET_COLUMNS.CurrentLocation] as string)
-                .toUpperCase()
-                .includes(location.toUpperCase())
-          );
-        } else {
-          botRowIndex = rows.findIndex(
-            (r) =>
-              r[SPREADSHEET_COLUMNS.Class] &&
-              (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
-                botClass.toUpperCase() &&
-              !r[SPREADSHEET_COLUMNS.CurrentPilot]
-          );
-        }
+      const rows = await this.sheet.sheetsByIndex[0].getRows();
+      let botRowIndex = -1;
+      if (location) {
+        botRowIndex = rows.findIndex(
+          (r) =>
+            r[SPREADSHEET_COLUMNS.Class] &&
+            (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
+              botClass.toUpperCase() &&
+            !r[SPREADSHEET_COLUMNS.CurrentPilot] &&
+            (r[SPREADSHEET_COLUMNS.CurrentLocation] as string)
+              .toUpperCase()
+              .includes(location.toUpperCase())
+        );
+      } else {
+        botRowIndex = rows.findIndex(
+          (r) =>
+            r[SPREADSHEET_COLUMNS.Class] &&
+            (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
+              botClass.toUpperCase() &&
+            !r[SPREADSHEET_COLUMNS.CurrentPilot]
+        );
+      }
 
-        if (botRowIndex !== -1) {
-          const row = rows.at(botRowIndex);
-          if (row) {
-            return row[SPREADSHEET_COLUMNS.Name];
-          }
-        } else {
-          throw Error(`No ${botClass} was available`);
+      if (botRowIndex !== -1) {
+        const row = rows.at(botRowIndex);
+        if (row) {
+          return row[SPREADSHEET_COLUMNS.Name];
         }
-      });
+      } else {
+        throw Error(`No ${botClass} was available`);
+      }
     }
   }
 
@@ -190,13 +182,13 @@ export class PublicAccountService implements IPublicAccountService {
     const allowedAccounts = await accounts.getAccountsForRole(roleId);
     // possibly a list?
     const allowedCharacters = allowedAccounts.map((acc) => acc.characters);
-    const filteredBots = allowedCharacters.map((char) => this.getBot(char));
+    let filteredBots = allowedCharacters.map((char) => this.getBot(char));
     return filteredBots;
   }
 
   async getOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]> {
     await this.loadBots();
-    const bots = this.getBots();
+    let bots = this.getBots();
     return bots.map((b) => ({
       name: truncate(`${b.name} (${b.level} ${b.class})`, { length: 100 }),
       value: b.name,
@@ -211,7 +203,7 @@ export class PublicAccountService implements IPublicAccountService {
     }
 
     await this.sheet.loadInfo();
-    const rows = await this.sheet.sheetsByIndex[0].getRows();
+    let rows = await this.sheet.sheetsByIndex[0].getRows();
     rows.forEach((r) => {
       const bot: Bot = {
         class: r[SPREADSHEET_COLUMNS.Class],
@@ -229,8 +221,8 @@ export class PublicAccountService implements IPublicAccountService {
   }
 
   private getBots(): Bot[] {
-    const bots: Bot[] = [];
-    for (const bot of this.botCache.values()) {
+    let bots: Bot[] = [];
+    for (let bot of this.botCache.values()) {
       bots.push(bot);
     }
     return bots;
