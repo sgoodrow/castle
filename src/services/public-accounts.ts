@@ -15,6 +15,7 @@ import { some, truncate } from "lodash";
 import { checkGoogleCredentials } from "./gdrive";
 import { Class } from "../shared/classes";
 import { accounts } from "./accounts";
+import moment from "moment";
 
 enum SPREADSHEET_COLUMNS {
   Class = "Class",
@@ -71,6 +72,17 @@ export class PublicAccountService implements IPublicAccountService {
     );
   }
 
+  public async updateBotCheckoutTime(
+    botName: string,
+    dateTime: moment.Moment | null
+  ) {
+    await this.updatePublicAccountSheet(
+      botName,
+      SPREADSHEET_COLUMNS.CheckoutTime,
+      dateTime !== null ? dateTime.toString() : ""
+    );
+  }
+
   private async updatePublicAccountSheet(
     botName: string,
     cell: SPREADSHEET_COLUMNS,
@@ -84,12 +96,84 @@ export class PublicAccountService implements IPublicAccountService {
       );
       if (botRowIndex !== -1) {
         // do update
-        let row = rows.at(botRowIndex)!;
-        row[cell] = value;
-        await row.save();
+        const row = rows.at(botRowIndex);
+        if (row) {
+          row[cell] = value;
+          await row.save();
+        }
       } else {
         throw Error(`Bot ${botName} not found`);
       }
+    }
+  }
+
+  public async getFirstAvailableBotByClass(
+    botClass: string,
+    location?: string
+  ) {
+    await this.loadBots();
+    if (this.sheet) {
+      const rows = await this.sheet.sheetsByIndex[0].getRows();
+      let botRowIndex = -1;
+      if (location) {
+        botRowIndex = rows.findIndex(
+          (r) =>
+            r[SPREADSHEET_COLUMNS.Class] &&
+            (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
+              botClass.toUpperCase() &&
+            !r[SPREADSHEET_COLUMNS.CurrentPilot] &&
+            (r[SPREADSHEET_COLUMNS.CurrentLocation] as string)
+              .toUpperCase()
+              .includes(location.toUpperCase())
+        );
+      } else {
+        botRowIndex = rows.findIndex(
+          (r) =>
+            r[SPREADSHEET_COLUMNS.Class] &&
+            (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
+              botClass.toUpperCase() &&
+            !r[SPREADSHEET_COLUMNS.CurrentPilot]
+        );
+      }
+
+      if (botRowIndex !== -1) {
+        const row = rows.at(botRowIndex);
+        if (row) {
+          return row[SPREADSHEET_COLUMNS.Name];
+        }
+      } else {
+        throw Error(`No ${botClass} was available`);
+      }
+    }
+  }
+
+  public async getCurrentBotPilot(botName: string) {
+    await this.loadBots();
+    if (this.sheet) {
+      const rows = await this.sheet.sheetsByIndex[0].getRows();
+      const botRowIndex = rows.findIndex(
+        (r) => r[SPREADSHEET_COLUMNS.Name] === botName
+      );
+      if (botRowIndex !== -1) {
+        // do update
+        const row = rows.at(botRowIndex);
+        if (row) {
+          return row[SPREADSHEET_COLUMNS.CurrentPilot];
+        }
+      } else {
+        throw Error(`Bot ${botName} not found`);
+      }
+    }
+  }
+
+  public async isBotPublic(botName: string) {
+    await this.loadBots();
+    if (this.sheet) {
+      const rows = await this.sheet.sheetsByIndex[0].getRows();
+      const botRowIndex = rows.findIndex(
+        (r) => r[SPREADSHEET_COLUMNS.Name] === botName
+      );
+      return botRowIndex !== -1;
     }
   }
 
