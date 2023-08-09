@@ -68,11 +68,12 @@ class UploadInventoryMessageAction extends MessageAction {
         });
       }
     }
-    await updateBankItems({
-      banker: charName,
-      items: inventoryItems,
-    });
-    await updateItemsSet(itemNames);
+    // don't do it for now.
+    // await updateBankItems({
+    //   banker: charName,
+    //   items: inventoryItems,
+    // });
+    // await updateItemsSet(itemNames);
   }
 
   private async uploadToGDrive(filename: string, contents: string) {
