@@ -57,7 +57,8 @@ export class RequestClassSubcommand extends Subcommand {
           response += ` in ${location}`;
         }
         response += ` and got nothing ${status} (${err})`;
-        await thread.send(response);
+        const logMsg = await thread.send("OK");
+        await logMsg.edit(response);
         return;
       }
 
@@ -128,7 +129,7 @@ export class RequestClassSubcommand extends Subcommand {
         o
           .setName(Option.Location)
           .setDescription("The location of bot")
-          .setAutocomplete(false)
+          .setAutocomplete(true)
           .setRequired(false)
       );
     return command;
@@ -141,6 +142,8 @@ export class RequestClassSubcommand extends Subcommand {
           name: val,
           value: val,
         }));
+      case Option.Location:
+        return PublicAccountService.getInstance().getLocationOptions();
       default:
         return;
     }
