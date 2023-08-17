@@ -1,22 +1,22 @@
-name: 'Dokku deploy'
+# name: 'Dokku deploy'
 
-on:
-  push:
-    branches:
-      - dokku
+# on:
+#   push:
+#     branches:
+#       - dokku
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Cloning repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Cloning repo
+#         uses: actions/checkout@v3
+#         with:
+#           fetch-depth: 0
 
-      - name: Dokku
-        uses: dokku/github-action@v1.4.0
-        with:
-          branch: dokku
-          git_remote_url: 'ssh://dokku@172.105.106.208/castle-discord-bot'
-          ssh_private_key: ${{ secrets.DOKKU_PRIVATE_KEY }}
+#       - name: Dokku
+#         uses: dokku/github-action@v1.4.0
+#         with:
+#           branch: dokku
+#           git_remote_url: 'ssh://dokku@172.105.106.208/castle-discord-bot'
+#           ssh_private_key: ${{ secrets.DOKKU_PRIVATE_KEY }}
