@@ -56,10 +56,25 @@ Some features required secrets, such as to connect to CastleDKP.com or the Castl
 
 If you don't want to use a Gitpod (or have run out of credits 😅), extract the environment variables from [`.gitpod.yml`](./.gitpod.yml) into a local `.env` file. This will be loaded by dotenv. You will also need to include the environment variables not present in the `.gitpod.yml` file, described above.
 
-## 🚀 Release
+## 🚀 Release (Dokku)
 
-This bot is [deployed to Heroku](https://dashboard.heroku.com/apps/castle-banker-bot-prod/settings).
+This bot is deployed to a [Dokku](https://dokku.com/docs/) instance running on Linode with the application name `castle-discord-bot`.
 
-Successful merge into `main` will automatically deploy into production using the [Release](https://github.com/sgoodrow/castle/actions/workflows/release.yml) GitHub action.
+**Automatic deployment is configured on a push to the 'dokku' branch in github.**
 
-If an issue occurs, revert or branch off the last known working commit and manually run the action on that branch.
+With appropriate SSH access, Dokku can be managed through the CLI at:
+
+  `ssh -t dokku@172.105.106.208 "help"` - Specify the "castle-discord-bot" application in your commands.
+
+
+**Dokku logs** can be tailed with: 
+
+  `ssh -t dokku@172.105.106.208 "logs castle-discord-bot -t"`
+
+
+**Environment variables** are set in Dokku with:
+
+  `ssh -t dokku@172.105.106.208 'config:set castle-discord-bot VAR="Value" VAR2="Val2'`
+
+`update-dokku-env.sh` can be used to update the full castle-discord-bot Dokku config from a local .env file.
+

@@ -5,7 +5,7 @@ dotenv.config();
 export const {
   DATABASE_URL,
   SSL,
-  UPSTASH_REDIS_URL,
+  REDIS_URL,
   token,
   clientId,
   castleDkpTokenRO,
@@ -68,7 +68,7 @@ export const {
   /**
    * [Optional] Redis connection URL. Defaults to gitpod development instance.
    */
-  UPSTASH_REDIS_URL?: string;
+  REDIS_URL?: string;
 
   /**
    * Discord bot OAuth2 token.

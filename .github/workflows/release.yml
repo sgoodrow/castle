@@ -9,12 +9,17 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: akhileshns/heroku-deploy@v3.12.12
+      - name: Cloning repo
+        uses: actions/checkout@v3
         with:
-          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
-          heroku_app_name: "castle-banker-bot-prod"
-          heroku_email: "sgoodrow@gmail.com"
+          fetch-depth: 0
+
+      - name: Dokku
+        uses: dokku/github-action@v1.4.0
+        with:
+          branch: main
+          git_remote_url: 'ssh://dokku@172.105.106.208/castle-discord-bot'
+          ssh_private_key: ${{ secrets.DOKKU_PRIVATE_KEY }}

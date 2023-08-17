@@ -21,7 +21,11 @@ export abstract class MessageAction {
   public abstract execute(): Promise<void>;
 
   public async replyError(err: string) {
-    await this.message.reply(`⚠️${err}`);
+    try {
+      await this.message.reply(`⚠️${err}`);
+    } catch(err) {
+      console.error(err)
+    }
   }
 
   protected get authorId() {
