@@ -1,16 +1,12 @@
-import { GoogleSpreadsheet, GoogleSpreadsheetRow } from "google-spreadsheet";
+import { GoogleSpreadsheet } from "google-spreadsheet";
 import {
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
-  sharedCharactersGoogleSheetId,
   publicCharactersGoogleSheetId,
 } from "../config";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../shared/time";
-import {
-  ApplicationCommandOptionChoiceData,
-  GuildMemberRoleManager,
-} from "discord.js";
+import { ApplicationCommandOptionChoiceData } from "discord.js";
 import { truncate } from "lodash";
 import { checkGoogleCredentials } from "./gdrive";
 import { Class } from "../shared/classes";
@@ -32,11 +28,6 @@ enum LOCATION_SPREADSHEET_COLUMNS {
   Description = "Description",
 }
 
-export interface Location {
-  name: string;
-  description: string;
-}
-
 interface IPublicAccountService {
   updateBotLocation(name: string, location: string): void;
   updateBotPilot(botName: string, pilotName: string): void;
@@ -53,7 +44,7 @@ export class PublicAccountService implements IPublicAccountService {
 
   private locationCache = new LRUCache<string, Location>({
     max: 200,
-    ttl: 5 * MINUTES,
+    ttl: 1 * MINUTES,
   });
 
   private constructor() {
@@ -136,7 +127,7 @@ export class PublicAccountService implements IPublicAccountService {
           (r) =>
             r[BOT_SPREADSHEET_COLUMNS.Class] &&
             (r[BOT_SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
-            botClass.toUpperCase() &&
+              botClass.toUpperCase() &&
             !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot] &&
             (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
               .toUpperCase()
@@ -147,7 +138,7 @@ export class PublicAccountService implements IPublicAccountService {
           (r) =>
             r[BOT_SPREADSHEET_COLUMNS.Class] &&
             (r[BOT_SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
-            botClass.toUpperCase() &&
+              botClass.toUpperCase() &&
             !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
         );
       }
@@ -163,7 +154,9 @@ export class PublicAccountService implements IPublicAccountService {
     }
   }
 
-  public async getCurrentBotPilot(botName: string): Promise<string | undefined> {
+  public async getCurrentBotPilot(
+    botName: string
+  ): Promise<string | undefined> {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.sheet.sheetsByIndex[0].getRows();
@@ -310,4 +303,9 @@ export interface Bot {
   currentPilot: string;
   checkoutTime: string;
   requiredRoles?: string;
+}
+
+export interface Location {
+  name: string;
+  description: string;
 }
