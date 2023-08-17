@@ -120,7 +120,7 @@ export class PublicAccountService implements IPublicAccountService {
           (r) =>
             r[SPREADSHEET_COLUMNS.Class] &&
             (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
-              botClass.toUpperCase() &&
+            botClass.toUpperCase() &&
             !r[SPREADSHEET_COLUMNS.CurrentPilot] &&
             (r[SPREADSHEET_COLUMNS.CurrentLocation] as string)
               .toUpperCase()
@@ -131,7 +131,7 @@ export class PublicAccountService implements IPublicAccountService {
           (r) =>
             r[SPREADSHEET_COLUMNS.Class] &&
             (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
-              botClass.toUpperCase() &&
+            botClass.toUpperCase() &&
             !r[SPREADSHEET_COLUMNS.CurrentPilot]
         );
       }
@@ -147,7 +147,7 @@ export class PublicAccountService implements IPublicAccountService {
     }
   }
 
-  public async getCurrentBotPilot(botName: string) {
+  public async getCurrentBotPilot(botName: string): Promise<string | undefined> {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.sheet.sheetsByIndex[0].getRows();
@@ -161,7 +161,7 @@ export class PublicAccountService implements IPublicAccountService {
           return row[SPREADSHEET_COLUMNS.CurrentPilot];
         }
       } else {
-        throw Error(`Bot ${botName} not found`);
+        return;
       }
     }
   }
