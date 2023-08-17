@@ -2,7 +2,6 @@ import {
   CacheType,
   CommandInteraction,
   GuildMemberRoleManager,
-  spoiler,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { accounts } from "../../services/accounts";
@@ -69,7 +68,7 @@ export class ParkSubcommand extends Subcommand {
         o
           .setName(Option.Location)
           .setDescription("The new location where the character is parked")
-          .setAutocomplete(false)
+          .setAutocomplete(true)
           .setRequired(false)
       );
     return command;
@@ -78,7 +77,9 @@ export class ParkSubcommand extends Subcommand {
   public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Name:
-        return await accounts.getOptions();
+        return await this.publicAccountService.getBotOptions();
+      case Option.Location:
+        return await this.publicAccountService.getLocationOptions();
       default:
         return;
     }
