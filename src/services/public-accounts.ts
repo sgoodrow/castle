@@ -221,7 +221,7 @@ export class PublicAccountService implements IPublicAccountService {
         checkoutTime: r[BOT_SPREADSHEET_COLUMNS.CheckoutTime],
       };
       if (bot.class && bot.name && bot.location) {
-        this.botCache.set(bot.name.toLowerCase(), bot);
+        this.botCache.set(bot.name, bot);
       }
     });
     return;
