@@ -23,6 +23,11 @@ export const tryRaidReportFinishedReactionAction = (
 
 class RaidReportFinishedReactionAction extends ReactionAction {
   public async execute() {
+    // if message doesn't exist anymore, ignore
+    if (!this.message || !this.message.channel) {
+      return;
+    }
+
     // filter non-threads
     if (!this.message.channel.isThread()) {
       return;
