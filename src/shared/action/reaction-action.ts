@@ -21,7 +21,10 @@ export abstract class ReactionAction {
 
   public async initialize() {
     if (this.reaction.partial) {
-      await this.reaction.fetch();
+        await this.reaction.fetch().catch((err) => {
+          console.error(err);
+          this.replyError(err);
+        });
     }
     return this;
   }
