@@ -1,29 +1,31 @@
-import { GoogleSpreadsheet, GoogleSpreadsheetRow } from "google-spreadsheet";
+import { GoogleSpreadsheet } from "google-spreadsheet";
 import {
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
-  sharedCharactersGoogleSheetId,
   publicCharactersGoogleSheetId,
 } from "../config";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../shared/time";
-import {
-  ApplicationCommandOptionChoiceData,
-  GuildMemberRoleManager,
-} from "discord.js";
-import { some, truncate } from "lodash";
+import { ApplicationCommandOptionChoiceData } from "discord.js";
+import { truncate } from "lodash";
 import { checkGoogleCredentials } from "./gdrive";
 import { Class } from "../shared/classes";
 import { accounts } from "./accounts";
 import moment from "moment";
+import { log } from "console";
 
-enum SPREADSHEET_COLUMNS {
+enum BOT_SPREADSHEET_COLUMNS {
   Class = "Class",
   Name = "Name",
   CurrentLocation = "Current Location",
   Level = "Level",
   CurrentPilot = "Current Bot Pilot",
   CheckoutTime = "Date and Time (EST) of pilot login",
+}
+
+enum LOCATION_SPREADSHEET_COLUMNS {
+  Name = "Name",
+  Description = "Description",
 }
 
 interface IPublicAccountService {
@@ -37,7 +39,12 @@ export class PublicAccountService implements IPublicAccountService {
 
   private botCache = new LRUCache<string, Bot>({
     max: 200,
-    ttl: 5 * MINUTES,
+    ttl: 0,
+  });
+
+  private locationCache = new LRUCache<string, Location>({
+    max: 200,
+    ttl: 1 * MINUTES,
   });
 
   private constructor() {
@@ -59,7 +66,7 @@ export class PublicAccountService implements IPublicAccountService {
   public async updateBotLocation(botName: string, location: string) {
     await this.updatePublicAccountSheet(
       botName,
-      SPREADSHEET_COLUMNS.CurrentLocation,
+      BOT_SPREADSHEET_COLUMNS.CurrentLocation,
       location
     );
   }
@@ -67,7 +74,7 @@ export class PublicAccountService implements IPublicAccountService {
   public async updateBotPilot(botName: string, botPilot: string) {
     await this.updatePublicAccountSheet(
       botName,
-      SPREADSHEET_COLUMNS.CurrentPilot,
+      BOT_SPREADSHEET_COLUMNS.CurrentPilot,
       botPilot
     );
   }
@@ -78,21 +85,21 @@ export class PublicAccountService implements IPublicAccountService {
   ) {
     await this.updatePublicAccountSheet(
       botName,
-      SPREADSHEET_COLUMNS.CheckoutTime,
+      BOT_SPREADSHEET_COLUMNS.CheckoutTime,
       dateTime !== null ? dateTime.toString() : ""
     );
   }
 
   private async updatePublicAccountSheet(
     botName: string,
-    cell: SPREADSHEET_COLUMNS,
+    cell: BOT_SPREADSHEET_COLUMNS,
     value: any
   ) {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.sheet.sheetsByIndex[0].getRows();
       const botRowIndex = rows.findIndex(
-        (r) => r[SPREADSHEET_COLUMNS.Name] === botName
+        (r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName
       );
       if (botRowIndex !== -1) {
         // do update
@@ -108,57 +115,57 @@ export class PublicAccountService implements IPublicAccountService {
   }
 
   public async getFirstAvailableBotByClass(
+    user: string,
     botClass: string,
     location?: string
   ) {
     await this.loadBots();
+    let foundBot: Bot | undefined;
     if (this.sheet) {
-      const rows = await this.sheet.sheetsByIndex[0].getRows();
-      let botRowIndex = -1;
       if (location) {
-        botRowIndex = rows.findIndex(
-          (r) =>
-            r[SPREADSHEET_COLUMNS.Class] &&
-            (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
-            botClass.toUpperCase() &&
-            !r[SPREADSHEET_COLUMNS.CurrentPilot] &&
-            (r[SPREADSHEET_COLUMNS.CurrentLocation] as string)
-              .toUpperCase()
-              .includes(location.toUpperCase())
-        );
+        foundBot = this.botCache.find((bot) => {
+          return (
+            bot.class &&
+            bot.class.toUpperCase() === botClass.toUpperCase() &&
+            !bot.currentPilot &&
+            bot.location.toUpperCase().includes(location.toUpperCase())
+          );
+        });
       } else {
-        botRowIndex = rows.findIndex(
-          (r) =>
-            r[SPREADSHEET_COLUMNS.Class] &&
-            (r[SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
-            botClass.toUpperCase() &&
-            !r[SPREADSHEET_COLUMNS.CurrentPilot]
-        );
+        foundBot = this.botCache.find((bot) => {
+          return (
+            bot.class &&
+            bot.class.toUpperCase() === botClass.toUpperCase() &&
+            !bot.currentPilot
+          );
+        });
       }
 
-      if (botRowIndex !== -1) {
-        const row = rows.at(botRowIndex);
-        if (row) {
-          return row[SPREADSHEET_COLUMNS.Name];
-        }
+      if (foundBot) {
+        foundBot.currentPilot = user;
+        foundBot.checkoutTime = moment.utc().toISOString();
+        this.botCache.set(foundBot.name, foundBot);
+        return foundBot.name;
       } else {
-        throw Error(`No ${botClass} was available`);
+        throw Error(`No ${botClass} was available. Location ${location}`);
       }
     }
   }
 
-  public async getCurrentBotPilot(botName: string): Promise<string | undefined> {
+  public async getCurrentBotPilot(
+    botName: string
+  ): Promise<string | undefined> {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.sheet.sheetsByIndex[0].getRows();
       const botRowIndex = rows.findIndex(
-        (r) => r[SPREADSHEET_COLUMNS.Name] === botName
+        (r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName
       );
       if (botRowIndex !== -1) {
         // do update
         const row = rows.at(botRowIndex);
         if (row) {
-          return row[SPREADSHEET_COLUMNS.CurrentPilot];
+          return row[BOT_SPREADSHEET_COLUMNS.CurrentPilot];
         }
       } else {
         return;
@@ -171,7 +178,7 @@ export class PublicAccountService implements IPublicAccountService {
     if (this.sheet) {
       const rows = await this.sheet.sheetsByIndex[0].getRows();
       const botRowIndex = rows.findIndex(
-        (r) => r[SPREADSHEET_COLUMNS.Name] === botName
+        (r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName
       );
       return botRowIndex !== -1;
     }
@@ -182,13 +189,13 @@ export class PublicAccountService implements IPublicAccountService {
     const allowedAccounts = await accounts.getAccountsForRole(roleId);
     // possibly a list?
     const allowedCharacters = allowedAccounts.map((acc) => acc.characters);
-    let filteredBots = allowedCharacters.map((char) => this.getBot(char));
+    const filteredBots = allowedCharacters.map((char) => this.getBot(char));
     return filteredBots;
   }
 
-  async getOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]> {
+  async getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]> {
     await this.loadBots();
-    let bots = this.getBots();
+    const bots = this.getBots();
     return bots.map((b) => ({
       name: truncate(`${b.name} (${b.level} ${b.class})`, { length: 100 }),
       value: b.name,
@@ -203,26 +210,26 @@ export class PublicAccountService implements IPublicAccountService {
     }
 
     await this.sheet.loadInfo();
-    let rows = await this.sheet.sheetsByIndex[0].getRows();
+    const rows = await this.sheet.sheetsByIndex[0].getRows();
     rows.forEach((r) => {
       const bot: Bot = {
-        class: r[SPREADSHEET_COLUMNS.Class],
-        name: r[SPREADSHEET_COLUMNS.Name],
-        level: r[SPREADSHEET_COLUMNS.Level],
-        location: r[SPREADSHEET_COLUMNS.CurrentLocation],
-        currentPilot: r[SPREADSHEET_COLUMNS.CurrentPilot],
-        checkoutTime: r[SPREADSHEET_COLUMNS.CheckoutTime],
+        class: r[BOT_SPREADSHEET_COLUMNS.Class],
+        name: r[BOT_SPREADSHEET_COLUMNS.Name],
+        level: r[BOT_SPREADSHEET_COLUMNS.Level],
+        location: r[BOT_SPREADSHEET_COLUMNS.CurrentLocation],
+        currentPilot: r[BOT_SPREADSHEET_COLUMNS.CurrentPilot],
+        checkoutTime: r[BOT_SPREADSHEET_COLUMNS.CheckoutTime],
       };
       if (bot.class && bot.name && bot.location) {
-        this.botCache.set(bot.name.toLowerCase(), bot);
+        this.botCache.set(bot.name, bot);
       }
     });
     return;
   }
 
   private getBots(): Bot[] {
-    let bots: Bot[] = [];
-    for (let bot of this.botCache.values()) {
+    const bots: Bot[] = [];
+    for (const bot of this.botCache.values()) {
       bots.push(bot);
     }
     return bots;
@@ -230,6 +237,47 @@ export class PublicAccountService implements IPublicAccountService {
 
   private getBot(name: string): Bot {
     return this.botCache.get(name)!;
+  }
+
+  private async loadLocations(): Promise<void> {
+    await this.authorize();
+    this.locationCache.purgeStale();
+    if (this.locationCache.size) {
+      return;
+    }
+
+    await this.sheet.loadInfo();
+    try {
+      const locationSheet = this.sheet.sheetsByTitle["Bot Locations"];
+      if (locationSheet) {
+        const rows = await locationSheet.getRows();
+        rows.forEach((r) => {
+          const location: Location = {
+            name: r[LOCATION_SPREADSHEET_COLUMNS.Name],
+            description: r[LOCATION_SPREADSHEET_COLUMNS.Description],
+          };
+          if (location.description && location.name) {
+            this.locationCache.set(location.name, location);
+          }
+        });
+      }
+    } catch (err) {
+      log(
+        "Failed to load location sheet data. Does it exist in the public sheet with name 'Bot Locations'?"
+      );
+    }
+    return;
+  }
+
+  async getLocationOptions(): Promise<
+    ApplicationCommandOptionChoiceData<string>[]
+  > {
+    await this.loadLocations();
+    const locations = Array.from(this.locationCache.values());
+    return locations.map((b) => ({
+      name: truncate(`${b.name} - ${b.description}`, { length: 100 }),
+      value: b.name,
+    }));
   }
 
   private async authorize() {
@@ -245,13 +293,6 @@ export class PublicAccountService implements IPublicAccountService {
   }
 }
 
-const CHECKED = "TRUE";
-
-interface Role {
-  name: string;
-  id: string;
-}
-
 export interface Bot {
   class: Class;
   name: string;
@@ -260,4 +301,9 @@ export interface Bot {
   currentPilot: string;
   checkoutTime: string;
   requiredRoles?: string;
+}
+
+export interface Location {
+  name: string;
+  description: string;
 }
