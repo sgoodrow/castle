@@ -32,7 +32,9 @@ export abstract class ReactionAction {
   public abstract execute(): Promise<void>;
 
   public async replyError(err: string) {
-    await this.message.reply(`⚠️${err}`);
+      await this.message.reply(`⚠️${err}`).catch((err) => {
+        console.error(err);
+      });
   }
 
   protected get authorId() {
