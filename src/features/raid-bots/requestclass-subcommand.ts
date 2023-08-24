@@ -37,25 +37,19 @@ export class RequestClassSubcommand extends Subcommand {
     }
 
     let status = "✅ ";
-    let firstBot: string | undefined;
+    let firstBot = "";
     const release = await this.mutex.acquire();
     try {
       try {
         const publicAccounts = PublicAccountService.getInstance();
         firstBot = await publicAccounts.getFirstAvailableBotByClass(
-          interaction.user.username,
           botClass,
           location
         );
-        if (!firstBot) {
-          throw new Error(
-            `No bot was found for class ${botClass} in location ${location}`
-          );
-        }
       } catch (err) {
         status = "❌";
         await interaction.editReply(
-          `Unable to find a bot matching that criteria. If you think this is a mistake, please notify the devs so we can check the logs.`
+          `No bot was found matching the provided criteria.`
         );
 
         let response = `${interaction.user} requested access to the first available ${botClass}`;
@@ -65,7 +59,6 @@ export class RequestClassSubcommand extends Subcommand {
         response += ` and got nothing ${status} (${err})`;
         const logMsg = await thread.send("OK");
         await logMsg.edit(response);
-        console.log("Error during requestclass\n", err);
         return;
       }
 
