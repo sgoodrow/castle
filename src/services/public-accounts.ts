@@ -39,7 +39,7 @@ export class PublicAccountService implements IPublicAccountService {
 
   private botCache = new LRUCache<string, Bot>({
     max: 200,
-    ttl: 0,
+    ttl: 5 * MINUTES,
   });
 
   private locationCache = new LRUCache<string, Location>({
@@ -115,39 +115,41 @@ export class PublicAccountService implements IPublicAccountService {
   }
 
   public async getFirstAvailableBotByClass(
-    user: string,
     botClass: string,
     location?: string
   ) {
     await this.loadBots();
-    let foundBot: Bot | undefined;
     if (this.sheet) {
+      const rows = await this.sheet.sheetsByIndex[0].getRows();
+      let botRowIndex = -1;
       if (location) {
-        foundBot = this.botCache.find((bot) => {
-          return (
-            bot.class &&
-            bot.class.toUpperCase() === botClass.toUpperCase() &&
-            !bot.currentPilot &&
-            bot.location.toUpperCase().includes(location.toUpperCase())
-          );
-        });
+        botRowIndex = rows.findIndex(
+          (r) =>
+            r[BOT_SPREADSHEET_COLUMNS.Class] &&
+            (r[BOT_SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
+              botClass.toUpperCase() &&
+            !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot] &&
+            (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
+              .toUpperCase()
+              .includes(location.toUpperCase())
+        );
       } else {
-        foundBot = this.botCache.find((bot) => {
-          return (
-            bot.class &&
-            bot.class.toUpperCase() === botClass.toUpperCase() &&
-            !bot.currentPilot
-          );
-        });
+        botRowIndex = rows.findIndex(
+          (r) =>
+            r[BOT_SPREADSHEET_COLUMNS.Class] &&
+            (r[BOT_SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
+              botClass.toUpperCase() &&
+            !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
+        );
       }
 
-      if (foundBot) {
-        foundBot.currentPilot = user;
-        foundBot.checkoutTime = moment.utc().toISOString();
-        this.botCache.set(foundBot.name, foundBot);
-        return foundBot.name;
+      if (botRowIndex !== -1) {
+        const row = rows.at(botRowIndex);
+        if (row) {
+          return row[BOT_SPREADSHEET_COLUMNS.Name];
+        }
       } else {
-        throw Error(`No ${botClass} was available. Location ${location}`);
+        throw Error(`No ${botClass} was available`);
       }
     }
   }
@@ -221,7 +223,7 @@ export class PublicAccountService implements IPublicAccountService {
         checkoutTime: r[BOT_SPREADSHEET_COLUMNS.CheckoutTime],
       };
       if (bot.class && bot.name && bot.location) {
-        this.botCache.set(bot.name, bot);
+        this.botCache.set(bot.name.toLowerCase(), bot);
       }
     });
     return;
