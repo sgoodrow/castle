@@ -62,6 +62,13 @@ ${events.map((e) => e.toString()).join("\n\n")}`
       throw new Error("Could not locate the raider role");
     }
 
+    const membersRole = await guild.roles.fetch(membersAndAlliesRoleId);
+
+    if (!membersRole) {
+      throw new Error("Could not locate the members role");
+    }
+    
+
     const nextWeek = Date.now() + 7 * DAYS;
 
     return events
@@ -77,7 +84,7 @@ ${events.map((e) => e.toString()).join("\n\n")}`
               .permissionsFor(raiderRole)
               .has(PermissionFlagsBits.ViewChannel) || 
             e.channel
-              .permissionsFor(membersAndAlliesRoleId)
+              .permissionsFor(membersRole)
               .has(PermissionFlagsBits.ViewChannel)
           ) &&
           e.scheduledStartTimestamp <= nextWeek // Added filter condition
