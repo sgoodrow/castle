@@ -69,9 +69,10 @@ ${events.map((e) => e.toString()).join("\n\n")}`
             GuildScheduledEventStatus.Scheduled,
             GuildScheduledEventStatus.Active,
           ].includes(e.status) &&
-          e.channel
-            .permissionsFor(raiderRole)
-            .has(PermissionFlagsBits.ViewChannel) &&
+          // Filter events that aren't in a raider-only channel
+          // e.channel
+          //  .permissionsFor(raiderRole)
+          //  .has(PermissionFlagsBits.ViewChannel) &&
           e.scheduledStartTimestamp <= nextWeek // Added filter condition
       )
       .sort(
