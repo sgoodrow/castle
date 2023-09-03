@@ -7,7 +7,11 @@ import {
   PermissionFlagsBits,
 } from "discord.js";
 import { getGuild } from "../..";
-import { raiderRoleId, raidScheduleChannelId } from "../../config";
+import {
+  raiderRoleId,
+  membersAndAlliesRoleId,
+  raidScheduleChannelId
+} from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 import {
@@ -68,11 +72,14 @@ ${events.map((e) => e.toString()).join("\n\n")}`
           [
             GuildScheduledEventStatus.Scheduled,
             GuildScheduledEventStatus.Active,
-          ].includes(e.status) &&
-          // Filter events that aren't in a raider-only channel
-          // e.channel
-          //  .permissionsFor(raiderRole)
-          //  .has(PermissionFlagsBits.ViewChannel) &&
+          ].includes(e.status) && (
+            e.channel
+              .permissionsFor(raiderRole)
+              .has(PermissionFlagsBits.ViewChannel) || 
+            e.channel
+              .permissionsFor(membersAndAlliesRoleId)
+              .has(PermissionFlagsBits.ViewChannel)
+          ) &&
           e.scheduledStartTimestamp <= nextWeek // Added filter condition
       )
       .sort(
