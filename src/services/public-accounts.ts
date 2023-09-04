@@ -151,7 +151,7 @@ export class PublicAccountService implements IPublicAccountService {
               .includes(location.toUpperCase())
         );
       } else {
-        botRowIndex = availableClassRows[0];
+        botRowIndex = 0;
       }
 
       if (botRowIndex !== -1) {
