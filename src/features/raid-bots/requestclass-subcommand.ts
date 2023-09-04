@@ -36,7 +36,7 @@ export class RequestClassSubcommand extends Subcommand {
       throw new Error(`Could not locate bot request thread.`);
     }
 
-    let status = "✅ ";
+    let status = "✅ Granted";
     let firstBot = "";
     const release = await this.mutex.acquire();
     try {
@@ -47,18 +47,17 @@ export class RequestClassSubcommand extends Subcommand {
           location
         );
       } catch (err) {
-        status = "❌";
+        status = "❌ Denied";
         await interaction.editReply(
           `No bot was found matching the provided criteria.`
         );
-
-        let response = `${interaction.user} requested access to the first available ${botClass}`;
+        const message = await thread.send("OK");
+        const response = `${status} ${interaction.user} access to the first available ${botClass}`;
         if (location) {
           response += ` in ${location}`;
         }
-        response += ` and got nothing ${status} (${err})`;
-        const logMsg = await thread.send("OK");
-        await logMsg.edit(response);
+        response += `. (${err})`;
+        await message.edit(response);
         return;
       }
 
@@ -100,17 +99,15 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
           );
         }
       } catch (err) {
-        status = "❌";
+        status = "❌ Denied";
 
         await interaction.editReply(
           `You do not have the correct permissions to access ${firstBot}.`
         );
       }
-
-      const logMsg = await thread.send("OK");
-      logMsg.edit(
-        `${interaction.user} requested access to the first available ${botClass} and got ${firstBot} ${status}`
-      );
+      const message = await thread.send("OK");
+      const response = `${status} ${interaction.user} access to the first available ${botClass}: ${firstBot}.`;
+      message.edit(response);
     } finally {
       release();
     }
