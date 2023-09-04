@@ -121,31 +121,27 @@ export class PublicAccountService implements IPublicAccountService {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.sheet.sheetsByIndex[0].getRows();
+      const classRows = rows.filter((r) =>
+        (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() ===
+              botClass.toUpperCase());
+      if (classRows.length) {
+        throw Error(`Could not find any classes matching ${botClass}.`);
+      }
+      console.log(`Looking for ${botClass} and found ${classRows.length} options.`);
+      const availableClassRows = classRows.filter((r) =>
+        !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
+      );
+      console.log(`Looking for ${botClass} and found ${classRows.length} available.`);
       let botRowIndex = -1;
       if (location) {
-        botRowIndex = rows.findIndex(
+        botRowIndex = availableClassRows.findIndex(
           (r) =>
-            r[BOT_SPREADSHEET_COLUMNS.Class] &&
-            (r[BOT_SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
-              botClass.toUpperCase() &&
-            !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot] &&
             (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
-              .toUpperCase()
+              ?.toUpperCase()
               .includes(location.toUpperCase())
         );
       } else {
-        const classRows = rows.filter((r) =>
-          r[BOT_SPREADSHEET_COLUMNS.Class] &&
-            (r[BOT_SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
-              botClass.toUpperCase());
-        if (classRows.length) {
-          throw Error(`Could not find any classes matching ${botClass}.`);
-        }
-        console.log(`Looking for ${botClass} and found ${classRows.length} options.`);
-        botRowIndex = classRows.findIndex(
-          (r) =>
-            !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
-        );
+        botRowIndex = availableClassRows.first();
       }
 
       if (botRowIndex !== -1) {
