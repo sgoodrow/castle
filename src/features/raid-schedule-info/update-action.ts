@@ -74,6 +74,7 @@ ${events.map((e) => e.toString()).join("\n\n")}`
     return events
       .filter(
         (e) =>
+          e.channel?.type != ChannelType.GuildVoice ||
           e.channel?.type === ChannelType.GuildVoice &&
           !!e.scheduledStartTimestamp &&
           [
