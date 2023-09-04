@@ -69,16 +69,16 @@ export class RequestClassSubcommand extends Subcommand {
         );
 
         await interaction.user
-          .send(`Your name has been added to the public bot sheet along with a timestamp.
-          
-**Assigned:** ${details.characters} (${details.purpose})
-**Account:** ${details.accountName}
-**Password:** ${spoiler(details.password)}
+          .send(`${firstBot} is the first available ${botClass} in the sheet. Your name has automatically been added to the public bot sheet along with a timestamp.\n
   
-Please use \`/bot park <name> <location if you moved it>\` when you are finished in order to automatically remove your details from the public sheet.`);
+  ${details.characters} (${details.purpose})\n
+  Account: ${details.accountName}\n
+  Password: ${spoiler(details.password)}\n\n
+  
+  When you are finished with the bot, please use /bot park <name> <location if you moved it>. This will automatically remove your details from the public sheet`);
 
         await interaction.editReply(
-          `The credentials for ${firstBot} have been DM'd to you. Please remember to \`/bot park\` when you are done with the character.`
+          `The credentials for ${firstBot} have been DM'd to you. Please remember to /bot park when you are done with the bot.`
         );
 
         // Update public record

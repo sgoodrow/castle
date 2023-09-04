@@ -28,8 +28,6 @@ enum LOCATION_SPREADSHEET_COLUMNS {
   Description = "Description",
 }
 
-const SHEET_TITLE = "Bot Info";
-
 interface IPublicAccountService {
   updateBotLocation(name: string, location: string): void;
   updateBotPilot(botName: string, pilotName: string): void;
@@ -56,14 +54,6 @@ export class PublicAccountService implements IPublicAccountService {
       );
     }
     this.sheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
-  }
-
-  private get botInfoSheet() {
-    const match = this.sheet.sheetsByTitle[SHEET_TITLE];
-    if (!match) {
-      throw Error(`Could not find sheet named ${SHEET_TITLE}.`);
-    }
-    return match;
   }
 
   public static getInstance() {
@@ -107,7 +97,7 @@ export class PublicAccountService implements IPublicAccountService {
   ) {
     await this.loadBots();
     if (this.sheet) {
-      const rows = await this.botInfoSheet.getRows();
+      const rows = await this.sheet.sheetsByIndex[0].getRows();
       const botRowIndex = rows.findIndex(
         (r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName
       );
@@ -130,28 +120,34 @@ export class PublicAccountService implements IPublicAccountService {
   ) {
     await this.loadBots();
     if (this.sheet) {
-      const rows = await this.botInfoSheet.getRows();
-      const classRows = rows.filter((r) =>
-        (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() ===
-              botClass.toUpperCase());
-      if (!classRows.length) {
-        throw Error(`Could not find any classes matching ${botClass}.`);
-      }
-      console.log(`Looking for ${botClass} and found ${classRows.length} options.`);
-      const availableClassRows = classRows.filter((r) =>
-        !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
-      );
-      console.log(`Looking for ${botClass} and found ${classRows.length} available.`);
-      const matches = location ? availableClassRows.filter(
+      const rows = await this.sheet.sheetsByIndex[0].getRows();
+      let botRowIndex = -1;
+      if (location) {
+        botRowIndex = rows.findIndex(
           (r) =>
+            r[BOT_SPREADSHEET_COLUMNS.Class] &&
+            (r[BOT_SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
+              botClass.toUpperCase() &&
+            !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot] &&
             (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
-              ?.toUpperCase()
+              .toUpperCase()
               .includes(location.toUpperCase())
-        ) : availableClassRows;
-      // todo: get a random match instead of first to reduce race condition assigning same bot to multiple people
-      const first = matches[0];
-      if (first) {
-        return first[BOT_SPREADSHEET_COLUMNS.Name];
+        );
+      } else {
+        botRowIndex = rows.findIndex(
+          (r) =>
+            r[BOT_SPREADSHEET_COLUMNS.Class] &&
+            (r[BOT_SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
+              botClass.toUpperCase() &&
+            !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
+        );
+      }
+
+      if (botRowIndex !== -1) {
+        const row = rows.at(botRowIndex);
+        if (row) {
+          return row[BOT_SPREADSHEET_COLUMNS.Name];
+        }
       } else {
         throw Error(`No ${botClass} was available`);
       }
@@ -163,7 +159,7 @@ export class PublicAccountService implements IPublicAccountService {
   ): Promise<string | undefined> {
     await this.loadBots();
     if (this.sheet) {
-      const rows = await this.botInfoSheet.getRows();
+      const rows = await this.sheet.sheetsByIndex[0].getRows();
       const botRowIndex = rows.findIndex(
         (r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName
       );
@@ -182,7 +178,7 @@ export class PublicAccountService implements IPublicAccountService {
   public async isBotPublic(botName: string) {
     await this.loadBots();
     if (this.sheet) {
-      const rows = await this.botInfoSheet.getRows();
+      const rows = await this.sheet.sheetsByIndex[0].getRows();
       const botRowIndex = rows.findIndex(
         (r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName
       );
@@ -216,7 +212,7 @@ export class PublicAccountService implements IPublicAccountService {
     }
 
     await this.sheet.loadInfo();
-    const rows = await this.botInfoSheet.getRows();
+    const rows = await this.sheet.sheetsByIndex[0].getRows();
     rows.forEach((r) => {
       const bot: Bot = {
         class: r[BOT_SPREADSHEET_COLUMNS.Class],

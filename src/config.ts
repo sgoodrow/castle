@@ -54,7 +54,8 @@ export const {
   raidBotsChannelId,
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
-  GOOGLE_KEY_FILE
+  GOOGLE_KEY_FILE,
+  bankGoogleDriveFolderId
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
@@ -160,6 +161,9 @@ export const {
   bankOfficeChannelId: string;
   guardOfficeChannelId: string;
   raidBotsChannelId: string;
+
+  // Google Ids
+  bankGoogleDriveFolderId: string;
 
   // Google Auth
   GOOGLE_CLIENT_EMAIL: string;

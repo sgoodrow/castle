@@ -50,9 +50,6 @@ Each player must send a message in this channel with the following information a
 2. Include a link to your CastleDKP.com raiding character profile (NOT the MyCharacters page). Please use first name only for your character.
 3. Say **"I have read and agree to follow the raider requirements and behaviors."**
 
-❓ **Are raids subject to any other rules?**
-Yes. Some raids are deemed "Competitive", such as batphones, natural respawns of bosses and earthquakes. These raids may have additional level requirements posted in the event and generally assume players will bring their best character and be open to requests to swap to another of their characters if the raid depends on it.
-
 ❓ **What if I don't follow the required raider requirements or behaviors?**
 Leadership will DM you with a reminder warning, then a 1 DKP penalty, followed by a 1-week suspension, and finally dismissal from raider status.
 
