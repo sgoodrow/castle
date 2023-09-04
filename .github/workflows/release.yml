@@ -17,7 +17,12 @@ jobs:
           fetch-depth: 0
 
       - name: Dokku
-        uses: dokku/github-action@v1.4.0
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: yarn.lock
+      - uses: dokku/github-action@v1.4.0
         with:
           branch: main
           git_remote_url: 'ssh://dokku@172.105.106.208/castle-discord-bot'
