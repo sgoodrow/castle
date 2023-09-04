@@ -59,7 +59,7 @@ export class PublicAccountService implements IPublicAccountService {
   }
 
   private get botInfoSheet() {
-    const match = this.sheet.sheetsByTitle(SHEET_TITLE);
+    const match = this.sheet.sheetsByTitle[SHEET_TITLE];
     if (!match) {
       throw Error(`Could not find sheet named ${SHEET_TITLE}.`);
     }
