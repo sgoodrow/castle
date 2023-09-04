@@ -120,7 +120,9 @@ export class PublicAccountService implements IPublicAccountService {
   ) {
     await this.loadBots();
     if (this.sheet) {
-      const rows = await this.sheet.sheetsByIndex[0].getRows();
+      const sheet = await this.sheet.sheetsByIndex[0];
+      console.log(`Retrieved sheet with title ${sheet.properties.title}.`);
+      const rows = await sheet.getRows();
       const classRows = rows.filter((r) =>
         (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() ===
               botClass.toUpperCase());
