@@ -52,7 +52,7 @@ export class RequestClassSubcommand extends Subcommand {
           `No bot was found matching the provided criteria.`
         );
         const message = await thread.send("OK");
-        const response = `${status} ${interaction.user} access to the first available ${botClass}`;
+        let response = `${status} ${interaction.user} access to the first available ${botClass}`;
         if (location) {
           response += ` in ${location}`;
         }
