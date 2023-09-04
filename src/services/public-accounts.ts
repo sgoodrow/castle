@@ -142,23 +142,16 @@ export class PublicAccountService implements IPublicAccountService {
         !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
       );
       console.log(`Looking for ${botClass} and found ${classRows.length} available.`);
-      let botRowIndex = -1;
-      if (location) {
-        botRowIndex = availableClassRows.findIndex(
+      const matches = location ? availableClassRows.filter(
           (r) =>
             (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
               ?.toUpperCase()
               .includes(location.toUpperCase())
-        );
-      } else {
-        botRowIndex = 0;
-      }
-
-      if (botRowIndex !== -1) {
-        const row = rows.at(botRowIndex);
-        if (row) {
-          return row[BOT_SPREADSHEET_COLUMNS.Name];
-        }
+        ) : availableClassRows;
+      // todo: get a random match instead of first to reduce race condition assigning same bot to multiple people
+      const first = matches[0];
+      if (first) {
+        return first[BOT_SPREADSHEET_COLUMNS.Name];
       } else {
         throw Error(`No ${botClass} was available`);
       }
