@@ -134,11 +134,16 @@ export class PublicAccountService implements IPublicAccountService {
               .includes(location.toUpperCase())
         );
       } else {
-        botRowIndex = rows.findIndex(
-          (r) =>
-            r[BOT_SPREADSHEET_COLUMNS.Class] &&
+        const classRows = rows.filter((r) =>
+          r[BOT_SPREADSHEET_COLUMNS.Class] &&
             (r[BOT_SPREADSHEET_COLUMNS.Class] as string).toUpperCase() ===
-              botClass.toUpperCase() &&
+              botClass.toUpperCase());
+        if (classRows.length) {
+          throw Error(`Could not find any classes matching ${botClass}.`);
+        }
+        console.log(`Looking for ${botClass} and found ${classRows.length} options.`);
+        botRowIndex = classRows.findIndex(
+          (r) =>
             !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
         );
       }
