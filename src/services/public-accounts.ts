@@ -134,7 +134,7 @@ export class PublicAccountService implements IPublicAccountService {
       const classRows = rows.filter((r) =>
         (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() ===
               botClass.toUpperCase());
-      if (classRows.length) {
+      if (!classRows.length) {
         throw Error(`Could not find any classes matching ${botClass}.`);
       }
       console.log(`Looking for ${botClass} and found ${classRows.length} options.`);
