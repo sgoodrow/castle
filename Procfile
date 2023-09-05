@@ -1,2 +1,2 @@
 worker: node dist/index.js
-release: npx prisma migrate resolve --applied 
+#release: npx prisma migrate deploy
