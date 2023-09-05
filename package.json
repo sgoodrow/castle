@@ -10,7 +10,7 @@
     "clean": "docker-compose down && rimraf postgres-db",
     "start": "tsc && nodemon",
     "format": "prettier-eslint --write \"src/**/*.ts\"",
-    "build": "npx prisma generate && tsc",
+    "build": "npx prisma migrate deploy && tsc",
     "predev": "docker-compose up -d --wait",
     "dev": "nodemon",
     "test": "jest --watch",
