@@ -5,9 +5,8 @@ import {
   spoiler,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { accounts } from "../../services/accounts";
+import { sharedCharacters } from "../../services/shared-characters";
 import { raidBotInstructions } from "./update-bots";
-import { PublicAccountService } from "../../services/public-accounts";
 import moment from "moment";
 import { Class } from "../../shared/classes";
 import { capitalize } from "../../shared/util";
@@ -41,8 +40,7 @@ export class RequestClassSubcommand extends Subcommand {
     const release = await this.mutex.acquire();
     try {
       try {
-        const publicAccounts = PublicAccountService.getInstance();
-        firstBot = await publicAccounts.getFirstAvailableBotByClass(
+        firstBot = await sharedCharacters.getFirstAvailableBotByClass(
           botClass,
           location
         );
@@ -62,7 +60,7 @@ export class RequestClassSubcommand extends Subcommand {
       }
 
       try {
-        const details = await accounts.getAccount(
+        const details = await sharedCharacters.getAccount(
           firstBot,
           interaction.member?.roles as GuildMemberRoleManager
         );
@@ -85,14 +83,11 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
           const guildUser = await interaction.guild?.members.fetch(
             interaction.user.id
           );
-          await PublicAccountService.getInstance().updateBotPilot(
+          await sharedCharacters.updateBotPilot(
             firstBot,
             guildUser?.user.username || "UNKNOWN USER"
           );
-          await PublicAccountService.getInstance().updateBotCheckoutTime(
-            firstBot,
-            moment()
-          );
+          await sharedCharacters.updateBotCheckoutTime(firstBot, moment());
         } catch (err) {
           throw new Error(
             "Failed to update public record, check the configuration"
@@ -140,7 +135,7 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
           value: val,
         }));
       case Option.Location:
-        return PublicAccountService.getInstance().getLocationOptions();
+        return sharedCharacters.getParkOptions();
       default:
         return;
     }

@@ -1,11 +1,6 @@
-import {
-  CacheType,
-  CommandInteraction,
-  GuildMemberRoleManager,
-} from "discord.js";
+import { CacheType, CommandInteraction } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { accounts } from "../../services/accounts";
-import { PublicAccountService } from "../../services/public-accounts";
+import { sharedCharacters } from "../../services/shared-characters";
 
 export enum Option {
   Name = "name",
@@ -13,10 +8,8 @@ export enum Option {
 }
 
 export class ParkSubcommand extends Subcommand {
-  publicAccountService: PublicAccountService;
   public constructor(name: string, description: string) {
     super(name, description);
-    this.publicAccountService = PublicAccountService.getInstance();
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -29,19 +22,11 @@ export class ParkSubcommand extends Subcommand {
       interaction
     ) as string;
 
-    let status = "✅ ";
-
     try {
-      const details = await accounts.getAccount(
-        name,
-        interaction.member?.roles as GuildMemberRoleManager
-      );
-
-      // do move
-      await this.publicAccountService.updateBotPilot(name, "");
-      await this.publicAccountService.updateBotCheckoutTime(name, null);
+      await sharedCharacters.updateBotPilot(name, "");
+      await sharedCharacters.updateBotCheckoutTime(name, null);
       if (location) {
-        await this.publicAccountService.updateBotLocation(name, location);
+        await sharedCharacters.updateBotLocation(name, location);
         await interaction.editReply(
           `Sheet was updated to show ${name} was released and moved to ${location}`
         );
@@ -50,7 +35,7 @@ export class ParkSubcommand extends Subcommand {
           `Sheet was updated to show ${name} was released in its previous location`
         );
       }
-    } catch (error: any) {
+    } catch (error) {
       await interaction.editReply(`Failed to move bot: ${error}`);
     }
   }
@@ -77,9 +62,9 @@ export class ParkSubcommand extends Subcommand {
   public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Name:
-        return await this.publicAccountService.getBotOptions();
+        return await sharedCharacters.getBotOptions();
       case Option.Location:
-        return await this.publicAccountService.getLocationOptions();
+        return await sharedCharacters.getParkOptions();
       default:
         return;
     }
