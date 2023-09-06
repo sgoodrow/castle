@@ -3,19 +3,14 @@ import {
   GuildMemberRoleManager,
 } from "discord.js";
 import { some, truncate } from "lodash";
-import { Account, getAccounts } from "./spreadsheets/accounts";
-import {
-  getBots,
-  updateBotCheckoutTime,
-  updateBotLocation,
-  updateBotPilot,
-} from "./spreadsheets/bots";
+import { Account, accountsCache } from "./spreadsheets/accounts";
+import { botsCache } from "./spreadsheets/bots";
 import moment from "moment";
-import { getParkLocations } from "./spreadsheets/park-locations";
+import { parkLocationsCache } from "./spreadsheets/park-locations";
 
 export const sharedCharacters = {
   getAllowedAccountsForRole: async (roleId: string): Promise<Account[]> => {
-    const accounts = await getAccounts();
+    const accounts = await accountsCache.getData();
     return [...accounts.values()].filter((c) =>
       c.requiredRoles.map((r) => r.id).includes(roleId)
     );
@@ -24,7 +19,7 @@ export const sharedCharacters = {
   getAccountOptions: async (): Promise<
     ApplicationCommandOptionChoiceData<string>[]
   > => {
-    const accounts = await getAccounts();
+    const accounts = await accountsCache.getData();
     return [...accounts.values()].map((c) => ({
       name: truncate(
         `${c.characters} - ${c.purpose} (${c.requiredRoles
@@ -42,7 +37,7 @@ export const sharedCharacters = {
     name: string,
     roles: GuildMemberRoleManager
   ): Promise<Account> => {
-    const accounts = await getAccounts();
+    const accounts = await accountsCache.getData();
     const d = accounts.get(name.toLowerCase());
     if (!d) {
       throw new Error(`${name} is not a shared account`);
@@ -57,11 +52,11 @@ export const sharedCharacters = {
   },
 
   updateBotLocation: async (botName: string, location: string) => {
-    await updateBotLocation(botName, location);
+    await botsCache.updateBotLocation(botName, location);
   },
 
   updateBotPilot: async (botName: string, pilot: string) => {
-    await updateBotPilot(botName, pilot);
+    await botsCache.updateBotPilot(botName, pilot);
   },
 
   updateBotCheckoutTime: async (
@@ -69,11 +64,11 @@ export const sharedCharacters = {
     time: moment.Moment | null
   ) => {
     const value = time?.toString() || "";
-    await updateBotCheckoutTime(botName, value);
+    await botsCache.updateBotCheckoutTime(botName, value);
   },
 
   getFirstAvailableBotByClass: async (botClass: string, location?: string) => {
-    const bots = await getBots();
+    const bots = await botsCache.getData();
     const classBots = [...bots.values()].filter(
       (b) => b.class === botClass.toLowerCase()
     );
@@ -100,20 +95,20 @@ export const sharedCharacters = {
   },
 
   getCurrentBotPilot: async (botName: string) => {
-    const bots = await getBots();
+    const bots = await botsCache.getData();
     return [...bots.values()].find((b) => b.name === botName.toLowerCase())
       ?.currentPilot;
   },
 
   isBot: async (botName: string) => {
-    const bots = await getBots();
+    const bots = await botsCache.getData();
     return !!bots.get(botName);
   },
 
   getBotOptions: async (): Promise<
     ApplicationCommandOptionChoiceData<string>[]
   > => {
-    const bots = await getBots();
+    const bots = await botsCache.getData();
     return [...bots.values()].map((b) => ({
       name: truncate(`${b.name} (${b.level} ${b.class})`, { length: 100 }),
       value: b.name,
@@ -123,7 +118,7 @@ export const sharedCharacters = {
   getParkOptions: async (): Promise<
     ApplicationCommandOptionChoiceData<string>[]
   > => {
-    const parkLocations = await getParkLocations();
+    const parkLocations = await parkLocationsCache.getData();
     return [...parkLocations.values()].map((b) => ({
       name: truncate(`${b.name} - ${b.description}`, { length: 100 }),
       value: b.name,

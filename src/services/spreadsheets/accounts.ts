@@ -1,7 +1,5 @@
-import { GoogleSpreadsheet, GoogleSpreadsheetRow } from "google-spreadsheet";
+import { GoogleSpreadsheetRow } from "google-spreadsheet";
 import {
-  GOOGLE_CLIENT_EMAIL,
-  GOOGLE_PRIVATE_KEY,
   bankerRoleId,
   guardRoleId,
   knightRoleId,
@@ -9,11 +7,9 @@ import {
   raiderRoleId,
   sharedCharactersGoogleSheetId,
 } from "../../config";
-import LRUCache from "lru-cache";
-import { MINUTES } from "../../shared/time";
-import { checkGoogleCredentials } from "../gdrive";
+import { SpreadsheetCache } from "../../shared/spreadsheet-cache";
 
-enum SPREADSHEET_COLUMNS {
+enum Columns {
   Characters = "Characters",
   Purpose = "Purpose",
   Account = "Account",
@@ -25,29 +21,7 @@ enum SPREADSHEET_COLUMNS {
   AllowRaiders = "Raiders",
 }
 
-const sheet = new GoogleSpreadsheet(sharedCharactersGoogleSheetId);
-
 const CHECKED = "TRUE";
-
-const getRequiredRoles = (row: GoogleSpreadsheetRow) => {
-  const roles: Role[] = [];
-  if (row[SPREADSHEET_COLUMNS.AllowOfficers] === CHECKED) {
-    roles.push({ name: "Officer", id: officerRoleId });
-  }
-  if (row[SPREADSHEET_COLUMNS.AllowKnights] === CHECKED) {
-    roles.push({ name: "Knight", id: knightRoleId });
-  }
-  if (row[SPREADSHEET_COLUMNS.AllowGuards] === CHECKED) {
-    roles.push({ name: "Guard", id: guardRoleId });
-  }
-  if (row[SPREADSHEET_COLUMNS.AllowBankers] === CHECKED) {
-    roles.push({ name: "Banker", id: bankerRoleId });
-  }
-  if (row[SPREADSHEET_COLUMNS.AllowRaiders] === CHECKED) {
-    roles.push({ name: "Raider", id: raiderRoleId });
-  }
-  return roles;
-};
 
 interface Role {
   name: string;
@@ -62,34 +36,45 @@ export interface Account {
   purpose?: string;
 }
 
-const credentialsCache = new LRUCache<string, Account>({
-  max: 200,
-  ttl: 5 * MINUTES,
-});
-
-export const getAccounts = async () => {
-  credentialsCache.purgeStale();
-  if (credentialsCache.size) {
-    return credentialsCache;
-  }
-  checkGoogleCredentials();
-  await sheet.useServiceAccountAuth({
-    client_email: GOOGLE_CLIENT_EMAIL,
-    private_key: (GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join("\n"),
-  });
-  await sheet.loadInfo();
-  const rows = await sheet.sheetsByIndex[0].getRows();
-  rows.forEach((r) => {
-    const a: Account = {
-      characters: r[SPREADSHEET_COLUMNS.Characters],
-      purpose: r[SPREADSHEET_COLUMNS.Purpose],
-      accountName: r[SPREADSHEET_COLUMNS.Account],
-      password: r[SPREADSHEET_COLUMNS.Password],
-      requiredRoles: getRequiredRoles(r),
+class AccountsCache extends SpreadsheetCache<`${Columns}`, Account> {
+  public parseRow(row: GoogleSpreadsheetRow): Account {
+    return {
+      characters: row[Columns.Characters],
+      purpose: row[Columns.Purpose],
+      accountName: row[Columns.Account],
+      password: row[Columns.Password],
+      requiredRoles: this.getRequiredRoles(row),
     };
-    if (a.characters && a.accountName && a.password) {
-      credentialsCache.set(a.characters.toLowerCase(), a);
+  }
+
+  public getRowKey(d: Account): string | undefined {
+    if (d.characters && d.accountName && d.password) {
+      return d.characters.toLowerCase();
     }
-  });
-  return credentialsCache;
-};
+  }
+
+  private getRequiredRoles(row: GoogleSpreadsheetRow) {
+    const roles: Role[] = [];
+    if (row[Columns.AllowOfficers] === CHECKED) {
+      roles.push({ name: "Officer", id: officerRoleId });
+    }
+    if (row[Columns.AllowKnights] === CHECKED) {
+      roles.push({ name: "Knight", id: knightRoleId });
+    }
+    if (row[Columns.AllowGuards] === CHECKED) {
+      roles.push({ name: "Guard", id: guardRoleId });
+    }
+    if (row[Columns.AllowBankers] === CHECKED) {
+      roles.push({ name: "Banker", id: bankerRoleId });
+    }
+    if (row[Columns.AllowRaiders] === CHECKED) {
+      roles.push({ name: "Raider", id: raiderRoleId });
+    }
+    return roles;
+  }
+}
+
+export const accountsCache = new AccountsCache(
+  "Castle Bots",
+  sharedCharactersGoogleSheetId
+);
