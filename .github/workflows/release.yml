@@ -5,7 +5,12 @@ on:
     workflows: [Test]
     branches: [main]
     types: [completed]
-
+  workflow_dispatch: # Add this section for manual triggering
+    inputs:
+      manual_trigger:
+        description: 'Manually trigger the workflow'
+        required: true
+        
 jobs:
   release:
     runs-on: ubuntu-latest
