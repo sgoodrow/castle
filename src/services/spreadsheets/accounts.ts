@@ -8,15 +8,10 @@ import {
   officerRoleId,
   raiderRoleId,
   sharedCharactersGoogleSheetId,
-} from "../config";
+} from "../../config";
 import LRUCache from "lru-cache";
-import { MINUTES } from "../shared/time";
-import {
-  ApplicationCommandOptionChoiceData,
-  GuildMemberRoleManager,
-} from "discord.js";
-import { some, truncate } from "lodash";
-import { checkGoogleCredentials } from "./gdrive";
+import { MINUTES } from "../../shared/time";
+import { checkGoogleCredentials } from "../gdrive";
 
 enum SPREADSHEET_COLUMNS {
   Characters = "Characters",
@@ -59,7 +54,7 @@ interface Role {
   id: string;
 }
 
-interface Account {
+export interface Account {
   characters: string;
   accountName: string;
   password: string;
@@ -67,25 +62,21 @@ interface Account {
   purpose?: string;
 }
 
-const cache = new LRUCache<string, Account>({
+const credentialsCache = new LRUCache<string, Account>({
   max: 200,
   ttl: 5 * MINUTES,
 });
 
-const authorize = async (sheet: GoogleSpreadsheet) => {
+export const getAccounts = async () => {
+  credentialsCache.purgeStale();
+  if (credentialsCache.size) {
+    return credentialsCache;
+  }
   checkGoogleCredentials();
-  return sheet.useServiceAccountAuth({
+  await sheet.useServiceAccountAuth({
     client_email: GOOGLE_CLIENT_EMAIL,
     private_key: (GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join("\n"),
   });
-};
-
-const getAccounts = async () => {
-  cache.purgeStale();
-  if (cache.size) {
-    return cache;
-  }
-  await authorize(sheet);
   await sheet.loadInfo();
   const rows = await sheet.sheetsByIndex[0].getRows();
   rows.forEach((r) => {
@@ -97,52 +88,8 @@ const getAccounts = async () => {
       requiredRoles: getRequiredRoles(r),
     };
     if (a.characters && a.accountName && a.password) {
-      cache.set(a.characters.toLowerCase(), a);
+      credentialsCache.set(a.characters.toLowerCase(), a);
     }
   });
-  return cache;
-};
-
-export const accountsPrivate = {
-  getAccountsForRole: async (roleId: string): Promise<Account[]> => {
-    const accounts = await getAccounts();
-    return [...accounts.values()].filter((c) =>
-      c.requiredRoles.map((r) => r.id).includes(roleId)
-    );
-  },
-
-  getOptions: async (): Promise<
-    ApplicationCommandOptionChoiceData<string>[]
-  > => {
-    const accounts = await getAccounts();
-    return [...accounts.values()].map((c) => ({
-      name: truncate(
-        `${c.characters} - ${c.purpose} (${c.requiredRoles
-          .map((r) => r.name)
-          .join(", ")})`,
-        {
-          length: 100,
-        }
-      ),
-      value: c.characters,
-    }));
-  },
-
-  getAccount: async (
-    name: string,
-    roles: GuildMemberRoleManager
-  ): Promise<Account> => {
-    const accounts = await getAccounts();
-    const d = accounts.get(name.toLowerCase());
-    if (!d) {
-      throw new Error(`${name} is not a shared account`);
-    }
-    const hasRole = some(
-      d.requiredRoles.map((r) => r.id).map((id) => roles.cache.has(id))
-    );
-    if (!hasRole) {
-      throw new Error(`You do not have the required role to access ${name}`);
-    }
-    return d;
-  },
+  return credentialsCache;
 };

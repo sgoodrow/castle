@@ -5,9 +5,8 @@ import {
   spoiler,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { accountsPrivate } from "../../services/accounts-private";
+import { bots } from "../../services/shared-characters";
 import { raidBotInstructions } from "./update-bots";
-import { accountsPublic } from "../../services/accounts-public";
 import moment from "moment";
 import { Class } from "../../shared/classes";
 import { capitalize } from "../../shared/util";
@@ -41,10 +40,7 @@ export class RequestClassSubcommand extends Subcommand {
     const release = await this.mutex.acquire();
     try {
       try {
-        firstBot = await accountsPublic.getFirstAvailableBotByClass(
-          botClass,
-          location
-        );
+        firstBot = await bots.getFirstAvailableBotByClass(botClass, location);
       } catch (err) {
         status = "❌ Denied";
         await interaction.editReply(
@@ -61,7 +57,7 @@ export class RequestClassSubcommand extends Subcommand {
       }
 
       try {
-        const details = await accountsPrivate.getAccount(
+        const details = await bots.getAccount(
           firstBot,
           interaction.member?.roles as GuildMemberRoleManager
         );
@@ -84,11 +80,11 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
           const guildUser = await interaction.guild?.members.fetch(
             interaction.user.id
           );
-          await accountsPublic.updateBotPilot(
+          await bots.updateBotPilot(
             firstBot,
             guildUser?.user.username || "UNKNOWN USER"
           );
-          await accountsPublic.updateBotCheckoutTime(firstBot, moment());
+          await bots.updateBotCheckoutTime(firstBot, moment());
         } catch (err) {
           throw new Error(
             "Failed to update public record, check the configuration"
@@ -136,7 +132,7 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
           value: val,
         }));
       case Option.Location:
-        return accountsPublic.getLocationOptions();
+        return bots.getParkOptions();
       default:
         return;
     }

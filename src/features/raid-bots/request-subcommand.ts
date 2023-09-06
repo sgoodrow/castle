@@ -5,9 +5,8 @@ import {
   spoiler,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { accountsPrivate } from "../../services/accounts-private";
+import { bots } from "../../services/shared-characters";
 import { raidBotInstructions } from "./update-bots";
-import { accountsPublic } from "../../services/accounts-public";
 import moment from "moment";
 
 export enum Option {
@@ -24,10 +23,10 @@ export class RequestSubcommand extends Subcommand {
 
     let status = "✅ Granted";
 
-    const currentPilot = await accountsPublic.getCurrentBotPilot(name);
+    const currentPilot = await bots.getCurrentBotPilot(name);
 
     try {
-      const details = await accountsPrivate.getAccount(
+      const details = await bots.getAccount(
         name,
         interaction.member?.roles as GuildMemberRoleManager
       );
@@ -60,18 +59,18 @@ Password: ${spoiler(details.password)}
     logMsg.edit(`${status} ${interaction.user} access to ${name}.`);
 
     // Update public record
-    if (await accountsPublic.isBotPublic(name)) {
+    if (await bots.getIsBot(name)) {
       try {
         const guildUser = await interaction.guild?.members.fetch(
           interaction.user.id
         );
 
         if (!currentPilot) {
-          await accountsPublic.updateBotPilot(
+          await bots.updateBotPilot(
             name,
             guildUser?.user.username || "UNKNOWN USER"
           );
-          await accountsPublic.updateBotCheckoutTime(name, moment());
+          await bots.updateBotCheckoutTime(name, moment());
         }
       } catch (err) {
         throw new Error(
@@ -95,7 +94,7 @@ Password: ${spoiler(details.password)}
   public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Name:
-        return await accountsPrivate.getOptions();
+        return await bots.getAccountOptions();
       default:
         return;
     }

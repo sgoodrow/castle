@@ -1,0 +1,132 @@
+import {
+  ApplicationCommandOptionChoiceData,
+  GuildMemberRoleManager,
+} from "discord.js";
+import { some, truncate } from "lodash";
+import { Account, getAccounts } from "./spreadsheets/accounts";
+import {
+  getBots,
+  updateBotCheckoutTime,
+  updateBotLocation,
+  updateBotPilot,
+} from "./spreadsheets/bots";
+import moment from "moment";
+import { getParkLocations } from "./spreadsheets/park-locations";
+
+export const bots = {
+  getAllowedAccountsForRole: async (roleId: string): Promise<Account[]> => {
+    const accounts = await getAccounts();
+    return [...accounts.values()].filter((c) =>
+      c.requiredRoles.map((r) => r.id).includes(roleId)
+    );
+  },
+
+  getAccountOptions: async (): Promise<
+    ApplicationCommandOptionChoiceData<string>[]
+  > => {
+    const accounts = await getAccounts();
+    return [...accounts.values()].map((c) => ({
+      name: truncate(
+        `${c.characters} - ${c.purpose} (${c.requiredRoles
+          .map((r) => r.name)
+          .join(", ")})`,
+        {
+          length: 100,
+        }
+      ),
+      value: c.characters,
+    }));
+  },
+
+  getAccount: async (
+    name: string,
+    roles: GuildMemberRoleManager
+  ): Promise<Account> => {
+    const accounts = await getAccounts();
+    const d = accounts.get(name.toLowerCase());
+    if (!d) {
+      throw new Error(`${name} is not a shared account`);
+    }
+    const hasRole = some(
+      d.requiredRoles.map((r) => r.id).map((id) => roles.cache.has(id))
+    );
+    if (!hasRole) {
+      throw new Error(`You do not have the required role to access ${name}`);
+    }
+    return d;
+  },
+
+  updateBotLocation: async (botName: string, location: string) => {
+    await updateBotLocation(botName, location);
+  },
+
+  updateBotPilot: async (botName: string, pilot: string) => {
+    await updateBotPilot(botName, pilot);
+  },
+
+  updateBotCheckoutTime: async (
+    botName: string,
+    time: moment.Moment | null
+  ) => {
+    const value = time?.toString() || "";
+    await updateBotCheckoutTime(botName, value);
+  },
+
+  getFirstAvailableBotByClass: async (botClass: string, location?: string) => {
+    const bots = await getBots();
+    const classBots = [...bots.values()].filter(
+      (b) => b.class === botClass.toLowerCase()
+    );
+    if (!classBots.length) {
+      throw Error(`Could not find any classes matching ${botClass}.`);
+    }
+    console.log(
+      `Looking for ${botClass} and found ${classBots.length} options.`
+    );
+    const availableClassBots = classBots.filter((b) => !b.currentPilot);
+    console.log(
+      `Looking for ${botClass} and found ${availableClassBots.length} available.`
+    );
+    const matches = location
+      ? availableClassBots.filter((b) =>
+          b.location.includes(location.toLowerCase())
+        )
+      : availableClassBots;
+    if (!matches.length) {
+      throw Error(`No ${botClass}s available.`);
+    }
+    // todo: get a random match instead of first to reduce race condition assigning same bot to multiple people
+    return matches[0].name;
+  },
+
+  getCurrentBotPilot: async (botName: string) => {
+    const bots = await getBots();
+    return [...bots.values()].find((b) => b.name === botName.toLowerCase())
+      ?.currentPilot;
+  },
+
+  getIsBot: async (botName: string) => {
+    const bots = await getBots();
+    return !!bots.get(botName);
+  },
+
+  getBotOptions: async (): Promise<
+    ApplicationCommandOptionChoiceData<string>[]
+  > => {
+    const bots = await getBots();
+    return [...bots.values()].map((b) => ({
+      name: truncate(`${b.name} (${b.level} ${b.class})`, { length: 100 }),
+      value: b.name,
+    }));
+  },
+
+  getParkOptions: async (): Promise<
+    ApplicationCommandOptionChoiceData<string>[]
+  > => {
+    const parkLocations = await getParkLocations();
+    return [...parkLocations.values()].map((b) => ({
+      name: truncate(`${b.name} - ${b.description}`, { length: 100 }),
+      value: b.name,
+    }));
+  },
+};
