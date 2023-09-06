@@ -76,7 +76,7 @@ const authorize = async (sheet: GoogleSpreadsheet) => {
   checkGoogleCredentials();
   return sheet.useServiceAccountAuth({
     client_email: GOOGLE_CLIENT_EMAIL,
-    private_key:(GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join('\n'),
+    private_key: (GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join("\n"),
   });
 };
 
@@ -103,7 +103,7 @@ const getAccounts = async () => {
   return cache;
 };
 
-export const accounts = {
+export const accountsPrivate = {
   getAccountsForRole: async (roleId: string): Promise<Account[]> => {
     const accounts = await getAccounts();
     return [...accounts.values()].filter((c) =>

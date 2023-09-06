@@ -1,6 +1,6 @@
 import { CacheType, CommandInteraction } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { publicAccounts } from "../../services/public-accounts";
+import { accountsPublic } from "../../services/accounts-public";
 
 export enum Option {
   Name = "name",
@@ -23,10 +23,10 @@ export class ParkSubcommand extends Subcommand {
     ) as string;
 
     try {
-      await publicAccounts.updateBotPilot(name, "");
-      await publicAccounts.updateBotCheckoutTime(name, null);
+      await accountsPublic.updateBotPilot(name, "");
+      await accountsPublic.updateBotCheckoutTime(name, null);
       if (location) {
-        await publicAccounts.updateBotLocation(name, location);
+        await accountsPublic.updateBotLocation(name, location);
         await interaction.editReply(
           `Sheet was updated to show ${name} was released and moved to ${location}`
         );
@@ -62,9 +62,9 @@ export class ParkSubcommand extends Subcommand {
   public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Name:
-        return await publicAccounts.getBotOptions();
+        return await accountsPublic.getBotOptions();
       case Option.Location:
-        return await publicAccounts.getLocationOptions();
+        return await accountsPublic.getLocationOptions();
       default:
         return;
     }

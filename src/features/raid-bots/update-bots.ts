@@ -9,7 +9,7 @@ import {
   raiderRoleId,
 } from "../../config";
 import { Name } from "../../db/instructions";
-import { accounts } from "../../services/accounts";
+import { accountsPrivate } from "../../services/accounts-private";
 import {
   Options,
   readyActionExecutor,
@@ -35,7 +35,9 @@ export const updateRaidBotsInfo = (options: Options) =>
       );
       return;
     }
-    const raiderAccounts = await accounts.getAccountsForRole(raiderRoleId);
+    const raiderAccounts = await accountsPrivate.getAccountsForRole(
+      raiderRoleId
+    );
     const sorted = sortBy(
       raiderAccounts,
       (b) => b.purpose,
@@ -104,7 +106,9 @@ export const updateBankBotInfo = (options: Options) =>
       );
       return;
     }
-    const bankerAccounts = await accounts.getAccountsForRole(bankerRoleId);
+    const bankerAccounts = await accountsPrivate.getAccountsForRole(
+      bankerRoleId
+    );
     const sorted = sortBy(
       bankerAccounts,
       (b) => b.purpose,
@@ -143,7 +147,7 @@ export const updateGuardBotInfo = (options: Options) =>
       );
       return;
     }
-    const guardAccounts = await accounts.getAccountsForRole(guardRoleId);
+    const guardAccounts = await accountsPrivate.getAccountsForRole(guardRoleId);
     const sorted = sortBy(
       guardAccounts,
       (b) => b.purpose,

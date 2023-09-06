@@ -5,9 +5,9 @@ import {
   spoiler,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { accounts } from "../../services/accounts";
+import { accountsPrivate } from "../../services/accounts-private";
 import { raidBotInstructions } from "./update-bots";
-import { publicAccounts } from "../../services/public-accounts";
+import { accountsPublic } from "../../services/accounts-public";
 import moment from "moment";
 import { Class } from "../../shared/classes";
 import { capitalize } from "../../shared/util";
@@ -41,7 +41,7 @@ export class RequestClassSubcommand extends Subcommand {
     const release = await this.mutex.acquire();
     try {
       try {
-        firstBot = await publicAccounts.getFirstAvailableBotByClass(
+        firstBot = await accountsPublic.getFirstAvailableBotByClass(
           botClass,
           location
         );
@@ -61,7 +61,7 @@ export class RequestClassSubcommand extends Subcommand {
       }
 
       try {
-        const details = await accounts.getAccount(
+        const details = await accountsPrivate.getAccount(
           firstBot,
           interaction.member?.roles as GuildMemberRoleManager
         );
@@ -84,11 +84,11 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
           const guildUser = await interaction.guild?.members.fetch(
             interaction.user.id
           );
-          await publicAccounts.updateBotPilot(
+          await accountsPublic.updateBotPilot(
             firstBot,
             guildUser?.user.username || "UNKNOWN USER"
           );
-          await publicAccounts.updateBotCheckoutTime(firstBot, moment());
+          await accountsPublic.updateBotCheckoutTime(firstBot, moment());
         } catch (err) {
           throw new Error(
             "Failed to update public record, check the configuration"
@@ -136,7 +136,7 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
           value: val,
         }));
       case Option.Location:
-        return publicAccounts.getLocationOptions();
+        return accountsPublic.getLocationOptions();
       default:
         return;
     }

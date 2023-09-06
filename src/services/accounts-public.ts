@@ -10,7 +10,7 @@ import { ApplicationCommandOptionChoiceData } from "discord.js";
 import { truncate } from "lodash";
 import { checkGoogleCredentials } from "./gdrive";
 import { Class } from "../shared/classes";
-import { accounts } from "./accounts";
+import { accountsPrivate } from "./accounts-private";
 import moment from "moment";
 import { log } from "console";
 
@@ -95,7 +95,7 @@ class PublicAccountService implements IPublicAccountService {
   private async updatePublicAccountSheet(
     botName: string,
     cell: BOT_SPREADSHEET_COLUMNS,
-    value: any
+    value: string
   ) {
     await this.loadBots();
     if (this.sheet) {
@@ -191,7 +191,7 @@ class PublicAccountService implements IPublicAccountService {
 
   public async getBotsForRole(roleId: string): Promise<Bot[]> {
     await this.loadBots();
-    const allowedAccounts = await accounts.getAccountsForRole(roleId);
+    const allowedAccounts = await accountsPrivate.getAccountsForRole(roleId);
     // possibly a list?
     const allowedCharacters = allowedAccounts.map((acc) => acc.characters);
     const filteredBots = allowedCharacters.map((char) => this.getBot(char));
@@ -241,7 +241,11 @@ class PublicAccountService implements IPublicAccountService {
   }
 
   private getBot(name: string): Bot {
-    return this.botCache.get(name)!;
+    const bot = this.botCache.get(name);
+    if (!bot) {
+      throw new Error(`Failed to retrieve bot ${name} from cache.`);
+    }
+    return bot;
   }
 
   private async loadLocations(): Promise<void> {
@@ -313,4 +317,4 @@ interface Location {
   description: string;
 }
 
-export const publicAccounts = new PublicAccountService();
+export const accountsPublic = new PublicAccountService();
