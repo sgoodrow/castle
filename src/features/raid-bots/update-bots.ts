@@ -9,7 +9,7 @@ import {
   raiderRoleId,
 } from "../../config";
 import { Name } from "../../db/instructions";
-import { bots } from "../../services/shared-characters";
+import { sharedCharacters } from "../../services/shared-characters";
 import {
   Options,
   readyActionExecutor,
@@ -35,7 +35,9 @@ export const updateRaidBotsInfo = (options: Options) =>
       );
       return;
     }
-    const raiderAccounts = await bots.getAllowedAccountsForRole(raiderRoleId);
+    const raiderAccounts = await sharedCharacters.getAllowedAccountsForRole(
+      raiderRoleId
+    );
     const sorted = sortBy(
       raiderAccounts,
       (b) => b.purpose,
@@ -104,7 +106,9 @@ export const updateBankBotInfo = (options: Options) =>
       );
       return;
     }
-    const bankerAccounts = await bots.getAllowedAccountsForRole(bankerRoleId);
+    const bankerAccounts = await sharedCharacters.getAllowedAccountsForRole(
+      bankerRoleId
+    );
     const sorted = sortBy(
       bankerAccounts,
       (b) => b.purpose,
@@ -143,7 +147,9 @@ export const updateGuardBotInfo = (options: Options) =>
       );
       return;
     }
-    const guardAccounts = await bots.getAllowedAccountsForRole(guardRoleId);
+    const guardAccounts = await sharedCharacters.getAllowedAccountsForRole(
+      guardRoleId
+    );
     const sorted = sortBy(
       guardAccounts,
       (b) => b.purpose,

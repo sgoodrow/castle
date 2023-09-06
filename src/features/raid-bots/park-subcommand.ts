@@ -1,6 +1,6 @@
 import { CacheType, CommandInteraction } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { bots } from "../../services/shared-characters";
+import { sharedCharacters } from "../../services/shared-characters";
 
 export enum Option {
   Name = "name",
@@ -23,10 +23,10 @@ export class ParkSubcommand extends Subcommand {
     ) as string;
 
     try {
-      await bots.updateBotPilot(name, "");
-      await bots.updateBotCheckoutTime(name, null);
+      await sharedCharacters.updateBotPilot(name, "");
+      await sharedCharacters.updateBotCheckoutTime(name, null);
       if (location) {
-        await bots.updateBotLocation(name, location);
+        await sharedCharacters.updateBotLocation(name, location);
         await interaction.editReply(
           `Sheet was updated to show ${name} was released and moved to ${location}`
         );
@@ -62,9 +62,9 @@ export class ParkSubcommand extends Subcommand {
   public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Name:
-        return await bots.getBotOptions();
+        return await sharedCharacters.getBotOptions();
       case Option.Location:
-        return await bots.getParkOptions();
+        return await sharedCharacters.getParkOptions();
       default:
         return;
     }

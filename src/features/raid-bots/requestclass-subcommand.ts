@@ -5,7 +5,7 @@ import {
   spoiler,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { bots } from "../../services/shared-characters";
+import { sharedCharacters } from "../../services/shared-characters";
 import { raidBotInstructions } from "./update-bots";
 import moment from "moment";
 import { Class } from "../../shared/classes";
@@ -40,7 +40,10 @@ export class RequestClassSubcommand extends Subcommand {
     const release = await this.mutex.acquire();
     try {
       try {
-        firstBot = await bots.getFirstAvailableBotByClass(botClass, location);
+        firstBot = await sharedCharacters.getFirstAvailableBotByClass(
+          botClass,
+          location
+        );
       } catch (err) {
         status = "❌ Denied";
         await interaction.editReply(
@@ -57,7 +60,7 @@ export class RequestClassSubcommand extends Subcommand {
       }
 
       try {
-        const details = await bots.getAccount(
+        const details = await sharedCharacters.getAccount(
           firstBot,
           interaction.member?.roles as GuildMemberRoleManager
         );
@@ -80,11 +83,11 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
           const guildUser = await interaction.guild?.members.fetch(
             interaction.user.id
           );
-          await bots.updateBotPilot(
+          await sharedCharacters.updateBotPilot(
             firstBot,
             guildUser?.user.username || "UNKNOWN USER"
           );
-          await bots.updateBotCheckoutTime(firstBot, moment());
+          await sharedCharacters.updateBotCheckoutTime(firstBot, moment());
         } catch (err) {
           throw new Error(
             "Failed to update public record, check the configuration"
@@ -132,7 +135,7 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
           value: val,
         }));
       case Option.Location:
-        return bots.getParkOptions();
+        return sharedCharacters.getParkOptions();
       default:
         return;
     }

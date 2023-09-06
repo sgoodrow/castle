@@ -13,7 +13,7 @@ import {
 import moment from "moment";
 import { getParkLocations } from "./spreadsheets/park-locations";
 
-export const bots = {
+export const sharedCharacters = {
   getAllowedAccountsForRole: async (roleId: string): Promise<Account[]> => {
     const accounts = await getAccounts();
     return [...accounts.values()].filter((c) =>
@@ -105,7 +105,7 @@ export const bots = {
       ?.currentPilot;
   },
 
-  getIsBot: async (botName: string) => {
+  isBot: async (botName: string) => {
     const bots = await getBots();
     return !!bots.get(botName);
   },
