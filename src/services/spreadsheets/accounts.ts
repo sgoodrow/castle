@@ -37,7 +37,7 @@ export interface Account {
 }
 
 class AccountsCache extends SpreadsheetCache<`${Columns}`, Account> {
-  public parseRow(row: GoogleSpreadsheetRow): Account {
+  protected parseRow(row: GoogleSpreadsheetRow): Account {
     return {
       characters: row[Columns.Characters],
       purpose: row[Columns.Purpose],
@@ -47,7 +47,7 @@ class AccountsCache extends SpreadsheetCache<`${Columns}`, Account> {
     };
   }
 
-  public getRowKey(d: Account): string | undefined {
+  protected getRowKey(d: Account): string | undefined {
     if (d.characters && d.accountName && d.password) {
       return d.characters.toLowerCase();
     }

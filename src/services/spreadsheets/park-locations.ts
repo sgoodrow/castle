@@ -13,14 +13,14 @@ export interface ParkLocation {
 }
 
 class ParkLocationsCache extends SpreadsheetCache<`${Columns}`, ParkLocation> {
-  public parseRow(row: GoogleSpreadsheetRow): ParkLocation {
+  protected parseRow(row: GoogleSpreadsheetRow): ParkLocation {
     return {
       name: row[Columns.Name],
       description: row[Columns.Description],
     };
   }
 
-  public getRowKey(d: ParkLocation): string | undefined {
+  protected getRowKey(d: ParkLocation): string | undefined {
     if (d.name && d.description) {
       return d.name;
     }

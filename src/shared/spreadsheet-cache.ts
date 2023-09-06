@@ -35,9 +35,9 @@ export abstract class SpreadsheetCache<ColumnNames extends string, Data> {
     return this.cache;
   }
 
-  public abstract parseRow(row: GoogleSpreadsheetRow): Data;
+  protected abstract parseRow(row: GoogleSpreadsheetRow): Data;
 
-  public abstract getRowKey(d: Data): string | undefined;
+  protected abstract getRowKey(d: Data): string | undefined;
 
   private async getRows() {
     checkGoogleCredentials();

@@ -23,7 +23,7 @@ interface Bot {
 }
 
 class BotsCache extends SpreadsheetCache<`${Columns}`, Bot> {
-  public parseRow(row: GoogleSpreadsheetRow): Bot {
+  protected parseRow(row: GoogleSpreadsheetRow): Bot {
     return {
       class: row[Columns.Class].toLowerCase(),
       name: row[Columns.Name],
@@ -34,7 +34,7 @@ class BotsCache extends SpreadsheetCache<`${Columns}`, Bot> {
     };
   }
 
-  public getRowKey(d: Bot): string | undefined {
+  protected getRowKey(d: Bot): string | undefined {
     if (d.class && d.name && d.location) {
       return d.name.toLowerCase();
     }
