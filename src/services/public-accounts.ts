@@ -35,9 +35,8 @@ interface IPublicAccountService {
   updateBotPilot(botName: string, pilotName: string): void;
 }
 
-export class PublicAccountService implements IPublicAccountService {
+class PublicAccountService implements IPublicAccountService {
   private sheet: GoogleSpreadsheet;
-  private static instance: PublicAccountService;
 
   private botCache = new LRUCache<string, Bot>({
     max: 200,
@@ -49,7 +48,7 @@ export class PublicAccountService implements IPublicAccountService {
     ttl: 1 * MINUTES,
   });
 
-  private constructor() {
+  public constructor() {
     if (!publicCharactersGoogleSheetId) {
       throw new Error(
         "Public account sheet key not found, please set it in env file (property publicCharactersGoogleSheetId)"
@@ -64,13 +63,6 @@ export class PublicAccountService implements IPublicAccountService {
       throw Error(`Could not find sheet named ${SHEET_TITLE}.`);
     }
     return match;
-  }
-
-  public static getInstance() {
-    if (!PublicAccountService.instance) {
-      this.instance = new PublicAccountService();
-    }
-    return this.instance;
   }
 
   public async updateBotLocation(botName: string, location: string) {
@@ -131,23 +123,30 @@ export class PublicAccountService implements IPublicAccountService {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
-      const classRows = rows.filter((r) =>
-        (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() ===
-              botClass.toUpperCase());
+      const classRows = rows.filter(
+        (r) =>
+          (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() ===
+          botClass.toUpperCase()
+      );
       if (!classRows.length) {
         throw Error(`Could not find any classes matching ${botClass}.`);
       }
-      console.log(`Looking for ${botClass} and found ${classRows.length} options.`);
-      const availableClassRows = classRows.filter((r) =>
-        !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
+      console.log(
+        `Looking for ${botClass} and found ${classRows.length} options.`
       );
-      console.log(`Looking for ${botClass} and found ${classRows.length} available.`);
-      const matches = location ? availableClassRows.filter(
-          (r) =>
+      const availableClassRows = classRows.filter(
+        (r) => !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
+      );
+      console.log(
+        `Looking for ${botClass} and found ${classRows.length} available.`
+      );
+      const matches = location
+        ? availableClassRows.filter((r) =>
             (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
               ?.toUpperCase()
               .includes(location.toUpperCase())
-        ) : availableClassRows;
+          )
+        : availableClassRows;
       // todo: get a random match instead of first to reduce race condition assigning same bot to multiple people
       const first = matches[0];
       if (first) {
@@ -309,7 +308,9 @@ export interface Bot {
   requiredRoles?: string;
 }
 
-export interface Location {
+interface Location {
   name: string;
   description: string;
 }
+
+export const publicAccounts = new PublicAccountService();
