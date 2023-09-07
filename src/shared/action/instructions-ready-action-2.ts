@@ -15,6 +15,7 @@ export class InstructionsReadyAction {
     pin = false
   ) {
     let message = await this.getInstructionsMessage();
+
     if (!message) {
       const channel = await getTextChannel(this.channelId);
       message = await channel.send(options);
