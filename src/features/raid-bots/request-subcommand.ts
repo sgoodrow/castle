@@ -27,7 +27,7 @@ export class RequestSubcommand extends Subcommand {
       throw new Error(`Could not locate bot request thread.`);
     }
 
-    let status = "✅ ";
+    let status = "✅ Granted";
 
     const currentPilot =
       await PublicAccountService.getInstance().getCurrentBotPilot(name);
@@ -48,10 +48,10 @@ Password: ${spoiler(details.password)}
       if (currentPilot) {
         response += `** Please note that ${currentPilot} is marked as the pilot of ${name} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
       }
-      response += `The credentials for ${name} have been DM'd to you. Please remember to /bot park when you are done!`;
+      response += `The credentials for ${name} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
       await interaction.editReply(response);
     } catch (err) {
-      status = "❌";
+      status = "❌ Denied";   
 
       await interaction.editReply(
         `You do not have the correct permissions to access ${name}.`
@@ -59,7 +59,7 @@ Password: ${spoiler(details.password)}
     }
 
     const logMsg = await thread.send("OK");
-    logMsg.edit(`${interaction.user} requested access to ${name} ${status}`);
+    logMsg.edit(`${status} ${interaction.user} access to ${name}.`);
 
     // Update public record
     if (await PublicAccountService.getInstance().isBotPublic(name)) {
