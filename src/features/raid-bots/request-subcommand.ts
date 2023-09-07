@@ -5,8 +5,9 @@ import {
   spoiler,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { sharedCharacters } from "../../services/shared-characters";
+import { accounts } from "../../services/accounts";
 import { raidBotInstructions } from "./update-bots";
+import { PublicAccountService } from "../../services/public-accounts";
 import moment from "moment";
 
 export enum Option {
@@ -21,12 +22,18 @@ export class RequestSubcommand extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     const name = this.getOption(Option.Name, interaction)?.value as string;
 
+    const thread = await raidBotInstructions.getThread();
+    if (!thread) {
+      throw new Error(`Could not locate bot request thread.`);
+    }
+
     let status = "✅ Granted";
 
-    const currentPilot = await sharedCharacters.getCurrentBotPilot(name);
+    const currentPilot =
+      await PublicAccountService.getInstance().getCurrentBotPilot(name);
 
     try {
-      const details = await sharedCharacters.getAccount(
+      const details = await accounts.getAccount(
         name,
         interaction.member?.roles as GuildMemberRoleManager
       );
@@ -44,33 +51,32 @@ Password: ${spoiler(details.password)}
       response += `The credentials for ${name} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
       await interaction.editReply(response);
     } catch (err) {
-      status = "❌ Denied";
+      status = "❌ Denied";   
 
       await interaction.editReply(
         `You do not have the correct permissions to access ${name}.`
       );
     }
 
-    const thread = await raidBotInstructions.getThread();
-    if (!thread) {
-      throw new Error(`Could not locate bot request thread.`);
-    }
     const logMsg = await thread.send("OK");
     logMsg.edit(`${status} ${interaction.user} access to ${name}.`);
 
     // Update public record
-    if (await sharedCharacters.isBot(name)) {
+    if (await PublicAccountService.getInstance().isBotPublic(name)) {
       try {
         const guildUser = await interaction.guild?.members.fetch(
           interaction.user.id
         );
 
         if (!currentPilot) {
-          await sharedCharacters.updateBotPilot(
+          await PublicAccountService.getInstance().updateBotPilot(
             name,
             guildUser?.user.username || "UNKNOWN USER"
           );
-          await sharedCharacters.updateBotCheckoutTime(name, moment());
+          await PublicAccountService.getInstance().updateBotCheckoutTime(
+            name,
+            moment()
+          );
         }
       } catch (err) {
         throw new Error(
@@ -94,7 +100,7 @@ Password: ${spoiler(details.password)}
   public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Name:
-        return await sharedCharacters.getAccountOptions();
+        return await accounts.getOptions();
       default:
         return;
     }

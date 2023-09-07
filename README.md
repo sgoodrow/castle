@@ -46,10 +46,11 @@ Development typically happens in a [Gitpod](https://www.gitpod.io/)-provisioned 
 
 Some features required secrets, such as to connect to CastleDKP.com or the Castle Google account. This connectivity is enabled by the following configuration variables, and if they are not set, some features will be disabled or not work.
 
-| Environment Variable | Purpose                                                        | Features                                  | How to Retrieve                 |
-| -------------------- | -------------------------------------------------------------- | ----------------------------------------- | ------------------------------- |
-| `castleDkpTokenRO`   | Admin token for making authenticated requests to CastleDKP.com | Discord DKP Auctions, Discord DKP Uploads | Discuss with a Castle Moderator |
-| `GOOGLE_PRIVATE_KEY` | The Google Drive account key for accessing guild resources     | Banking, Shared Characters                | Discuss with a Castle Moderator |
+| Environment Variable  | Purpose                                                        | Features                                  | How to Retrieve                 |
+| --------------------- | -------------------------------------------------------------- | ----------------------------------------- | ------------------------------- |
+| `castleDkpTokenRO`    | Admin token for making authenticated requests to CastleDKP.com | Discord DKP Auctions, Discord DKP Uploads | Discuss with a Castle Moderator |
+| `GOOGLE_CLIENT_EMAIL` | The Google Drive account for accessing guild resources         | Banking, Shared Characters                | Discuss with a Castle Moderator |
+| `GOOGLE_PRIVATE_KEY`  | The Google Drive account key for accessing guild resources     | Banking, Shared Characters                | Discuss with a Castle Moderator |
 
 ### ⏺️ Local
 
@@ -63,14 +64,17 @@ This bot is deployed to a [Dokku](https://dokku.com/docs/) instance running on L
 
 With appropriate SSH access, Dokku can be managed through the CLI at:
 
-`ssh -t dokku@172.105.106.208 "help"` - Specify the "castle-discord-bot" application in your commands.
+  `ssh -t dokku@172.105.106.208 "help"` - Specify the "castle-discord-bot" application in your commands.
 
-**Dokku logs** can be tailed with:
 
-`ssh -t dokku@172.105.106.208 "logs castle-discord-bot -t"`
+**Dokku logs** can be tailed with: 
+
+  `ssh -t dokku@172.105.106.208 "logs castle-discord-bot -t"`
+
 
 **Environment variables** are set in Dokku with:
 
-`ssh -t dokku@172.105.106.208 'config:set castle-discord-bot VAR="Value" VAR2="Val2'`
+  `ssh -t dokku@172.105.106.208 'config:set castle-discord-bot VAR="Value" VAR2="Val2'`
 
 `update-dokku-env.sh` can be used to update the full castle-discord-bot Dokku config from a local .env file.
+
