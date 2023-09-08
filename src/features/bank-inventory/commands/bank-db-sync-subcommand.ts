@@ -15,10 +15,6 @@ import { setInventory } from "../bank-db";
 
 class SyncBankDb extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    // // filter channel
-    // if (interaction.channel.parentId !== dkpRecordsChannelId) {
-    //   throw new Error("Must use this command in a bank channel");
-    // }
     // authorize user
     const roles = interaction.member?.roles as GuildMemberRoleManager;
     if (!(roles.cache.has(bankerRoleId)) || !(roles.cache.has(officerRoleId))) {
@@ -33,7 +29,6 @@ class SyncBankDb extends Subcommand {
 
 
     for (let f of bankInventoryFolders) {
-      // console.log(f);
       try {
         const files = await findFiles(
           `'${f.id}' in parents and trashed = false`
@@ -47,11 +42,12 @@ class SyncBankDb extends Subcommand {
             await setInventory(inventory);
           }
         }
+        await interaction.editReply("Bank DB synced from GDrive.");
       } catch (err) {
         console.log(err);
+        await interaction.editReply("Sync error: " + err);
       }
     }
-    await interaction.editReply("Bank DB synced from GDrive.");
   }
 
   public async getOptionAutocomplete() {

@@ -2,7 +2,7 @@
 
 # update castle-discord-bot config from a local .env file.
 
-echo "Updating castlebot-vijo-dev config at dokku@172.105.106.208."
+echo "Updating castlebot-dev config at dokku@172.105.106.208."
 
 FILE="$1"
 
@@ -15,4 +15,4 @@ echo "Setting config from $FILE ..."
 
 ONELINER=$(sed '/^#.*$/d' $FILE | tr '\n' ' ')
 
-ssh -t dokku@172.105.106.208 "config:set castlebot-vijo-dev $ONELINER"
+ssh -t dokku@172.105.106.208 "config:set castlebot-dev $ONELINER"
