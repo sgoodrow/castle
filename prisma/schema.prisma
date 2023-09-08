@@ -51,8 +51,8 @@ model char {
   inventory slot[]
 }
 
-/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model typeorm_metadata {
+  id        Int @id @default(autoincrement())
   type     String  @db.VarChar
   database String? @db.VarChar
   schema   String? @db.VarChar
