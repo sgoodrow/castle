@@ -21,8 +21,8 @@ class ParkLocationsCache extends SpreadsheetCache<`${Columns}`, ParkLocation> {
   }
 
   protected getRowKey(d: ParkLocation): string | undefined {
-    if (d.name && d.description) {
-      return d.name;
+    if (d.name) {
+      return d.name.toLowerCase();
     }
   }
 }

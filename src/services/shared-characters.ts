@@ -69,9 +69,9 @@ export const sharedCharacters = {
 
   getFirstAvailableBotByClass: async (botClass: string, location?: string) => {
     const bots = await botsCache.getData();
-    const classBots = [...bots.values()].filter(
-      (b) => b.class === botClass.toLowerCase()
-    );
+    const classBots = [...bots.values()]
+      .filter((b) => b.class.toLowerCase() === botClass.toLowerCase())
+      .sort((a, b) => a.rowIndex - b.rowIndex);
     if (!classBots.length) {
       throw Error(`Could not find any classes matching ${botClass}.`);
     }
@@ -102,7 +102,7 @@ export const sharedCharacters = {
 
   isBot: async (botName: string) => {
     const bots = await botsCache.getData();
-    return !!bots.get(botName);
+    return !!bots.get(botName.toLowerCase());
   },
 
   getBotOptions: async (): Promise<

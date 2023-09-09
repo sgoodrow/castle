@@ -51,7 +51,9 @@ export abstract class SpreadsheetCache<ColumnNames extends string, Data> {
 
   public async getRow(cellHeader: ColumnNames, value: string) {
     const rows = await this.getRows();
-    const row = rows.find((r) => r[cellHeader] === value);
+    const row = rows.find(
+      (r) => r[cellHeader].toLowerCase() === value.toLowerCase()
+    );
     if (!row) {
       throw Error(`Row with ${cellHeader}=${value} not found.`);
     }

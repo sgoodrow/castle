@@ -20,6 +20,7 @@ interface Bot {
   currentPilot: string;
   checkoutTime: string;
   requiredRoles?: string;
+  rowIndex: number;
 }
 
 class BotsCache extends SpreadsheetCache<`${Columns}`, Bot> {
@@ -31,11 +32,12 @@ class BotsCache extends SpreadsheetCache<`${Columns}`, Bot> {
       location: row[Columns.Location].toLowerCase(),
       currentPilot: row[Columns.Pilot],
       checkoutTime: row[Columns.CheckoutTime],
+      rowIndex: row.rowIndex,
     };
   }
 
   protected getRowKey(d: Bot): string | undefined {
-    if (d.class && d.name && d.location) {
+    if (d.name) {
       return d.name.toLowerCase();
     }
   }
