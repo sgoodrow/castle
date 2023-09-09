@@ -8,76 +8,72 @@ import { Subcommand } from "../../shared/command/subcommand";
 import { sharedCharacters } from "../../services/shared-characters";
 import { raidBotInstructions } from "./update-bots";
 import moment from "moment";
+import { Mutex } from "async-mutex";
+import { Account } from "../../services/spreadsheets/accounts";
 
 export enum Option {
   Name = "name",
 }
 
 export class RequestSubcommand extends Subcommand {
+  private mutex: Mutex;
+
   public constructor(name: string, description: string) {
     super(name, description);
+    this.mutex = new Mutex();
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
     const name = this.getOption(Option.Name, interaction)?.value as string;
 
-    let status = "✅ Granted";
-
     const currentPilot = await sharedCharacters.getCurrentBotPilot(name);
-
-    try {
-      const details = await sharedCharacters.getAccount(
-        name,
-        interaction.member?.roles as GuildMemberRoleManager
-      );
-
-      await interaction.user.send(`${details.characters} (${details.purpose})
-Account: ${details.accountName}
-Password: ${spoiler(details.password)}
-
-**If a bot can be moved**, and you move it, please include the location in your /bot park`);
-      let response = "";
-
-      if (currentPilot) {
-        response += `** Please note that ${currentPilot} is marked as the pilot of ${name} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
-      }
-      response += `The credentials for ${name} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
-      await interaction.editReply(response);
-    } catch (err) {
-      status = "❌ Denied";
-
-      await interaction.editReply(
-        `You do not have the correct permissions to access ${name}.`
-      );
-    }
 
     const thread = await raidBotInstructions.getThread();
     if (!thread) {
       throw new Error(`Could not locate bot request thread.`);
     }
-    const logMsg = await thread.send("OK");
-    logMsg.edit(`${status} ${interaction.user} access to ${name}.`);
 
-    // Update public record
-    if (await sharedCharacters.isBot(name)) {
-      try {
-        const guildUser = await interaction.guild?.members.fetch(
-          interaction.user.id
-        );
-
-        if (!currentPilot) {
-          await sharedCharacters.updateBotPilot(
-            name,
-            guildUser?.user.username || "UNKNOWN USER"
-          );
-          await sharedCharacters.updateBotCheckoutTime(name, moment());
-        }
-      } catch (err) {
-        throw new Error(
-          "Failed to update public record, check the configuration"
-        );
-      }
+    let details: Account | undefined = undefined;
+    try {
+      details = await sharedCharacters.getAccount(
+        name,
+        interaction.member?.roles as GuildMemberRoleManager
+      );
+    } catch (err) {
+      const message = await thread.send("OK");
+      const response = `❌ Denied ${interaction.user} access to the first available ${botClass}: ${assigned}.`;
+      await message.edit(response);
+      return;
     }
+
+    const isBot = await sharedCharacters.isBot(name);
+    if (isBot && !currentPilot) {
+      const release = await this.mutex.acquire();
+      await sharedCharacters.updateBotPilot(name, interaction.user.username);
+      await sharedCharacters.updateBotCheckoutTime(name, moment());
+      release();
+      await interaction.user
+      .send(`Your name has been added to the public bot sheet along with a timestamp.
+        
+**Assigned:** ${details.characters} (${details.purpose})
+**Account:** ${details.accountName}
+**Password:** ${spoiler(details.password)}
+
+Please use \`/bot park <name> <location if you moved it>\` when you are finished in order to automatically remove your details from the public sheet.${}`);
+    } else {
+      await interaction.user.send(`**Assigned:** ${details.characters} (${details.purpose})
+**Account:** ${details.accountName}
+**Password:** ${spoiler(details.password)}
+`);
+    }
+
+    let response = `The credentials for ${name} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
+    if (currentPilot) {
+      response += `\n\n**Please note that ${currentPilot} is marked as the pilot of ${name} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet!**`;
+    }
+    await interaction.editReply(response);
+    const message = await thread.send("OK");
+    message.edit(`✅ Granted ${interaction.user} access to ${name}.`);
   }
 
   public get command() {

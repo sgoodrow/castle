@@ -76,11 +76,11 @@ export const sharedCharacters = {
       throw Error(`Could not find any classes matching ${botClass}.`);
     }
     console.log(
-      `Looking for ${botClass} and found ${classBots.length} options.`
+      `Looking for ${botClass} and found ${classBots.length} total bots.`
     );
     const availableClassBots = classBots.filter((b) => !b.currentPilot);
     console.log(
-      `Looking for ${botClass} and found ${availableClassBots.length} available.`
+      `Looking for ${botClass} and found ${availableClassBots.length} available bots.`
     );
     const matches = location
       ? availableClassBots.filter((b) =>

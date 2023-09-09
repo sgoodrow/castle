@@ -68,6 +68,5 @@ export abstract class SpreadsheetCache<ColumnNames extends string, Data> {
     row[cellHeader] = value;
     await row.save();
     this.cache.clear();
-    await this.getData();
   }
 }

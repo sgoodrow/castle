@@ -11,6 +11,7 @@ import moment from "moment";
 import { Class } from "../../shared/classes";
 import { capitalize } from "../../shared/util";
 import { Mutex } from "async-mutex";
+import { Account } from "../../services/spreadsheets/accounts";
 
 export enum Option {
   Class = "class",
@@ -35,77 +36,45 @@ export class RequestClassSubcommand extends Subcommand {
       throw new Error(`Could not locate bot request thread.`);
     }
 
-    let status = "✅ Granted";
-    let firstBot = "";
     const release = await this.mutex.acquire();
+    const assigned = await sharedCharacters.getFirstAvailableBotByClass(
+      botClass,
+      location
+    );
+
+    let details: Account | undefined = undefined;
     try {
-      try {
-        firstBot = await sharedCharacters.getFirstAvailableBotByClass(
-          botClass,
-          location
-        );
-      } catch (err) {
-        status = "❌ Denied";
-        await interaction.editReply(
-          `No bot was found matching the provided criteria.`
-        );
-        const message = await thread.send("OK");
-        let response = `${status} ${interaction.user} access to the first available ${botClass}`;
-        if (location) {
-          response += ` in ${location}`;
-        }
-        response += `. (${err})`;
-        await message.edit(response);
-        return;
-      }
-
-      try {
-        const details = await sharedCharacters.getAccount(
-          firstBot,
-          interaction.member?.roles as GuildMemberRoleManager
-        );
-
-        await interaction.user
-          .send(`Your name has been added to the public bot sheet along with a timestamp.
-          
+      details = await sharedCharacters.getAccount(
+        assigned,
+        interaction.member?.roles as GuildMemberRoleManager
+      );
+    } catch (err) {
+      await interaction.editReply(
+        `You do not have the correct permissions to access ${name}.`
+      );
+      const message = await thread.send("OK");
+      const response = `❌ Denied ${interaction.user} access to the first available ${botClass}: ${assigned}.`;
+      await message.edit(response);
+      release();
+      return;
+    }
+    await sharedCharacters.updateBotPilot(assigned, interaction.user.username);
+    await sharedCharacters.updateBotCheckoutTime(assigned, moment());
+    release();
+    await interaction.user
+      .send(`Your name has been added to the public bot sheet along with a timestamp.
+        
 **Assigned:** ${details.characters} (${details.purpose})
 **Account:** ${details.accountName}
 **Password:** ${spoiler(details.password)}
-  
+
 Please use \`/bot park <name> <location if you moved it>\` when you are finished in order to automatically remove your details from the public sheet.`);
-
-        await interaction.editReply(
-          `The credentials for ${firstBot} have been DM'd to you. Please remember to \`/bot park\` when you are done with the character.`
-        );
-
-        // Update public record
-        try {
-          const guildUser = await interaction.guild?.members.fetch(
-            interaction.user.id
-          );
-          await sharedCharacters.updateBotPilot(
-            firstBot,
-            guildUser?.user.username || "UNKNOWN USER"
-          );
-          await sharedCharacters.updateBotCheckoutTime(firstBot, moment());
-        } catch (err) {
-          throw new Error(
-            "Failed to update public record, check the configuration"
-          );
-        }
-      } catch (err) {
-        status = "❌ Denied";
-
-        await interaction.editReply(
-          `You do not have the correct permissions to access ${firstBot}.`
-        );
-      }
-      const message = await thread.send("OK");
-      const response = `${status} ${interaction.user} access to the first available ${botClass}: ${firstBot}.`;
-      message.edit(response);
-    } finally {
-      release();
-    }
+    await interaction.editReply(
+      `The credentials for ${assigned} have been DM'd to you. Please remember to \`/bot park\` when you are done with the character.`
+    );
+    const message = await thread.send("OK");
+    const response = `✅ Granted ${interaction.user} access to the first available ${botClass}: ${assigned}.`;
+    await message.edit(response);
   }
 
   public get command() {
