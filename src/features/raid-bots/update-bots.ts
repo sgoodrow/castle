@@ -9,7 +9,7 @@ import {
   raiderRoleId,
 } from "../../config";
 import { Name } from "../../db/instructions";
-import { accounts } from "../../services/accounts";
+import { sharedCharacters } from "../../services/shared-characters";
 import {
   Options,
   readyActionExecutor,
@@ -30,12 +30,14 @@ export const updateRaidBotsInfo = (options: Options) =>
     try {
       checkGoogleCredentials();
     } catch (err) {
-      console.warn(
+      console.log(
         "Update raid bots feature is disabled because google credentials were not found."
       );
       return;
     }
-    const raiderAccounts = await accounts.getAccountsForRole(raiderRoleId);
+    const raiderAccounts = await sharedCharacters.getAllowedAccountsForRole(
+      raiderRoleId
+    );
     const sorted = sortBy(
       raiderAccounts,
       (b) => b.purpose,
@@ -99,12 +101,14 @@ export const updateBankBotInfo = (options: Options) =>
     try {
       checkGoogleCredentials();
     } catch (err) {
-      console.warn(
+      console.log(
         "Update bank bots feature is disabled because google credentials were not found."
       );
       return;
     }
-    const bankerAccounts = await accounts.getAccountsForRole(bankerRoleId);
+    const bankerAccounts = await sharedCharacters.getAllowedAccountsForRole(
+      bankerRoleId
+    );
     const sorted = sortBy(
       bankerAccounts,
       (b) => b.purpose,
@@ -138,12 +142,14 @@ export const updateGuardBotInfo = (options: Options) =>
     try {
       checkGoogleCredentials();
     } catch (err) {
-      console.warn(
+      console.log(
         "Update guard bots feature is disabled because google credentials were not found."
       );
       return;
     }
-    const guardAccounts = await accounts.getAccountsForRole(guardRoleId);
+    const guardAccounts = await sharedCharacters.getAllowedAccountsForRole(
+      guardRoleId
+    );
     const sorted = sortBy(
       guardAccounts,
       (b) => b.purpose,

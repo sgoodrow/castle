@@ -49,6 +49,7 @@ tasks:
       castleDkpBonusesCharId: "3413"
       sharedCharactersGoogleSheetId: "1s-vxZkI2ZK1LAB40MhYI4Vn7oY0YsEiX2vMmetn-SPo"
       publicCharactersGoogleSheetId: "1hS01upyJZW5_n8ffPCRjro1IS4Z9YwIl7vcSFM9ms7M"
+      GOOGLE_CLIENT_EMAIL: "castle-serviceacct-2@castlebank.iam.gserviceaccount.com"
 
     command: yarn dev
 
