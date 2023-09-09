@@ -7,7 +7,11 @@ import {
   PermissionFlagsBits,
 } from "discord.js";
 import { getGuild } from "../..";
-import { raiderRoleId, raidScheduleChannelId } from "../../config";
+import {
+  raiderRoleId,
+  membersAndAlliesRoleId,
+  raidScheduleChannelId
+} from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 import {
@@ -58,20 +62,32 @@ ${events.map((e) => e.toString()).join("\n\n")}`
       throw new Error("Could not locate the raider role");
     }
 
+    const membersRole = await guild.roles.fetch(membersAndAlliesRoleId);
+
+    if (!membersRole) {
+      throw new Error("Could not locate the members role");
+    }
+    
+
     const nextWeek = Date.now() + 7 * DAYS;
 
     return events
       .filter(
         (e) =>
+          e.channel?.type != ChannelType.GuildVoice ||
           e.channel?.type === ChannelType.GuildVoice &&
           !!e.scheduledStartTimestamp &&
           [
             GuildScheduledEventStatus.Scheduled,
             GuildScheduledEventStatus.Active,
-          ].includes(e.status) &&
-          e.channel
-            .permissionsFor(raiderRole)
-            .has(PermissionFlagsBits.ViewChannel) &&
+          ].includes(e.status) && (
+            e.channel
+              .permissionsFor(raiderRole)
+              .has(PermissionFlagsBits.ViewChannel) || 
+            e.channel
+              .permissionsFor(membersRole)
+              .has(PermissionFlagsBits.ViewChannel)
+          ) &&
           e.scheduledStartTimestamp <= nextWeek // Added filter condition
       )
       .sort(
