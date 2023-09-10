@@ -44,17 +44,19 @@ class RaidBotsCache extends SpreadsheetCache<`${Columns}`, RaidBot> {
 
   public updateBotLocation = async (botName: string, location: string) => {
     const row = await this.getRow("Name", botName);
-    return this.updateRowCell(row, "Current Location", location);
+    row["Current Location"] = location;
+    this.saveRow(row);
   };
 
-  public updateBotPilot = async (botName: string, pilot: string) => {
+  public updateBotPilot = async (
+    botName: string,
+    pilot: string,
+    time: string
+  ) => {
     const row = await this.getRow("Name", botName);
-    return this.updateRowCell(row, "Current Bot Pilot", pilot);
-  };
-
-  public updateBotCheckoutTime = async (botName: string, time: string) => {
-    const row = await this.getRow("Name", botName);
-    return this.updateRowCell(row, "Date and Time (EST) of pilot login", time);
+    row["Current Bot Pilot"] = pilot;
+    row["Date and Time (EST) of pilot login"] = time;
+    this.saveRow(row);
   };
 }
 

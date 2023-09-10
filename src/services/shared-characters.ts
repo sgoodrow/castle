@@ -202,7 +202,6 @@ export const sharedCharacters = {
         await message.edit(
           `❌ Denied ${take.interaction.user} access to ${err.botName}.`
         );
-        throw err;
       }
       throw err;
     } finally {
@@ -228,8 +227,7 @@ export const sharedCharacters = {
     pilot: string,
     time: moment.Moment | null
   ) => {
-    await raidBotsCache.updateBotPilot(bot.name, pilot);
-    await raidBotsCache.updateBotCheckoutTime(bot.name, time?.toString() || "");
+    await raidBotsCache.updateBotPilot(bot.name, pilot, time?.toString() || "");
   },
 
   getCurrentBotPilot: async (botName: string) => {

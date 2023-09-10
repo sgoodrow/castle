@@ -60,12 +60,7 @@ export abstract class SpreadsheetCache<ColumnNames extends string, Data> {
     return row;
   }
 
-  public async updateRowCell(
-    row: GoogleSpreadsheetRow,
-    cellHeader: ColumnNames,
-    value: string
-  ) {
-    row[cellHeader] = value;
+  public async saveRow(row: GoogleSpreadsheetRow) {
     await row.save();
     this.cache.clear();
   }
