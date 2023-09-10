@@ -10,7 +10,7 @@ import {
   parseInventoryFile,
   bankInventoriesFolderId
 } from "../inventory-files";
-import { setInventory } from "../bank-db";
+import { bankData } from "../bank-data";
 
 
 class SyncBankDb extends Subcommand {
@@ -39,7 +39,7 @@ class SyncBankDb extends Subcommand {
             const data = await getFile(file.id)
             console.log("bank-db-sync:", file.name, file.id);
             const inventory = await parseInventoryFile(file.name, String(data));
-            await setInventory(inventory);
+            await bankData.setInventory(inventory);
           }
         }
         await interaction.editReply("Bank DB synced from GDrive.");

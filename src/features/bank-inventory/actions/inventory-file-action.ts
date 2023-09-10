@@ -1,6 +1,6 @@
 import axios from "axios";
 import { Attachment, Message } from "discord.js";
-import { Inventory, setInventory } from "../bank-db";
+import { Inventory, bankData } from "../bank-data";
 
 // import { bankerRoleId } from "../../config"; TODO: verify role?
 import {
@@ -41,7 +41,7 @@ class UploadInventoryMessageAction extends MessageAction {
     const filename = a.name || "unknown";
     await uploadToGDrive(filename, data);
     const inventory: Inventory = await parseInventoryFile(filename, data);
-    await setInventory(inventory);
+    await bankData.setInventory(inventory);
     message.react("✅");
   }
 

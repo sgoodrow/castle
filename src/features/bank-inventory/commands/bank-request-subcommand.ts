@@ -5,7 +5,7 @@ import {
   EmbedBuilder
 } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
-import { getItemStockById, getItemsByStem } from "../bank-db";
+import { bankData } from "../bank-data";
 import { bankRequestsChannelId } from "../../../config";
 import { getTextChannel } from "../../..";
 enum Option {
@@ -18,7 +18,7 @@ class BankRequest extends Subcommand {
     if (!item) {
       throw new Error(`An item is required.`);  // todo: is it?
     } else {
-      const stockList = await getItemStockById(parseInt(String(item.value)));
+      const stockList = await bankData.getItemStockById(parseInt(String(item.value)));
       if (!stockList?.stock) {
         throw new Error('No matches available.')
       }
@@ -78,7 +78,7 @@ class BankRequest extends Subcommand {
   }
 
   private async autoCompleteItems(stem: string) {
-      const items = await getItemsByStem(stem);
+      const items = await bankData.getItemsByStem(stem);
       console.log("get items", items);
       if(items) {
         return items.map((i)=> ({

@@ -1,4 +1,4 @@
-import { setInventory, InventoryItem } from "./bank-db";
+import { InventoryItem } from "./bank-data";
 import {
   uploadFileToFolder,
   DriveFile,
