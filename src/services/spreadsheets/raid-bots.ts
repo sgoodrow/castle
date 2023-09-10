@@ -12,7 +12,7 @@ enum Columns {
   CheckoutTime = "Date and Time (EST) of pilot login",
 }
 
-interface Bot {
+export interface RaidBot {
   class: Class;
   name: string;
   location: string;
@@ -23,8 +23,8 @@ interface Bot {
   rowIndex: number;
 }
 
-class BotsCache extends SpreadsheetCache<`${Columns}`, Bot> {
-  protected parseRow(row: GoogleSpreadsheetRow): Bot {
+class RaidBotsCache extends SpreadsheetCache<`${Columns}`, RaidBot> {
+  protected parseRow(row: GoogleSpreadsheetRow): RaidBot {
     return {
       class: row[Columns.Class].toLowerCase(),
       name: row[Columns.Name],
@@ -36,7 +36,7 @@ class BotsCache extends SpreadsheetCache<`${Columns}`, Bot> {
     };
   }
 
-  protected getRowKey(d: Bot): string | undefined {
+  protected getRowKey(d: RaidBot): string | undefined {
     if (d.name) {
       return d.name.toLowerCase();
     }
@@ -58,7 +58,7 @@ class BotsCache extends SpreadsheetCache<`${Columns}`, Bot> {
   };
 }
 
-export const botsCache = new BotsCache(
+export const raidBotsCache = new RaidBotsCache(
   "Bot Info",
   publicCharactersGoogleSheetId
 );

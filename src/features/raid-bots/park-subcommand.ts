@@ -8,10 +8,6 @@ export enum Option {
 }
 
 export class ParkSubcommand extends Subcommand {
-  public constructor(name: string, description: string) {
-    super(name, description);
-  }
-
   public async execute(interaction: CommandInteraction<CacheType>) {
     const name = this.getRequiredOptionValue(
       Option.Name,
@@ -22,22 +18,23 @@ export class ParkSubcommand extends Subcommand {
       interaction
     ) as string;
 
-    try {
-      await sharedCharacters.updateBotPilot(name, "");
-      await sharedCharacters.updateBotCheckoutTime(name, null);
-      if (location) {
-        await sharedCharacters.updateBotLocation(name, location);
-        await interaction.editReply(
-          `Sheet was updated to show ${name} was released and moved to ${location}`
-        );
-      } else {
-        await interaction.editReply(
-          `Sheet was updated to show ${name} was released in its previous location`
-        );
-      }
-    } catch (error) {
-      await interaction.editReply(`Failed to move bot: ${error}`);
+    const raidBot = await sharedCharacters.getRaidBotByName(name);
+    if (!raidBot) {
+      throw new Error(`Failed to find a raid bot named ${raidBot}`);
     }
+
+    await sharedCharacters.updateBotPilot(raidBot, "", null);
+    if (!location) {
+      await interaction.editReply(
+        `Sheet was updated to show ${name} was released in its previous location`
+      );
+      return;
+    }
+
+    await sharedCharacters.updateBotLocation(name, location);
+    await interaction.editReply(
+      `Sheet was updated to show ${name} was released and moved to ${location}`
+    );
   }
 
   public get command() {

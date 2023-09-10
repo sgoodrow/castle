@@ -1,17 +1,8 @@
-import {
-  CacheType,
-  CommandInteraction,
-  GuildMemberRoleManager,
-  spoiler,
-} from "discord.js";
+import { CacheType, CommandInteraction } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { sharedCharacters } from "../../services/shared-characters";
-import { raidBotInstructions } from "./update-bots";
-import moment from "moment";
 import { Class } from "../../shared/classes";
 import { capitalize } from "../../shared/util";
-import { Mutex } from "async-mutex";
-import { Account } from "../../services/spreadsheets/accounts";
 
 export enum Option {
   Class = "class",
@@ -19,62 +10,19 @@ export enum Option {
 }
 
 export class RequestClassSubcommand extends Subcommand {
-  private mutex: Mutex;
-  public constructor(name: string, description: string) {
-    super(name, description);
-    this.mutex = new Mutex();
-  }
-
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const botClass = capitalize(
+    const raidBotClass = capitalize(
       this.getOption(Option.Class, interaction)?.value as string
     );
-    const location = this.getOption(Option.Location, interaction)
+    const raidBotLocation = this.getOption(Option.Location, interaction)
       ?.value as string;
-    const thread = await raidBotInstructions.getThread();
-    if (!thread) {
-      throw new Error(`Could not locate bot request thread.`);
-    }
 
-    const release = await this.mutex.acquire();
-    const assigned = await sharedCharacters.getFirstAvailableBotByClass(
-      botClass,
-      location
-    );
-
-    let details: Account | undefined = undefined;
-    try {
-      details = await sharedCharacters.getAccount(
-        assigned,
-        interaction.member?.roles as GuildMemberRoleManager
-      );
-    } catch (err) {
-      await interaction.editReply(
-        `You do not have the correct permissions to access ${name}.`
-      );
-      const message = await thread.send("OK");
-      const response = `❌ Denied ${interaction.user} access to the first available ${botClass}: ${assigned}.`;
-      await message.edit(response);
-      release();
-      return;
-    }
-    await sharedCharacters.updateBotPilot(assigned, interaction.user.username);
-    await sharedCharacters.updateBotCheckoutTime(assigned, moment());
-    release();
-    await interaction.user
-      .send(`Your name has been added to the public bot sheet along with a timestamp.
-        
-**Assigned:** ${details.characters} (${details.purpose})
-**Account:** ${details.accountName}
-**Password:** ${spoiler(details.password)}
-
-Please use \`/bot park <name> <location if you moved it>\` when you are finished in order to automatically remove your details from the public sheet.`);
-    await interaction.editReply(
-      `The credentials for ${assigned} have been DM'd to you. Please remember to \`/bot park\` when you are done with the character.`
-    );
-    const message = await thread.send("OK");
-    const response = `✅ Granted ${interaction.user} access to the first available ${botClass}: ${assigned}.`;
-    await message.edit(response);
+    await sharedCharacters.takeAccount({
+      type: "byClass",
+      raidBotClass,
+      raidBotLocation,
+      interaction,
+    });
   }
 
   public get command() {
