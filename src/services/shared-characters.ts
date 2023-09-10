@@ -139,6 +139,10 @@ export const sharedCharacters = {
     await raidBotsCache.updateBotLocation(botName, location);
   },
 
+  /**
+   * Gets the account details for a particular request and if it is a raid bot, attempts
+   * to set the current pilot.
+   */
   takeAccount: async (take: TakeAccount) => {
     const thread = await raidBotInstructions.getThread();
     if (!thread) {
@@ -181,7 +185,7 @@ export const sharedCharacters = {
 **Password:** ${spoiler(account.password)}`;
 
       // If its a raid bot, update the pilot
-      raidBot = await sharedCharacters.getRaidBot(account);
+      raidBot = await sharedCharacters.getRaidBotByName(account.characters);
       if (raidBot) {
         await sharedCharacters.updateBotPilot(
           raidBot,
@@ -230,19 +234,9 @@ export const sharedCharacters = {
     await raidBotsCache.updateBotPilot(bot.name, pilot, time?.toString() || "");
   },
 
-  getCurrentBotPilot: async (botName: string) => {
-    const bots = await raidBotsCache.getData();
-    return [...bots.values()].find((b) => b.name === botName.toLowerCase())
-      ?.currentPilot;
-  },
-
   getRaidBotByName: async (name: string) => {
     const bots = await raidBotsCache.getData();
     return bots.get(name.toLowerCase());
-  },
-
-  getRaidBot: async (account: Account) => {
-    return sharedCharacters.getRaidBotByName(account.characters);
   },
 
   getBotOptions: async (): Promise<
