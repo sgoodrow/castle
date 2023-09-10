@@ -39,7 +39,7 @@ model slot {
   slot     String
   charName String
   itemId   Int?
-  count    Int?
+  count    Int?   @default(1)
   char     char   @relation(fields: [charName], references: [name])
   item     item?  @relation(fields: [itemId], references: [id])
 }
