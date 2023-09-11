@@ -26,7 +26,7 @@ import { joinReinforcementsButtonCommand } from "../features/raider-enlistment/j
 import { leaveReinforcementsButtonCommand } from "../features/raider-enlistment/leave-reinforcements-button-command";
 import { threadUtilCommand } from "../features/threads/command";
 import { raidCommand } from "../features/dkp-records/commands/raid-command";
-import { bankCommand } from "../features/bank-inventory/command";
+import { bankCommand } from "../features/bank-inventory/commands/command";
 import { botCommand } from "../features/raid-bots/command";
 
 const slashCommands = [

@@ -1,4 +1,4 @@
-import { Subcommand } from "../../shared/command/subcommand";
+import { Subcommand } from "../../../shared/command/subcommand";
 
 enum Option {
   Banker = "banker",

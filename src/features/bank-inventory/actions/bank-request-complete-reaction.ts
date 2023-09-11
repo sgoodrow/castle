@@ -9,12 +9,12 @@ import {
   bankerRoleId,
   officerRoleId,
   bankTransactionsChannelId,
-} from "../../config";
+} from "../../../config";
 import {
   ReactionAction,
   reactionActionExecutor,
-} from "../../shared/action/reaction-action";
-import { getTextChannel } from "../../";
+} from "../../../shared/action/reaction-action";
+import { getTextChannel } from "../../..";
 
 export const tryBankRequestComplete = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -48,8 +48,10 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     const bankTransactionsChannel = await getTextChannel(
       bankTransactionsChannelId
     );
-    const transactionContent =
-      this.message.content + ` -- approved by ${this.user.username}`;
+    let transactionContent = this.message.content + ` -- approved by ${this.user}`;
+    if (!this.message.author?.bot) {
+      transactionContent = this.message.author?.toString() + ": " + transactionContent;
+    }
     bankTransactionsChannel?.send(transactionContent);
     this.message.delete();
   }
