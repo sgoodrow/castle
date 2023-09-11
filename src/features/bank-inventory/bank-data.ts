@@ -90,6 +90,13 @@ class BankData {
           startsWith: itemStem,
           mode: 'insensitive'
         }
+      },
+      include: {
+          _count: { 
+            select: {
+              stock: true
+            }
+        }
       }
     }).catch((err: Error) => {
       console.error(err);
@@ -101,6 +108,13 @@ class BankData {
       where: {
         name: {
           equals: itemName
+        }
+      },
+      include: {
+          _count: { 
+            select: {
+              stock: true
+            }
         }
       }
     }).catch((err: Error) => {

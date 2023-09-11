@@ -19,7 +19,7 @@ class BankRequest extends Subcommand {
       throw new Error(`An item is required.`);  // todo: is it?
     } else {
       const stockList = await bankData.getItemStockById(parseInt(String(item.value)));
-      if (!stockList?.stock) {
+      if (!stockList?.stock || stockList?.stock.length === 0) {
         throw new Error('No matches available.')
       }
       const name = stockList?.name || 'unknown';
@@ -81,13 +81,14 @@ class BankRequest extends Subcommand {
       const items = await bankData.getItemsByStem(stem);
       console.log("get items", items);
       if(items) {
-        return items.map((i)=> ({
-          name: i.name,
+        return items
+        .filter((i) => i._count.stock > 0)
+        .map((i)=>({
+          name: i.name + " (" + i._count.stock +  ")",
           value: String(i.id)
         }));
       }
-    return []; // temp do nothing..
-
+    return []; 
   }
 
   protected getOptionValue<T>(
