@@ -24,14 +24,14 @@ class UpdateRaiderInfoAction extends InstructionsReadyAction {
 
   private async getRequirements() {
     return new EmbedBuilder({
-      title: `Join the Raid Force`,
-      description: `##📜 Requirements
+      title: `# Join the Raid Force`,
+      description: `## 📜 Requirements
 - Level 46.5+ for most raids; 52+ for raids beyond Siren's Grotto
 - Read and understand the Castle DKP rules (https://tinyurl.com/rules-castle-dkp)
 - Not raiding with any other guilds
 - Not PvP flagged
 
-##📜 Behaviors
+## 📜 Behaviors
 1. **Be in raid voice.** Listen to raid leader instructions and do not argue with them. Only discuss the raid topics.
 2. **Wait for assist.** Use an "/assist Name" macro. Attack only when assist is called to allow tanks to position mobs and enchanters to drain mana to prevent gating/healing.
 3. **Arrive 15 minutes early.** Being late delays the raid.
@@ -43,20 +43,20 @@ class UpdateRaiderInfoAction extends InstructionsReadyAction {
 9. **Stand when a mob is incoming.** Sitting generates aggro. Mobs will one-shot sitters and mess up positioning.
 10. **Only discuss raid targets in raid voice.** Targets get sniped. Keep our strategy and tactics close to the chest.
 
-##❓ How do I join ${this.role}?
+### ❓ How do I join ${this.role}?
 Each player must send a message in this channel with the following information and a Knight will give you the role.
 
 1. Include a screenshot of your Castle- or alliance- tagged character with their name, guild and level visible. Also include /time in the chat.
 2. Include a link to your CastleDKP.com raiding character profile (NOT the MyCharacters page). Please use first name only for your character.
 3. Say **"I have read and agree to follow the raider requirements and behaviors."**
 
-##❓ Are raids subject to any other rules?
+### ❓ Are raids subject to any other rules?
 Yes. Some raids are deemed "Competitive", such as batphones, natural respawns of bosses and earthquakes. These raids may have additional level requirements posted in the event and generally assume players will bring their best character and be open to requests to swap to another of their characters if the raid depends on it.
 
-##❓ What if I don't follow the required raider requirements or behaviors?
+###❓ What if I don't follow the required raider requirements or behaviors?
 Leadership will DM you with a reminder warning, then a 1 DKP penalty, followed by a 1-week suspension, and finally dismissal from raider status.
 
-## ❓ What else do I need to know?
+### ❓ What else do I need to know?
 - DKP never decays in Castle, but if become inactive for 3 months you will need to request reactivation by posting in this channel.
 - We give DKP for acauiring raid-readiness items. See https://discord.com/channels/539189546630381579/1090414660408320000 for details.`,
     });
@@ -64,7 +64,7 @@ Leadership will DM you with a reminder warning, then a 1 DKP penalty, followed b
 
   private async getTldrEmbed() {
     return new EmbedBuilder({
-      title: "⚠️ TL;DR",
+      title: "## ⚠️ TL;DR",
       description: `Join the raid force and follow the expected raider behaviors -- if you don't you may get a warning, lose DKP or worse`,
       color: Colors.Orange,
     });
