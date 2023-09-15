@@ -56,14 +56,15 @@ ${this.date}${this.countdown}${this.description}`;
     if (!this.data.description) {
       return "";
     }
-    const compact = compactDescription(
-      this.data.description,
-      this.descriptionLength
-    );
-    let moreInfo = "";
-    if (compact.length < this.data.description.length) {
-      moreInfo = ` ([more info](${this.data.url}))`;
-    }
-    return `\n${compact}${moreInfo}`;
+    return `\n([more info](${this.data.url}))`;
+    // const compact = compactDescription(
+    //  this.data.description,
+    //  this.descriptionLength
+    //);
+    //let moreInfo = "";
+    //if (compact.length < this.data.description.length) {
+    //  moreInfo = ` ([more info](${this.data.url}))`;
+    //}
+    //return `\n${compact}${moreInfo}`;
   }
 }
