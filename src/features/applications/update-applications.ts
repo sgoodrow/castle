@@ -50,7 +50,7 @@ class UpdateApplicationInfoAction extends InstructionsReadyAction {
 ❓ **What's expected of volunteers?**
 • Represent us well, both internally and externally.
 • Commit as much time as you like, when you'd like.
-• You may step down or take a break at any time.
+• You may take a break or step down at any time, but may be required to re-apply for Leadership roles.
 
 ❓ **Am I a good candidate to volunteer? What if I'm an ally?**
 • Yes! Everyone is encouraged to volunteer.
