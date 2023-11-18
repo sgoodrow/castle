@@ -119,7 +119,7 @@ export class PublicAccountService implements IPublicAccountService {
           await row.save();
         }
       } else {
-        throw Error(`Bot ${botName} not found`);
+        throw Error(`Bot ${botName} not found.`);
       }
     }
   }
@@ -131,23 +131,30 @@ export class PublicAccountService implements IPublicAccountService {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
-      const classRows = rows.filter((r) =>
-        (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() ===
-              botClass.toUpperCase());
+      const classRows = rows.filter(
+        (r) =>
+          (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() ===
+          botClass.toUpperCase()
+      );
       if (!classRows.length) {
         throw Error(`Could not find any classes matching ${botClass}.`);
       }
-      console.log(`Looking for ${botClass} and found ${classRows.length} options.`);
-      const availableClassRows = classRows.filter((r) =>
-        !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
+      console.log(
+        `Looking for ${botClass} and found ${classRows.length} options.`
       );
-      console.log(`Looking for ${botClass} and found ${classRows.length} available.`);
-      const matches = location ? availableClassRows.filter(
-          (r) =>
+      const availableClassRows = classRows.filter(
+        (r) => !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
+      );
+      console.log(
+        `Looking for ${botClass} and found ${classRows.length} available.`
+      );
+      const matches = location
+        ? availableClassRows.filter((r) =>
             (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
               ?.toUpperCase()
               .includes(location.toUpperCase())
-        ) : availableClassRows;
+          )
+        : availableClassRows;
       // todo: get a random match instead of first to reduce race condition assigning same bot to multiple people
       const first = matches[0];
       if (first) {
