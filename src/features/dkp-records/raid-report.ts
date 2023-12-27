@@ -99,6 +99,10 @@ export class RaidReport {
     return every(this.allTickNumbers.map((i) => this.getRaidTick(i).hasEvent));
   }
 
+  public get netDkp(): number {
+    return this.ticks.reduce((s, t) => s + (t.earned - t.spent), 0);
+  }
+
   public async tryUpdateThreadName(channel: ThreadChannel) {
     const name = this.getThreadName();
     if (channel.name === name) {
@@ -118,7 +122,7 @@ export class RaidReport {
           ", "
         )
       : `${this.filename.replace(/[^a-zA-Z]+/g, "")}?`;
-    return `${emoji} ${this.ticks[0].shortDate} ${label || "Unidentified"}`;
+    return `${emoji} ${this.ticks[0].shortDate} ({this.netDkp}) ${label || "Unidentified"}`;
   }
 
   public getCreditCommands(): string[] {
