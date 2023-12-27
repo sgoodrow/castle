@@ -149,6 +149,14 @@ ${this.example}`);
       : threadName;
   }
 
+  private async getItem(threadName: string) {
+    // parse out the extra stuff
+    const lastHyphenIndex = threadName.lastIndexOf(" - ");
+    return lastHyphenIndex !== -1
+      ? threadName.substring(lastHyphenIndex + 3) // +3 to skip the " - " itself
+      : threadName;
+  }
+
   private getPrice(unparsedPrice: string) {
     const price = Number(unparsedPrice);
     if (!Number.isInteger(price) || price < 1) {
