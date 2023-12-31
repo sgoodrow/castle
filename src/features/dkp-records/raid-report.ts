@@ -122,7 +122,7 @@ export class RaidReport {
           ", "
         )
       : `${this.filename.replace(/[^a-zA-Z]+/g, "")}?`;
-    return `${emoji} ${this.ticks[0].shortDate} (${this.netDkp}) ${label || "Unidentified"}`;
+    return `${emoji} ${this.ticks[0].shortDate} (${Math.round(this.netDkp)}) ${label || "Unidentified"}`;
   }
 
   public getCreditCommands(): string[] {
