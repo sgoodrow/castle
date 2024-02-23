@@ -47,13 +47,13 @@ export interface RaidEventData {
 }
 
 const characters = new LRUCache<string, Character>({
-  max: 200,
+  max: 1000,
   ttl: 3 * MONTHS,
   updateAgeOnGet: true,
 });
 
 const events = new LRUCache<string, RaidEventData>({
-  max: 200,
+  max: 1000,
   ttl: 10 * MINUTES,
 });
 
@@ -69,6 +69,9 @@ const getEvents = async () => {
   }>(route("events"));
   delete data.status;
   Object.values(data).forEach(({ id, name, value }) => {
+    if (name.includes("legacy")) {
+      return;
+    }
     const abreviation = name.substring(
       name.indexOf("[") + 1,
       name.indexOf("]")
