@@ -155,13 +155,15 @@ export const castledkp = {
     characterId: string,
     threadUrl: string
   ) => {
-    const { data } = await client.post<{ raid_id: number }>(route("add_raid"), {
+    const payload = {
       raid_date: moment().format(UPLOAD_DATE_FORMAT),
       raid_attendees: { member: [Number(characterId)] },
       raid_value: 0,
       raid_event_id: event.id,
       raid_note: `${name} ${threadUrl}`,
-    });
+    };
+    console.log("Creating new raid:", payload);
+    const { data } = await client.post<{ raid_id: number }>(route("add_raid"), payload);
 
     return {
       eventUrlSlug: event.name
@@ -193,20 +195,24 @@ export const castledkp = {
     }
 
     // create raid
-    const { data } = await client.post<{ raid_id: number }>(route("add_raid"), {
+    const payload = {
       raid_date: tick.uploadDate,
       raid_attendees: { member: characterIds },
       raid_value: tick.data.value,
       raid_event_id: tick.data.event.id,
       raid_note: `${tick.name} ${threadUrl}`,
-    });
+    };
+    console.log("Creating raid tick", payload);
+    const { data } = await client.post<{ raid_id: number }>(route("add_raid"), payload);
 
     // add items to raid
+    console.log("Adding items to raid", tick.data.loot);
     await Promise.all(
       tick.data.loot.map((l) => castledkp.addItem(data.raid_id, l))
     );
 
     // add adjustments to raid
+    console.log("Adding adjustments to raid", tick.data.adjustments);
     await Promise.all(
       tick.data.adjustments?.map((a) =>
         castledkp.addAdjustment(data.raid_id, a)
