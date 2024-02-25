@@ -186,6 +186,10 @@ export class PublicAccountService implements IPublicAccountService {
     }
   }
 
+  public async getBotInfo(botname: string) {
+    return this.getBot(botname);
+  }
+
   public async isBotPublic(botName: string) {
     await this.loadBots();
     if (this.sheet) {

@@ -64,7 +64,7 @@ class BankRequest extends Subcommand {
 
   public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction) {
     const input = interaction.options.getString('bankitem');
-    console.log("input", input)
+    // console.log("input", input)
     switch (option) {
       case Option.Item:
         if(input && input.length > 3) {
@@ -79,7 +79,7 @@ class BankRequest extends Subcommand {
 
   private async autoCompleteItems(stem: string) {
       const items = await bankData.getItemsByStem(stem);
-      console.log("get items", items);
+      // console.log("get items", items);
       if(items) {
         return items
         .filter((i) => i._count.stock > 0)

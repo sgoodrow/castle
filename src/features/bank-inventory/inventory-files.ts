@@ -52,7 +52,7 @@ export const uploadToGDrive = async (filename: string, contents: string) => {
     // const outputfiles = await findFileInFolders(filename, "outputfiles");
     // if found, update it
     outputfiles.forEach(async (val) => {
-      console.log("update inventory outputfile:",val)
+      // console.log("update inventory outputfile:",val)
       if (val.id) {
         // TODO: check if it's in the castle_bank directory
         updateFile(val.id, file);
