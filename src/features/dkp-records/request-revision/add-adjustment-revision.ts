@@ -10,7 +10,7 @@ export class AddAdjustmentRevision extends RaidReportRevision {
   }
 
   protected async validateArgs() {
-    const [playerRaw, valueString, ...reasonWords] = this.args;
+    const [valueString, playerRaw, ...reasonWords] = this.args;
     if (!playerRaw) {
       throw this.getFormatError("missing player name");
     }
