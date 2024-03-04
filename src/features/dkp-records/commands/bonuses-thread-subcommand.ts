@@ -98,7 +98,7 @@ export class BonusesThreadSubcommand extends Subcommand {
         }).addFields([
           {
             name: "Add a raid adjustment bonus. Context is optional.",
-            value: "`!adj Pumped 5 reason (context)`",
+            value: "`!adj 5 Pumped reason (context)`",
           },
         ]),
       ],
