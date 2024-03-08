@@ -25,6 +25,22 @@ export const requireInteractionMemberRole = (
   }
 };
 
+export const authorizeByMemberRoles = (
+  roleId: string[],
+  interaction:
+    | ButtonInteraction<CacheType>
+    | CommandInteraction<CacheType>
+    | AutocompleteInteraction<CacheType>
+) => {
+  const roles = interaction.member?.roles as GuildMemberRoleManager;
+  if (!roles) {
+    throw new Error("Could not determine your roles.");
+  }
+  if (!roles.cache.hasAny(...roleId)) {
+    throw new Error(`Not authorized to use this command.`);
+  }
+};
+
 export const requireInteractionMemberPermission = (
   permission: PermissionResolvable,
   interaction:

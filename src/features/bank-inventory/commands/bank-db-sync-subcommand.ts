@@ -4,22 +4,23 @@ import {
   GuildMemberRoleManager
  } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
-import { bankRequestsChannelId, bankerRoleId, officerRoleId } from "../../../config";
+import { bankRequestsChannelId, bankerRoleId, officerRoleId, modRoleId } from "../../../config";
 import { findFiles, getFile } from "../../../services/gdrive";
 import { 
   parseInventoryFile,
   bankInventoriesFolderId
 } from "../inventory-files";
 import { bankData } from "../bank-data";
+import { authorizeByMemberRoles } from "../../../shared/command/util";
 
 
 class SyncBankDb extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    // authorize user
-    const roles = interaction.member?.roles as GuildMemberRoleManager;
-    if (!(roles.cache.has(bankerRoleId)) || !(roles.cache.has(officerRoleId))) {
-      throw new Error("Must be a Banker or Offier to use this command");
-    }
+
+    // authorize
+    authorizeByMemberRoles([
+      bankerRoleId, officerRoleId, modRoleId
+    ], interaction);
 
     await interaction.editReply("Updating bank DB ...")
 

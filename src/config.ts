@@ -55,7 +55,8 @@ export const {
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
   GOOGLE_KEY_FILE,
-  bankGoogleDriveFolderId
+  bankGoogleDriveFolderId,
+  modRoleId
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
@@ -124,6 +125,7 @@ export const {
   jewelerRoleId: string;
   bankerRoleId: string;
   knightRoleId: string;
+  modRoleId: string;
 
   // Raider role IDs
   raiderRoleId: string;
