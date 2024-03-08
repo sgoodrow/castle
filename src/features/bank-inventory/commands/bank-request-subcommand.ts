@@ -48,6 +48,7 @@ class BankRequest extends Subcommand {
 
 
       let message = `${Icon.Request} ${interaction.user} requests:`;
+
       message += ` ${itemName}`;
       message += (this.getOption("count", interaction)) ? " x " + this.getOptionValue("count", interaction) : "";
       message += (this.getOption("price", interaction)) ? " for " + this.getOptionValue("price", interaction): "";
