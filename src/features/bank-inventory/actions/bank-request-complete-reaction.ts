@@ -48,7 +48,7 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     const bankTransactionsChannel = await getTextChannel(
       bankTransactionsChannelId
     );
-    let transactionContent = this.message.content + ` -- approved by ${this.user}`;
+    let transactionContent = this.message.content + ` -- ✅ by ${this.user}`;
     if (!this.message.author?.bot) {
       transactionContent = this.message.author?.toString() + ": " + transactionContent;
     }
