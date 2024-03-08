@@ -6,15 +6,11 @@ import {
 } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { bankData } from "../bank-data";
-import { bankRequestsChannelId } from "../../../config";
-import { getTextChannel } from "../../..";
-import { Icon } from "../../bank-request-info/types";
-
 enum Option {
   Item = "item"
 }
 
-class BankRequest extends Subcommand {
+class BankSearch extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     const item = this.getOption(Option.Item, interaction);
     const stockEmbed = new EmbedBuilder();
@@ -33,59 +29,32 @@ class BankRequest extends Subcommand {
         const count = stockList?.stock[0].count;
         const countAvailable = stockList?.stock.reduce((total, s) => total + (s.count || 0), 0);
         let inStock = ''
-        for (let i = 0; i < stockList?.stock.length && i <= 5; i++) {
+        for (let i = 0; i < stockList?.stock.length && i <= 20; i++) {
           inStock += `${stockList?.stock[i].charName}: ${stockList?.stock[i].slot} (${stockList?.stock[i].count})\n`
         };
         if(stockList?.stock.length > 10) {
           inStock += "[list truncated]"
         }
-        // todo: add confirmation buttons https://discordjs.guide/message-components/interactions.html#awaiting-components
-        // interaction.editReply({
-        // })
         stockEmbed.setTitle(`${countAvailable} available:`)
         .setDescription(inStock);
       }
-
-
-      let message = `${Icon.Request} ${interaction.user} requests:`;
-
-      message += ` ${itemName}`;
-      message += (this.getOption("count", interaction)) ? " x " + this.getOptionValue("count", interaction) : "";
-      message += (this.getOption("price", interaction)) ? " for " + this.getOptionValue("price", interaction): "";
-      message += (this.getOption("note", interaction)) ? " - Note: " + this.getOptionValue("note", interaction): "";
-
-
-
-      const bankRequestsChannel = await getTextChannel(bankRequestsChannelId); 
-      await bankRequestsChannel.send({
-        content: message,
-        embeds: [stockEmbed]
-      });
-      interaction.deleteReply();
+      try {
+        interaction.editReply({
+          content: "",
+          embeds: [stockEmbed]
+        })
+      } catch (e) {
+        throw(e);
+      }
     }
   }
 
   public get command() {
     return super.command.addStringOption((o) =>
       o.setName(Option.Item)
-      .setDescription("The item you wish to request")
+      .setDescription("What are you looking for?")
       .setRequired(true)
       .setAutocomplete(true)
-    ).addStringOption((o)=> 
-      o.setName("count")
-      .setDescription("How many?")
-      .setRequired(false)
-      .setAutocomplete(false)
-    ).addStringOption((o)=> 
-      o.setName("price")
-      .setDescription("Total price.")
-      .setRequired(false)
-      .setAutocomplete(false)
-    ).addStringOption((o)=> 
-      o.setName("note")
-      .setDescription("Additional comments?")
-      .setRequired(false)
-      .setAutocomplete(false)
     );
   }
 
@@ -121,7 +90,7 @@ class BankRequest extends Subcommand {
 
 
 
-export const bankRequest = new BankRequest(
-  "request",
-  "Request an item from the guild bank."
+export const bankSearch = new BankSearch(
+  "search",
+  "Search for an item in the guild bank."
 );
