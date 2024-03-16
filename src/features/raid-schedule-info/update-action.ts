@@ -94,7 +94,8 @@ ${events.map((e) => e.toString()).join("\n\n")}`
         (a, b) =>
           (a.scheduledStartTimestamp || 0) - (b.scheduledStartTimestamp || 0)
       )
-      .map((e) => new EventRenderer(e, 100));
+      .map((e) => new EventRenderer(e, 100))
+      .slice(0, 12);
   }
 
   protected get channel() {
