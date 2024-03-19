@@ -30,8 +30,7 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     if (this.message.channel.id !== bankRequestsChannelId) {
       return;
     }
-
-    // officers and 
+    // mark finished
     if (this.reaction.emoji.name === "✅") {
       const bankTransactionsChannel = await getTextChannel(
         bankTransactionsChannelId
@@ -55,7 +54,7 @@ class BankRequestFinishedReactionAction extends ReactionAction {
       this.message.delete();
     }
 
-    // filter non-finish emoji reactions
+    // delete
     if (this.reaction.emoji.name === "❌") {
       const reactor = await this.members?.fetch(this.user.id);
       if (
