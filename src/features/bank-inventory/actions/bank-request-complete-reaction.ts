@@ -1,4 +1,5 @@
 import {
+  CommandInteraction,
   MessageReaction,
   PartialMessageReaction,
   PartialUser,
@@ -9,6 +10,7 @@ import {
   bankerRoleId,
   officerRoleId,
   bankTransactionsChannelId,
+  modRoleId,
 } from "../../../config";
 import {
   ReactionAction,
@@ -29,30 +31,44 @@ class BankRequestFinishedReactionAction extends ReactionAction {
       return;
     }
 
+    // officers and 
+    if (this.reaction.emoji.name === "✅") {
+      const bankTransactionsChannel = await getTextChannel(
+        bankTransactionsChannelId
+      );
+      let transactionContent = this.message.content + ` -- ✅ by ${this.user}`;
+      if (!this.message.author?.bot) {
+        transactionContent = this.message.author?.toString() + ": " + transactionContent;
+      }
+      bankTransactionsChannel?.send(transactionContent);
+          // authorize user
+      const reactor = await this.members?.fetch(this.user.id);
+      if (
+        !(
+          reactor?.roles.cache.has(bankerRoleId) ||
+          reactor?.roles.cache.has(officerRoleId) ||
+          reactor?.roles.cache.has(modRoleId)
+        )
+      ) {
+        return;
+      }
+      this.message.delete();
+    }
+
     // filter non-finish emoji reactions
-    if (this.reaction.emoji.name !== "✅") {
-      return;
+    if (this.reaction.emoji.name === "❌") {
+      const reactor = await this.members?.fetch(this.user.id);
+      if (
+        !(
+          reactor?.roles.cache.has(bankerRoleId) ||
+          reactor?.roles.cache.has(officerRoleId) ||
+          reactor?.roles.cache.has(modRoleId)
+        ) || this.message.mentions?.parsedUsers.hasAny(this.user.username ?? "")
+      ) {
+        return;
+      }
+      this.message.delete();
     }
 
-    // authorize user
-    const reactor = await this.members?.fetch(this.user.id);
-    if (
-      !(
-        reactor?.roles.cache.has(bankerRoleId) ||
-        reactor?.roles.cache.has(officerRoleId)
-      )
-    ) {
-      return;
-    }
-
-    const bankTransactionsChannel = await getTextChannel(
-      bankTransactionsChannelId
-    );
-    let transactionContent = this.message.content + ` -- ✅ by ${this.user}`;
-    if (!this.message.author?.bot) {
-      transactionContent = this.message.author?.toString() + ": " + transactionContent;
-    }
-    bankTransactionsChannel?.send(transactionContent);
-    this.message.delete();
   }
 }
