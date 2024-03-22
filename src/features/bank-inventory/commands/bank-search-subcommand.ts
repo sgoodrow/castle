@@ -6,6 +6,7 @@ import {
 } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { bankData } from "../bank-data";
+import { autoCompleteStockedItems } from "../helpers";
 enum Option {
   Item = "item"
 }
@@ -64,27 +65,13 @@ class BankSearch extends Subcommand {
     switch (option) {
       case Option.Item:
         if(input && input.length > 3) {
-          return await this.autoCompleteItems(input);
+          return await autoCompleteStockedItems(input);
         } else {
           return [];
         }
       default:
         return [];
     }
-  }
-
-  private async autoCompleteItems(stem: string) {
-      const items = await bankData.getItemsByStem(stem);
-      // console.log("get items", items);
-      if(items) {
-        return items
-        .filter((i) => i._count.stock > 0)
-        .map((i)=>({
-          name: i.name + " (" + i._count.stock +  ")",
-          value: String(i.id)
-        }));
-      }
-    return []; 
   }
 }
 

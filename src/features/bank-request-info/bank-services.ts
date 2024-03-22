@@ -1,4 +1,4 @@
-import { auctionChannelId } from "../../config";
+ import { auctionChannelId } from "../../config";
 import { Icon, Service } from "./types";
 
 // todo: store this in database, populate and remove with command
