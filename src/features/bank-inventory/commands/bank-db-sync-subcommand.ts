@@ -13,6 +13,7 @@ import {
 import { bankData } from "../bank-data";
 import { authorizeByMemberRoles } from "../../../shared/command/util";
 import { drive_v3, file_v1 } from "googleapis";
+import { Command } from "../../../shared/command/command";
 
 let replyTxt = "Updating bank DB from outputiles:"    
 
@@ -37,11 +38,9 @@ class SyncBankDb extends Subcommand {
     if(!unmatchedChars) {
       return;
     } else {
-      replyTxt = replyTxt + "\n" + "Removing unmatched character inventories:";
-      await interaction.editReply(replyTxt);
+      await this.appendReplyTxt("Removing unmatched character inventories:", interaction);
       for (let char of unmatchedChars) {
-        replyTxt = replyTxt + "\n" + "Removed: " + char.name;
-        await interaction.editReply(replyTxt);
+        await this.appendReplyTxt("Removed: " + char.name, interaction);
         bankData.removeInventory(char.name);
       }
     }
@@ -60,8 +59,7 @@ class SyncBankDb extends Subcommand {
           `'${f.id}' in parents and trashed = false`
         )
         for (let file of files) {
-          replyTxt = replyTxt + "\n" + file.name;
-          await interaction.editReply(replyTxt);
+          await this.appendReplyTxt("Updated: " + file.name, interaction);
           if (file && file.id && file.name) {
             const data = await getFile(file.id)
             console.log("bank-db-sync:", file.name, file.id);
@@ -72,13 +70,23 @@ class SyncBankDb extends Subcommand {
         }
       } catch (err) {
         console.log(err);
-        replyTxt = replyTxt + "\n" + "Sync error: " + err;
-        await interaction.editReply(replyTxt);
+        await this.appendReplyTxt("Sync error: " + err, interaction);
       }
     }
-    replyTxt = replyTxt + "\nOutput files updated.";
-    await interaction.editReply(replyTxt);
+    await this.appendReplyTxt("Output files updated.", interaction);
     return bankersUpdated;
+  }
+
+  private async appendReplyTxt(text: string, interaction: CommandInteraction) {
+    replyTxt = this.trimMessage(replyTxt + "\n" + text, 1900);
+    await interaction.editReply(replyTxt);
+  }
+  private trimMessage(message: string, length: number) {
+    if (message.length > length) {
+      return message.slice(length);
+    } else {
+        return message;
+    }
   }
 }
 
