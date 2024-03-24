@@ -9,7 +9,7 @@ import {
 
 export const outputfilesFolderId = "1DBaLEyUFsxCcYwJzFYblILgPu5sK8uT5";
 export const defaultUploadsFolderId = "1hYIR3o94diHF1dtNs_-x7BSp33bq4lDp";
-export const bankInventoriesFolderId = "1-BtBXHmBwG-w9GU2sjaNnDm53rk8qdpZ"
+export const bankInventoriesFolderId = "1-BtBXHmBwG-w9GU2sjaNnDm53rk8qdpZ";
 
 export const parseInventoryFile = async (fileName: string, data: string) => {
   // parse inventory file and update db
