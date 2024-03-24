@@ -59,7 +59,9 @@ class SyncBankDb extends Subcommand {
           `'${f.id}' in parents and trashed = false`
         )
         for (let file of files) {
+          
           await this.appendReplyTxt("Updated: " + file.name, interaction);
+
           if (file && file.id && file.name) {
             const data = await getFile(file.id)
             console.log("bank-db-sync:", file.name, file.id);
@@ -70,6 +72,7 @@ class SyncBankDb extends Subcommand {
         }
       } catch (err) {
         console.log(err);
+
         await this.appendReplyTxt("Sync error: " + err, interaction);
       }
     }
