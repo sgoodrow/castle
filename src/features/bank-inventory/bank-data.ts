@@ -151,6 +151,46 @@ class BankData {
       console.error(err);
     });
   }
+
+  public async getUnmatchedChars(names: string[]){
+    return await this.prisma.char.findMany({
+      where: {
+        NOT: {
+          name: {
+            in: names
+          }
+        }
+      }
+    }).catch((err: Error) => {
+      console.error(err);
+    });
+  }
+
+  public async removeInventory(charName: string) {
+    console.log("bank-db-remove:", charName);
+    // remove char slots
+    const deleteSlots = this.prisma.slot.deleteMany({
+      where: {
+        charName: {
+          equals: charName
+        }
+      }
+    }).catch((err: Error) => {
+      console.error(err);
+    });
+    
+    // remove char
+    // todo: solve foreign key constraint here.
+    // const deleteCharslots = this.prisma.char.delete({
+    //   where: {
+    //     name: charName
+    //   }
+    // }).catch((err: Error) => {
+    //   console.error(err);
+    // });
+    
+  }
+  
 }
 
 export const bankData = new BankData();
