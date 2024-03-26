@@ -14,6 +14,7 @@ import { bankData } from "../bank-data";
 import { authorizeByMemberRoles } from "../../../shared/command/util";
 import { drive_v3, file_v1 } from "googleapis";
 import { Command } from "../../../shared/command/command";
+import { Command } from "../../../shared/command/command";
 
 let replyTxt = ""    
 
@@ -39,6 +40,7 @@ class SyncBankDb extends Subcommand {
     if(unmatchedChars && unmatchedChars.length > 0) {
       await this.appendReplyTxt("Removing unmatched character inventories:", interaction);
       for (let char of unmatchedChars) {
+        await this.appendReplyTxt("Removed: " + char.name, interaction);
         await this.appendReplyTxt("Removed: " + char.name, interaction);
         bankData.removeInventory(char.name);
       }
@@ -73,6 +75,7 @@ class SyncBankDb extends Subcommand {
         await this.appendReplyTxt("Sync error: " + err, interaction);
       }
     }
+    await this.appendReplyTxt("Output files updated.", interaction);
     await this.appendReplyTxt("Output files updated.", interaction);
     return bankersUpdated;
   }
