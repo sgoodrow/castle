@@ -74,7 +74,6 @@ class SyncBankDb extends Subcommand {
       }
     }
     await this.appendReplyTxt("Output files updated.", interaction);
-    await this.appendReplyTxt("Output files updated.", interaction);
     return bankersUpdated;
   }
 
