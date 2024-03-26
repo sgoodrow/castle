@@ -34,9 +34,16 @@ class SyncBankDb extends Subcommand {
     const bankersUpdated = await this.updateBankInventoryFolders(bankInventoryFolders, interaction)
     
     const unmatchedChars = await bankData.getUnmatchedChars(bankersUpdated);
+<<<<<<< HEAD
     console.log('remove unmatched:', unmatchedChars)
 
     if(unmatchedChars && unmatchedChars.length > 0) {
+=======
+    console.log(unmatchedChars)
+    if(!unmatchedChars) {
+      return;
+    } else {
+>>>>>>> 4186fb3 (Update bank-db-sync-subcommand.ts (#102))
       await this.appendReplyTxt("Removing unmatched character inventories:", interaction);
       for (let char of unmatchedChars) {
         await this.appendReplyTxt("Removed: " + char.name, interaction);
@@ -59,6 +66,12 @@ class SyncBankDb extends Subcommand {
         )
         if (files.length === 0) continue;
         for (let file of files) {
+<<<<<<< HEAD
+=======
+          
+          await this.appendReplyTxt("Updated: " + file.name, interaction);
+
+>>>>>>> 4186fb3 (Update bank-db-sync-subcommand.ts (#102))
           if (file && file.id && file.name) {
             const data = await getFile(file.id)
             console.log("bank-db-sync:", file.name, file.id);
@@ -70,6 +83,10 @@ class SyncBankDb extends Subcommand {
         }
       } catch (err) {
         console.log(err);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 4186fb3 (Update bank-db-sync-subcommand.ts (#102))
         await this.appendReplyTxt("Sync error: " + err, interaction);
       }
     }
