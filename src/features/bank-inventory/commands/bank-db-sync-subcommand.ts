@@ -40,6 +40,7 @@ class SyncBankDb extends Subcommand {
       await this.appendReplyTxt("Removing unmatched character inventories:", interaction);
       for (let char of unmatchedChars) {
         await this.appendReplyTxt("Removed: " + char.name, interaction);
+        await this.appendReplyTxt("Removed: " + char.name, interaction);
         bankData.removeInventory(char.name);
       }
     }
