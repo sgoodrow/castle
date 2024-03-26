@@ -13,9 +13,8 @@ import {
 import { bankData } from "../bank-data";
 import { authorizeByMemberRoles } from "../../../shared/command/util";
 import { drive_v3, file_v1 } from "googleapis";
-import { Command } from "../../../shared/command/command";
 
-let replyTxt = "Updating bank DB from outputiles:"    
+let replyTxt = ""    
 
 class SyncBankDb extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -25,7 +24,7 @@ class SyncBankDb extends Subcommand {
       bankerRoleId, officerRoleId, modRoleId
     ], interaction);
 
-    await interaction.editReply("Updating bank DB ...")
+    this.appendReplyTxt("Updating bank database from GDrive...", interaction);
 
     const bankInventoryFolders = await findFiles(
       `'${bankInventoriesFolderId}' in parents and trashed = false`
@@ -34,12 +33,13 @@ class SyncBankDb extends Subcommand {
     const bankersUpdated = await this.updateBankInventoryFolders(bankInventoryFolders, interaction)
     
     const unmatchedChars = await bankData.getUnmatchedChars(bankersUpdated);
-    console.log(unmatchedChars)
-    if(!unmatchedChars) {
-      return;
-    } else {
+
+    console.log('remove unmatched:', unmatchedChars)
+
+    if(unmatchedChars && unmatchedChars.length > 0) {
       await this.appendReplyTxt("Removing unmatched character inventories:", interaction);
       for (let char of unmatchedChars) {
+        await this.appendReplyTxt("Removed: " + char.name, interaction);
         await this.appendReplyTxt("Removed: " + char.name, interaction);
         bankData.removeInventory(char.name);
       }
@@ -58,21 +58,19 @@ class SyncBankDb extends Subcommand {
         const files = await findFiles(
           `'${f.id}' in parents and trashed = false`
         )
+        if (files.length === 0) continue;
         for (let file of files) {
-          
-          await this.appendReplyTxt("Updated: " + file.name, interaction);
-
           if (file && file.id && file.name) {
             const data = await getFile(file.id)
             console.log("bank-db-sync:", file.name, file.id);
             const inventory = await parseInventoryFile(file.name, String(data));
             await bankData.setInventory(inventory);
-            bankersUpdated.push(inventory.charName)
+            bankersUpdated.push(inventory.charName);
+            await this.appendReplyTxt(file.name + " -> " + inventory.charName, interaction);
           }
         }
       } catch (err) {
         console.log(err);
-
         await this.appendReplyTxt("Sync error: " + err, interaction);
       }
     }
@@ -86,7 +84,7 @@ class SyncBankDb extends Subcommand {
   }
   private trimMessage(message: string, length: number) {
     if (message.length > length) {
-      return message.slice(length);
+      return message.slice(message.length - length);
     } else {
         return message;
     }
