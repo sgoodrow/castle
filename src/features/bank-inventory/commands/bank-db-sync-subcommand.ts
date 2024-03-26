@@ -13,7 +13,6 @@ import {
 import { bankData } from "../bank-data";
 import { authorizeByMemberRoles } from "../../../shared/command/util";
 import { drive_v3, file_v1 } from "googleapis";
-import { Command } from "../../../shared/command/command";
 
 let replyTxt = ""    
 
