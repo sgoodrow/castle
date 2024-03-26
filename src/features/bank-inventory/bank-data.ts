@@ -166,10 +166,10 @@ class BankData {
     });
   }
 
-  public async removeInventory(charName: string) {
+  public async removeInventory(charName: string, removeChar: boolean = false) {
     console.log("bank-db-remove:", charName);
     // remove char slots
-    const deleteSlots = this.prisma.slot.deleteMany({
+    const deleteSlots =  await this.prisma.slot.deleteMany({
       where: {
         charName: {
           equals: charName
@@ -180,14 +180,14 @@ class BankData {
     });
     
     // remove char
-    // todo: solve foreign key constraint here.
-    // const deleteCharslots = this.prisma.char.delete({
-    //   where: {
-    //     name: charName
-    //   }
-    // }).catch((err: Error) => {
-    //   console.error(err);
-    // });
+    // todo: make this step optional
+    const deleteCharslots = await this.prisma.char.delete({
+      where: {
+        name: charName
+      }
+    }).catch((err: Error) => {
+      console.error(err);
+    });
     
   }
   

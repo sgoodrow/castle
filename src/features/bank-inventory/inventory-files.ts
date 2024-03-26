@@ -13,7 +13,7 @@ export const bankInventoriesFolderId = "1-BtBXHmBwG-w9GU2sjaNnDm53rk8qdpZ";
 
 export const parseInventoryFile = async (fileName: string, data: string) => {
   // parse inventory file and update db
-  const charName = fileName.split("-")[0];
+  const charName = fileName.split("-")[0].toLowerCase(); // normalize char names lowercase
   const rows = data.split("\r\n");
   const itemNames: string[] = [];
   const inventoryItems: InventoryItem[] = [];
