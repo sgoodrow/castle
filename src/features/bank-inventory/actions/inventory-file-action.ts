@@ -30,6 +30,7 @@ class UploadInventoryMessageAction extends MessageAction {
     await Promise.all(
       [...this.message.attachments.values()]
         .filter((a) => a.contentType === supportedFormat)
+        .filter((a) => a.name.toLowerCase().includes("inventory"))
         .map((a) => this.tryParseInventoryOutput(a, this.message))
     );
   }
