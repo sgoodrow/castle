@@ -16,19 +16,38 @@ enum Option {
 
 class GetItemData extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const item = this.getOption(Option.Item, interaction);
-    const embed = new EmbedBuilder();
+
     // authorize
     authorizeByMemberRoles([
       bankerRoleId, officerRoleId, modRoleId
     ], interaction);
 
-    // 
+    const item = this.getOption(Option.Item, interaction);
+    const embed = new EmbedBuilder();
+
     if (!item) {
       throw new Error(`An item is required.`); 
     } else {
       const itemData = await bankData.getItemStockById(parseInt(String(item.value)));
-      console.log(itemData);
+
+      if(itemData) {
+        const countAvailable = itemData?.stock.reduce((total, s) => total + (s.count || 0), 0);
+        embed.setTitle(itemData.name);
+        embed.setDescription(
+          "id: " + itemData.id
+          + "\nname: " + itemData.name
+          + "\ntype: " + itemData.type
+          + "\nprice: " + itemData.price
+          + "\nin stock: " + countAvailable
+        );
+      } else {
+        embed.setDescription("Item not found")
+      }
+      // console.log(itemData);
+      interaction.editReply({
+        content: "",
+        embeds: [embed]
+      })
     }
 
   }
@@ -53,11 +72,11 @@ class GetItemData extends Subcommand {
         } else {
           return [];
         }
+    }
   }
 }
-}
 
-export const GetItem = new GetItemData(
-  "get-item",
+export const getItem = new GetItemData(
+  "get-item-data",
   "Get Item Data"
 );

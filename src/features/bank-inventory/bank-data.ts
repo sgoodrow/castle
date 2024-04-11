@@ -18,10 +18,19 @@ export interface Inventory {
 }
 
 class BankData {
+  private static instance: BankData
+
   private prisma;
 
-  constructor() {
+  private constructor() {
     this.prisma = new PrismaClient()
+  }
+
+  public static getInstance(): BankData {
+      if (!BankData.instance) {
+          BankData.instance = new BankData();
+      }
+      return BankData.instance;
   }
 
   public async setInventory(inventory: Inventory): Promise<void> {
@@ -187,10 +196,20 @@ class BankData {
       }
     }).catch((err: Error) => {
       console.error(err);
-    });
-    
+    }); 
+  }
+
+  public async setItemData(itemId: number, price: string | null) {
+    const setItem = await this.prisma.item.update({
+      where: {
+        id: itemId
+      },
+      data: {
+        price: price
+      }
+    })
   }
   
 }
 
-export const bankData = new BankData();
+export const bankData = BankData.getInstance();

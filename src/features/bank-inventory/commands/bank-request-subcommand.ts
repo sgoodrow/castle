@@ -83,7 +83,7 @@ class BankRequest extends Subcommand {
       o.setName("price")
       .setDescription("Total price.")
       .setRequired(false)
-      .setAutocomplete(false)
+      .setAutocomplete(true)
       .setRequired(true)
     ).addStringOption((o)=> 
       o.setName("note")
@@ -96,19 +96,36 @@ class BankRequest extends Subcommand {
   public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction) {
     const input = interaction.options.getString('item');
     // console.log("input", input)
+    if(!input || input.length < 3) return [];
     switch (option) {
       case Option.Item:
-        if(input && input.length > 3) {
           return await autoCompleteStockedItems(input);
-        } else {
-          return [];
-        }
       case Option.Count:
         return [{name: "1", value: "1"}];
       // add price autocomplete
+      case Option.Price:
+        const arr = [];
+        const itemId = await interaction.options.getString(Option.Item);
+        if(itemId) {
+          const price = await autoCompleteItemPrice(itemId);
+          if(price) {
+            arr.push({
+              name: price, value: price
+            })
+          }
+        }
+        return arr;
       default:
         return [];
     }
+  }
+}
+
+async function autoCompleteItemPrice(itemId: string) {
+  console.log(itemId);
+  const itemData = await bankData.getItemStockById(parseInt(itemId));
+  if(itemData && itemData.price) {
+    return itemData.price;
   }
 }
 
