@@ -30,6 +30,9 @@ model invite_simple {
 model item {
   id    Int    @id
   name  String
+  type  bank_item_types?
+  price String?
+  updatedAt DateTime @updatedAt @default(now())
   stock slot[]
 }
 
@@ -38,6 +41,7 @@ model slot {
   charSlot String @unique
   slot     String
   charName String
+  updatedAt DateTime @updatedAt @default(now())
   itemId   Int?
   count    Int?   @default(1)
   char     char   @relation(fields: [charName], references: [name])
@@ -48,6 +52,7 @@ model char {
   id        Int    @id @default(autoincrement())
   name      String @unique
   charType  String
+  updatedAt DateTime @updatedAt @default(now())
   inventory slot[]
 }
 
@@ -71,4 +76,15 @@ enum bank_hour_day_enum {
   Friday
   Saturday
   Sunday
+}
+
+enum bank_item_types {
+  dropped_spell
+  research_spell
+  research_component
+  sky_droppable
+  for_sale
+  rechargeable
+  raid_reagent
+  not_available
 }

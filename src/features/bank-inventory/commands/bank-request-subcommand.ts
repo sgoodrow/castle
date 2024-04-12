@@ -9,9 +9,13 @@ import { bankData } from "../bank-data";
 import { bankRequestsChannelId } from "../../../config";
 import { getTextChannel } from "../../..";
 import { Icon } from "../../bank-request-info/types";
+import { autoCompleteStockedItems } from "../helpers";
 
 enum Option {
-  Item = "item"
+  Type = "type",
+  Item = "item",
+  Count = "count",
+  Price = "price"
 }
 
 class BankRequest extends Subcommand {
@@ -46,15 +50,12 @@ class BankRequest extends Subcommand {
         .setDescription(inStock);
       }
 
-
       let message = `${Icon.Request} ${interaction.user} requests:`;
 
       message += ` ${itemName}`;
       message += (this.getOption("count", interaction)) ? " x " + this.getOptionValue("count", interaction) : "";
       message += (this.getOption("price", interaction)) ? " for " + this.getOptionValue("price", interaction): "";
       message += (this.getOption("note", interaction)) ? " - Note: " + this.getOptionValue("note", interaction): "";
-
-
 
       const bankRequestsChannel = await getTextChannel(bankRequestsChannelId); 
       await bankRequestsChannel.send({
@@ -66,7 +67,8 @@ class BankRequest extends Subcommand {
   }
 
   public get command() {
-    return super.command.addStringOption((o) =>
+    return super.command
+      .addStringOption((o) =>
       o.setName(Option.Item)
       .setDescription("The item you wish to request")
       .setRequired(true)
@@ -74,13 +76,15 @@ class BankRequest extends Subcommand {
     ).addStringOption((o)=> 
       o.setName("count")
       .setDescription("How many?")
-      .setRequired(false)
-      .setAutocomplete(false)
+      .setRequired(true)
+      .setAutocomplete(true)
+      .setRequired(true)
     ).addStringOption((o)=> 
       o.setName("price")
       .setDescription("Total price.")
       .setRequired(false)
-      .setAutocomplete(false)
+      .setAutocomplete(true)
+      .setRequired(true)
     ).addStringOption((o)=> 
       o.setName("note")
       .setDescription("Additional comments?")
@@ -92,33 +96,38 @@ class BankRequest extends Subcommand {
   public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction) {
     const input = interaction.options.getString('item');
     // console.log("input", input)
+    if(!input || input.length < 3) return [];
     switch (option) {
       case Option.Item:
-        if(input && input.length > 3) {
-          return await this.autoCompleteItems(input);
-        } else {
-          return [];
+          return await autoCompleteStockedItems(input);
+      case Option.Count:
+        return [{name: "1", value: "1"}];
+      // add price autocomplete
+      case Option.Price:
+        const arr = [];
+        const itemId = await interaction.options.getString(Option.Item);
+        if(itemId) {
+          const price = await autoCompleteItemPrice(itemId);
+          if(price) {
+            arr.push({
+              name: price, value: price
+            })
+          }
         }
+        return arr;
       default:
         return [];
     }
   }
-
-  private async autoCompleteItems(stem: string) {
-      const items = await bankData.getItemsByStem(stem);
-      // console.log("get items", items);
-      if(items) {
-        return items
-        .filter((i) => i._count.stock > 0)
-        .map((i)=>({
-          name: i.name + " (" + i._count.stock +  ")",
-          value: String(i.id)
-        }));
-      }
-    return []; 
-  }
 }
 
+async function autoCompleteItemPrice(itemId: string) {
+  console.log(itemId);
+  const itemData = await bankData.getItemStockById(parseInt(itemId));
+  if(itemData && itemData.price) {
+    return itemData.price;
+  }
+}
 
 
 export const bankRequest = new BankRequest(
