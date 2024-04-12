@@ -104,10 +104,15 @@ class BankRequest extends Subcommand {
         return [{name: "1", value: "1"}];
       // add price autocomplete
       case Option.Price:
+<<<<<<< HEAD
+=======
+        const arr = [];
+>>>>>>> main
         const itemId = await interaction.options.getString(Option.Item);
         if(itemId) {
           const price = await autoCompleteItemPrice(itemId);
           if(price) {
+<<<<<<< HEAD
             const prices = price.split(", ");
             return prices.map((price) => {
               return {
@@ -117,7 +122,14 @@ class BankRequest extends Subcommand {
           }
         } else {
           return [];
+=======
+            arr.push({
+              name: price, value: price
+            })
+          }
+>>>>>>> main
         }
+        return arr;
       default:
         return [];
     }
