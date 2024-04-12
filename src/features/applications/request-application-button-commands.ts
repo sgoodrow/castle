@@ -60,7 +60,7 @@ In Castle, leadership and volunteering are duties with no compensation or specia
       this.role
     }s are tasked with ${this.description}. ${
       this.role
-    }s may step down at any time.
+    }s may step down at any time. 
   
 **How do I apply to be a ${this.role}?**
 Send a Discord message to ${this.howToApply} ${

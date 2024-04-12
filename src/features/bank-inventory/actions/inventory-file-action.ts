@@ -30,6 +30,10 @@ class UploadInventoryMessageAction extends MessageAction {
     await Promise.all(
       [...this.message.attachments.values()]
         .filter((a) => a.contentType === supportedFormat)
+<<<<<<< HEAD
+=======
+        .filter((a) => a.name.toLowerCase().includes("inventory"))
+>>>>>>> bankbot-dev
         .map((a) => this.tryParseInventoryOutput(a, this.message))
     );
   }

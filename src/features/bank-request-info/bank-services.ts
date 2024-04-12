@@ -1,4 +1,4 @@
-import { auctionChannelId } from "../../config";
+ import { auctionChannelId } from "../../config";
 import { Icon, Service } from "./types";
 
 // todo: store this in database, populate and remove with command
@@ -70,7 +70,7 @@ export const services: Service[] = [
       "_NFP Bank or EC Tunnel_",
       "PP4DKP (Platinum Pieces for Dragon Kill Points) Fundraising",
       "PP4DKP runs on a monthly cycle with DKP recorded the following month",
-      "1k = 1 DKP; 5 maximum",
+      "1k = 1 DKP; 30 maximum",
       "No fractional DKP or rounding; Only PP, no items",
     ],
   },

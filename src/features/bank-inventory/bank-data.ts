@@ -18,12 +18,30 @@ export interface Inventory {
 }
 
 class BankData {
+<<<<<<< HEAD
   private prisma;
 
   constructor() {
     this.prisma = new PrismaClient()
   }
 
+=======
+  private static instance: BankData
+
+  private prisma;
+
+  private constructor() {
+    this.prisma = new PrismaClient()
+  }
+
+  public static getInstance(): BankData {
+      if (!BankData.instance) {
+          BankData.instance = new BankData();
+      }
+      return BankData.instance;
+  }
+
+>>>>>>> bankbot-dev
   public async setInventory(inventory: Inventory): Promise<void> {
     try {
       const upsertChar = await this.prisma.char.upsert({
@@ -90,6 +108,16 @@ class BankData {
           startsWith: itemStem,
           mode: 'insensitive'
         }
+<<<<<<< HEAD
+=======
+      },
+      include: {
+          _count: { 
+            select: {
+              stock: true
+            }
+        }
+>>>>>>> bankbot-dev
       }
     }).catch((err: Error) => {
       console.error(err);
@@ -102,6 +130,16 @@ class BankData {
         name: {
           equals: itemName
         }
+<<<<<<< HEAD
+=======
+      },
+      include: {
+          _count: { 
+            select: {
+              stock: true
+            }
+        }
+>>>>>>> bankbot-dev
       }
     }).catch((err: Error) => {
       console.error(err);
@@ -137,6 +175,7 @@ class BankData {
       console.error(err);
     });
   }
+<<<<<<< HEAD
 }
 
 export const bankData = new BankData();
@@ -268,3 +307,58 @@ export const bankData = new BankData();
 //   }
 //   // add prices?
 // }
+=======
+
+  public async getUnmatchedChars(names: string[]){
+    return await this.prisma.char.findMany({
+      where: {
+        NOT: {
+          name: {
+            in: names
+          }
+        }
+      }
+    }).catch((err: Error) => {
+      console.error(err);
+    });
+  }
+
+  public async removeInventory(charName: string, removeChar: boolean = false) {
+    console.log("bank-db-remove:", charName);
+    // remove char slots
+    const deleteSlots =  await this.prisma.slot.deleteMany({
+      where: {
+        charName: {
+          equals: charName
+        }
+      }
+    }).catch((err: Error) => {
+      console.error(err);
+    });
+    
+    // remove char
+    // todo: make this step optional
+    const deleteCharslots = await this.prisma.char.delete({
+      where: {
+        name: charName
+      }
+    }).catch((err: Error) => {
+      console.error(err);
+    }); 
+  }
+
+  public async setItemData(itemId: number, price: string | null) {
+    const setItem = await this.prisma.item.update({
+      where: {
+        id: itemId
+      },
+      data: {
+        price: price
+      }
+    })
+  }
+  
+}
+
+export const bankData = BankData.getInstance();
+>>>>>>> bankbot-dev

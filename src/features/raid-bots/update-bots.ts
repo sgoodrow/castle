@@ -53,7 +53,7 @@ Use the \`/bot request\` command in ANY channel to receive their credentials in 
 ❗**What are the rules for playing bots?**
 All bots should be used for the benefit of the guild, not personal use. Helping with corpse recoveries (yours and others) is ok unless the bot is not to be moved! Do not use them to farm. Do not sell their equipment or items. Tip generously when getting a port or res.
 
-You MUST add a message in https://discord.com/channels/539189546630381579/1129579809006178384 when you log onto a bot.
+Please use the /bot park command when you are done to indicate that you are no longer using the bot and to set its location
 
 • **Guild Porting** Used to port members of the guild.
 • **Guild Tracking** Used to track targets of opportunity, or hunt down mobs.

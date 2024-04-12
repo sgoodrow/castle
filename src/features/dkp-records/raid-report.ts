@@ -32,6 +32,9 @@ const SECOND_COLUMN_LENGTH = 6;
 const isRaidReportMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
 
+const isNotEmpty = (m: Message) =>
+  !!m.embeds.find((e) => e.length === 0);
+
 export const isRaidInstructionsMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === INSTRUCTIONS_TITLE);
 
@@ -58,7 +61,7 @@ export const getRaidReportMessages = async (channel: TextBasedChannel) => {
   const messages = [
     ...all
       .reverse()
-      .filter((m) => isRaidReportMessage(m) || isRaidInstructionsMessage(m))
+      .filter((m) => isRaidReportMessage(m) || isRaidInstructionsMessage(m) || isNotEmpty(m))
       .values(),
   ];
   if (messages.length === 0) {
@@ -99,6 +102,10 @@ export class RaidReport {
     return every(this.allTickNumbers.map((i) => this.getRaidTick(i).hasEvent));
   }
 
+  public get netDkp(): number {
+    return this.ticks.reduce((s, t) => s + (t.earned - t.spent), 0);
+  }
+
   public async tryUpdateThreadName(channel: ThreadChannel) {
     const name = this.getThreadName();
     if (channel.name === name) {
@@ -118,7 +125,7 @@ export class RaidReport {
           ", "
         )
       : `${this.filename.replace(/[^a-zA-Z]+/g, "")}?`;
-    return `${emoji} ${this.ticks[0].shortDate} ${label || "Unidentified"}`;
+    return `${emoji} ${this.ticks[0].shortDate} (${Math.round(this.netDkp)}) ${label || "Unidentified"}`;
   }
 
   public getCreditCommands(): string[] {

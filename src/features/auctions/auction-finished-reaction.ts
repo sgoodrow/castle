@@ -144,8 +144,9 @@ ${this.example}`);
 
   private async getItem(threadName: string) {
     // parse out the extra stuff
-    return threadName.includes(" - ")
-      ? threadName.split(" - ", 2)[1]
+    const lastHyphenIndex = threadName.lastIndexOf(" - ");
+    return lastHyphenIndex !== -1
+      ? threadName.substring(lastHyphenIndex + 3) // +3 to skip the " - " itself
       : threadName;
   }
 
