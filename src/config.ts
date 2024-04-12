@@ -55,12 +55,8 @@ export const {
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
   GOOGLE_KEY_FILE,
-<<<<<<< HEAD
-  bankGoogleDriveFolderId
-=======
   bankGoogleDriveFolderId,
   modRoleId
->>>>>>> bankbot-dev
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.

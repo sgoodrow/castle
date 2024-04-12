@@ -1,8 +1,5 @@
 import {
-<<<<<<< HEAD
-=======
   CommandInteraction,
->>>>>>> bankbot-dev
   MessageReaction,
   PartialMessageReaction,
   PartialUser,
@@ -13,10 +10,7 @@ import {
   bankerRoleId,
   officerRoleId,
   bankTransactionsChannelId,
-<<<<<<< HEAD
-=======
   modRoleId,
->>>>>>> bankbot-dev
 } from "../../../config";
 import {
   ReactionAction,
@@ -36,34 +30,6 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     if (this.message.channel.id !== bankRequestsChannelId) {
       return;
     }
-<<<<<<< HEAD
-
-    // filter non-finish emoji reactions
-    if (this.reaction.emoji.name !== "✅") {
-      return;
-    }
-
-    // authorize user
-    const reactor = await this.members?.fetch(this.user.id);
-    if (
-      !(
-        reactor?.roles.cache.has(bankerRoleId) ||
-        reactor?.roles.cache.has(officerRoleId)
-      )
-    ) {
-      return;
-    }
-
-    const bankTransactionsChannel = await getTextChannel(
-      bankTransactionsChannelId
-    );
-    let transactionContent = this.message.content + ` -- approved by ${this.user}`;
-    if (!this.message.author?.bot) {
-      transactionContent = this.message.author?.toString() + ": " + transactionContent;
-    }
-    bankTransactionsChannel?.send(transactionContent);
-    this.message.delete();
-=======
     // mark finished
     if (this.reaction.emoji.name === "✅") {
       const bankTransactionsChannel = await getTextChannel(
@@ -103,6 +69,5 @@ class BankRequestFinishedReactionAction extends ReactionAction {
       this.message.delete();
     }
 
->>>>>>> bankbot-dev
   }
 }

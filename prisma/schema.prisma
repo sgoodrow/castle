@@ -30,12 +30,9 @@ model invite_simple {
 model item {
   id    Int    @id
   name  String
-<<<<<<< HEAD
-=======
   type  bank_item_types?
   price String?
   updatedAt DateTime @updatedAt @default(now())
->>>>>>> bankbot-dev
   stock slot[]
 }
 
@@ -44,10 +41,7 @@ model slot {
   charSlot String @unique
   slot     String
   charName String
-<<<<<<< HEAD
-=======
   updatedAt DateTime @updatedAt @default(now())
->>>>>>> bankbot-dev
   itemId   Int?
   count    Int?   @default(1)
   char     char   @relation(fields: [charName], references: [name])
@@ -58,10 +52,7 @@ model char {
   id        Int    @id @default(autoincrement())
   name      String @unique
   charType  String
-<<<<<<< HEAD
-=======
   updatedAt DateTime @updatedAt @default(now())
->>>>>>> bankbot-dev
   inventory slot[]
 }
 
@@ -85,8 +76,6 @@ enum bank_hour_day_enum {
   Friday
   Saturday
   Sunday
-<<<<<<< HEAD
-=======
 }
 
 enum bank_item_types {
@@ -98,5 +87,4 @@ enum bank_item_types {
   rechargeable
   raid_reagent
   not_available
->>>>>>> bankbot-dev
 }
