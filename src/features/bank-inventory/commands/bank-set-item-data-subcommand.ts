@@ -61,7 +61,7 @@ class SetItemData extends Subcommand {
     return super.command
       .addStringOption((o) =>
       o.setName(Option.Item)
-      .setDescription("Item data to request")
+      .setDescription("Item data to set")
       .setRequired(true)
       .setAutocomplete(true)
       // ).addStringOption((o) =>
@@ -71,7 +71,7 @@ class SetItemData extends Subcommand {
       // .setAutocomplete(true)
       ).addStringOption((o) =>
       o.setName(Option.Price)
-      .setDescription("Set default price")
+      .setDescription("Set default price(s): Comma-separated list.")
       .setRequired(true)
       .setAutocomplete(false)
     )
