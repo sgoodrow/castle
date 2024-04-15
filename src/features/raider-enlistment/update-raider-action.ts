@@ -43,20 +43,20 @@ class UpdateRaiderInfoAction extends InstructionsReadyAction {
 9. **Stand when a mob is incoming.** Sitting generates aggro. Mobs will one-shot sitters and mess up positioning.
 10. **Only discuss raid targets in raid voice.** Targets get sniped. Keep our strategy and tactics close to the chest.
 
-#### ❓ How do I join ${this.role}s?
+### ❓ How do I join ${this.role}s?
 Each player must send a message in this channel with the following information and a Knight will give you the role.
 
 1. Include a screenshot of your Castle- or alliance- tagged character with their name, guild and level visible. Also include /time in the chat.
 2. Include a link to your CastleDKP.com raiding character profile (NOT the MyCharacters page). Please use first name only for your character.
 3. Say **"I have read and agree to follow the raider requirements and behaviors."**
 
-#### ❓ Are raids subject to any other rules?
+### ❓ Are raids subject to any other rules?
 Yes. Some raids are deemed "Competitive", such as batphones, natural respawns of bosses and earthquakes. These raids may have additional level requirements posted in the event and generally assume players will bring their best character and be open to requests to swap to another of their characters if the raid depends on it.
 
-#### ❓ What if I don't follow the required raider requirements or behaviors?
+### ❓ What if I don't follow the required raider requirements or behaviors?
 Leadership will DM you with a reminder warning, then a 1 DKP penalty, followed by a 1-week suspension, and finally dismissal from raider status.
 
-#### ❓ What else do I need to know?
+### ❓ What else do I need to know?
 - DKP never decays in Castle, but if become inactive for 3 months you will need to request reactivation by posting in this channel.
 - We give DKP for acquiring raid-readiness items. See https://discord.com/channels/539189546630381579/1090414660408320000/1090517649802407977 for details.`,
     });
