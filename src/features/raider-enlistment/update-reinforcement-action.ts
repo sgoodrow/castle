@@ -36,7 +36,7 @@ class UpdateReinforcementsInfoAction extends InstructionsReadyAction {
   private async getDescriptionEmbed() {
     const role = `<@&${reinforcementsRoleId}>`;
     return new EmbedBuilder({
-      title: "Join the Reinforcements",
+      title: "**Join the Reinforcements**",
       description: `The ${role} role is **optional**. Are you available to assist with ad hoc targets of opportunity that typically require 1-2 groups such as Scout, VSR, Ragefire, etc? Join the reinforcements!
 
 ❓ **How do I participate and how do I stop?**
@@ -75,7 +75,7 @@ class UpdateReinforcementsInfoAction extends InstructionsReadyAction {
 
   private async getTldrEmbed() {
     return new EmbedBuilder({
-      title: "⚠️ TL;DR",
+      title: "⚠️ **TL;DR**",
       description: `Opt-in and out of the role to help others. Get and send notifications for ad hoc fights. Set loot rules and be fair or you'll be removed from reinforcements.`,
       color: Colors.Orange,
     });
