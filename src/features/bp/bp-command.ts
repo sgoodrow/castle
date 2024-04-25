@@ -36,7 +36,7 @@ class sendBp extends Subcommand {
     const res = await getBpOptions();
     if (isObject(res))  {
       const opts = Object.entries(res).map(
-        ([key, value]) => ({ name: key, value: value })
+        ([key, value]) => ({ name: value, value: value })
       );
       return opts;
     }
