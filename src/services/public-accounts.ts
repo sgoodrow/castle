@@ -109,7 +109,9 @@ export class PublicAccountService implements IPublicAccountService {
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
       const botRowIndex = rows.findIndex(
-        (r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName
+        (r) =>
+          r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
+          botName.toLowerCase()
       );
       if (botRowIndex !== -1) {
         // do update
@@ -195,7 +197,9 @@ export class PublicAccountService implements IPublicAccountService {
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
       const botRowIndex = rows.findIndex(
-        (r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName
+        (r) =>
+          r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
+          botName.toLowerCase()
       );
       return botRowIndex !== -1;
     }
