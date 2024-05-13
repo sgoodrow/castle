@@ -54,7 +54,7 @@ Each player must send a message in this channel with the following information a
 Yes. Some raids are deemed "Competitive", such as batphones, natural respawns of bosses and earthquakes. These raids may have additional level requirements posted in the event and generally assume players will bring their best character and be open to requests to swap to another of their characters if the raid depends on it.
 
 ❓ **What if I don't follow the required raider requirements or behaviors?**
-Leadership will DM you with a reminder warning, then a 1 DKP penalty, followed by a 1-week suspension, and finally dismissal from raider status.
+Leadership will DM you to let you know that your actions were inappropriate. You will have an opportunity to speak for yourself. Depending on the behavior, the consequences could be: a reminder warning, a 1 DKP penalty, a 1 week suspension from raiding, or removal of your raider status.
 
 #❓ **What else do I need to know?**
 - DKP never decays in Castle, but if become inactive for 3 months you will need to request reactivation by posting in this channel.
