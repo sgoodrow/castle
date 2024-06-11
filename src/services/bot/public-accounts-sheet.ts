@@ -3,50 +3,29 @@ import {
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
   publicCharactersGoogleSheetId,
-} from "../config";
+} from "../../config";
 import LRUCache from "lru-cache";
-import { MINUTES } from "../shared/time";
-import { ApplicationCommandOptionChoiceData } from "discord.js";
+import { MINUTES } from "../../shared/time";
+import {
+  ApplicationCommandOptionChoiceData,
+  GuildMemberRoleManager,
+} from "discord.js";
 import { truncate } from "lodash";
-import { checkGoogleCredentials } from "./gdrive";
-import { Class } from "../shared/classes";
-import { accounts } from "./accounts";
+import { checkGoogleCredentials } from "../gdrive";
+import { Class } from "../../shared/classes";
 import moment from "moment";
-import { log } from "console";
+import { IPublicAccountService } from "./public-accounts.i";
+import { BOT_SPREADSHEET_COLUMNS } from "../sheet-updater/public-sheet";
 
-enum BOT_SPREADSHEET_COLUMNS {
-  Class = "Class",
-  Name = "Name",
-  CurrentLocation = "Current Location",
-  Level = "Level",
-  CurrentPilot = "Current Bot Pilot",
-  CheckoutTime = "Date and Time (EST) of pilot login",
-}
+export const SHEET_TITLE = "Bot Info";
 
-enum LOCATION_SPREADSHEET_COLUMNS {
-  Name = "Name",
-  Description = "Description",
-}
-
-const SHEET_TITLE = "Bot Info";
-
-interface IPublicAccountService {
-  updateBotLocation(name: string, location: string): void;
-  updateBotPilot(botName: string, pilotName: string): void;
-}
-
-export class PublicAccountService implements IPublicAccountService {
+export class SheetPublicAccountService implements IPublicAccountService {
   private sheet: GoogleSpreadsheet;
-  private static instance: PublicAccountService;
+  private static instance: SheetPublicAccountService;
 
   private botCache = new LRUCache<string, Bot>({
     max: 200,
     ttl: 5 * MINUTES,
-  });
-
-  private locationCache = new LRUCache<string, Location>({
-    max: 200,
-    ttl: 1 * MINUTES,
   });
 
   private constructor() {
@@ -67,8 +46,8 @@ export class PublicAccountService implements IPublicAccountService {
   }
 
   public static getInstance() {
-    if (!PublicAccountService.instance) {
-      this.instance = new PublicAccountService();
+    if (!SheetPublicAccountService.instance) {
+      this.instance = new SheetPublicAccountService();
     }
     return this.instance;
   }
@@ -126,8 +105,72 @@ export class PublicAccountService implements IPublicAccountService {
     }
   }
 
+  public async updateBotRowDetails(
+    botName: string,
+    checkoutTime?: moment.Moment | undefined,
+    pilot?: string | undefined,
+    location?: string | undefined,
+    bindLocation?: string | undefined
+  ) {
+    const rowData: { cell: BOT_SPREADSHEET_COLUMNS; value: any }[] = [];
+    if (checkoutTime) {
+      rowData.push({
+        cell: BOT_SPREADSHEET_COLUMNS.CheckoutTime,
+        value: checkoutTime.toString(),
+      });
+    }
+    if (pilot) {
+      rowData.push({
+        cell: BOT_SPREADSHEET_COLUMNS.CurrentPilot,
+        value: pilot,
+      });
+    }
+    if (location) {
+      rowData.push({
+        cell: BOT_SPREADSHEET_COLUMNS.CurrentLocation,
+        value: location,
+      });
+    }
+    if (bindLocation) {
+      rowData.push({
+        cell: BOT_SPREADSHEET_COLUMNS.BindLocation,
+        value: bindLocation,
+      });
+    }
+
+    await this.updatePublicAccountSheetBatch(botName, rowData);
+  }
+
+  private async updatePublicAccountSheetBatch(
+    botName: string,
+    rowData: { cell: BOT_SPREADSHEET_COLUMNS; value: any }[]
+  ) {
+    await this.loadBots();
+    if (this.sheet) {
+      const rows = await this.botInfoSheet.getRows();
+      const botRowIndex = rows.findIndex(
+        (r) =>
+          r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
+          botName.toLowerCase()
+      );
+      if (botRowIndex !== -1) {
+        // do update
+        const row = rows.at(botRowIndex);
+        if (row) {
+          for (const cellData of rowData) {
+            row[cellData.cell] = cellData.value;
+          }
+          await row.save();
+        }
+      } else {
+        throw Error(`Bot ${botName} not found.`);
+      }
+    }
+  }
+
   public async getFirstAvailableBotByClass(
     botClass: string,
+    roles: GuildMemberRoleManager,
     location?: string
   ) {
     await this.loadBots();
@@ -188,10 +231,6 @@ export class PublicAccountService implements IPublicAccountService {
     }
   }
 
-  public async getBotInfo(botname: string) {
-    return this.getBot(botname);
-  }
-
   public async isBotPublic(botName: string) {
     await this.loadBots();
     if (this.sheet) {
@@ -203,15 +242,6 @@ export class PublicAccountService implements IPublicAccountService {
       );
       return botRowIndex !== -1;
     }
-  }
-
-  public async getBotsForRole(roleId: string): Promise<Bot[]> {
-    await this.loadBots();
-    const allowedAccounts = await accounts.getAccountsForRole(roleId);
-    // possibly a list?
-    const allowedCharacters = allowedAccounts.map((acc) => acc.characters);
-    const filteredBots = allowedCharacters.map((char) => this.getBot(char));
-    return filteredBots;
   }
 
   async getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]> {
@@ -254,51 +284,6 @@ export class PublicAccountService implements IPublicAccountService {
       bots.push(bot);
     }
     return bots;
-  }
-
-  private getBot(name: string): Bot {
-    return this.botCache.get(name)!;
-  }
-
-  private async loadLocations(): Promise<void> {
-    await this.authorize();
-    this.locationCache.purgeStale();
-    if (this.locationCache.size) {
-      return;
-    }
-
-    await this.sheet.loadInfo();
-    try {
-      const locationSheet = this.sheet.sheetsByTitle["Bot Locations"];
-      if (locationSheet) {
-        const rows = await locationSheet.getRows();
-        rows.forEach((r) => {
-          const location: Location = {
-            name: r[LOCATION_SPREADSHEET_COLUMNS.Name],
-            description: r[LOCATION_SPREADSHEET_COLUMNS.Description],
-          };
-          if (location.description && location.name) {
-            this.locationCache.set(location.name, location);
-          }
-        });
-      }
-    } catch (err) {
-      log(
-        "Failed to load location sheet data. Does it exist in the public sheet with name 'Bot Locations'?"
-      );
-    }
-    return;
-  }
-
-  async getLocationOptions(): Promise<
-    ApplicationCommandOptionChoiceData<string>[]
-  > {
-    await this.loadLocations();
-    const locations = Array.from(this.locationCache.values());
-    return locations.map((b) => ({
-      name: truncate(`${b.name} - ${b.description}`, { length: 100 }),
-      value: b.name,
-    }));
   }
 
   private async authorize() {

@@ -7,15 +7,17 @@ import {
 import { Subcommand } from "../../shared/command/subcommand";
 import { accounts } from "../../services/accounts";
 import { raidBotInstructions } from "./update-bots";
-import { PublicAccountService } from "../../services/public-accounts";
 import moment from "moment";
 import { Class } from "../../shared/classes";
 import { capitalize } from "../../shared/util";
 import { Mutex } from "async-mutex";
+import { LocationService } from "../../services/location";
+import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 
 export enum Option {
   Class = "class",
   Location = "location",
+  BindLocation = "bindlocation",
 }
 
 export class RequestClassSubcommand extends Subcommand {
@@ -31,6 +33,8 @@ export class RequestClassSubcommand extends Subcommand {
     );
     const location = this.getOption(Option.Location, interaction)
       ?.value as string;
+    const bindLocation = this.getOption(Option.BindLocation, interaction)
+      ?.value as string;
     const thread = await raidBotInstructions.getThread();
     if (!thread) {
       throw new Error(`Could not locate bot request thread.`);
@@ -39,12 +43,23 @@ export class RequestClassSubcommand extends Subcommand {
     let status = "✅ Granted";
     let firstBot = "";
     const release = await this.mutex.acquire();
+    const publicAccounts = PublicAccountsFactory.getService();
+
+    const guildUser = await interaction.guild?.members.fetch(
+      interaction.user.id
+    );
+
+    if (!guildUser) {
+      throw new Error("Couldn't identify user requesting bot");
+    }
+
     try {
       try {
-        const publicAccounts = PublicAccountService.getInstance();
         firstBot = await publicAccounts.getFirstAvailableBotByClass(
           botClass,
-          location
+          interaction.member?.roles as GuildMemberRoleManager,
+          location,
+          bindLocation
         );
       } catch (err) {
         status = "❌ Denied";
@@ -82,16 +97,10 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
 
         // Update public record
         try {
-          const guildUser = await interaction.guild?.members.fetch(
-            interaction.user.id
-          );
-          await PublicAccountService.getInstance().updateBotPilot(
+          await publicAccounts.updateBotRowDetails(
             firstBot,
+            moment(),
             guildUser?.user.username || "UNKNOWN USER"
-          );
-          await PublicAccountService.getInstance().updateBotCheckoutTime(
-            firstBot,
-            moment()
           );
         } catch (err) {
           throw new Error(
@@ -128,6 +137,13 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
           .setDescription("The location of bot")
           .setAutocomplete(true)
           .setRequired(false)
+      )
+      .addStringOption((o) =>
+        o
+          .setName(Option.BindLocation)
+          .setDescription("Bind location")
+          .setAutocomplete(true)
+          .setRequired(false)
       );
     return command;
   }
@@ -140,7 +156,9 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
           value: val,
         }));
       case Option.Location:
-        return PublicAccountService.getInstance().getLocationOptions();
+        return LocationService.getInstance().getLocationOptions();
+      case Option.BindLocation:
+        return LocationService.getInstance().getLocationOptions();
       default:
         return;
     }

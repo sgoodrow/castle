@@ -6,10 +6,10 @@ import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 
 export enum Option {
   Name = "name",
-  Location = "location",
+  BindLocation = "bindlocation",
 }
 
-export class ParkSubcommand extends Subcommand {
+export class BindSubcommand extends Subcommand {
   publicAccountService: IPublicAccountService;
   public constructor(name: string, description: string) {
     super(name, description);
@@ -21,29 +21,26 @@ export class ParkSubcommand extends Subcommand {
       Option.Name,
       interaction
     ) as string;
-    const location = this.getOptionValue(
-      Option.Location,
+    const bindLocation = this.getOptionValue(
+      Option.BindLocation,
       interaction
     ) as string;
 
     try {
       await this.publicAccountService.updateBotRowDetails(
         name,
-        "",
-        "",
-        location
+        undefined,
+        undefined,
+        undefined,
+        bindLocation
       );
-      if (location) {
+      if (bindLocation) {
         await interaction.editReply(
-          `Sheet was updated to show ${name} was released and moved to ${location}`
-        );
-      } else {
-        await interaction.editReply(
-          `Sheet was updated to show ${name} was released in its previous location`
+          `Sheet was updated to show ${name} was bound at ${bindLocation}`
         );
       }
     } catch (error) {
-      await interaction.editReply(`Failed to move bot: ${error}`);
+      await interaction.editReply(`Failed to bind bot: ${error}`);
     }
   }
 
@@ -58,8 +55,8 @@ export class ParkSubcommand extends Subcommand {
       )
       .addStringOption((o) =>
         o
-          .setName(Option.Location)
-          .setDescription("The new location where the character is parked")
+          .setName(Option.BindLocation)
+          .setDescription("The new location where the character is bound")
           .setAutocomplete(true)
           .setRequired(false)
       );
@@ -70,7 +67,7 @@ export class ParkSubcommand extends Subcommand {
     switch (option) {
       case Option.Name:
         return await this.publicAccountService.getBotOptions();
-      case Option.Location:
+      case Option.BindLocation:
         return await LocationService.getInstance().getLocationOptions();
       default:
         return;
@@ -78,7 +75,7 @@ export class ParkSubcommand extends Subcommand {
   }
 }
 
-export const parkSubCommand = new ParkSubcommand(
-  "park",
-  "Check-in of a guild bot, optionally updating its location"
+export const bindSubCommand = new BindSubcommand(
+  "bind",
+  "Update a bot's bound location"
 );

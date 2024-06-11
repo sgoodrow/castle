@@ -7,8 +7,8 @@ import {
 import { Subcommand } from "../../shared/command/subcommand";
 import { accounts } from "../../services/accounts";
 import { raidBotInstructions } from "./update-bots";
-import { PublicAccountService } from "../../services/public-accounts";
 import moment from "moment";
+import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 
 export enum Option {
   Name = "name",
@@ -28,9 +28,9 @@ export class RequestSubcommand extends Subcommand {
     }
 
     let status = "✅ Granted";
+    const publicAccounts = PublicAccountsFactory.getService();
 
-    const currentPilot =
-      await PublicAccountService.getInstance().getCurrentBotPilot(name);
+    const currentPilot = await publicAccounts.getCurrentBotPilot(name);
 
     try {
       const details = await accounts.getAccount(
@@ -51,7 +51,7 @@ Password: ${spoiler(details.password)}
       response += `The credentials for ${name} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
       await interaction.editReply(response);
     } catch (err) {
-      status = "❌ Denied";   
+      status = "❌ Denied";
 
       await interaction.editReply(
         `You do not have the correct permissions to access ${name}.`
@@ -62,20 +62,17 @@ Password: ${spoiler(details.password)}
     logMsg.edit(`${status} ${interaction.user} access to ${name}.`);
 
     // Update public record
-    if (await PublicAccountService.getInstance().isBotPublic(name)) {
+    if (await publicAccounts.isBotPublic(name)) {
       try {
         const guildUser = await interaction.guild?.members.fetch(
           interaction.user.id
         );
 
         if (!currentPilot) {
-          await PublicAccountService.getInstance().updateBotPilot(
+          await publicAccounts.updateBotRowDetails(
             name,
+            moment(),
             guildUser?.user.username || "UNKNOWN USER"
-          );
-          await PublicAccountService.getInstance().updateBotCheckoutTime(
-            name,
-            moment()
           );
         }
       } catch (err) {
