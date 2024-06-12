@@ -128,6 +128,16 @@ export const accounts = {
     }));
   },
 
+  getRolesForAccount: async (botName: string): Promise<Role[]> => {
+    const accounts = await getAccounts();
+    const d = accounts.get(botName.toLowerCase());
+    if (!d) {
+      console.log(`Roles for ${botName} could not be found`);
+      return [];
+    }
+    return d.requiredRoles;
+  },
+
   getAccount: async (
     name: string,
     roles: GuildMemberRoleManager

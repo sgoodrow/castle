@@ -88,3 +88,14 @@ enum bank_item_types {
   raid_reagent
   not_available
 }
+
+model bot {
+  class         String
+  name          String @unique
+  location      String
+  level         String
+  currentPilot  String
+  checkoutTime  String
+  bindLocation  String
+  requiredRoles String[]
+}
