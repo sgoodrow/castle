@@ -28,44 +28,55 @@ model invite_simple {
 }
 
 model item {
-  id    Int    @id
-  name  String
-  type  bank_item_types?
-  price String?
-  updatedAt DateTime @updatedAt @default(now())
-  stock slot[]
+  id        Int              @id
+  name      String
+  price     String?
+  type      bank_item_types?
+  updatedAt DateTime         @default(now()) @updatedAt
+  stock     slot[]
 }
 
 model slot {
-  id       Int    @id @default(autoincrement())
-  charSlot String @unique
-  slot     String
-  charName String
-  updatedAt DateTime @updatedAt @default(now())
-  itemId   Int?
-  count    Int?   @default(1)
-  char     char   @relation(fields: [charName], references: [name])
-  item     item?  @relation(fields: [itemId], references: [id])
+  id        Int      @id @default(autoincrement())
+  charSlot  String   @unique
+  slot      String
+  charName  String
+  itemId    Int?
+  count     Int?     @default(1)
+  updatedAt DateTime @default(now()) @updatedAt
+  char      char     @relation(fields: [charName], references: [name])
+  item      item?    @relation(fields: [itemId], references: [id])
 }
 
 model char {
-  id        Int    @id @default(autoincrement())
-  name      String @unique
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
   charType  String
-  updatedAt DateTime @updatedAt @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
   inventory slot[]
 }
 
 model typeorm_metadata {
-  id        Int @id @default(autoincrement())
   type     String  @db.VarChar
   database String? @db.VarChar
   schema   String? @db.VarChar
   table    String? @db.VarChar
   name     String? @db.VarChar
   value    String?
+  id       Int     @id @default(autoincrement())
 
   @@ignore
+}
+
+model bot {
+  class         String
+  name          String   @unique
+  location      String
+  level         String
+  currentPilot  String
+  checkoutTime  String
+  bindLocation  String
+  requiredRoles String[]
 }
 
 enum bank_hour_day_enum {
@@ -87,15 +98,4 @@ enum bank_item_types {
   rechargeable
   raid_reagent
   not_available
-}
-
-model bot {
-  class         String
-  name          String @unique
-  location      String
-  level         String
-  currentPilot  String
-  checkoutTime  String
-  bindLocation  String
-  requiredRoles String[]
 }
