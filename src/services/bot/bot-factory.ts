@@ -8,7 +8,7 @@ export class PublicAccountsFactory {
 
   public static getService() {
     if (!this.instance) {
-      if (env.USE_PRISMA_CACHE) {
+      if (env.USE_PRISMA_CACHE === "true") {
         this.instance = new PrismaPublicAccounts();
       } else {
         this.instance = SheetPublicAccountService.getInstance();
