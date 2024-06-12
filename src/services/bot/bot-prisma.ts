@@ -124,7 +124,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
   async updateBotRowDetails(
     botName: string,
-    botRowData: { [id: string]: moment.Moment | string | undefined }
+    botRowData: { [id: string]: string | undefined }
   ): Promise<void> {
     const bot = await this.prisma.bot.findFirst({
       where: {
@@ -139,12 +139,10 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       const bindLocation = botRowData[BOT_SPREADSHEET_COLUMNS.BindLocation];
       if (checkoutTime !== undefined) {
         // Set time or clear if not undefined
-        if (moment.isMoment(checkoutTime)) {
-          bot.checkoutTime = (
-            botRowData[BOT_SPREADSHEET_COLUMNS.CheckoutTime] as moment.Moment
-          ).toString();
-        } else {
-          bot.checkoutTime = "";
+        if (checkoutTime) {
+          bot.checkoutTime = botRowData[
+            BOT_SPREADSHEET_COLUMNS.CheckoutTime
+          ] as string;
         }
       }
       if (pilot !== undefined) {
