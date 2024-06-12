@@ -97,6 +97,15 @@ export class PrismaPublicAccounts implements IPublicAccountService {
         `PublicAccountsPrisma - found bot ${bot.name} when looking for a ${botClass}${locationString}`
       );
 
+      bot.currentPilot = "reserved";
+
+      await this.prisma.bot.update({
+        where: {
+          name: bot.name,
+        },
+        data: bot,
+      });
+
       return bot.name;
     } else {
       throw new Error(
