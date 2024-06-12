@@ -107,43 +107,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
 
   public async updateBotRowDetails(
     botName: string,
-    checkoutTime?: moment.Moment | undefined,
-    pilot?: string | undefined,
-    location?: string | undefined,
-    bindLocation?: string | undefined
-  ) {
-    const rowData: { cell: BOT_SPREADSHEET_COLUMNS; value: any }[] = [];
-    if (checkoutTime) {
-      rowData.push({
-        cell: BOT_SPREADSHEET_COLUMNS.CheckoutTime,
-        value: checkoutTime.toString(),
-      });
-    }
-    if (pilot) {
-      rowData.push({
-        cell: BOT_SPREADSHEET_COLUMNS.CurrentPilot,
-        value: pilot,
-      });
-    }
-    if (location) {
-      rowData.push({
-        cell: BOT_SPREADSHEET_COLUMNS.CurrentLocation,
-        value: location,
-      });
-    }
-    if (bindLocation) {
-      rowData.push({
-        cell: BOT_SPREADSHEET_COLUMNS.BindLocation,
-        value: bindLocation,
-      });
-    }
-
-    await this.updatePublicAccountSheetBatch(botName, rowData);
-  }
-
-  private async updatePublicAccountSheetBatch(
-    botName: string,
-    rowData: { cell: BOT_SPREADSHEET_COLUMNS; value: any }[]
+    rowDataMap: { [id: string]: moment.Moment | string | undefined }
   ) {
     await this.loadBots();
     if (this.sheet) {
@@ -157,9 +121,11 @@ export class SheetPublicAccountService implements IPublicAccountService {
         // do update
         const row = rows.at(botRowIndex);
         if (row) {
-          for (const cellData of rowData) {
-            row[cellData.cell] = cellData.value;
-          }
+          Object.entries(rowDataMap).forEach((cellData) => {
+            if (cellData[1] !== undefined) {
+              row[cellData[0]] = cellData[1];
+            }
+          });
           await row.save();
         }
       } else {

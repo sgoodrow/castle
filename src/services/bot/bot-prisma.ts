@@ -124,10 +124,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
   async updateBotRowDetails(
     botName: string,
-    checkoutTime: Moment | undefined,
-    pilot?: string | undefined,
-    location?: string | undefined,
-    bindLocation?: string | undefined
+    botRowData: { [id: string]: moment.Moment | string | undefined }
   ): Promise<void> {
     const bot = await this.prisma.bot.findFirst({
       where: {
@@ -136,17 +133,34 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     });
 
     if (bot) {
-      if (checkoutTime) {
-        bot.checkoutTime = moment().toString();
+      const checkoutTime = botRowData[BOT_SPREADSHEET_COLUMNS.CheckoutTime];
+      const pilot = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentPilot];
+      const location = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentLocation];
+      const bindLocation = botRowData[BOT_SPREADSHEET_COLUMNS.BindLocation];
+      if (checkoutTime !== undefined) {
+        // Set time or clear if not undefined
+        if (moment.isMoment(checkoutTime)) {
+          bot.checkoutTime = (
+            botRowData[BOT_SPREADSHEET_COLUMNS.CheckoutTime] as moment.Moment
+          ).toString();
+        } else {
+          bot.checkoutTime = "";
+        }
       }
-      if (pilot) {
-        bot.currentPilot = pilot;
+      if (pilot !== undefined) {
+        bot.currentPilot = botRowData[
+          BOT_SPREADSHEET_COLUMNS.CurrentPilot
+        ] as string;
       }
-      if (location) {
-        bot.location = location;
+      if (location !== undefined) {
+        bot.location = botRowData[
+          BOT_SPREADSHEET_COLUMNS.CurrentLocation
+        ] as string;
       }
-      if (bindLocation) {
-        bot.bindLocation = bindLocation;
+      if (bindLocation !== undefined) {
+        bot.bindLocation = botRowData[
+          BOT_SPREADSHEET_COLUMNS.CurrentPilot
+        ] as string;
       }
       await this.prisma.bot.update({
         where: {
@@ -158,10 +172,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
     SheetPublicAccountService.getInstance().updateBotRowDetails(
       botName,
-      checkoutTime,
-      pilot,
-      location,
-      bindLocation
+      botRowData
     );
   }
 

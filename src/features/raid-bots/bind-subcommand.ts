@@ -3,6 +3,7 @@ import { Subcommand } from "../../shared/command/subcommand";
 import { IPublicAccountService } from "../../services/bot/public-accounts.i";
 import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
+import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
 
 export enum Option {
   Name = "name",
@@ -27,13 +28,9 @@ export class BindSubcommand extends Subcommand {
     ) as string;
 
     try {
-      await this.publicAccountService.updateBotRowDetails(
-        name,
-        undefined,
-        undefined,
-        undefined,
-        bindLocation
-      );
+      this.publicAccountService.updateBotRowDetails(name, {
+        [BOT_SPREADSHEET_COLUMNS.BindLocation]: bindLocation,
+      });
       if (bindLocation) {
         await interaction.editReply(
           `Sheet was updated to show ${name} was bound at ${bindLocation}`

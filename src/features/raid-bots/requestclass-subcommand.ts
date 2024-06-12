@@ -13,6 +13,7 @@ import { capitalize } from "../../shared/util";
 import { Mutex } from "async-mutex";
 import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
+import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
 
 export enum Option {
   Class = "class",
@@ -97,11 +98,11 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
 
         // Update public record
         try {
-          await publicAccounts.updateBotRowDetails(
-            firstBot,
-            moment(),
-            guildUser?.user.username || "UNKNOWN USER"
-          );
+          await publicAccounts.updateBotRowDetails(firstBot, {
+            [BOT_SPREADSHEET_COLUMNS.CurrentPilot]:
+              guildUser?.user.username || "UNKNOWN USER",
+            [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment(),
+          });
         } catch (err) {
           throw new Error(
             "Failed to update public record, check the configuration"

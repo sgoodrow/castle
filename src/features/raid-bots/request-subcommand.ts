@@ -9,6 +9,7 @@ import { accounts } from "../../services/accounts";
 import { raidBotInstructions } from "./update-bots";
 import moment from "moment";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
+import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
 
 export enum Option {
   Name = "name",
@@ -69,11 +70,11 @@ Password: ${spoiler(details.password)}
         );
 
         if (!currentPilot) {
-          await publicAccounts.updateBotRowDetails(
-            name,
-            moment(),
-            guildUser?.user.username || "UNKNOWN USER"
-          );
+          await publicAccounts.updateBotRowDetails(name, {
+            [BOT_SPREADSHEET_COLUMNS.CurrentPilot]:
+              guildUser?.user.username || "UNKNOWN USER",
+            [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment(),
+          });
         }
       } catch (err) {
         throw new Error(

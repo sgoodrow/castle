@@ -3,6 +3,7 @@ import { Subcommand } from "../../shared/command/subcommand";
 import { IPublicAccountService } from "../../services/bot/public-accounts.i";
 import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
+import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
 
 export enum Option {
   Name = "name",
@@ -27,12 +28,11 @@ export class ParkSubcommand extends Subcommand {
     ) as string;
 
     try {
-      await this.publicAccountService.updateBotRowDetails(
-        name,
-        "",
-        "",
-        location
-      );
+      await this.publicAccountService.updateBotRowDetails(name, {
+        [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
+        [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
+        [BOT_SPREADSHEET_COLUMNS.CurrentLocation]: location ?? undefined,
+      });
       if (location) {
         await interaction.editReply(
           `Sheet was updated to show ${name} was released and moved to ${location}`

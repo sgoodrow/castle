@@ -9,10 +9,7 @@ export interface IPublicAccountService {
   updateBotCheckoutTime(botName: string, dateTime: moment.Moment | null): void;
   updateBotRowDetails(
     botName: string,
-    checkoutTime?: moment.Moment | string,
-    pilot?: string,
-    location?: string,
-    bindLocation?: string,
+    botRowData: { [id: string]: moment.Moment | string | undefined }
   ): void;
   getCurrentBotPilot(botName: string): Promise<string | undefined>;
   getFirstAvailableBotByClass(
