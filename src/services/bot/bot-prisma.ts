@@ -166,7 +166,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       }
       if (bindLocation !== undefined) {
         bot.bindLocation = botRowData[
-          BOT_SPREADSHEET_COLUMNS.CurrentPilot
+          BOT_SPREADSHEET_COLUMNS.BindLocation
         ] as string;
       }
       await this.prisma.bot.update({
