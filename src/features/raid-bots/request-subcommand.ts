@@ -77,6 +77,8 @@ Password: ${spoiler(details.password)}
       await interaction.editReply(response);
     } catch (err) {
       status = "❌ Denied";
+      const logMsg = await thread.send("OK");
+      logMsg.edit(`${status} ${interaction.user} access to ${name}.`);
 
       await interaction.editReply(
         `You do not have the correct permissions to access ${name}.`
