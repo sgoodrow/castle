@@ -57,7 +57,8 @@ export const {
   GOOGLE_KEY_FILE,
   bankGoogleDriveFolderId,
   modRoleId,
-  batphoneChannelId
+  batphoneChannelId,
+  wakeupChannelId,
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
@@ -165,6 +166,7 @@ export const {
   guardOfficeChannelId: string;
   raidBotsChannelId: string;
   batphoneChannelId: string;
+  wakeupChannelId: string;
 
   // Google Ids
   bankGoogleDriveFolderId: string;

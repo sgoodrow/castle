@@ -1,4 +1,10 @@
-import { ChannelType, Client, GatewayIntentBits, Partials } from "discord.js";
+import {
+  ChannelType,
+  Client,
+  GatewayIntentBits,
+  Partials,
+  VoiceState,
+} from "discord.js";
 import { interactionCreateListener } from "./listeners/interaction-create-listener";
 import { guildId, token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
@@ -15,6 +21,7 @@ import {
 import { redisChannels, redisListener } from "./redis/client";
 import { updateRaidReport } from "./features/dkp-records/update/update-raid-report";
 import { guildMemberUpdateListener } from "./listeners/guild-member-update-listener";
+import "reflect-metadata";
 
 // Global
 https.globalAgent.maxSockets = 5;
@@ -28,6 +35,7 @@ export const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.GuildScheduledEvents,
+    GatewayIntentBits.GuildVoiceStates,
   ],
   partials: [Partials.Message, Partials.Reaction],
 });
@@ -80,6 +88,11 @@ client.on("guildScheduledEventCreate", guildScheduledEventListener);
 client.on("guildScheduledEventDelete", guildScheduledEventListener);
 client.on("guildScheduledEventUpdate", guildScheduledEventListener);
 client.on("guildScheduledEventUpdate", guildScheduledEventStartedListener);
+client.on("voiceStateUpdate", (oldState: VoiceState, newState: VoiceState) => {
+  console.log(
+    `Voice state changed: ${oldState.toJSON()} to ${newState.toJSON()}`
+  );
+});
 
 registerSlashCommands();
 
