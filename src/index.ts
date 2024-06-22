@@ -22,6 +22,8 @@ import { redisChannels, redisListener } from "./redis/client";
 import { updateRaidReport } from "./features/dkp-records/update/update-raid-report";
 import { guildMemberUpdateListener } from "./listeners/guild-member-update-listener";
 import "reflect-metadata";
+import { container } from "tsyringe";
+import { WakeupService } from "./features/wakeup/wakeup.service";
 
 // Global
 https.globalAgent.maxSockets = 5;
@@ -99,3 +101,5 @@ registerSlashCommands();
 redisListener.pSubscribe(redisChannels.raidReportChange(), updateRaidReport);
 
 console.log("Listening...");
+
+
