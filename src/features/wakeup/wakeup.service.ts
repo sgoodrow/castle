@@ -88,7 +88,7 @@ export class WakeupService implements IWakeupService {
               player.stop(true);
               // Leave channel
               voiceConnection.destroy();
-            }, 20000);
+            }, 60000);
           } catch (error: unknown) {
             console.log(`Error during wakeup: ${error}`);
           }
