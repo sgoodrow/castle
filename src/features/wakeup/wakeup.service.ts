@@ -1,5 +1,6 @@
 import { VoiceChannel, Guild } from "discord.js";
 import {
+  AudioResource,
   StreamType,
   VoiceConnectionStatus,
   createAudioPlayer,
@@ -7,9 +8,12 @@ import {
   joinVoiceChannel,
 } from "@discordjs/voice";
 import { IWakeupService } from "./wakeup.service.i";
-import { autoInjectable, singleton } from "tsyringe";
+import { autoInjectable } from "tsyringe";
 import { wakeupChannelId } from "../../config";
 import { getGuild } from "../..";
+import { redisClient } from "../../redis/client";
+import ytdl from "ytdl-core";
+import internal from "stream";
 
 @autoInjectable()
 export class WakeupService implements IWakeupService {
@@ -42,41 +46,43 @@ export class WakeupService implements IWakeupService {
         async (oldState, newState) => {
           try {
             // First TTS
-            const player = createAudioPlayer();
-            // eslint-disable-next-line @typescript-eslint/no-var-requires
-            const discordTTS = require("discord-tts");
-            const message = discordTTS.getVoiceStream(textMessage);
-            const tts = createAudioResource(message, {
-              inputType: StreamType.Arbitrary,
-              inlineVolume: false,
+            this.wakeupChannel?.send({
+              content: textMessage,
+              tts: true,
             });
-            player.play(tts);
+            const player = createAudioPlayer();
 
             // Play wakeup song
-            // let songUrl = await redisClient.hGet("wakeup", "song");
-            // if (!songUrl) {
-            //   songUrl = "https://youtu.be/enYdAxVcNZA?t=12";
-            // }
+            let songUrl = await redisClient.hGet("wakeup", "song");
+            if (!songUrl) {
+              songUrl = "media/daddychill.mp3";
+            }
 
-            // const stream = ytdl(songUrl, {
-            //   filter: "audioonly",
-            // });
-            // const resource = createAudioResource(stream, {
-            //   inputType: StreamType.Arbitrary,
-            // });
-            
-            const resource = createAudioResource("media/daddychill.mp3");
+            let audio: string | internal.Readable | undefined = undefined;
+            if (songUrl.includes("youtu")) {
+              audio = ytdl(songUrl, {
+                filter: "audioonly",
+              });
+            } else if (songUrl.includes(".mp3")) {
+              audio = songUrl;
+            }
+
+            if (!audio) {
+              throw new Error("No valid audio provided");
+            }
+
+            const resource = createAudioResource(audio, {
+              inputType: StreamType.Arbitrary,
+            });
 
             voiceConnection.subscribe(player);
             player.play(resource);
 
             setTimeout(async () => {
               player.stop(true);
-              // Second TTS message
-
               // Leave channel
               voiceConnection.destroy();
-            }, 10000);
+            }, 20000);
           } catch (error: unknown) {
             console.log(`Error during wakeup: ${error}`);
           }

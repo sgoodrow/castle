@@ -29,6 +29,7 @@ export class SetSongSubcommand extends Subcommand {
     try {
       authorizeByMemberRoles([officerRoleId, knightRoleId], interaction);
       redisClient.hSet("wakeup", "song", URL);
+      await interaction.editReply("Edited song to " + URL);
     } catch (error) {
       await interaction.editReply(`Failed to edit song: ${error}`);
     }
