@@ -30,7 +30,7 @@ class sendBp extends Subcommand {
     const bpChannel = await getTextChannel(batphoneChannelId);
     if (typeof message === "string") {
       await bpChannel.send({
-        content: `[${interaction.user}] ${message}`,
+        content: `[${interaction.user}] <@&${raiderRoleId}> ${message}`,
       });
       interaction.editReply("Batphone posted: " + message);
 
