@@ -90,11 +90,6 @@ client.on("guildScheduledEventCreate", guildScheduledEventListener);
 client.on("guildScheduledEventDelete", guildScheduledEventListener);
 client.on("guildScheduledEventUpdate", guildScheduledEventListener);
 client.on("guildScheduledEventUpdate", guildScheduledEventStartedListener);
-client.on("voiceStateUpdate", (oldState: VoiceState, newState: VoiceState) => {
-  console.log(
-    `Voice state changed: ${oldState.toJSON()} to ${newState.toJSON()}`
-  );
-});
 
 registerSlashCommands();
 

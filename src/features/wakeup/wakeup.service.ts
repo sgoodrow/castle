@@ -52,11 +52,17 @@ export class WakeupService implements IWakeupService {
             });
             const player = createAudioPlayer();
 
+            player.on("error", (error) => {
+              console.error(`Error: ${error.message}`);
+            });
+
             // Play wakeup song
             let songUrl = await redisClient.hGet("wakeup", "song");
             if (!songUrl) {
               songUrl = "media/daddychill.mp3";
             }
+
+            console.log(`Wakeup song url ${songUrl}`);
 
             let audio: string | internal.Readable | undefined = undefined;
             if (songUrl.includes("youtu")) {
