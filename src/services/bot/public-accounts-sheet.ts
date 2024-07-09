@@ -176,6 +176,11 @@ export class SheetPublicAccountService implements IPublicAccountService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  cleanupCheckouts(hours: number): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
   public async getCurrentBotPilot(
     botName: string
   ): Promise<string | undefined> {
@@ -266,13 +271,13 @@ export class SheetPublicAccountService implements IPublicAccountService {
 }
 
 export interface Bot {
-  class: Class;
+  class: string;
   name: string;
   location: string;
-  level: number;
+  level: string;
   currentPilot: string;
   checkoutTime: string;
-  requiredRoles?: string;
+  requiredRoles?: string[];
 }
 
 export interface Location {

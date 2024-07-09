@@ -1,6 +1,5 @@
 import {
   ApplicationCommandOptionChoiceData,
-  GuildMember,
   GuildMemberRoleManager,
 } from "discord.js";
 import { Moment } from "moment";
@@ -11,11 +10,11 @@ import {
 import { IPublicAccountService } from "./public-accounts.i";
 import { PrismaClient } from "@prisma/client";
 import moment from "moment";
-import { bind, truncate } from "lodash";
+import { truncate } from "lodash";
 import { log } from "console";
-import { In } from "typeorm";
 import { accounts } from "../accounts";
-import { SheetPublicAccountService } from "./public-accounts-sheet";
+import { Bot, SheetPublicAccountService } from "./public-accounts-sheet";
+import { getMembers } from "../..";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private prisma!: PrismaClient;
@@ -181,6 +180,63 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       botName,
       botRowData
     );
+  }
+
+  async cleanupCheckouts(hours: number) {
+    const cutoffTime = moment().subtract(hours, "hours");
+    const members = await getMembers();
+    const staleBots = await this.prisma.bot.findMany({
+      where: {
+        checkoutTime: {
+          not: "",
+        },
+      },
+    });
+    const generateMessage = (botName: string, checkoutTime: string): string => {
+      return `${botName} has been automatically parked. You were listed as the pilot for ${botName} starting at ${checkoutTime} and
+all checkouts older than ${hours} hour(s) are being cleaned up. If you are still piloting ${botName}, sorry for the inconvenience and please use /bot request ${botName} to restore your checkout.
+
+Please always remember to use /bot park to release your bot. Thank you!`;
+    };
+
+    staleBots.forEach(async (bot: Bot) => {
+      if (bot.checkoutTime) {
+        const checkoutTime = moment(bot.checkoutTime);
+        if (moment.isMoment(checkoutTime)) {
+          if (checkoutTime < cutoffTime) {
+            const naughtyPilot = members.find((member) => {
+              return member.user.username === bot.currentPilot;
+            });
+            if (naughtyPilot) {
+              naughtyPilot.send({
+                content: generateMessage(bot.name, bot.checkoutTime),
+              });
+            }
+
+            bot.checkoutTime = "";
+            bot.currentPilot = "";
+
+            await this.prisma.bot.update({
+              where: {
+                name: bot.name,
+              },
+              data: bot,
+            });
+            console.log(
+              `Auto-parked ${bot.name} and sent a DM to ${naughtyPilot}`
+            );
+
+            SheetPublicAccountService.getInstance().updateBotRowDetails(
+              bot.name,
+              {
+                [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
+                [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
+              }
+            );
+          }
+        }
+      }
+    });
   }
 
   // Legacy
