@@ -4,7 +4,7 @@ import {
 } from "discord.js";
 
 export interface IPublicAccountService {
-  cleanupCheckouts(hours: number): Promise<void>;
+  cleanupCheckouts(hours: number): Promise<number>;
   updateBotLocation(name: string, location: string): void;
   updateBotPilot(botName: string, pilotName: string): void;
   updateBotCheckoutTime(botName: string, dateTime: moment.Moment | null): void;

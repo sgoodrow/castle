@@ -177,7 +177,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  cleanupCheckouts(hours: number): Promise<void> {
+  cleanupCheckouts(hours: number): Promise<number> {
     throw new Error("Method not implemented.");
   }
 

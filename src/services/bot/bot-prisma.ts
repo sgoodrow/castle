@@ -182,7 +182,8 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     );
   }
 
-  async cleanupCheckouts(hours: number) {
+  async cleanupCheckouts(hours: number): Promise<number> {
+    let cleanupCount = 0;
     const cutoffTime = moment().subtract(hours, "hours");
     const members = await getMembers();
     // Could probably use a DateTime lte comparison here but the schema
@@ -203,44 +204,50 @@ all checkouts older than ${hours} hour(s) are being cleaned up. Please remember 
 If you are still piloting ${botName}, sorry for the inconvenience and please use /bot request ${botName} to restore your checkout.`;
     };
 
-    staleBots.forEach(async (bot: Bot) => {
-      if (bot.checkoutTime) {
-        const checkoutTime = moment(bot.checkoutTime);
-        if (moment.isMoment(checkoutTime)) {
-          if (checkoutTime < cutoffTime) {
-            const naughtyPilot = members.find((member) => {
-              return member.user.username === bot.currentPilot;
-            });
-            if (naughtyPilot) {
-              naughtyPilot.send({
-                content: generateMessage(bot.name, bot.checkoutTime),
+    await Promise.all(
+      staleBots.map(async (bot: Bot) => {
+        if (bot.checkoutTime) {
+          const checkoutTime = moment(bot.checkoutTime);
+          if (moment.isMoment(checkoutTime)) {
+            if (checkoutTime < cutoffTime) {
+              const naughtyPilot = members.find((member) => {
+                return member.user.username === bot.currentPilot;
               });
-            }
-
-            bot.checkoutTime = "";
-            bot.currentPilot = "";
-
-            await this.prisma.bot.update({
-              where: {
-                name: bot.name,
-              },
-              data: bot,
-            });
-            console.log(
-              `Auto-parked ${bot.name} and sent a DM to ${naughtyPilot}`
-            );
-
-            SheetPublicAccountService.getInstance().updateBotRowDetails(
-              bot.name,
-              {
-                [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
-                [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
+              if (naughtyPilot) {
+                naughtyPilot.send({
+                  content: generateMessage(bot.name, bot.checkoutTime),
+                });
               }
-            );
+
+              bot.checkoutTime = "";
+              bot.currentPilot = "";
+
+              await this.prisma.bot.update({
+                where: {
+                  name: bot.name,
+                },
+                data: bot,
+              });
+
+              cleanupCount++;
+
+              console.log(
+                `Auto-parked ${bot.name} and sent a DM to ${naughtyPilot}`
+              );
+
+              SheetPublicAccountService.getInstance().updateBotRowDetails(
+                bot.name,
+                {
+                  [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
+                  [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
+                }
+              );
+            }
           }
         }
-      }
-    });
+      })
+    );
+    return cleanupCount;
   }
 
   // Legacy
