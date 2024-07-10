@@ -185,6 +185,9 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   async cleanupCheckouts(hours: number) {
     const cutoffTime = moment().subtract(hours, "hours");
     const members = await getMembers();
+    // Could probably use a DateTime lte comparison here but the schema
+    // is already a string for checkout time and I'm scared of breaking
+    // prisma again
     const staleBots = await this.prisma.bot.findMany({
       where: {
         checkoutTime: {
@@ -193,10 +196,11 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       },
     });
     const generateMessage = (botName: string, checkoutTime: string): string => {
-      return `${botName} has been automatically parked. You were listed as the pilot for ${botName} starting at ${checkoutTime} and
-all checkouts older than ${hours} hour(s) are being cleaned up. If you are still piloting ${botName}, sorry for the inconvenience and please use /bot request ${botName} to restore your checkout.
+      return `**Bot park notification**
+${botName} has been automatically parked. You were listed as the pilot for ${botName} starting at ${checkoutTime} and
+all checkouts older than ${hours} hour(s) are being cleaned up. Please remember to use /bot park to release your bot so others can use it. Thank you!
 
-Please always remember to use /bot park to release your bot. Thank you!`;
+If you are still piloting ${botName}, sorry for the inconvenience and please use /bot request ${botName} to restore your checkout.`;
     };
 
     staleBots.forEach(async (bot: Bot) => {

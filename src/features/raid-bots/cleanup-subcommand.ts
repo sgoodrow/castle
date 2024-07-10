@@ -8,6 +8,7 @@ import {
 import { Subcommand } from "../../shared/command/subcommand";
 import { IPublicAccountService } from "../../services/bot/public-accounts.i";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
+import { raidBotInstructions } from "./update-bots";
 
 export enum Option {
   Hours = "hours",
@@ -22,6 +23,10 @@ export class CleanupSubcommand extends Subcommand {
 
   public async execute(interaction: CommandInteraction<CacheType>) {
     try {
+      const thread = await raidBotInstructions.getThread();
+      if (!thread) {
+        throw new Error(`Could not locate bot request thread.`);
+      }
       const hours = this.getRequiredOptionValue(
         Option.Hours,
         interaction
@@ -30,6 +35,10 @@ export class CleanupSubcommand extends Subcommand {
       if (hours) {
         await interaction.editReply(
           `Checkouts older than ${hours} hour(s) have been cleaned up`
+        );
+        const logMsg = await thread.send("OK");
+        logMsg.edit(
+          `✅ ${interaction.user} ran the bot cleanup command: ${hours} hour(s) cleaned up`
         );
       }
     } catch (error) {
