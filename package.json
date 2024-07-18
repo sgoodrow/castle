@@ -8,9 +8,9 @@
   "license": "MIT",
   "scripts": {
     "clean": "docker-compose down && rimraf postgres-db",
-    "start": "tsc && nodemon",
+    "start": "node_modules/.bin/tsc && nodemon",
     "format": "prettier-eslint --write \"src/**/*.ts\"",
-    "build": "tsc --skipLibCheck",
+    "build": "node_modules/bin/tsc --skipLibCheck",
     "predev": "docker-compose up -d --wait",
     "dev": "nodemon",
     "test": "jest --watch",
