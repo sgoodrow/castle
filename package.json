@@ -10,7 +10,7 @@
     "clean": "docker-compose down && rimraf postgres-db",
     "start": "node_modules/.bin/tsc && nodemon",
     "format": "prettier-eslint --write \"src/**/*.ts\"",
-    "build": "node_modules/bin/tsc --skipLibCheck",
+    "build": "node_modules/.bin/tsc --skipLibCheck",
     "predev": "docker-compose up -d --wait",
     "dev": "nodemon",
     "test": "jest --watch",
