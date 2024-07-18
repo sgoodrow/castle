@@ -17,7 +17,7 @@
     "test:ci": "jest"
   },
   "engines": {
-    "node": "^22"
+    "node": "^20"
   },
   "dependencies": {
     "@discordjs/builders": "^0.12.0",
