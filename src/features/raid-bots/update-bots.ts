@@ -94,6 +94,7 @@ const hidePassword = (password: string) => {
   return "\\*".repeat(10);
 };
 
+// disabled (vijo 7/18/24)
 export const updateBankBotInfo = (options: Options) =>
   readyActionExecutor(async () => {
     try {

@@ -7,7 +7,7 @@ import { updateReinforcementInfo } from "../features/raider-enlistment/update-re
 import { updateApplicationInfo as updateApplicationInfo } from "../features/applications/update-applications";
 import { updateRaidSchedule } from "../features/raid-schedule-info/update-action";
 import {
-  updateBankBotInfo,
+  // updateBankBotInfo,
   updateGuardBotInfo,
   updateRaidBotsInfo,
 } from "../features/raid-bots/update-bots";
@@ -21,7 +21,7 @@ export const readyListener = async (client: Client) => {
     updateBankRequestInfo(client, updateOptions),
     updateApplicationInfo(client, updateOptions),
     updateRaidBotsInfo(updateOptions),
-    updateBankBotInfo(updateOptions),
+    // updateBankBotInfo(updateOptions),
     updateGuardBotInfo(updateOptions),
     updateInviteListInfo(client, updateOptions),
     updateJewelryRequestInfo(client, updateOptions),
