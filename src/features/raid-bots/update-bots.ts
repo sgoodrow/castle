@@ -94,41 +94,6 @@ const hidePassword = (password: string) => {
   return "\\*".repeat(10);
 };
 
-// disabled (vijo 7/18/24)
-export const updateBankBotInfo = (options: Options) =>
-  readyActionExecutor(async () => {
-    try {
-      checkGoogleCredentials();
-    } catch (err) {
-      console.warn(
-        "Update bank bots feature is disabled because google credentials were not found."
-      );
-      return;
-    }
-    const bankerAccounts = await accounts.getAccountsForRole(bankerRoleId);
-    const sorted = sortBy(
-      bankerAccounts,
-      (b) => b.purpose,
-      (b) => b.characters
-    );
-    await bankBotInstructions.createOrUpdateInstructions(
-      {
-        embeds: [
-          new EmbedBuilder({
-            title: "Bank Bot Credentials",
-            description:
-              "The guild bank is collectively stored across the following characters. Do not share with non-bankers.",
-            fields: sorted.map((b) => ({
-              name: `${b.purpose} - ${b.characters}`,
-              value: `${b.accountName} / ${hidePassword(b.password)}`,
-            })),
-          }),
-        ],
-      },
-      true
-    );
-  }, options);
-
 const guardBotInstructions = new InstructionsReadyAction(
   Name.GuardBotInstructions,
   guardOfficeChannelId
