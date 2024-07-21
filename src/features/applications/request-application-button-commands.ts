@@ -12,8 +12,7 @@ export class RequestApplication extends ButtonCommand {
   public constructor(
     private readonly role: string,
     private readonly description: string,
-    private readonly howToApply: string,
-    private readonly questions: string[],
+    private readonly formUrl: string,
     private readonly outcome: string
   ) {
     super(`request${role}Application`);
@@ -54,35 +53,14 @@ export class RequestApplication extends ButtonCommand {
   }
 
   private get content() {
-    return `**DO NOT REPLY TO THIS MESSAGE. DM AN OFFICER.**
+    return `**DO NOT REPLY TO THIS MESSAGE.**
 
-In Castle, leadership and volunteering are duties with no compensation or special privileges. ${
-      this.role
-    }s are tasked with ${this.description}. ${
-      this.role
-    }s may step down at any time. 
-  
+In Castle, leadership and volunteering are duties with no compensation or special privileges. ${this.role}s are tasked with ${this.description}. ${this.role}s may step down at any time.
+
 **How do I apply to be a ${this.role}?**
-Send a Discord message to ${this.howToApply} ${
-      this.questions.length > 0
-        ? "with your answers to the following questions"
-        : "indicating your interest"
-    }.
-      
-**${this.role} Application**
-${
-  this.questions.length > 0
-    ? this.formattedQuestions
-    : "There is none! Just send a message."
-}
-      
-**What happens to an application?**
-${this.role} applications are reviewed by ${
-      this.outcome
-    }. This process typically takes less than a week.`;
-  }
+Fill out the following Google form: ${this.formUrl}.
 
-  private get formattedQuestions() {
-    return this.questions.map((q, i) => `> ${i + 1}. ${q}`).join("\n> \n");
+**What happens to an application?**
+${this.role} applications are reviewed by ${this.outcome}. This process typically takes less than a week.`;
   }
 }
