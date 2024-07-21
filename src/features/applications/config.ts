@@ -3,83 +3,50 @@ import { RequestApplication } from "./request-application-button-commands";
 const officerApplicationCommand = new RequestApplication(
   "Officer",
   "running the guild",
-  "any officer",
-  [
-    "Please describe what motivates you to volunteer as an officer.",
-    "Officers set an example for the other members of the guild. This includes moderating our habits of speech in guild chat and refraining from trash-talking even when others are rude. We must know the server rules inside and out and follow them. Our behavior reflects directly upon Castle. Are you willing to hold yourself to the highest standards of decorum even and to take responsibility for the consequences of your decisions as an officer?",
-    "While we are allowed to play the game and not be on-duty all the time, being an Officer will consume time. Are you willing to dedicate some of your time to being an Officer of Castle? And do you have the wisdom to set aside time for yourself to enjoy the game?",
-    "The complaints and reports we receive are sometimes genuine and sometimes frivolous and false. We need people who will endure the discomfort of dealing diplomatically with reports and be willing to have honest talks with members, mostly 30-to-60-year-old adults, about their misbehavior in a video game. Do you have the maturity to maintain your composure and behave professionally?",
-    "Include a list with the name of all your characters that are tagged in the alliance. Once you have filled out this application and created the list please DM this to an officer.",
-  ],
-  "current officers. Each applicant must be approved by 3 current officers and not be opposed by any"
+  "https://docs.google.com/forms/d/e/1FAIpQLScXY1H7TUMQ_XKxueILsUXIxGFFP_GGK5ICNu_IN_WFXjltrg/viewform",
+  "current officers. Each applicant must be approved by >60% of active officers, >60% of the Guild Management Team, or by the guild leader. This process typically takes less than a week"
 );
 
 const guardApplicationCommand = new RequestApplication(
   "Guard",
   "conducting guild invites, keeping the peace, and optionally running non-raid events",
-  "any officer",
-  [
-    "Please describe what motivates you to volunteer as a Guard.",
-    "Guards must set a shining example of the guild while interacting with prospective recruits. Are you willing to hold yourself to the highest standards of decorum while representing Castle to new members?",
-    "While we should play the game and not be on-duty all the time, being a Guard will indeed consume some of one's game time. Are you willing to dedicate some of your game time to being a Guard of Castle? And do you have the wisdom to set aside time for yourself to enjoy the game?",
-    "Please include a list with the name, class and level of all of your characters that are tagged in the alliance. Once you have filled out this application and created the list please DM this to an officer.",
-  ],
-  "current officers, and approved by the Castle Captain of the Guard"
+  "https://docs.google.com/forms/d/e/1FAIpQLScI4sJiXnQPQT9buyC3kAOwcR-b4zao2Jre53ev37ubCfaKwA/viewform?usp=sf_link",
+  "current officers and approved by the Captain of the Guard"
 );
 
 const knightApplicationCommand = new RequestApplication(
   "Knight",
   "running, scheduling and supporting guild raids",
-  "any officer",
-  [
-    "Please describe what motivates you to volunteer as a Knight. Which aspects of being raid leadership, support and preparation are you interested in or willing to help with?",
-    "Knights must set a shining example of the guild while interacting with raiders. Are you willing to hold yourself to the highest standards of decorum while representing Castle to new members?",
-    "While we should play the game and not be on-duty all the time, being a Knight will indeed consume some of one's game time. Are you willing to dedicate some of your game time to being a Knight of Castle? And do you have the wisdom to set aside time for yourself to enjoy the game?",
-    "Once you have filled out this application, please DM this to an officer.",
-  ],
-  "the current Knight Commander and a conversation ensues regarding what you want to support. Then, current officers vote, and the application is approved by the Castle Knight Commander"
+  "https://docs.google.com/forms/d/e/1FAIpQLScDdkDI5EzthiQA96pRFxExeuGnmUyGM9blA-By_tlebTscfA/viewform?usp=sf_link",
+  "current officers and approved by the Knight Commander"
 );
 
 const bankerApplicationCommand = new RequestApplication(
   "Banker",
   "fielding bank requests",
-  "any officer",
-  [
-    "Banking requires you to perform recordkeeping in various places including google docs and discord threads. Are you willing to dedicate some of your game time to running the guild bank? And do you have the wisdom to set aside time for yourself to enjoy the game?",
-    "Banking requires patience and attention to detail. Are you capable of being patient and performing all aspects of banking tasks?",
-    "How would you respond to a request by an individual who is not in zone when you log in to fullfill their request?",
-    "Once you have filled out this application, please DM this to an officer.",
-  ],
-  "current officers, and approved by the Castle Treasurer"
+  "https://docs.google.com/forms/d/e/1FAIpQLSfQh6ZHzTI3GCEFLY7prJlGL-p0bq9n6aVlmsi-VyGuB2nhlg/viewform?usp=sf_link",
+  "current officers and approved by the Bank Czar"
 );
 
 const jewelerApplicationCommand = new RequestApplication(
   "Jeweler",
   "fielding jewelry requests",
-  "any officer",
-  [
-    "Jewlery crafting requires you to perform recordkeeping in various places including google docs and discord threads. Are you willing to dedicate some of your game time to being a guild jewelers? And do you have the wisdom to set aside time for yourself to enjoy the game?",
-    "Jewlery crafting requires patience and attention to detail. Are you capable of being patient and performing all aspects of jewelry crafting tasks?",
-    "How would you respond to a request by an individual who is not in zone when you log in to fullfill their request?",
-    "Once you have filled out this application, please DM this to an officer.",
-  ],
-  "current officers, and approved by the Castle Treasurer"
+  "https://docs.google.com/forms/d/e/1FAIpQLSdqlvTxlZpcsNinYxWywL8H6NZ6wm04sG97pOa8MZdMGaahdg/viewform?usp=sf_link",
+  "current officers and approved by the Bank Czar"
 );
 
 const scribeApplicationCommand = new RequestApplication(
   "Scribe",
   "ensuring our guild policies and documentation are accurate and accessible",
-  "any officer",
-  [],
-  "current scribes and officers, and approved by the Castle Chief of Staff"
+  "https://docs.google.com/forms/d/e/1FAIpQLSd4eJkBBLpBbvCFRVEcnvUmzePbk9cg8Isfl1xoxWASWt6eLA/viewform?usp=sf_link",
+  "current officers and approved by the Chief of Staff"
 );
 
 const dkpDeputyApplicationCommand = new RequestApplication(
   "DKP Deputy",
   "uploading DKP records and resolving record inaccuracies",
-  "any officer",
-  [],
-  "current officers, and approved by the Castle Chief of Staff"
+  "https://docs.google.com/forms/d/e/1FAIpQLSf4rdHPjl0QzDOCl3v_DJOQHvqEAU45BwZs68ImFwf1NzJKWw/viewform?usp=sf_link",
+  "current officers and approved by the Chief of Staff"
 );
 
 export const castleOnlyRoles = [
