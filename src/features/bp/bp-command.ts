@@ -159,7 +159,7 @@ class unsetBp extends Subcommand {
     const res = await getBpOptions();
     if (isObject(res)) {
       const opts = Object.entries(res).map(([key, value]) => ({
-        name: value,
+        name: key,
         value: key,
       }));
       return opts;
