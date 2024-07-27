@@ -88,8 +88,9 @@ class setBp extends Subcommand {
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
-        await redisClient.hSet("bp", String(key), message);
-        interaction.editReply("Saved preset message: " + message);
+        const formattedMessage = message.replace(/\\n/g, "\n");
+        await redisClient.hSet("bp", String(key), formattedMessage);
+        interaction.editReply("Saved preset message: " + formattedMessage);
       } else {
         throw error;
       }
