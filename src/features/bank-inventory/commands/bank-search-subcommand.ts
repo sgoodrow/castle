@@ -30,10 +30,10 @@ class BankSearch extends Subcommand {
         const count = stockList?.stock[0].count;
         const countAvailable = stockList?.stock.reduce((total, s) => total + (s.count || 0), 0);
         let inStock = ''
-        for (let i = 0; i < stockList?.stock.length && i <= 10; i++) {
+        for (let i = 0; i < stockList?.stock.length && i <= 30; i++) {
           inStock += `${stockList?.stock[i].charName}: ${stockList?.stock[i].slot} (${stockList?.stock[i].count})\n`
         };
-        if(stockList?.stock.length > 10) {
+        if(stockList?.stock.length > 40) {
           inStock += "[list truncated]"
         }
         stockEmbed.setTitle(`${countAvailable} available:`)

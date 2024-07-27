@@ -193,7 +193,7 @@ export class RaidReport {
 • Deputies will ✅ this message to upload the raid.
 • Requests made by deputies are automatically added to the raid report.
 
-Kill bonus values: https://tinyurl.com/CastleBossBonuses`,
+Kill bonus values: https://castledkp.com/index.php/External/Boss-bonuses-11.html`,
     }).addFields([
       {
         name: "Add a name to raid ticks. Tick numbers and context are optional.",

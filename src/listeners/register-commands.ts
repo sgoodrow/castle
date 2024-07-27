@@ -28,6 +28,8 @@ import { threadUtilCommand } from "../features/threads/command";
 import { raidCommand } from "../features/dkp-records/commands/raid-command";
 import { bankCommand } from "../features/bank-inventory/commands/command";
 import { botCommand } from "../features/raid-bots/command";
+import { batphoneCommand } from "../features/bp/bp-command";
+import { wakeupCommand } from "../features/wakeup/wakeup-command";
 
 const slashCommands = [
   bankHourCommand,
@@ -37,6 +39,8 @@ const slashCommands = [
   threadUtilCommand,
   raidCommand,
   bankCommand,
+  batphoneCommand,
+  wakeupCommand,
 ];
 
 const buttonCommands = [

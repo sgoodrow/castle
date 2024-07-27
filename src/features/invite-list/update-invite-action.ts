@@ -79,13 +79,16 @@ class UpdateInviteListInfoAction extends InstructionsReadyAction {
     return new EmbedBuilder({
       title: "Frequently Asked Questions",
       description: `**Someone wants to join, what do I tell them?**
-Tell them to introduce themselves in our Discord (https://tinyurl.com/castle-discord). A guard will give them a brief interview.
+Tell them to introduce themselves in our Discord (https://discord.gg/castlegreen). A guard will give them appropriate Discord roles.
 
 **I need an invite in-game, how do I get one?**
-Hit the button to add yourself to the invite list. A Guard or Officer will contact you in the future when they're doing invites in-game. After you get an invite, remove yourself from the list.
+Hit the blue "Add Self to Invite List" button to add yourself to the invite list. The Castle Steward bot will notify you in this channel when a Guard or Officer is available to coordinate an invite.
 
 **I'm on the invite list, now what?**
-A guard or officer will notify you in Discord when they are performing invites. If you do not get an invite within 2 weeks, you will be removed from the invite list and need to ask for Discord access again.`,
+A Guard or Officer will notify you in Discord when they are performing invites. If you are available when you get a ping, post here the name of your toon and the zone you are currently in and they will connect with you in-game for the invite.
+
+**What happens if I'm unable to connect with a Guard or Officer?**
+Please post your best availability in this channel (including time zone) and we will organize a specific time that works for you. We use Discord messaging for this so please make sure you check for messages from people you have not spoken to previously. If you do not get an invite within 2 weeks, you will be removed from the invite list. However, feel free to add yourself to the invite list again any time.`,
     });
   }
 

@@ -29,12 +29,13 @@ export class InviteSimple {
   }
 
   public getDiscordDisplayName(members: Members) {
-    return members?.get(this.discordId)?.displayName || `<@${this.discordId}>`;
+    const member = members?.get(this.discordId);
+    return member ? `**${member.displayName}** (<@${member.id}>)` : `**Left the server** (<@${this.discordId}>)`;
   }
 
   public getRichLabel(members: Members) {
     const displayName = this.getDiscordDisplayName(members);
-    return `${this.altNote}**${displayName}** <t:${this.time}:R>`;
+    return `${this.altNote}${displayName} <t:${this.time}:R>`;
   }
 
   public get richLabel() {

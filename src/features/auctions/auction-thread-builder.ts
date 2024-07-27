@@ -63,10 +63,12 @@ export class AuctionThreadBuilder extends ThreadBuilder {
 **Rules:**
 - The auction ends when nobody has bid for 12 consecutive hours and the auction has been open for at least 24.${this.raidRules}${this.requireScribeRule}
 - Do not use auction threads for discussion, jokes or chatter -- only bids.
+- Retracting (ie deleting) bids is not allowed.
 
 **How are auctions completed?**
-- Bankers will put a ✅ on the winning bid.
-- The bid does not need to be from the winner, just to include their name in the post in the correct format.`,
+- Bankers will put a ✅ on the winning bid to close a DKP auction.
+- The bid does not need to be from the winner, just to include their name in the post in the correct format.
+- Bankers will put a 🏦 on the OP if there are no bidders or a DKP auction ends.`,
     });
   }
 
