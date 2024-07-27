@@ -29,9 +29,11 @@ class sendBp extends Subcommand {
     const message = this.getOption("message", interaction)?.value;
     const bpChannel = await getTextChannel(batphoneChannelId);
     if (typeof message === "string") {
+      const formattedMessage = message.replace(/\\n/g, `
+`);
       await bpChannel.send({
         content: `[${interaction.user}] <@&${raiderRoleId}> 
-        ` + message,
+` + formattedMessage,
       });
       interaction.editReply("Batphone posted: " + message);
 
@@ -89,10 +91,8 @@ class setBp extends Subcommand {
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
-        const formattedMessage = message.replace(/\\n/g, `
-          `);
-        await redisClient.hSet("bp", String(key), formattedMessage);
-        interaction.editReply("Saved preset message: " + formattedMessage);
+        await redisClient.hSet("bp", String(key), message);
+        interaction.editReply("Saved preset message: " + message);
       } else {
         throw error;
       }
