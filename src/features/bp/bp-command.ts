@@ -17,6 +17,7 @@ import { redis } from "googleapis/build/src/apis/redis";
 import { isObject } from "lodash";
 import { container } from "tsyringe";
 import { WakeupService } from "../wakeup/wakeup.service";
+import { truncate } from "lodash";
 
 class sendBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -85,13 +86,15 @@ class setBp extends Subcommand {
       interaction
     );
 
-    const message = this.getOption("message", interaction)?.value;
+    let message = this.getOption("message", interaction)?.value;
     try {
       if (typeof message === "string") {
+        message = truncate(message, { length: 5000 }); // max-message length = 5000
         let key = this.getOption("key", interaction)?.value;
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
+        key = truncate(String(key), { length: 100}) // max option length = 100
         await redisClient.hSet("bp", String(key), message);
         interaction.editReply("Saved preset message: " + message);
       } else {
