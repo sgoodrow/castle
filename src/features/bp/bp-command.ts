@@ -89,7 +89,9 @@ class setBp extends Subcommand {
     let message = this.getOption("message", interaction)?.value;
     try {
       if (typeof message === "string") {
-        message = truncate(message, { length: 5000 }); // max-message length = 5000
+        if (message.length > 2000) {
+          throw new Error("Message is too long.");
+        }
         let key = this.getOption("key", interaction)?.value;
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
@@ -102,7 +104,7 @@ class setBp extends Subcommand {
       }
     } catch (err) {
       console.error(err);
-      interaction.editReply("Failed save batphone message.");
+      interaction.editReply("Failed save batphone message: " + err);
     }
   }
   public async getOptionAutocomplete(
