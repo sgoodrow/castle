@@ -25,9 +25,10 @@ class sendBp extends Subcommand {
       [officerRoleId, modRoleId, knightRoleId],
       interaction
     );
-
-    const message = this.getOption("message", interaction)?.value;
     const bpChannel = await getTextChannel(batphoneChannelId);
+    const val = this.getOption("message", interaction)?.value;
+    const savedMsg = await redisClient.hGet("bp", String(val));
+    const message = savedMsg || val;
     if (typeof message === "string") {
       const formattedMessage = message.replace(/\\n/g, `
 `);
@@ -57,8 +58,8 @@ class sendBp extends Subcommand {
     const res = await getBpOptions();
     if (isObject(res)) {
       const opts = Object.entries(res).map(([key, value]) => ({
-        name: value,
-        value: value,
+        name: key,
+        value: key,
       }));
       return opts;
     }
