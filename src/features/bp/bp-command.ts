@@ -17,6 +17,7 @@ import { redis } from "googleapis/build/src/apis/redis";
 import { isObject } from "lodash";
 import { container } from "tsyringe";
 import { WakeupService } from "../wakeup/wakeup.service";
+import { truncate } from "lodash";
 
 class sendBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -25,12 +26,16 @@ class sendBp extends Subcommand {
       [officerRoleId, modRoleId, knightRoleId],
       interaction
     );
-
-    const message = this.getOption("message", interaction)?.value;
     const bpChannel = await getTextChannel(batphoneChannelId);
+    const val = this.getOption("message", interaction)?.value;
+    const savedMsg = await redisClient.hGet("bp", String(val));
+    const message = savedMsg || val;
     if (typeof message === "string") {
+      const formattedMessage = message.replace(/\\n/g, `
+`);
       await bpChannel.send({
-        content: `[${interaction.user}] <@&${raiderRoleId}> ${message}`,
+        content: `[${interaction.user}] <@&${raiderRoleId}> 
+` + formattedMessage,
       });
       interaction.editReply("Batphone posted: " + message);
 
@@ -54,8 +59,8 @@ class sendBp extends Subcommand {
     const res = await getBpOptions();
     if (isObject(res)) {
       const opts = Object.entries(res).map(([key, value]) => ({
-        name: value,
-        value: value,
+        name: key,
+        value: key,
       }));
       return opts;
     }
@@ -81,22 +86,25 @@ class setBp extends Subcommand {
       interaction
     );
 
-    const message = this.getOption("message", interaction)?.value;
+    let message = this.getOption("message", interaction)?.value;
     try {
       if (typeof message === "string") {
+        if (message.length > 2000) {
+          throw new Error("Message is too long.");
+        }
         let key = this.getOption("key", interaction)?.value;
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
-        const formattedMessage = message.replace(/\\n/g, "\n");
-        await redisClient.hSet("bp", String(key), formattedMessage);
-        interaction.editReply("Saved preset message: " + formattedMessage);
+        key = truncate(String(key), { length: 100}) // max option length = 100
+        await redisClient.hSet("bp", String(key), message);
+        interaction.editReply("Saved preset message: " + message);
       } else {
         throw error;
       }
     } catch (err) {
       console.error(err);
-      interaction.editReply("Failed save batphone message.");
+      interaction.editReply("Failed save batphone message: " + err);
     }
   }
   public async getOptionAutocomplete(
@@ -157,7 +165,7 @@ class unsetBp extends Subcommand {
     const res = await getBpOptions();
     if (isObject(res)) {
       const opts = Object.entries(res).map(([key, value]) => ({
-        name: value,
+        name: key,
         value: key,
       }));
       return opts;
