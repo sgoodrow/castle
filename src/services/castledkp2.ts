@@ -7,15 +7,16 @@ const client = axios.create({
 });
 
 client.interceptors.request.use((config) => {
-  if (!castleDkp2TokenRW) {
-    throw new Error("Cannot post to CastleDKP2 without an RW token.");
-  }
   config.headers.Authorization = `Bearer ${castleDkp2TokenRW}`;
   return config;
 });
 
 export const castledkp2 = {
   createRaid: async (raidTick: RaidTick) => {
+    if (!castleDkp2TokenRW) {
+      console.error("Cannot query CastleDKP2 without an RW token.");
+      return;
+    }
     return client.post("/api/v1/raid", {
       activity: {
         typeId: 1,
