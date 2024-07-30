@@ -3,13 +3,14 @@ import axiosRetry from "axios-retry";
 import { partition } from "lodash";
 import LRUCache from "lru-cache";
 import moment from "moment";
-import { castleDkpTokenRO, dkpBonusesChannelId } from "../config";
+import { castleDkpTokenRO } from "../config";
 import {
   AdjustmentData,
   RaidTick,
   UPLOAD_DATE_FORMAT,
 } from "../features/dkp-records/raid-tick";
 import { MINUTES, MONTHS } from "../shared/time";
+import { castledkp2 } from "./castledkp2";
 
 const route = (f: string) => `api.php?function=${f}`;
 
@@ -163,7 +164,10 @@ export const castledkp = {
       raid_note: `${name} ${threadUrl}`,
     };
     console.log("Creating new raid:", payload);
-    const { data } = await client.post<{ raid_id: number }>(route("add_raid"), payload);
+    const { data } = await client.post<{ raid_id: number }>(
+      route("add_raid"),
+      payload
+    );
 
     return {
       eventUrlSlug: event.name
@@ -203,7 +207,10 @@ export const castledkp = {
       raid_note: `${tick.name} ${threadUrl}`,
     };
     console.log("Creating raid tick", payload);
-    const { data } = await client.post<{ raid_id: number }>(route("add_raid"), payload);
+    const { data } = await client.post<{ raid_id: number }>(
+      route("add_raid"),
+      payload
+    );
 
     // add items to raid
     console.log("Adding items to raid", tick.data.loot);
@@ -218,6 +225,12 @@ export const castledkp = {
         castledkp.addAdjustment(data.raid_id, a)
       ) || []
     );
+
+    // Temporarily create data using the beta service as well; this is not async and is fault tolerant.
+    // Primarily, this is being used to test the beta service by ingesting real data.
+    castledkp2.createRaid(tick).catch((error) => {
+      console.log(`Failed to create raid in beta service: ${error}`);
+    });
 
     return {
       eventUrlSlug: tick.data.event.name

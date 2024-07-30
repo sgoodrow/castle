@@ -9,6 +9,7 @@ export const {
   token,
   clientId,
   castleDkpTokenRO,
+  castleDkp2TokenRW,
   castleDkpAuctionRaidId,
   castleDkpBonusesCharId,
   sharedCharactersGoogleSheetId,
@@ -87,6 +88,11 @@ export const {
    * CastleDKP.com admin read-only access token.
    */
   castleDkpTokenRO?: string;
+
+  /**
+   * castledkp.vercel.app read/write token
+   */
+  castleDkp2TokenRW?: string;
 
   /**
    * CastleDKP.com Raid ID for DKP auctions.
