@@ -89,7 +89,7 @@ class setBp extends Subcommand {
     let message = this.getOption("message", interaction)?.value;
     try {
       if (typeof message === "string") {
-        if (message.length > 2000) {
+        if (message.length > 2000) { // max message length is 2000 chars
           throw new Error("Message is too long.");
         }
         let key = this.getOption("key", interaction)?.value;
@@ -184,6 +184,71 @@ class unsetBp extends Subcommand {
   }
 }
 
+class getBp extends Subcommand {
+  public async execute(interaction: CommandInteraction<CacheType>) {
+    // authorize
+    authorizeByMemberRoles(
+      [officerRoleId, modRoleId, knightRoleId],
+      interaction
+    );
+
+    try {
+      const val = this.getOption("message", interaction)?.value;
+      const key = this.getOption("message", interaction)?.value;
+      const savedMsg = await redisClient.hGet("bp", String(val));
+      const message = savedMsg || val;
+      if (typeof message === "string") {
+        const formattedMessage = message.replace(/\\n/g, `
+`);
+
+  const replyMsg = `\`/bp send ${key}\` is set to send:
+
+${formattedMessage}
+
+--------
+To change this message, use \`/bp unset ${key}\` and then \`/bp set\` to set a new message.
+`
+    if (interaction.channel){
+      interaction.channel.send(replyMsg) // todo: send message in channel
+      interaction.deleteReply() }
+
+  }
+  
+    } catch(e){
+      console.error(e);
+      interaction.editReply('Error: ' + e);
+    }
+
+  }
+  
+  public async getOptionAutocomplete(
+    option: string,
+    interaction: AutocompleteInteraction<CacheType>
+  ): Promise<
+      ApplicationCommandOptionChoiceData<string | number>[] | undefined
+    > {
+    const res = await getBpOptions();
+    if (isObject(res)) {
+      const opts = Object.entries(res).map(([key, value]) => ({
+        name: key,
+        value: key,
+      }));
+      return opts;
+    }
+    return [];
+  }
+
+  public get command() {
+    return super.command.addStringOption((o) =>
+      o
+        .setName("message")
+        .setDescription("BP Message")
+        .setRequired(true)
+        .setAutocomplete(true)
+    );
+  }
+}
+
 const getBpOptions = async () => {
   try {
     const res = await redisClient.hGetAll("bp");
@@ -201,5 +266,6 @@ export const batphoneCommand = new Command(
     new sendBp("send", "send batphone"),
     new setBp("set", "save a BP preset"),
     new unsetBp("unset", "remove BP preset"),
+    new getBp("get", "show BP message in this channel")
   ]
 );
