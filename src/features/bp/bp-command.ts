@@ -266,5 +266,6 @@ export const batphoneCommand = new Command(
     new sendBp("send", "send batphone"),
     new setBp("set", "save a BP preset"),
     new unsetBp("unset", "remove BP preset"),
+    new getBp("get", "show BP message in this channel")
   ]
 );
