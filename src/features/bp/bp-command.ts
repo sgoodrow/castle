@@ -210,8 +210,7 @@ To change this message, use \`/bp unset ${key}\` and then \`/bp set\` to set a n
 `
     if (interaction.channel){
       interaction.channel.send(replyMsg) // todo: send message in channel
-      interaction.deleteReply();
-    }
+      interaction.deleteReply() }
 
   }
   
