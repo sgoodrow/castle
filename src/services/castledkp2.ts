@@ -15,15 +15,36 @@ client.interceptors.request.use((config) => {
 });
 
 export const castledkp2 = {
-  createRaid: async (raidTick: RaidTick) => {
+  upsertRaidActivityType: async (name: string, defaultPayout: number) => {
+    const response = await client.post<{ id: number }>(
+      "/api/v1/raid-activity-type",
+      {
+        name,
+        defaultPayout,
+      }
+    );
+    return response.data.id;
+  },
+
+  createRaid: async ({
+    raidTick,
+    raidActivityType,
+  }: {
+    raidTick: RaidTick;
+    raidActivityType: { name: string; defaultPayout: number };
+  }) => {
     if (!castleDkp2TokenRW) {
       console.error("Cannot query CastleDKP2 without an RW token.");
       return;
     }
     try {
-      const response = await client.post("/api/v1/raid", {
+      const typeId = await castledkp2.upsertRaidActivityType(
+        raidActivityType.name,
+        raidActivityType.defaultPayout
+      );
+      const response = await client.post("/api/v1/raid-activity", {
         activity: {
-          typeId: 1,
+          typeId,
           payout: raidTick.data.value,
           note: raidTick.note,
         },
