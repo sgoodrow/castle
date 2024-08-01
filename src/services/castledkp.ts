@@ -10,7 +10,7 @@ import {
   UPLOAD_DATE_FORMAT,
 } from "../features/dkp-records/raid-tick";
 import { MINUTES, MONTHS } from "../shared/time";
-import { castledkp2 } from "./castledkp2";
+import { betaDkpService } from "./betaDkpService";
 
 const route = (f: string) => `api.php?function=${f}`;
 
@@ -228,7 +228,7 @@ export const castledkp = {
 
     // Temporarily create data using the beta service as well; this is not async and is fault tolerant.
     // Primarily, this is being used to test the beta service by ingesting real data.
-    castledkp2
+    betaDkpService
       .createRaid({
         raidTick: tick,
         raidActivityType: {

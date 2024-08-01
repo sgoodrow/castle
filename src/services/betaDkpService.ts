@@ -2,6 +2,12 @@ import axios from "axios";
 import { castleDkp2TokenRW } from "../config";
 import { RaidTick } from "../features/dkp-records/raid-tick";
 
+// This client is for a new DKP application that is being built as a replacement for CastleDKP.com, which
+// at the time of writing is an old EqDkpPlus site with scalability and maintainence issues.
+//
+// It is not yet clear that this effort will continue to completion, so this is being added experimentally
+// to capture realistic data in a non-intrusive way.
+
 const client = axios.create({
   baseURL: "https://castledkp.vercel.app",
   headers: {
@@ -14,28 +20,28 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
-export const castledkp2 = {
+const handleError = (error: unknown) => {
+  if (axios.isAxiosError(error)) {
+    console.error(
+      "Beta error creating raid:",
+      error.response?.data || error.message
+    );
+  } else {
+    console.error("Beta error creating raid:", error);
+  }
+  throw error;
+};
+
+export const betaDkpService = {
   upsertRaidActivityType: async (name: string, defaultPayout: number) => {
     try {
       const response = await client.post<{ id: number }>(
-        "/api/v1/raid-activity-type",
-        {
-          name,
-          defaultPayout,
-        }
+        "/api/v1/raid-activity-type/upsert",
+        { name, defaultPayout }
       );
-      console.log("Beta created raid activity type:", response.data.id);
       return response.data.id;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(
-          "Beta error creating raid activity type:",
-          error.response?.data || error.message
-        );
-      } else {
-        console.error("Beta error creating raid activity type:", error);
-      }
-      throw error;
+      handleError(error);
     }
   },
 
@@ -46,13 +52,13 @@ export const castledkp2 = {
     raidTick: RaidTick;
     raidActivityType: { name: string; defaultPayout: number };
   }) => {
-    const typeId = await castledkp2.upsertRaidActivityType(
+    const typeId = await betaDkpService.upsertRaidActivityType(
       raidActivityType.name,
       raidActivityType.defaultPayout
     );
 
     try {
-      const response = await client.post("/api/v1/raid-activity", {
+      client.post("/api/v1/raid-activity", {
         activity: {
           typeId,
           payout: raidTick.data.value,
@@ -77,17 +83,8 @@ export const castledkp2 = {
           itemName: item,
         })),
       });
-      return response.data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error(
-          "Beta error creating raid activity:",
-          error.response?.data || error.message
-        );
-      } else {
-        console.error("Beta error creating raid activity:", error);
-      }
-      throw error;
+      handleError(error);
     }
   },
 };
