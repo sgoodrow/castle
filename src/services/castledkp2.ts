@@ -16,14 +16,27 @@ client.interceptors.request.use((config) => {
 
 export const castledkp2 = {
   upsertRaidActivityType: async (name: string, defaultPayout: number) => {
-    const response = await client.post<{ id: number }>(
-      "/api/v1/raid-activity-type",
-      {
-        name,
-        defaultPayout,
+    try {
+      const response = await client.post<{ id: number }>(
+        "/api/v1/raid-activity-type",
+        {
+          name,
+          defaultPayout,
+        }
+      );
+      console.log("Beta created raid activity type:", response.data.id);
+      return response.data.id;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error(
+          "Beta error creating raid activity type:",
+          error.response?.data || error.message
+        );
+      } else {
+        console.error("Beta error creating raid activity type:", error);
       }
-    );
-    return response.data.id;
+      throw error;
+    }
   },
 
   createRaid: async ({
@@ -33,15 +46,12 @@ export const castledkp2 = {
     raidTick: RaidTick;
     raidActivityType: { name: string; defaultPayout: number };
   }) => {
-    if (!castleDkp2TokenRW) {
-      console.error("Cannot query CastleDKP2 without an RW token.");
-      return;
-    }
+    const typeId = await castledkp2.upsertRaidActivityType(
+      raidActivityType.name,
+      raidActivityType.defaultPayout
+    );
+
     try {
-      const typeId = await castledkp2.upsertRaidActivityType(
-        raidActivityType.name,
-        raidActivityType.defaultPayout
-      );
       const response = await client.post("/api/v1/raid-activity", {
         activity: {
           typeId,
@@ -71,11 +81,11 @@ export const castledkp2 = {
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.error(
-          "Error creating raid:",
+          "Beta error creating raid activity:",
           error.response?.data || error.message
         );
       } else {
-        console.error("Error creating raid:", error);
+        console.error("Beta error creating raid activity:", error);
       }
       throw error;
     }
