@@ -61,6 +61,7 @@ export const betaDkpService = {
       client.post("/api/v1/raid-activity", {
         activity: {
           typeId,
+          createdAt: new Date(raidTick.data.date),
           payout: raidTick.data.value,
           note: raidTick.note,
         },
