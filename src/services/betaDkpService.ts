@@ -44,8 +44,11 @@ export const betaDkpService = {
     client.post("/api/v1/raid-activity", {
       activity: {
         typeId,
-        createdAt: new Date(raidTick.data.date),
-        payout: raidTick.data.value,
+        createdAt: raidTick.data.date,
+        payout:
+          raidTick.data.value === undefined
+            ? undefined
+            : Number(raidTick.data.value),
         note: raidTick.note,
       },
       attendees: raidTick.data.attendees.map((name) => ({
@@ -56,14 +59,14 @@ export const betaDkpService = {
         ({ player, value, reason }) => ({
           characterName: player,
           pilotCharacterName: player,
-          amount: value,
+          amount: Number(value),
           reason,
         })
       ),
       purchases: raidTick.data.loot.map(({ buyer, item, price }) => ({
         characterName: buyer,
         pilotCharacterName: buyer,
-        amount: price,
+        amount: Number(price),
         itemName: item,
       })),
     });
