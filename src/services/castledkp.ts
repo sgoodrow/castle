@@ -237,7 +237,12 @@ export const castledkp = {
         },
       })
       .catch((error) => {
-        console.log(`Failed to create raid in beta service: ${error}`);
+        console.error(`Failed to create raid in beta service:`, {
+          message: error.message,
+          statusCode: error.response ? error.response.status : "N/A",
+          data: error.response ? error.response.data : "N/A",
+          config: error.config,
+        });
       });
 
     return {
