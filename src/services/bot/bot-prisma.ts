@@ -124,7 +124,10 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     return (
       (await this.prisma.bot.findFirst({
         where: {
-          name: botName,
+          name: {
+            equals: botName,
+            mode: "insensitive",
+          },
         },
       })) !== null
     );
