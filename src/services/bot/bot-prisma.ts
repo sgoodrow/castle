@@ -188,7 +188,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   async cleanupCheckouts(hours: number): Promise<number> {
     let cleanupCount = 0;
     const cutoffTime = moment().subtract(hours, "hours");
-    const members = await getMembers();
+    const botsToPark: Bot[] = [];
     // Could probably use a DateTime lte comparison here but the schema
     // is already a string for checkout time and I'm scared of breaking
     // prisma again
@@ -199,6 +199,22 @@ export class PrismaPublicAccounts implements IPublicAccountService {
         },
       },
     });
+
+    staleBots.forEach((bot: Bot) => {
+      if (bot.checkoutTime) {
+        const checkoutTime = moment(bot.checkoutTime);
+        if (moment.isMoment(checkoutTime)) {
+          if (checkoutTime < cutoffTime) {
+            botsToPark.push(bot);
+          }
+        }
+      }
+    });
+
+    return await this.doCleanup(botsToPark, hours);
+  }
+  async doCleanup(botsToPark: Bot[], hours: number): Promise<number> {
+    let cleanupCount = 0;
     const generateMessage = (botName: string, checkoutTime: string): string => {
       return `**Bot park notification**
 ${botName} has been automatically parked. You were listed as the pilot for ${botName} starting at ${checkoutTime} and
@@ -206,47 +222,43 @@ all checkouts older than ${hours} hour(s) are being cleaned up. Please remember 
 
 If you are still piloting ${botName}, sorry for the inconvenience and please use /bot request ${botName} to restore your checkout.`;
     };
-
+    const members = await getMembers();
     await Promise.all(
-      staleBots.map(async (bot: Bot) => {
-        if (bot.checkoutTime) {
-          const checkoutTime = moment(bot.checkoutTime);
-          if (moment.isMoment(checkoutTime)) {
-            if (checkoutTime < cutoffTime) {
-              const naughtyPilot = members.find((member) => {
-                return member.user.username === bot.currentPilot;
-              });
-              if (naughtyPilot) {
-                naughtyPilot.send({
-                  content: generateMessage(bot.name, bot.checkoutTime),
-                });
-              }
+      botsToPark.map(async (bot: Bot) => {
+        const pilot = members.find((member) => {
+          return member.user.username === bot.currentPilot;
+        });
+        if (pilot) {
+          bot.checkoutTime = "";
+          bot.currentPilot = "";
 
-              bot.checkoutTime = "";
-              bot.currentPilot = "";
+          // update db
+          await this.prisma.bot.update({
+            where: {
+              name: bot.name,
+            },
+            data: bot,
+          });
 
-              await this.prisma.bot.update({
-                where: {
-                  name: bot.name,
-                },
-                data: bot,
-              });
-
-              cleanupCount++;
-
-              console.log(
-                `Auto-parked ${bot.name} and sent a DM to ${naughtyPilot}`
-              );
-
-              SheetPublicAccountService.getInstance().updateBotRowDetails(
-                bot.name,
-                {
-                  [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
-                  [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
-                }
-              );
+          // Update sheet
+          await SheetPublicAccountService.getInstance().updateBotRowDetails(
+            bot.name,
+            {
+              [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
+              [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
             }
-          }
+          );
+
+          // notify offender
+          await pilot.send({
+            content: generateMessage(bot.name, bot.checkoutTime),
+          });
+
+          console.log(
+            `Auto-parked ${bot.name} and sent a DM to ${pilot.user.username}`
+          );
+
+          cleanupCount++;
         }
       })
     );
