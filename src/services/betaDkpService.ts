@@ -40,7 +40,6 @@ export const betaDkpService = {
       raidActivityType.name,
       raidActivityType.defaultPayout
     );
-
     client.post("/api/v1/raid-activity", {
       activity: {
         typeId,
