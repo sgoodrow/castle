@@ -10867,7 +10867,12 @@ export const mapFromData = (data: { [id: string]: string }, prefix = "") =>
     map[id] = {
       id,
       url: `https://wiki.project1999.com${url}`,
-      name: `${prefix}${replaceAll(decodeURI(url), "_", " ").substring(1)}`,
+      name: `${prefix}${id
+        .toLowerCase()
+        .replace(/`/g, "'")
+        .split(/\s+/)
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ")}`,
     };
     return map;
   }, {} as { [id: string]: Item });
