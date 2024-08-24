@@ -50,25 +50,47 @@ export const betaDkpService = {
             ? undefined
             : Number(raidTick.data.value),
         note: raidTick.note,
+        attendees: raidTick.data.attendees.map((name) => ({
+          characterName: name,
+          pilotCharacterName: name,
+        })),
+        adjustments:
+          raidTick.data.adjustments?.map(({ player, value, reason }) => ({
+            characterName: player,
+            pilotCharacterName: player,
+            amount: Number(value),
+            reason,
+          })) || [],
+        purchases: raidTick.data.loot.map(({ buyer, item, price }) => ({
+          characterName: buyer,
+          pilotCharacterName: buyer,
+          amount: Number(price),
+          itemName: item,
+        })),
       },
-      attendees: raidTick.data.attendees.map((name) => ({
-        characterName: name,
-        pilotCharacterName: name,
-      })),
-      adjustments: raidTick.data.adjustments?.map(
-        ({ player, value, reason }) => ({
-          characterName: player,
-          pilotCharacterName: player,
-          amount: Number(value),
-          reason,
-        })
-      ),
-      purchases: raidTick.data.loot.map(({ buyer, item, price }) => ({
-        characterName: buyer,
-        pilotCharacterName: buyer,
-        amount: Number(price),
-        itemName: item,
-      })),
+    } satisfies {
+      activity: {
+        typeId: number;
+        payout?: number;
+        note?: string;
+        createdAt: string;
+        attendees: {
+          characterName: string;
+          pilotCharacterName?: string;
+        }[];
+        adjustments: {
+          amount: number;
+          reason: string;
+          characterName: string;
+          pilotCharacterName?: string;
+        }[];
+        purchases: {
+          amount: number;
+          itemName: string;
+          characterName: string;
+          pilotCharacterName?: string;
+        }[];
+      };
     });
   },
 };
