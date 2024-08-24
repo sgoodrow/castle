@@ -136,7 +136,9 @@ ${this.example}`);
     const name = reg[reg.length - 1];
     const character = await this.getCharacter(name);
     if (!character) {
-      throw new Error(`Cannot finish auction because character ${name} does not exist`);
+      throw new Error(
+        `Cannot finish auction because character ${name} does not exist`
+      );
     }
 
     return { price, character };
