@@ -7,7 +7,7 @@ import {
   CommandInteraction,
 } from "discord.js";
 import { clientId, guildId, token } from "../config";
-import { applicationCommands } from "../features/applications/config";
+import { applicationCommandButton } from "../features/applications/update-applications";
 import { auctionCommand } from "../features/auctions/command";
 import { bankHourCommand } from "../features/bank-hours/command";
 import { bankCleanupButtonCommand } from "../features/bank-request-info/bank-cleanup-button-command";
@@ -55,7 +55,7 @@ const buttonCommands = [
   leaveReinforcementsButtonCommand,
   addAltInviteButtonCommand,
   removePlayerInviteButtonCommand,
-  ...applicationCommands,
+  applicationCommandButton,
 ];
 
 export const getCommand = (

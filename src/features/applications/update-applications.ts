@@ -14,7 +14,7 @@ import {
 } from "../../shared/action/ready-action";
 import { RequestApplication } from "./request-application-button-commands";
 
-const applicationButton = new RequestApplication();
+export const applicationCommandButton = new RequestApplication();
 
 export const updateApplicationInfo = (
   client: Client,
@@ -32,7 +32,7 @@ class UpdateApplicationInfoAction extends InstructionsReadyAction {
           new ActionRowBuilder<MessageActionRowComponentBuilder>({
             type: 1,
             components: [
-              applicationButton.getButtonBuilder(ButtonStyle.Secondary),
+              applicationCommandButton.getButtonBuilder(ButtonStyle.Secondary),
             ],
           }),
         ],
