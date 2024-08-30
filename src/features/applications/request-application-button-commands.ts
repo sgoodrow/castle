@@ -9,15 +9,12 @@ import { requestDumpThreadId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 
 export class RequestApplication extends ButtonCommand {
-  public constructor(
-    private readonly role: string,
-    private readonly description: string
-  ) {
-    super(`request${role}Application`);
+  public constructor() {
+    super("volunteer-application");
   }
 
   public get label() {
-    return `${this.role} Application`;
+    return "Volunteer Application";
   }
 
   public async execute(interaction: ButtonInteraction<CacheType>) {
@@ -53,9 +50,9 @@ export class RequestApplication extends ButtonCommand {
   private get content() {
     return `**DO NOT REPLY TO THIS MESSAGE.**
 
-In Castle, leadership and volunteering are duties with no special privileges. ${this.role}s are tasked with ${this.description}. Volunteers may step down at any time.
+In Castle, leadership and volunteering are duties with no special privileges. Volunteers may step down at any time.
 
-**How do I apply to be a ${this.role}?**
+**How do I apply?**
 Fill out the following Google form: https://docs.google.com/forms/d/e/1FAIpQLSelYSgoouJCOIV9qoOQ1FdOXj8oGC2pfv7P47iUUd1hjOic-g/viewform.
 
 **What happens to an application?**
