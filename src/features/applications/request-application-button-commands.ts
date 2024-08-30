@@ -11,9 +11,7 @@ import { ButtonCommand } from "../../shared/command/button-command";
 export class RequestApplication extends ButtonCommand {
   public constructor(
     private readonly role: string,
-    private readonly description: string,
-    private readonly formUrl: string,
-    private readonly outcome: string
+    private readonly description: string
   ) {
     super(`request${role}Application`);
   }
