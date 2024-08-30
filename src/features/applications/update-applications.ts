@@ -32,7 +32,7 @@ class UpdateApplicationInfoAction extends InstructionsReadyAction {
           new ActionRowBuilder<MessageActionRowComponentBuilder>({
             type: 1,
             components: [
-              applicationCommandButton.getButtonBuilder(ButtonStyle.Secondary),
+              applicationCommandButton.getButtonBuilder(ButtonStyle.Primary),
             ],
           }),
         ],
