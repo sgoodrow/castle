@@ -53,14 +53,14 @@ export class RequestApplication extends ButtonCommand {
   }
 
   private get content() {
-    return `**DO NOT REPLY TO THIS MESSAGE. DM AN OFFICER TO INFORM THEM IF YOU APPLY.**
+    return `**DO NOT REPLY TO THIS MESSAGE.**
 
-In Castle, leadership and volunteering are duties with no compensation or special privileges. ${this.role}s are tasked with ${this.description}. ${this.role}s may step down at any time.
+In Castle, leadership and volunteering are duties with no special privileges. ${this.role}s are tasked with ${this.description}. Volunteers may step down at any time.
 
 **How do I apply to be a ${this.role}?**
-Fill out the following Google form: ${this.formUrl}. Please remember to DM any officer after you've applied for any position. We do not get notifications when an application is submitted.
+Fill out the following Google form: https://docs.google.com/forms/d/e/1FAIpQLSelYSgoouJCOIV9qoOQ1FdOXj8oGC2pfv7P47iUUd1hjOic-g/viewform.
 
 **What happens to an application?**
-${this.role} applications are reviewed by ${this.outcome}. This process typically takes less than a week.`;
+Applications are reviewed by current officers. This process typically takes less than a week.`;
   }
 }
