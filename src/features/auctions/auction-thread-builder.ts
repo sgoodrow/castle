@@ -62,7 +62,7 @@ export class AuctionThreadBuilder extends ThreadBuilder {
 
 **Rules:**
 - The auction ends when nobody has bid for 12 consecutive hours and the auction has been open for at least 24.${this.raidRules}${this.requireScribeRule}
-- Do not use auction threads for discussion, jokes or chatter -- only bids.
+- ONLY BID in auction threads, do NOT post comments, jokes, memes or chatter.
 - Retracting (ie deleting) bids is not allowed.
 
 **How are auctions completed?**
@@ -79,13 +79,13 @@ export class AuctionThreadBuilder extends ThreadBuilder {
 
   private get raidRules() {
     return this.restrictToRaid
-      ? `\n• Bid only if you were present for the ${this.raid} raid.`
-      : `\n• This auction has no raid attendance requirements.`;
+      ? `\n- Bid only if you were present for the ${this.raid} raid.`
+      : `\n- This auction has no raid attendance requirements.`;
   }
 
   private get requireScribeRule() {
     return this.requireScribe
-      ? `\n• Bid only if you can scribe the spell.`
+      ? `\n- Bid only if you can scribe the spell.`
       : "";
   }
 
