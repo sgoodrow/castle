@@ -64,6 +64,7 @@ export class AuctionThreadBuilder extends ThreadBuilder {
 - The auction ends when nobody has bid for 12 consecutive hours and the auction has been open for at least 24.${this.raidRules}${this.requireScribeRule}
 - ONLY BID in auction threads, do NOT post comments, jokes, memes or chatter.
 - Retracting (ie deleting) bids is not allowed.
+- Stalling auctions (ie intentionally bidding slowly) is not allowed. The 12 hour timer is for work and sleep.
 
 **How are auctions completed?**
 - Bankers will put a ✅ on the winning bid to close a DKP auction.
