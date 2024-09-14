@@ -229,6 +229,11 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
           return member.user.username === bot.currentPilot;
         });
         if (pilot) {
+          // notify offender
+          await pilot.send({
+            content: generateMessage(bot.name, bot.checkoutTime),
+          });
+
           bot.checkoutTime = "";
           bot.currentPilot = "";
 
@@ -248,11 +253,6 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
               [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
             }
           );
-
-          // notify offender
-          await pilot.send({
-            content: generateMessage(bot.name, bot.checkoutTime),
-          });
 
           console.log(
             `Auto-parked ${bot.name} and sent a DM to ${pilot.user.username}`
