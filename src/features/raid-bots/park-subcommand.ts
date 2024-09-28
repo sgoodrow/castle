@@ -35,11 +35,11 @@ export class ParkSubcommand extends Subcommand {
       });
       if (location) {
         await interaction.editReply(
-          `Sheet was updated to show ${name} was released and moved to ${location}`
+          `${name} was released and moved to ${location}`
         );
       } else {
         await interaction.editReply(
-          `Sheet was updated to show ${name} was released in its previous location`
+          `${name} was released in its previous location`
         );
       }
     } catch (error) {

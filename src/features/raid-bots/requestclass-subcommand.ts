@@ -83,18 +83,15 @@ export class RequestClassSubcommand extends Subcommand {
           interaction.member?.roles as GuildMemberRoleManager
         );
 
-        await interaction.user
-          .send(`Your name has been added to the public bot sheet along with a timestamp.
+        await interaction.editReply({
+          content: `Your name has been added to the public bot sheet along with a timestamp.
           
 **Assigned:** ${details.characters} (${details.purpose})
 **Account:** ${details.accountName}
 **Password:** ${spoiler(details.password)}
   
-Please use \`/bot park <name> <location if you moved it>\` when you are finished in order to automatically remove your details from the public sheet.`);
-
-        await interaction.editReply(
-          `The credentials for ${firstBot} have been DM'd to you. Please remember to \`/bot park\` when you are done with the character.`
-        );
+Please use \`/bot park <name> <location if you moved it>\` when you are finished in order to automatically remove your details from the public sheet.`,
+        });
 
         // Update public record
         try {
