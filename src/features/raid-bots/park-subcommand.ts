@@ -28,11 +28,13 @@ export class ParkSubcommand extends Subcommand {
     ) as string;
 
     try {
-      await this.publicAccountService.updateBotRowDetails(name, {
+      const parkDetails = {
         [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
         [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
         [BOT_SPREADSHEET_COLUMNS.CurrentLocation]: location ?? undefined,
-      });
+      };
+
+      await this.publicAccountService.updateBotRowDetails(name, parkDetails);
       if (location) {
         await interaction.editReply(
           `${name} was released and moved to ${location}`
