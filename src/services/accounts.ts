@@ -17,6 +17,7 @@ import {
 } from "discord.js";
 import { some, truncate } from "lodash";
 import { checkGoogleCredentials } from "./gdrive";
+import moment from "moment";
 
 enum SPREADSHEET_COLUMNS {
   Characters = "Characters",
@@ -68,23 +69,26 @@ interface Account {
 }
 
 const cache = new LRUCache<string, Account>({
-  max: 200,
-  ttl: 5 * MINUTES,
+  max: 400,
+  ttl: 30 * MINUTES,
 });
 
 const authorize = async (sheet: GoogleSpreadsheet) => {
   checkGoogleCredentials();
   return sheet.useServiceAccountAuth({
     client_email: GOOGLE_CLIENT_EMAIL,
-    private_key:(GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join('\n'),
+    private_key: (GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join("\n"),
   });
 };
 
 const getAccounts = async () => {
   cache.purgeStale();
   if (cache.size) {
+    console.log(`Returning ${cache.size} bots from cache`);
     return cache;
   }
+  console.log(`Loading bots - cache stale`);
+  const start = moment.now();
   await authorize(sheet);
   await sheet.loadInfo();
   const rows = await sheet.sheetsByIndex[0].getRows();
@@ -100,6 +104,8 @@ const getAccounts = async () => {
       cache.set(a.characters.toLowerCase(), a);
     }
   });
+  const end = moment.now();
+  console.log(`Took ${end - start}ms to load bot data`);
   return cache;
 };
 
