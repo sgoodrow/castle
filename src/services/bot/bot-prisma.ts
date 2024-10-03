@@ -141,6 +141,9 @@ export class PrismaPublicAccounts implements IPublicAccountService {
           class: "asc",
         },
         {
+          location: "asc",
+        },
+        {
           name: "asc",
         },
         {
