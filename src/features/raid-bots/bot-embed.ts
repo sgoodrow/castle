@@ -32,7 +32,7 @@ export const refreshBotEmbed = async () => {
       bot.currentPilot ? "~~" : ""
     } ${bot.name} (${bot.level} ${bot.class}) - ${bot.location} ${
       bot.currentPilot ? "~~" : ""
-    } ${bot.currentPilot ? "- " + bot.currentPilot : ""}\n`;
+    } ${bot.currentPilot ? "- " + bot.currentPilot : ""}\u200B\n`;
     if (botString.length + botRow.length > 3000) {
       botMessages.push(botString);
       botString = "";
