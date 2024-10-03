@@ -11,6 +11,7 @@ import {
   updateRaidBotsInfo,
 } from "../features/raid-bots/update-bots";
 import { HOURS } from "../shared/time";
+import { updateBotEmbed } from "../features/raid-bots/bot-embed";
 
 export const updateOptions = { repeatDuration: 1 * HOURS };
 
@@ -25,5 +26,6 @@ export const readyListener = async (client: Client) => {
     updateJewelryRequestInfo(client, updateOptions),
     updateRaiderInfo(client, updateOptions),
     updateReinforcementInfo(client, updateOptions),
+    updateBotEmbed({ repeatDuration: 30000 }),
   ];
 };

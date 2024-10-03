@@ -97,7 +97,7 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
         try {
           await publicAccounts.updateBotRowDetails(firstBot, {
             [BOT_SPREADSHEET_COLUMNS.CurrentPilot]:
-              guildUser?.user.username || "UNKNOWN USER",
+              guildUser?.nickname || guildUser?.user.username || "UNKNOWN USER",
             [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment().toString(),
           });
         } catch (err) {

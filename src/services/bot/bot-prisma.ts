@@ -15,6 +15,7 @@ import { log } from "console";
 import { accounts } from "../accounts";
 import { Bot, SheetPublicAccountService } from "./public-accounts-sheet";
 import { getMembers } from "../..";
+import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private prisma!: PrismaClient;
@@ -114,7 +115,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   }
 
   async getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]> {
-    const bots = await this.prisma.bot.findMany();
+    const bots = await this.getBots();
     return bots.map((b) => ({
       name: truncate(`${b.name} (${b.level} ${b.class})`, { length: 100 }),
       value: b.name,
@@ -131,6 +132,22 @@ export class PrismaPublicAccounts implements IPublicAccountService {
         },
       })) !== null
     );
+  }
+
+  async getBots(): Promise<Bot[]> {
+    return await this.prisma.bot.findMany({
+      orderBy: [
+        {
+          class: "asc",
+        },
+        {
+          name: "asc",
+        },
+        {
+          checkoutTime: "desc",
+        },
+      ],
+    });
   }
 
   async updateBotRowDetails(
@@ -150,11 +167,9 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       const bindLocation = botRowData[BOT_SPREADSHEET_COLUMNS.BindLocation];
       if (checkoutTime !== undefined) {
         // Set time or clear if not undefined
-        if (checkoutTime) {
-          bot.checkoutTime = botRowData[
-            BOT_SPREADSHEET_COLUMNS.CheckoutTime
-          ] as string;
-        }
+        bot.checkoutTime = botRowData[
+          BOT_SPREADSHEET_COLUMNS.CheckoutTime
+        ] as string;
       }
       if (pilot !== undefined) {
         bot.currentPilot = botRowData[
@@ -177,6 +192,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
         },
         data: bot,
       });
+      refreshBotEmbed();
     }
 
     SheetPublicAccountService.getInstance().updateBotRowDetails(

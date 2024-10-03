@@ -12,7 +12,6 @@ import {
 } from "discord.js";
 import { truncate } from "lodash";
 import { checkGoogleCredentials } from "../gdrive";
-import { Class } from "../../shared/classes";
 import moment from "moment";
 import { IPublicAccountService } from "./public-accounts.i";
 import { BOT_SPREADSHEET_COLUMNS } from "../sheet-updater/public-sheet";
@@ -217,7 +216,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
 
   async getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]> {
     await this.loadBots();
-    const bots = this.getBots();
+    const bots = await this.getBots();
     return bots.map((b) => ({
       name: truncate(`${b.name} (${b.level} ${b.class})`, { length: 100 }),
       value: b.name,
@@ -249,12 +248,8 @@ export class SheetPublicAccountService implements IPublicAccountService {
     return;
   }
 
-  private getBots(): Bot[] {
-    const bots: Bot[] = [];
-    for (const bot of this.botCache.values()) {
-      bots.push(bot);
-    }
-    return bots;
+  public async getBots(): Promise<Bot[]> {
+    return [...this.botCache.values()];
   }
 
   private async authorize() {

@@ -2,6 +2,7 @@ import {
   ApplicationCommandOptionChoiceData,
   GuildMemberRoleManager,
 } from "discord.js";
+import { Bot } from "./public-accounts-sheet";
 
 export interface IPublicAccountService {
   cleanupCheckouts(hours: number): Promise<number>;
@@ -21,4 +22,5 @@ export interface IPublicAccountService {
   ): Promise<string>;
   getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]>;
   isBotPublic(botName: string): Promise<boolean | undefined>;
+  getBots(): Promise<Bot[]>;
 }

@@ -65,7 +65,9 @@ Password: ${spoiler(details.password)}
           if (!currentPilot) {
             await publicAccounts.updateBotRowDetails(name, {
               [BOT_SPREADSHEET_COLUMNS.CurrentPilot]:
-                guildUser?.user.username || "UNKNOWN USER",
+                guildUser?.nickname ||
+                guildUser?.user.username ||
+                "UNKNOWN USER",
               [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment().toString(),
             });
           }
