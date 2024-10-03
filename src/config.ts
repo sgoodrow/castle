@@ -60,6 +60,7 @@ export const {
   modRoleId,
   batphoneChannelId,
   wakeupChannelId,
+  botEmbedChannelId,
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
@@ -173,6 +174,7 @@ export const {
   raidBotsChannelId: string;
   batphoneChannelId: string;
   wakeupChannelId: string;
+  botEmbedChannelId: string;
 
   // Google Ids
   bankGoogleDriveFolderId: string;

@@ -80,11 +80,6 @@ ${sorted
     });
   }, options);
 
-const bankBotInstructions = new InstructionsReadyAction(
-  Name.BankBotInstructions,
-  bankOfficeChannelId
-);
-
 const hidePassword = (password: string) => {
   // TODO: this makes the bot not reusable, but also protects the leaking of sensitive information
   const isProduction = clientId === "965499971317149737";

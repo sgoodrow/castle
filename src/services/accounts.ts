@@ -84,7 +84,6 @@ const authorize = async (sheet: GoogleSpreadsheet) => {
 const getAccounts = async () => {
   cache.purgeStale();
   if (cache.size) {
-    console.log(`Returning ${cache.size} bots from cache`);
     return cache;
   }
   console.log(`Loading bots - cache stale`);
