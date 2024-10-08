@@ -15,6 +15,9 @@ export class RemovePlayerRevision extends RaidReportRevision {
       throw this.getFormatError("missing player name");
     }
     const tickNumbers = ticks.map((t) => Number(t.replace(",", "")));
+    if (!tickNumbers.length) {
+      throw this.getFormatError("missing tick number(s)");
+    }
     if (tickNumbers.length > 0 && some(tickNumbers, (t) => Number.isNaN(t))) {
       throw this.getFormatError("invalid tick numbers");
     }
