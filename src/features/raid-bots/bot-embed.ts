@@ -1,5 +1,5 @@
 import { APIEmbed, EmbedBuilder, Utils } from "discord.js";
-import { botEmbedChannelId } from "../../config";
+import { botEmbedChannelId, knightRoleId, raiderRoleId } from "../../config";
 import { Name } from "../../db/instructions";
 import { Bot } from "../../services/bot/public-accounts-sheet";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action-2";
@@ -28,11 +28,17 @@ export const refreshBotEmbed = async () => {
   const bots = await publicAccounts.getBots();
 
   bots.forEach((bot: Bot) => {
-    const botRow = `${bot.currentPilot ? "❌" : "🟢"} ${
-      bot.currentPilot ? "~~" : ""
-    } ${bot.name} (${bot.level} ${bot.class}) - ${bot.location} ${
-      bot.currentPilot ? "~~" : ""
-    } ${bot.currentPilot ? "- " + bot.currentPilot : ""}\u200B\n`;
+    let icon = "";
+    if (bot.currentPilot) {
+      icon = "❌";
+    } else {
+      if (!bot.requiredRoles?.includes(raiderRoleId as string)) {
+        icon = "🛡️";
+      } else {
+        icon = "🟢";
+      }
+    }
+    const botRow = `${icon} ${bot.currentPilot ? "~~" : ""} ${bot.name} (${bot.level} ${bot.class}) - ${bot.location} ${bot.currentPilot ? "~~" : ""} ${bot.currentPilot ? "- " + bot.currentPilot : ""}\u200B\n`;
     if (botString.length + botRow.length > 3000) {
       botMessages.push(botString);
       botString = "";
