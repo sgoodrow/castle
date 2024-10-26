@@ -16,6 +16,7 @@ export enum Emoji {
   BlackLotus = "🎴",
   AncientBlood = "🦎",
   Akatsuki = "☀️",
+  Senpai = "🥧",
   Competitor = "🏁",
   Interview = "❔",
   InterviewAlt = "❓",
@@ -60,6 +61,11 @@ const AkatsukiTagAction: ReactionConfig = {
   action: ActionType.Tag,
 };
 
+const SenpaiTagAction: ReactionConfig = {
+  roles: [membersAndAlliesRoleId, 1275998673507188838],
+  action: ActionType.Tag,
+};
+
 const CompetitorTagAction: ReactionConfig = {
   roles: [competitorRoleId],
   action: ActionType.Tag,
@@ -83,6 +89,7 @@ export const actionConfigByReaction: { [emoji: string]: ReactionConfig } = {
   [Emoji.FreyasChariot]: FreyasCharriotTagAction,
   [Emoji.BlackLotus]: BlackLotusTagAction,
   [Emoji.Akatsuki]: AkatsukiTagAction,
+  [Emoji.Senpai]: SenpaiTagAction,
   [Emoji.Competitor]: CompetitorTagAction,
   [Emoji.Instruct]: InstructAction,
   [Emoji.InstructAlt]: InstructAction,
