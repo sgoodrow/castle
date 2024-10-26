@@ -62,7 +62,7 @@ const AkatsukiTagAction: ReactionConfig = {
 };
 
 const SenpaiTagAction: ReactionConfig = {
-  roles: [membersAndAlliesRoleId, 1275998673507188838],
+  roles: [membersAndAlliesRoleId, "1275998673507188838"],
   action: ActionType.Tag,
 };
 
