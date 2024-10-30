@@ -94,7 +94,6 @@ class BankRequest extends Subcommand {
           .setDescription("How many?")
           .setRequired(true)
           .setAutocomplete(true)
-          .setRequired(true)
       )
       .addStringOption((o) =>
         o
@@ -102,7 +101,6 @@ class BankRequest extends Subcommand {
           .setDescription("Total price.")
           .setRequired(false)
           .setAutocomplete(true)
-          .setRequired(false)
       )
       .addStringOption((o) =>
         o
