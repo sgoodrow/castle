@@ -58,5 +58,4 @@ export const refreshBotEmbed = async () => {
       });
     }),
   });
-  console.log(`${moment.now() - start}ms`);
 };

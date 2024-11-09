@@ -37,9 +37,6 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     log("PublicAccountsPrisma - initializing (clearing old rows)");
     await this.prisma.bot.deleteMany({});
     for (const row of rows) {
-      log(
-        "PublicAccountsPrisma - adding bot " + row[BOT_SPREADSHEET_COLUMNS.Name]
-      );
       const time = moment(row[BOT_SPREADSHEET_COLUMNS.CheckoutTime]);
       const roles = await accounts.getRolesForAccount(
         row[BOT_SPREADSHEET_COLUMNS.Name]
@@ -63,7 +60,10 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   async getCurrentBotPilot(botName: string): Promise<string | undefined> {
     const bot = await this.prisma.bot.findFirst({
       where: {
-        name: botName,
+        name: {
+          equals: botName,
+          mode: "insensitive",
+        },
       },
     });
     if (bot) {
@@ -159,7 +159,10 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   ): Promise<void> {
     const bot = await this.prisma.bot.findFirst({
       where: {
-        name: botName,
+        name: {
+          equals: botName,
+          mode: "insensitive",
+        },
       },
     });
 
@@ -191,7 +194,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       }
       await this.prisma.bot.update({
         where: {
-          name: botName,
+          name: bot.name,
         },
         data: bot,
       });
@@ -205,7 +208,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   }
 
   async cleanupCheckouts(hours: number): Promise<number> {
-    let cleanupCount = 0;
+    const cleanupCount = 0;
     const cutoffTime = moment().subtract(hours, "hours");
     const botsToPark: Bot[] = [];
     // Could probably use a DateTime lte comparison here but the schema

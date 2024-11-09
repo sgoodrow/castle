@@ -44,6 +44,14 @@ export class ParkSubcommand extends Subcommand {
           `${name} was released in its previous location`
         );
       }
+      const guildUser = await interaction.guild?.members.fetch(
+        interaction.user.id
+      );
+      console.log(
+        `${guildUser?.nickname || guildUser?.user.username} parked ${name} ${
+          location ? `in ${location}` : ""
+        }`
+      );
     } catch (error) {
       await interaction.editReply(`Failed to move bot: ${error}`);
     }
