@@ -55,6 +55,11 @@ export class RequestClassSubcommand extends Subcommand {
     }
 
     try {
+      console.log(
+        `${
+          guildUser.nickname || guildUser.user.username
+        } requested ${botClass} ${location ? `in ${location}` : ""}`
+      );
       try {
         firstBot = await publicAccounts.getFirstAvailableBotByClass(
           botClass,

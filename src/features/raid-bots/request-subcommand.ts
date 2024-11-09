@@ -62,6 +62,14 @@ Password: ${spoiler(details.password)}
             interaction.user.id
           );
 
+          console.log(
+            `${
+              guildUser?.nickname || guildUser?.user.username
+            } requested ${name} ${
+              currentPilot ? `who is checked out by ${currentPilot}` : ""
+            }`
+          );
+
           if (!currentPilot) {
             await publicAccounts.updateBotRowDetails(name, {
               [BOT_SPREADSHEET_COLUMNS.CurrentPilot]:
