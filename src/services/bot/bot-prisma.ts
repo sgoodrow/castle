@@ -16,13 +16,13 @@ import { accounts } from "../accounts";
 import { Bot, SheetPublicAccountService } from "./public-accounts-sheet";
 import { getMembers } from "../..";
 import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
+import { PrismaFactory } from "../../shared/prisma";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private prisma!: PrismaClient;
   constructor() {
     if (!this.prisma) {
-      this.prisma = new PrismaClient();
-      this.prisma.$connect();
+      this.prisma = PrismaFactory.get();
       this.init();
     }
   }

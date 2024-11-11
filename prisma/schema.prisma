@@ -79,6 +79,16 @@ model bot {
   requiredRoles String[]
 }
 
+model DsEntry {
+  id         Int       @id @default(autoincrement())
+  discordId  String
+  timeIn     DateTime  @default(now())
+  timeOut    DateTime?
+  minutes    Int?
+  adjustment Int?
+  total      Int?
+}
+
 enum bank_hour_day_enum {
   Monday
   Tuesday
