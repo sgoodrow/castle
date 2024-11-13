@@ -5,6 +5,7 @@ import {
   CommandInteraction,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
+import { DrusellaService } from "../../services/ds/ds-service";
 
 export class GetSubcommand extends Subcommand {
   constructor(name: string, description: string) {
@@ -20,9 +21,23 @@ export class GetSubcommand extends Subcommand {
   public async execute(
     interaction: CommandInteraction<CacheType>
   ): Promise<void> {
-    await interaction.reply({
-      content: "OK",
-    });
+    const dsService = new DrusellaService();
+    const guildUser = await interaction.guild?.members.fetch(
+      interaction.user.id
+    );
+    if (guildUser) {
+
+      const logs = await dsService.getUserLog(guildUser);
+      await interaction.editReply({
+        content: logs,
+      });
+    } else {
+      await interaction.editReply({
+        content: "User not found",
+      });
+    }
+
+    
   }
 }
 

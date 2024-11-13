@@ -5,7 +5,7 @@ import {
   CommandInteraction,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { DrusellaService } from "../../services/ds/service";
+import { DrusellaService } from "../../services/ds/ds-service";
 
 export class OutSubcommand extends Subcommand {
   constructor(name: string, description: string) {
@@ -22,18 +22,22 @@ export class OutSubcommand extends Subcommand {
     interaction: CommandInteraction<CacheType>
   ): Promise<void> {
     const dsService = new DrusellaService();
-    const outRec = await dsService.out(interaction.user);
-
     const guildUser = await interaction.guild?.members.fetch(
       interaction.user.id
     );
-
-    const outMsg = `${
-      guildUser?.nickname ?? interaction.user.username
-    } **OUT** at ${outRec.timeOut!.toString()} (${outRec.minutes} minutes)`;
-    await interaction.editReply({
-      content: outMsg,
-    });
+    if (guildUser) {
+      const outRec = await dsService.out(guildUser);
+      const outMsg = `${
+        guildUser?.nickname ?? interaction.user.username
+      } **OUT** at ${outRec.timeOut!.toString()} (${outRec.minutes} minutes)`;
+      await interaction.editReply({
+        content: outMsg,
+      });
+    } else {
+      await interaction.editReply({
+        content: "User not found",
+      });
+    }
   }
 }
 

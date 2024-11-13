@@ -82,6 +82,7 @@ model bot {
 model DsEntry {
   id         Int       @id @default(autoincrement())
   discordId  String
+  nickname   String?
   timeIn     DateTime  @default(now())
   timeOut    DateTime?
   minutes    Int?
