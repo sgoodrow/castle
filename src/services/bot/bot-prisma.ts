@@ -78,7 +78,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     location?: string | undefined,
     bindLocation?: string | undefined
   ): Promise<string> {
-    const query = {
+    const bot = await this.prisma.bot.findFirst({
       where: {
         class: botClass,
         currentPilot: "",
@@ -88,9 +88,10 @@ export class PrismaPublicAccounts implements IPublicAccountService {
         ...(location ? { location: location } : {}),
         ...(bindLocation ? { bindLocation: bindLocation } : {}),
       },
-    };
-
-    const bot = await this.prisma.bot.findFirst(query);
+      orderBy: {
+        bindLocation: "desc",
+      },
+    });
     const locationString = location ? ` in ${location}` : "";
     if (bot && bot.name) {
       log(
