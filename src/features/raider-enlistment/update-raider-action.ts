@@ -26,8 +26,8 @@ class UpdateRaiderInfoAction extends InstructionsReadyAction {
     return new EmbedBuilder({
       title: `Join the Raid Force`,
       description: `📜 **Raider Requirements**
-- Level 46.5+ for most raids; 52+ for raids beyond Siren's Grotto
 - Read and understand the Castle DKP rules (https://tinyurl.com/rules-castle-dkp)
+- Understand raid level requirements (https://discord.com/channels/539189546630381579/995406820950675558/1251567586773045318)
 - Not raiding with any other guilds
 - Not PvP flagged
 
@@ -51,7 +51,7 @@ Each player must send a message in this channel with the following information a
 3. Say **"I have read and agree to follow the raider requirements and behaviors."**
 
 ❓ **Are raids subject to any other rules?**
-Yes. Some raids are deemed "Competitive", such as batphones, natural respawns of bosses and earthquakes. These raids may have additional level requirements posted in the event and generally assume players will bring their best character and be open to requests to swap to another of their characters if the raid depends on it.
+Yes. Some raids are deemed "Competitive", such as batphones, natural respawns of bosses and earthquakes. These may have different level requirements (posted above). Please bring your best characters and be willing to swap to another character if the raid depends on it.
 
 ❓ **What if I don't follow the required raider requirements or behaviors?**
 Leadership will DM you to let you know that your actions were inappropriate. You will have an opportunity to speak for yourself. Depending on the behavior, the consequences could be: a reminder warning, a 1 DKP penalty, a 1 week suspension from raiding, or removal of your raider status.
