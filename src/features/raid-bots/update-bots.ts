@@ -16,7 +16,6 @@ import {
 } from "../../shared/action/ready-action-2";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action-2";
 import { sortBy } from "lodash";
-import { code } from "../../shared/util";
 import { checkGoogleCredentials } from "../../services/gdrive";
 
 export const raidBotInstructions = new InstructionsReadyAction(
@@ -67,14 +66,6 @@ Please use the /bot park command when you are done to indicate that you are no l
 
 ⚠️ **Note**
 All credential requests are logged for our protection.`,
-        }),
-        new EmbedBuilder({
-          title: "__Spreadsheet: Bots available to all Raiders__",
-          url: "https://docs.google.com/spreadsheets/d/1hS01upyJZW5_n8ffPCRjro1IS4Z9YwIl7vcSFM9ms7M",
-          description: `${code}
-${sorted
-  .map((b) => `${b.characters.padEnd(18)} ${b.purpose}`)
-  .join("\n")}${code}`,
         }),
       ],
     });
