@@ -1,8 +1,10 @@
 export enum Class {
   Enchanter = "Enchanter",
+  Quad = "Quad DA Mage",
   Mage = "Mage",
   Necromancer = "Necromancer",
   Wizard = "Wizard",
+  TLWiz = "TL Wizard",
   Cleric = "Cleric",
   Druid = "Druid",
   Shaman = "Shaman",
@@ -22,10 +24,12 @@ export const getClassAbreviation = (role?: string) => {
     case Class.Enchanter:
       return "ENC";
     case Class.Mage:
+    case Class.Quad:
       return "MAG";
     case Class.Necromancer:
       return "NEC";
     case Class.Wizard:
+    case Class.TLWiz:
       return "WIZ";
     case Class.Cleric:
       return "CLR";
