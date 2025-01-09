@@ -34,13 +34,15 @@ export class RequestSubcommand extends Subcommand {
     let status = "✅ Granted";
     const publicAccounts = PublicAccountsFactory.getService();
 
-    const currentPilot = await publicAccounts.getCurrentBotPilot(name);
-
     try {
       const details = await accounts.getAccount(
         name,
         interaction.member?.roles as GuildMemberRoleManager
       );
+
+      const foundBot = details.characters;
+
+      const currentPilot = await publicAccounts.getCurrentBotPilot(foundBot);
 
       let response = `${details.characters} (${details.purpose})
 Account: ${details.accountName}
@@ -49,19 +51,19 @@ Password: ${spoiler(details.password)}
 **If a bot can be moved**, and you move it, please include the location in your /bot park\n\n`;
 
       if (currentPilot) {
-        response += `**Please note that ${currentPilot} is marked as the pilot of ${name} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
+        response += `**Please note that ${currentPilot} is marked as the pilot of ${foundBot} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
       }
-      response += `The credentials for ${name} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
+      response += `The credentials for ${foundBot} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
 
       await interaction.editReply({
         content: response,
       });
       const logMsg = await thread.send("OK");
       logMsg.edit(
-        `${status} ${interaction.user} access to ${details.characters} (requested ${name}).`
+        `${status} ${interaction.user} access to ${foundBot} (requested ${name}).`
       );
 
-      if (await publicAccounts.isBotPublic(name)) {
+      if (await publicAccounts.isBotPublic(foundBot)) {
         try {
           const guildUser = await interaction.guild?.members.fetch(
             interaction.user.id
@@ -76,7 +78,7 @@ Password: ${spoiler(details.password)}
           );
 
           if (!currentPilot) {
-            await publicAccounts.updateBotRowDetails(name, {
+            await publicAccounts.updateBotRowDetails(foundBot, {
               [BOT_SPREADSHEET_COLUMNS.CurrentPilot]:
                 guildUser?.nickname ||
                 guildUser?.user.username ||
