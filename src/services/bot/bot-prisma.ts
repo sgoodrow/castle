@@ -16,6 +16,7 @@ import { accounts } from "../accounts";
 import { Bot, SheetPublicAccountService } from "./public-accounts-sheet";
 import { getMembers } from "../..";
 import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
+import { getClassAbreviation } from "../../shared/classes";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private prisma!: PrismaClient;
@@ -61,7 +62,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     const bot = await this.prisma.bot.findFirst({
       where: {
         name: {
-          equals: botName,
+          contains: botName,
           mode: "insensitive",
         },
       },
@@ -85,8 +86,10 @@ export class PrismaPublicAccounts implements IPublicAccountService {
         requiredRoles: {
           hasSome: Array.from(roles.valueOf().keys()),
         },
-        ...(location ? { location: location } : {}),
-        ...(bindLocation ? { bindLocation: bindLocation } : {}),
+        ...(location
+          ? { location: { equals: location, mode: "insensitive" } }
+          : {}),
+        ...(bindLocation ? { equals: bindLocation, mode: "insensitive" } : {}),
       },
       orderBy: {
         bindLocation: "desc",
@@ -118,7 +121,9 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   async getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]> {
     const bots = await this.getBots();
     return bots.map((b) => ({
-      name: truncate(`${b.name} (${b.level} ${b.class})`, { length: 100 }),
+      name: truncate(`${b.name} (${b.level} ${getClassAbreviation(b.class)})`, {
+        length: 100,
+      }),
       value: b.name,
     }));
   }

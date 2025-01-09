@@ -18,9 +18,11 @@ import {
 import { some, truncate } from "lodash";
 import { checkGoogleCredentials } from "./gdrive";
 import moment from "moment";
+import { getClassAbreviation } from "../shared/classes";
 
 enum SPREADSHEET_COLUMNS {
   Characters = "Characters",
+  Class = "Class",
   Purpose = "Purpose",
   Account = "Account",
   Password = "Password",
@@ -62,6 +64,7 @@ interface Role {
 
 interface Account {
   characters: string;
+  class: string;
   accountName: string;
   password: string;
   requiredRoles: Role[];
@@ -94,6 +97,9 @@ const getAccounts = async () => {
   rows.forEach((r) => {
     const a: Account = {
       characters: r[SPREADSHEET_COLUMNS.Characters],
+      class: getClassAbreviation(r[SPREADSHEET_COLUMNS.Class])
+        ? getClassAbreviation(r[SPREADSHEET_COLUMNS.Class])
+        : r[SPREADSHEET_COLUMNS.Class],
       purpose: r[SPREADSHEET_COLUMNS.Purpose],
       accountName: r[SPREADSHEET_COLUMNS.Account],
       password: r[SPREADSHEET_COLUMNS.Password],
@@ -121,14 +127,7 @@ export const accounts = {
   > => {
     const accounts = await getAccounts();
     return [...accounts.values()].map((c) => ({
-      name: truncate(
-        `${c.characters} - ${c.purpose} (${c.requiredRoles
-          .map((r) => r.name)
-          .join(", ")})`,
-        {
-          length: 100,
-        }
-      ),
+      name: `${c.characters} (${c.class})`,
       value: c.characters,
     }));
   },
@@ -148,9 +147,15 @@ export const accounts = {
     roles: GuildMemberRoleManager
   ): Promise<Account> => {
     const accounts = await getAccounts();
-    const d = accounts.get(name.toLowerCase());
+    let d = accounts.get(name.toLowerCase());
+    const toSentenceCase = (str: string) => {
+      return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    };
     if (!d) {
-      throw new Error(`${name} is not a shared account`);
+      d = accounts.find((a) => a.characters.includes(toSentenceCase(name)));
+      if (!d) {
+        throw new Error(`${name} is not a shared account`);
+      }
     }
     const hasRole = some(
       d.requiredRoles.map((r) => r.id).map((id) => roles.cache.has(id))
