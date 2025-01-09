@@ -10,14 +10,17 @@ import { raidBotInstructions } from "./update-bots";
 import moment from "moment";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
+import { IPublicAccountService } from "../../services/bot/public-accounts.i";
 
 export enum Option {
   Name = "name",
 }
 
 export class RequestSubcommand extends Subcommand {
+  publicAccountService: IPublicAccountService;
   public constructor(name: string, description: string) {
     super(name, description);
+    this.publicAccountService = PublicAccountsFactory.getService();
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -54,7 +57,9 @@ Password: ${spoiler(details.password)}
         content: response,
       });
       const logMsg = await thread.send("OK");
-      logMsg.edit(`${status} ${interaction.user} access to ${name}.`);
+      logMsg.edit(
+        `${status} ${interaction.user} access to ${details.characters} (requested ${name}).`
+      );
 
       if (await publicAccounts.isBotPublic(name)) {
         try {
@@ -65,7 +70,7 @@ Password: ${spoiler(details.password)}
           console.log(
             `${
               guildUser?.nickname || guildUser?.user.username
-            } requested ${name} ${
+            } requested ${name} and got ${details.characters} ${
               currentPilot ? `who is checked out by ${currentPilot}` : ""
             }`
           );
@@ -112,7 +117,7 @@ Password: ${spoiler(details.password)}
   public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Name:
-        return await accounts.getOptions();
+        return await this.publicAccountService.getBotOptions();
       default:
         return;
     }

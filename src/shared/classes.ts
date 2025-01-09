@@ -52,6 +52,6 @@ export const getClassAbreviation = (role?: string) => {
     case Class.Warrior:
       return "WAR";
     default:
-      throw new Error(`Invalid class (${role} not recognized)`);
+      return role;
   }
 };
