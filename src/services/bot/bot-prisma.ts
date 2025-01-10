@@ -89,7 +89,9 @@ export class PrismaPublicAccounts implements IPublicAccountService {
         ...(location
           ? { location: { equals: location, mode: "insensitive" } }
           : {}),
-        ...(bindLocation ? { equals: bindLocation, mode: "insensitive" } : {}),
+        ...(bindLocation
+          ? { bindLocation: { equals: bindLocation, mode: "insensitive" } }
+          : {}),
       },
       orderBy: {
         bindLocation: "desc",
