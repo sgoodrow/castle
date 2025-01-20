@@ -20,6 +20,10 @@ export interface IPublicAccountService {
     location?: string,
     bindLocation?: string
   ): Promise<string>;
+  getFirstAvailableBotByLocation(
+    location: string,
+    roles: GuildMemberRoleManager
+  ): Promise<string>;
   getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]>;
   isBotPublic(botName: string): Promise<boolean | undefined>;
   getBots(): Promise<Bot[]>;

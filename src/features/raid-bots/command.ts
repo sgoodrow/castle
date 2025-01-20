@@ -4,6 +4,7 @@ import { parkSubCommand } from "./park-subcommand";
 import { requestClassSubcommand } from "./requestclass-subcommand"
 import { bindSubCommand } from "./bind-subcommand";
 import { cleanupSubCommand } from "./cleanup-subcommand";
+import { requestZoneSubcommand } from "./requestzone-subcommand";
 
 export const botCommand = new Command(
   "bot",
@@ -11,6 +12,7 @@ export const botCommand = new Command(
   [
     requestSubcommand,
     requestClassSubcommand,
+    requestZoneSubcommand,
     parkSubCommand,
     bindSubCommand,
     cleanupSubCommand,

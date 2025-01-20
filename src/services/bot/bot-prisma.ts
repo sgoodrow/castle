@@ -120,6 +120,42 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     }
   }
 
+  async getFirstAvailableBotByLocation(
+    location: string,
+    roles: GuildMemberRoleManager
+  ): Promise<string> {
+    const bot = await this.prisma.bot.findFirst({
+      where: {
+        location: location,
+        currentPilot: "",
+        requiredRoles: {
+          hasSome: Array.from(roles.valueOf().keys()),
+        },
+      },
+      orderBy: {
+        bindLocation: "desc",
+      },
+    });
+    if (bot && bot.name) {
+      log(
+        `PublicAccountsPrisma - found bot ${bot.name} when looking for a bot in ${location}`
+      );
+
+      bot.currentPilot = "reserved";
+
+      await this.prisma.bot.update({
+        where: {
+          name: bot.name,
+        },
+        data: bot,
+      });
+
+      return bot.name;
+    } else {
+      throw new Error(`Couldn't find an available bot in ${location}`);
+    }
+  }
+
   async getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]> {
     const bots = await this.getBots();
     return bots.map((b) => ({
@@ -129,6 +165,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       value: b.name,
     }));
   }
+
   async isBotPublic(botName: string): Promise<boolean | undefined> {
     return (
       (await this.prisma.bot.findFirst({
