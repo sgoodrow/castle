@@ -119,7 +119,7 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
         .setName(Option.Location)
         .setDescription("The location of bot")
         .setAutocomplete(true)
-        .setRequired(false)
+        .setRequired(true)
     );
     return command;
   }
