@@ -35,6 +35,9 @@ export class SheetPublicAccountService implements IPublicAccountService {
     }
     this.sheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
   }
+  getFirstAvailableBotByLocation(location: string, roles: GuildMemberRoleManager): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
 
   private get botInfoSheet() {
     const match = this.sheet.sheetsByTitle[SHEET_TITLE];
