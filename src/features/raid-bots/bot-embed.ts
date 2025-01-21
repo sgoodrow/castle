@@ -9,6 +9,7 @@ import {
 } from "../../shared/action/ready-action-2";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import moment from "moment";
+import { getClassAbreviation } from "../../shared/classes";
 
 export const botEmbedInstructions = new InstructionsReadyAction(
   Name.BotStatusEmbed,
@@ -38,24 +39,33 @@ export const refreshBotEmbed = async () => {
         icon = "🟢";
       }
     }
-    const botRow = `${icon} ${bot.currentPilot ? "~~" : ""} ${bot.name} (${bot.level} ${bot.class}) - ${bot.location} ${bot.currentPilot ? "~~" : ""} ${bot.currentPilot ? "- " + bot.currentPilot : ""}\u200B\n`;
+    const botRow = `${icon} ${bot.currentPilot ? "~~" : ""} ${bot.name} (${
+      bot.level
+    } ${getClassAbreviation(bot.class)}) - ${bot.location} ${
+      bot.currentPilot ? "~~" : ""
+    } ${bot.currentPilot ? "- " + bot.currentPilot : ""}\u200B\n`;
     if (botString.length + botRow.length > 3000) {
       botMessages.push(botString);
       botString = "";
     }
     botString += botRow;
   });
+
   botMessages.push(botString);
 
-  await botEmbedInstructions.createOrUpdateInstructions({
-    embeds: botMessages.map((message: string, idx: number) => {
-      return new EmbedBuilder({
-        title:
-          idx === 0
-            ? `Castle bots - last updated ${moment().toLocaleString()}`
-            : "",
-        description: message,
-      });
-    }),
-  });
+  await botEmbedInstructions
+    .createOrUpdateInstructions({
+      embeds: botMessages.map((message: string, idx: number) => {
+        return new EmbedBuilder({
+          title:
+            idx === 0
+              ? `Castle bots - last updated ${moment().toLocaleString()}`
+              : "",
+          description: message,
+        });
+      }),
+    })
+    .catch((reason) => {
+      console.log("Embed update failed: " + reason);
+    });
 };
