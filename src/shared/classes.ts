@@ -24,13 +24,15 @@ export const getClassAbreviation = (role?: string) => {
     case Class.Enchanter:
       return "ENC";
     case Class.Mage:
-    case Class.Quad:
       return "MAG";
+    case Class.Quad:
+      return "QUAD";
     case Class.Necromancer:
       return "NEC";
     case Class.Wizard:
-    case Class.TLWiz:
       return "WIZ";
+    case Class.TLWiz:
+      return "TL-WIZ";
     case Class.Cleric:
       return "CLR";
     case Class.Druid:
