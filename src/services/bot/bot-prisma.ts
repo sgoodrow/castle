@@ -8,7 +8,7 @@ import {
   PublicSheetService,
 } from "../sheet-updater/public-sheet";
 import { IPublicAccountService } from "./public-accounts.i";
-import { PrismaClient } from "@prisma/client";
+import { bot, PrismaClient } from "@prisma/client";
 import moment from "moment";
 import { truncate } from "lodash";
 import { log } from "console";
@@ -164,6 +164,16 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       }),
       value: b.name,
     }));
+  }
+
+  async getBotsByLocation(location: string): Promise<bot[]> {
+    return await this.prisma.bot.findMany({
+      where: {
+        location: location,
+      },
+      orderBy: [{ class: "asc" }, { name: "asc" }],
+      take: 25,
+    });
   }
 
   async isBotPublic(botName: string): Promise<boolean | undefined> {

@@ -1,8 +1,12 @@
 import {
+  ActionRowBuilder,
   ApplicationCommandOptionChoiceData,
   AutocompleteInteraction,
+  ButtonStyle,
   CacheType,
   CommandInteraction,
+  ComponentType,
+  MessageActionRowComponentBuilder,
 } from "discord.js";
 import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
@@ -18,6 +22,8 @@ import { isObject } from "lodash";
 import { container } from "tsyringe";
 import { WakeupService } from "../wakeup/wakeup.service";
 import { truncate } from "lodash";
+import { RequestBotButtonCommand } from "./request-bot-button-command";
+import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 
 class sendBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -31,12 +37,36 @@ class sendBp extends Subcommand {
     const savedMsg = await redisClient.hGet("bp", String(val));
     const message = savedMsg || val;
     if (typeof message === "string") {
-      const formattedMessage = message.replace(/\\n/g, `
-`);
+      const formattedMessage = message.replace(
+        /\\n/g,
+        `
+`
+      );
+      const bots = await PublicAccountsFactory.getService().getBotsByLocation(
+        "ToV"
+      );
+      const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
+        [];
+      let row;
+      for (let i = 0; i < bots.length; i++) {
+        if (i % 5 === 0) {
+          row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
+            type: ComponentType.ActionRow,
+            components: [],
+          });
+          components.push(row);
+        }
+        row?.addComponents(
+          new RequestBotButtonCommand(`requestbot_${bots[i].name}`).getButtonBuilder(bots[i])
+        );
+      }
       await bpChannel.send({
-        content: `[${interaction.user}] <@&${raiderRoleId}> 
+        content:
+          `[${interaction.user}] <@&${raiderRoleId}> 
 ` + formattedMessage,
+        components: components,
       });
+
       interaction.editReply("Batphone posted: " + message);
 
       // Wakeup
@@ -89,14 +119,15 @@ class setBp extends Subcommand {
     let message = this.getOption("message", interaction)?.value;
     try {
       if (typeof message === "string") {
-        if (message.length > 2000) { // max message length is 2000 chars
+        if (message.length > 2000) {
+          // max message length is 2000 chars
           throw new Error("Message is too long.");
         }
         let key = this.getOption("key", interaction)?.value;
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
-        key = truncate(String(key), { length: 100}) // max option length = 100
+        key = truncate(String(key), { length: 100 }); // max option length = 100
         await redisClient.hSet("bp", String(key), message);
         interaction.editReply("Saved preset message: " + message);
       } else {
@@ -198,35 +229,36 @@ class getBp extends Subcommand {
       const savedMsg = await redisClient.hGet("bp", String(val));
       const message = savedMsg || val;
       if (typeof message === "string") {
-        const formattedMessage = message.replace(/\\n/g, `
-`);
+        const formattedMessage = message.replace(
+          /\\n/g,
+          `
+`
+        );
 
-  const replyMsg = `\`/bp send ${key}\` is set to send:
+        const replyMsg = `\`/bp send ${key}\` is set to send:
 
 ${formattedMessage}
 
 --------
 To change this message, use \`/bp unset ${key}\` and then \`/bp set\` to set a new message.
-`
-    if (interaction.channel){
-      interaction.channel.send(replyMsg) // todo: send message in channel
-      interaction.deleteReply() }
-
-  }
-  
-    } catch(e){
+`;
+        if (interaction.channel) {
+          interaction.channel.send(replyMsg); // todo: send message in channel
+          interaction.deleteReply();
+        }
+      }
+    } catch (e) {
       console.error(e);
-      interaction.editReply('Error: ' + e);
+      interaction.editReply("Error: " + e);
     }
-
   }
-  
+
   public async getOptionAutocomplete(
     option: string,
     interaction: AutocompleteInteraction<CacheType>
   ): Promise<
-      ApplicationCommandOptionChoiceData<string | number>[] | undefined
-    > {
+    ApplicationCommandOptionChoiceData<string | number>[] | undefined
+  > {
     const res = await getBpOptions();
     if (isObject(res)) {
       const opts = Object.entries(res).map(([key, value]) => ({
@@ -266,6 +298,6 @@ export const batphoneCommand = new Command(
     new sendBp("send", "send batphone"),
     new setBp("set", "save a BP preset"),
     new unsetBp("unset", "remove BP preset"),
-    new getBp("get", "show BP message in this channel")
+    new getBp("get", "show BP message in this channel"),
   ]
 );
