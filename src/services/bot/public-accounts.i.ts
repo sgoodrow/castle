@@ -1,12 +1,16 @@
 import {
   ApplicationCommandOptionChoiceData,
+  ButtonInteraction,
+  CommandInteraction,
   GuildMemberRoleManager,
+  MessageComponentInteraction,
+  MessageInteraction,
 } from "discord.js";
 import { Bot } from "./public-accounts-sheet";
 import { bot, Prisma } from "@prisma/client";
 
 export interface IPublicAccountService {
-  getBotsByLocation(location: string): Promise<bot[]>;
+  getBotsForBatphone(location: string): Promise<bot[]>;
   cleanupCheckouts(hours: number): Promise<number>;
   updateBotLocation(name: string, location: string): void;
   updateBotPilot(botName: string, pilotName: string): void;
@@ -29,4 +33,8 @@ export interface IPublicAccountService {
   getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]>;
   isBotPublic(botName: string): Promise<boolean | undefined>;
   getBots(): Promise<Bot[]>;
+  doBotCheckout(
+    name: string,
+    interaction: MessageComponentInteraction | CommandInteraction
+  ): Promise<void>;
 }

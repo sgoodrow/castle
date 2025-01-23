@@ -2,7 +2,6 @@ import {
   ActionRowBuilder,
   ApplicationCommandOptionChoiceData,
   AutocompleteInteraction,
-  ButtonStyle,
   CacheType,
   CommandInteraction,
   ComponentType,
@@ -10,20 +9,20 @@ import {
 } from "discord.js";
 import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
-import { getTextChannel } from "../..";
+import { getTextChannel, prismaClient } from "../..";
 import { batphoneChannelId, raiderRoleId, wakeupChannelId } from "../../config";
 import { authorizeByMemberRoles } from "../../shared/command/util";
 import { officerRoleId, modRoleId, knightRoleId } from "../../config";
-import { kStringMaxLength } from "buffer";
 import { error } from "console";
 import { redisClient } from "../../redis/client";
-import { redis } from "googleapis/build/src/apis/redis";
 import { isObject } from "lodash";
 import { container } from "tsyringe";
 import { WakeupService } from "../wakeup/wakeup.service";
 import { truncate } from "lodash";
 import { RequestBotButtonCommand } from "./request-bot-button-command";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
+import { LocationService } from "../../services/location";
+import { PrismaClient } from "@prisma/client";
 
 class sendBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -32,34 +31,24 @@ class sendBp extends Subcommand {
       [officerRoleId, modRoleId, knightRoleId],
       interaction
     );
+
     const bpChannel = await getTextChannel(batphoneChannelId);
-    const val = this.getOption("message", interaction)?.value;
-    const savedMsg = await redisClient.hGet("bp", String(val));
-    const message = savedMsg || val;
+    const val = this.getOption("message", interaction)?.value as string;
+    // const savedMsg = await redisClient.hGet("bp", String(val));
+    const savedBp = await prismaClient.batphone.findFirst({
+      where: {
+        key: val,
+      },
+    });
+    const message = savedBp?.message || val;
     if (typeof message === "string") {
       const formattedMessage = message.replace(
         /\\n/g,
         `
 `
       );
-      const bots = await PublicAccountsFactory.getService().getBotsByLocation(
-        "ToV"
-      );
       const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
-        [];
-      let row;
-      for (let i = 0; i < bots.length; i++) {
-        if (i % 5 === 0) {
-          row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
-            type: ComponentType.ActionRow,
-            components: [],
-          });
-          components.push(row);
-        }
-        row?.addComponents(
-          new RequestBotButtonCommand(`requestbot_${bots[i].name}`).getButtonBuilder(bots[i])
-        );
-      }
+        await this.getBotButtonComponents(savedBp?.location || "");
       await bpChannel.send({
         content:
           `[${interaction.user}] <@&${raiderRoleId}> 
@@ -80,21 +69,41 @@ class sendBp extends Subcommand {
       interaction.editReply("Failed to post batphone.");
     }
   }
+
+  private async getBotButtonComponents(location: string) {
+    const bots = await PublicAccountsFactory.getService().getBotsForBatphone(
+      location
+    );
+    const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
+    let row;
+    for (let i = 0; i < bots.length; i++) {
+      if (i % 5 === 0) {
+        row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
+          type: ComponentType.ActionRow,
+          components: [],
+        });
+        components.push(row);
+      }
+      row?.addComponents(
+        new RequestBotButtonCommand(
+          `requestbot_${bots[i].name}`
+        ).getButtonBuilder(bots[i])
+      );
+    }
+    return components;
+  }
+
   public async getOptionAutocomplete(
     option: string,
     interaction: AutocompleteInteraction<CacheType>
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
-    const res = await getBpOptions();
-    if (isObject(res)) {
-      const opts = Object.entries(res).map(([key, value]) => ({
-        name: key,
-        value: key,
-      }));
-      return opts;
-    }
-    return [];
+    const res = await prismaClient.batphone.findMany();
+
+    return res.map((opt) => {
+      return { name: opt.key, value: opt.key };
+    });
   }
 
   public get command() {
@@ -116,7 +125,7 @@ class setBp extends Subcommand {
       interaction
     );
 
-    let message = this.getOption("message", interaction)?.value;
+    const message = this.getOption("message", interaction)?.value;
     try {
       if (typeof message === "string") {
         if (message.length > 2000) {
@@ -127,8 +136,18 @@ class setBp extends Subcommand {
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
+        const location = this.getOption("location", interaction)
+          ?.value as string;
         key = truncate(String(key), { length: 100 }); // max option length = 100
-        await redisClient.hSet("bp", String(key), message);
+        await prismaClient.batphone.create({
+          data: {
+            key: key,
+            message: message,
+            location: location,
+          },
+        });
+        // await redisClient.hSet("bp", String(key), message);
+        // await redisClient.hSet("bp", String(location), location);
         interaction.editReply("Saved preset message: " + message);
       } else {
         throw error;
@@ -144,7 +163,12 @@ class setBp extends Subcommand {
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
-    return [];
+    switch (option) {
+      case "location":
+        return LocationService.getInstance().getLocationOptions();
+      default:
+        return [];
+    }
   }
 
   public get command() {
@@ -162,6 +186,13 @@ class setBp extends Subcommand {
           .setDescription("Key (optional")
           .setRequired(false)
           .setAutocomplete(false)
+      )
+      .addStringOption((o) =>
+        o
+          .setName("location")
+          .setDescription("Location of the batphone")
+          .setRequired(false)
+          .setAutocomplete(true)
       );
   }
 }
@@ -177,7 +208,11 @@ class unsetBp extends Subcommand {
     const key = this.getOption("message", interaction)?.value;
     try {
       if (typeof key === "string") {
-        await redisClient.hDel("bp", String(key));
+        await prismaClient.batphone.delete({
+          where: {
+            key: key,
+          },
+        });
         interaction.editReply("Removed preset message: " + key);
       } else {
         throw error;
@@ -193,15 +228,11 @@ class unsetBp extends Subcommand {
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
-    const res = await getBpOptions();
-    if (isObject(res)) {
-      const opts = Object.entries(res).map(([key, value]) => ({
-        name: key,
-        value: key,
-      }));
-      return opts;
-    }
-    return [];
+    const res = await prismaClient.batphone.findMany();
+
+    return res.map((opt) => {
+      return { name: opt.key, value: opt.message };
+    });
   }
 
   public get command() {
@@ -224,10 +255,15 @@ class getBp extends Subcommand {
     );
 
     try {
-      const val = this.getOption("message", interaction)?.value;
+      const val = this.getOption("message", interaction)?.value as string;
       const key = this.getOption("message", interaction)?.value;
-      const savedMsg = await redisClient.hGet("bp", String(val));
-      const message = savedMsg || val;
+      //const savedMsg = await redisClient.hGet("bp", String(val));
+      const savedMsg = await prismaClient.batphone.findFirst({
+        where: {
+          key: val,
+        },
+      });
+      const message = savedMsg?.message || val;
       if (typeof message === "string") {
         const formattedMessage = message.replace(
           /\\n/g,
@@ -259,7 +295,7 @@ To change this message, use \`/bp unset ${key}\` and then \`/bp set\` to set a n
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
-    const res = await getBpOptions();
+    const res = await prismaClient.batphone.findMany();
     if (isObject(res)) {
       const opts = Object.entries(res).map(([key, value]) => ({
         name: key,
@@ -280,16 +316,6 @@ To change this message, use \`/bp unset ${key}\` and then \`/bp set\` to set a n
     );
   }
 }
-
-const getBpOptions = async () => {
-  try {
-    const res = await redisClient.hGetAll("bp");
-    return res;
-  } catch (err) {
-    console.error(err);
-    return [];
-  }
-};
 
 export const batphoneCommand = new Command(
   "bp",

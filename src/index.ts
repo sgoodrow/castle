@@ -16,6 +16,7 @@ import { redisChannels, redisListener } from "./redis/client";
 import { updateRaidReport } from "./features/dkp-records/update/update-raid-report";
 import { guildMemberUpdateListener } from "./listeners/guild-member-update-listener";
 import "reflect-metadata";
+import { PrismaClient } from "@prisma/client";
 
 // Global
 https.globalAgent.maxSockets = 5;
@@ -90,5 +91,8 @@ client.on("guildScheduledEventUpdate", guildScheduledEventStartedListener);
 registerSlashCommands();
 
 redisListener.pSubscribe(redisChannels.raidReportChange(), updateRaidReport);
+
+export const prismaClient = new PrismaClient();
+prismaClient.$connect();
 
 console.log("Listening...");

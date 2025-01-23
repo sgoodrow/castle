@@ -79,6 +79,12 @@ model bot {
   requiredRoles String[]
 }
 
+model batphone {
+  key      String @unique
+  location String
+  message  String
+}
+
 enum bank_hour_day_enum {
   Monday
   Tuesday

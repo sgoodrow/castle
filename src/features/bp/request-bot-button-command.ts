@@ -7,8 +7,9 @@ import {
 } from "discord.js";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { bot } from "@prisma/client";
-import { knightRoleId } from "../../config";
+import { knightRoleId, raiderRoleId } from "../../config";
 import { getClassAbreviation } from "../../shared/classes";
+import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 
 export class RequestBotButtonCommand extends ButtonCommand {
   constructor(name: string) {
@@ -17,33 +18,51 @@ export class RequestBotButtonCommand extends ButtonCommand {
   public async execute(
     interaction: ButtonInteraction<CacheType>
   ): Promise<void> {
+    await this.setButtonState(interaction, false);
+
+    interaction.editReply({
+      content: "Checking permissions",
+    });
+
+    const name = interaction.customId.split("_")[1];
+    try {
+      await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
+    } catch (err: unknown) {
+      await this.setButtonState(interaction, true);
+    }
+  }
+
+  private async setButtonState(
+    interaction: ButtonInteraction<CacheType>,
+    enabled: boolean
+  ) {
     const rowIdx = interaction.message.components.findIndex((row) =>
       row.components.find((c) => c.customId === interaction.customId)
     );
-    if (rowIdx) {
+    if (rowIdx !== undefined) {
       const row = interaction.message.components[rowIdx];
       (row.components as unknown) = row.components.map((button) =>
         button.customId === interaction.customId
-          ? ButtonBuilder.from(button as ButtonComponent).setDisabled(true)
+          ? ButtonBuilder.from(button as ButtonComponent).setDisabled(!enabled)
           : button
       );
 
+      interaction.message.components.splice(rowIdx, 1, row);
+
       await interaction.message.edit({
-        components: interaction.message.components.splice(rowIdx, 1, row),
+        components: interaction.message.components,
       });
     }
-
-    interaction.editReply({
-      content: "OK",
-    });
   }
 
   public getButtonBuilder(bot: bot): ButtonBuilder {
-    const knightBot = bot.requiredRoles.includes(knightRoleId);
+    const icon = !bot.requiredRoles.includes(raiderRoleId) ? "🛡️" : "";
     return new ButtonBuilder()
-      .setLabel(`${bot.name} (${bot.level} ${getClassAbreviation(bot.class)})`)
+      .setLabel(
+        `${icon}${bot.name} (${bot.level} ${getClassAbreviation(bot.class)})`
+      )
       .setCustomId(`requestbot_${bot.name}`)
-      .setStyle(knightBot ? ButtonStyle.Success : ButtonStyle.Primary);
+      .setStyle(ButtonStyle.Primary);
   }
 }
 

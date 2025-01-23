@@ -8,7 +8,9 @@ import LRUCache from "lru-cache";
 import { MINUTES } from "../../shared/time";
 import {
   ApplicationCommandOptionChoiceData,
+  CommandInteraction,
   GuildMemberRoleManager,
+  MessageComponentInteraction,
 } from "discord.js";
 import { truncate } from "lodash";
 import { checkGoogleCredentials } from "../gdrive";
@@ -36,7 +38,10 @@ export class SheetPublicAccountService implements IPublicAccountService {
     }
     this.sheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
   }
-  getBotsByLocation(location: string): Promise<bot[]> {
+  doBotCheckout(name: string, interaction: MessageComponentInteraction | CommandInteraction): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  getBotsForBatphone(location: string): Promise<bot[]> {
     throw new Error("Method not implemented.");
   }
   getFirstAvailableBotByLocation(location: string, roles: GuildMemberRoleManager): Promise<string> {
