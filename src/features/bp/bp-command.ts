@@ -276,6 +276,7 @@ class getBp extends Subcommand {
 ${formattedMessage}
 
 --------
+Location: ${savedMsg?.location || "NO LOCATION SET"}
 To change this message, use \`/bp unset ${key}\` and then \`/bp set\` to set a new message.
 `;
         if (interaction.channel) {
