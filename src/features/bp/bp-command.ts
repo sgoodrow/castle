@@ -104,6 +104,9 @@ export const getBotButtonComponents = async (location: string) => {
   const bots = await PublicAccountsFactory.getService().getBotsForBatphone(
     location
   );
+  console.log(
+    `loading bots for batphone - ${bots.map((b) => b.name).join(",")}`
+  );
   const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
   let row;
   for (let i = 0; i < bots.length; i++) {
