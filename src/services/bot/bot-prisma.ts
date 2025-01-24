@@ -1,6 +1,9 @@
 import {
   ApplicationCommandOptionChoiceData,
+  CommandInteraction,
   GuildMemberRoleManager,
+  MessageComponentInteraction,
+  spoiler,
 } from "discord.js";
 import { Moment } from "moment";
 import {
@@ -8,24 +11,21 @@ import {
   PublicSheetService,
 } from "../sheet-updater/public-sheet";
 import { IPublicAccountService } from "./public-accounts.i";
-import { PrismaClient } from "@prisma/client";
+import { bot, PrismaClient } from "@prisma/client";
 import moment from "moment";
 import { truncate } from "lodash";
 import { log } from "console";
 import { accounts } from "../accounts";
 import { Bot, SheetPublicAccountService } from "./public-accounts-sheet";
-import { getMembers } from "../..";
+import { getMembers, prismaClient } from "../..";
 import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
 import { getClassAbreviation } from "../../shared/classes";
+import { raidBotInstructions } from "../../features/raid-bots/update-bots";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private prisma!: PrismaClient;
   constructor() {
-    if (!this.prisma) {
-      this.prisma = new PrismaClient();
-      this.prisma.$connect();
-      this.init();
-    }
+    this.init();
   }
 
   async init() {
@@ -36,14 +36,14 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
     // Clear data since we read initial from sheet
     log("PublicAccountsPrisma - initializing (clearing old rows)");
-    await this.prisma.bot.deleteMany({});
+    await prismaClient.bot.deleteMany({});
     for (const row of rows) {
       const time = moment(row[BOT_SPREADSHEET_COLUMNS.CheckoutTime]);
       const roles = await accounts.getRolesForAccount(
         row[BOT_SPREADSHEET_COLUMNS.Name]
       );
 
-      await this.prisma.bot.create({
+      await prismaClient.bot.create({
         data: {
           name: row[BOT_SPREADSHEET_COLUMNS.Name],
           class: row[BOT_SPREADSHEET_COLUMNS.Class],
@@ -58,8 +58,89 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     }
   }
 
+  async doBotCheckout(
+    name: string,
+    interaction: MessageComponentInteraction | CommandInteraction
+  ): Promise<void> {
+    const thread = await raidBotInstructions.getThread();
+    if (!thread) {
+      throw new Error(`Could not locate bot request thread.`);
+    }
+
+    let status = "✅ Granted";
+    try {
+      const details = await accounts.getAccount(
+        name,
+        interaction.member?.roles as GuildMemberRoleManager
+      );
+
+      const foundBot = details.characters;
+
+      const currentPilot = await this.getCurrentBotPilot(foundBot);
+
+      let response = `${details.characters} (${details.purpose})
+Account: ${details.accountName}
+Password: ${spoiler(details.password)}
+
+**If a bot can be moved**, and you move it, please include the location in your /bot park\n\n`;
+
+      if (currentPilot) {
+        response += `**Please note that ${currentPilot} is marked as the pilot of ${foundBot} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
+      }
+      response += `The credentials for ${foundBot} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
+
+      await interaction.editReply({
+        content: response,
+      });
+      const logMsg = await thread.send("OK");
+      logMsg.edit(
+        `${status} ${interaction.user} access to ${foundBot} with batphone button.`
+      );
+
+      if (await this.isBotPublic(foundBot)) {
+        try {
+          const guildUser = await interaction.guild?.members.fetch(
+            interaction.user.id
+          );
+
+          console.log(
+            `${
+              guildUser?.nickname || guildUser?.user.username
+            } requested ${name} and got ${details.characters} ${
+              currentPilot ? `who is checked out by ${currentPilot}` : ""
+            }`
+          );
+
+          if (!currentPilot) {
+            await this.updateBotRowDetails(foundBot, {
+              [BOT_SPREADSHEET_COLUMNS.CurrentPilot]:
+                guildUser?.nickname ||
+                guildUser?.user.username ||
+                "UNKNOWN USER",
+              [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment().toString(),
+            });
+          }
+        } catch (err) {
+          throw new Error(
+            "Failed to update public record, check the configuration"
+          );
+        }
+      }
+
+      await interaction.editReply(response);
+    } catch (err) {
+      status = "❌ Denied";
+      const logMsg = await thread.send("OK");
+      logMsg.edit(`${status} ${interaction.user} access to ${name}.`);
+
+      await interaction.editReply(
+        `You do not have the correct permissions to access ${name}.`
+      );
+    }
+  }
+
   async getCurrentBotPilot(botName: string): Promise<string | undefined> {
-    const bot = await this.prisma.bot.findFirst({
+    const bot = await prismaClient.bot.findFirst({
       where: {
         name: {
           contains: botName,
@@ -79,7 +160,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     location?: string | undefined,
     bindLocation?: string | undefined
   ): Promise<string> {
-    const bot = await this.prisma.bot.findFirst({
+    const bot = await prismaClient.bot.findFirst({
       where: {
         class: botClass,
         currentPilot: "",
@@ -105,7 +186,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
       bot.currentPilot = "reserved";
 
-      await this.prisma.bot.update({
+      await prismaClient.bot.update({
         where: {
           name: bot.name,
         },
@@ -124,7 +205,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     location: string,
     roles: GuildMemberRoleManager
   ): Promise<string> {
-    const bot = await this.prisma.bot.findFirst({
+    const bot = await prismaClient.bot.findFirst({
       where: {
         location: location,
         currentPilot: "",
@@ -143,7 +224,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
       bot.currentPilot = "reserved";
 
-      await this.prisma.bot.update({
+      await prismaClient.bot.update({
         where: {
           name: bot.name,
         },
@@ -166,9 +247,22 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     }));
   }
 
+  async getBotsForBatphone(location: string): Promise<bot[]> {
+    return await prismaClient.bot.findMany({
+      where: {
+        location: location,
+        class: {
+          not: "Mage",
+        },
+      },
+      orderBy: [{ class: "asc" }, { name: "asc" }],
+      take: 25,
+    });
+  }
+
   async isBotPublic(botName: string): Promise<boolean | undefined> {
     return (
-      (await this.prisma.bot.findFirst({
+      (await prismaClient.bot.findFirst({
         where: {
           name: {
             equals: botName,
@@ -180,7 +274,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   }
 
   async getBots(): Promise<Bot[]> {
-    return await this.prisma.bot.findMany({
+    return await prismaClient.bot.findMany({
       orderBy: [
         {
           class: "asc",
@@ -202,7 +296,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     botName: string,
     botRowData: { [id: string]: string | undefined }
   ): Promise<void> {
-    const bot = await this.prisma.bot.findFirst({
+    const bot = await prismaClient.bot.findFirst({
       where: {
         name: {
           equals: botName,
@@ -237,7 +331,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
           BOT_SPREADSHEET_COLUMNS.BindLocation
         ] as string;
       }
-      await this.prisma.bot.update({
+      await prismaClient.bot.update({
         where: {
           name: bot.name,
         },
@@ -259,7 +353,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     // Could probably use a DateTime lte comparison here but the schema
     // is already a string for checkout time and I'm scared of breaking
     // prisma again
-    const staleBots = await this.prisma.bot.findMany({
+    const staleBots = await prismaClient.bot.findMany({
       where: {
         checkoutTime: {
           not: "",
@@ -305,7 +399,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
           bot.currentPilot = "";
 
           // update db
-          await this.prisma.bot.update({
+          await prismaClient.bot.update({
             where: {
               name: bot.name,
             },
@@ -335,14 +429,14 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
   // Legacy
 
   async updateBotCheckoutTime(botName: string, dateTime: Moment | null) {
-    const bot = await this.prisma.bot.findFirst({
+    const bot = await prismaClient.bot.findFirst({
       where: {
         name: botName,
       },
     });
     if (bot && moment.isMoment(dateTime)) {
       bot.checkoutTime = dateTime.toString();
-      await this.prisma.bot.update({
+      await prismaClient.bot.update({
         where: {
           name: botName,
         },
@@ -358,7 +452,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
   }
 
   async updateBotLocation(name: string, location: string) {
-    const bot = await this.prisma.bot.findFirst({
+    const bot = await prismaClient.bot.findFirst({
       where: {
         name: name,
       },
@@ -366,7 +460,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
     if (bot) {
       log(`PublicAccountsPrisma - updating location for ${name}`);
       bot.location = location;
-      this.prisma.bot.update({
+      prismaClient.bot.update({
         where: {
           name: name,
         },
@@ -385,7 +479,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
   }
 
   async updateBotPilot(name: string, pilotName: string) {
-    const bot = await this.prisma.bot.findFirst({
+    const bot = await prismaClient.bot.findFirst({
       where: {
         name: name,
       },
@@ -393,7 +487,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
     if (bot) {
       log(`PublicAccountsPrisma - updating pilot for ${name}`);
       bot.currentPilot = pilotName;
-      this.prisma.bot.update({
+      prismaClient.bot.update({
         where: {
           name: name,
         },

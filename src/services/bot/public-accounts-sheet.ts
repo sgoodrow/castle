@@ -8,13 +8,16 @@ import LRUCache from "lru-cache";
 import { MINUTES } from "../../shared/time";
 import {
   ApplicationCommandOptionChoiceData,
+  CommandInteraction,
   GuildMemberRoleManager,
+  MessageComponentInteraction,
 } from "discord.js";
 import { truncate } from "lodash";
 import { checkGoogleCredentials } from "../gdrive";
 import moment from "moment";
 import { IPublicAccountService } from "./public-accounts.i";
 import { BOT_SPREADSHEET_COLUMNS } from "../sheet-updater/public-sheet";
+import { bot } from "@prisma/client";
 
 export const SHEET_TITLE = "Bot Info";
 
@@ -34,6 +37,12 @@ export class SheetPublicAccountService implements IPublicAccountService {
       );
     }
     this.sheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
+  }
+  doBotCheckout(name: string, interaction: MessageComponentInteraction | CommandInteraction): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  getBotsForBatphone(location: string): Promise<bot[]> {
+    throw new Error("Method not implemented.");
   }
   getFirstAvailableBotByLocation(location: string, roles: GuildMemberRoleManager): Promise<string> {
     throw new Error("Method not implemented.");
