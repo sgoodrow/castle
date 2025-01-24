@@ -27,6 +27,14 @@ export class RequestBotButtonCommand extends ButtonCommand {
     const name = interaction.customId.split("_")[1];
     try {
       await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
+      const guildUser = await interaction.guild?.members.fetch(
+        interaction.user.id
+      );
+      console.log(
+        `${
+          guildUser?.nickname || guildUser?.user.username
+        } clicked batphone button for ${name}`
+      );
     } catch (err: unknown) {
       await this.setButtonState(interaction, true);
     }
