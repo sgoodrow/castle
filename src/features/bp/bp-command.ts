@@ -297,14 +297,10 @@ To change this message, use \`/bp unset ${key}\` and then \`/bp set\` to set a n
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
     const res = await prismaClient.batphone.findMany();
-    if (isObject(res)) {
-      const opts = Object.entries(res).map(([key, value]) => ({
-        name: key,
-        value: key,
-      }));
-      return opts;
-    }
-    return [];
+
+    return res.map((opt) => {
+      return { name: opt.key, value: opt.key };
+    });
   }
 
   public get command() {
