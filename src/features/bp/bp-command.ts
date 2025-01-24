@@ -105,7 +105,9 @@ export const getBotButtonComponents = async (location: string) => {
     location
   );
   console.log(
-    `loading bots for batphone - ${bots.map((b) => b.name).join(",")}`
+    `loading bots for batphone in ${location} - ${bots
+      .map((b) => b.name)
+      .join(",")}`
   );
   const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
   let row;
@@ -156,8 +158,11 @@ class setBp extends Subcommand {
             location: location,
           },
         });
-        // await redisClient.hSet("bp", String(key), message);
-        // await redisClient.hSet("bp", String(location), location);
+        console.log(
+          `Created batphone - key: ${key}, location: ${
+            location || "unset"
+          }, message: ${message}`
+        );
         interaction.editReply("Saved preset message: " + message);
       } else {
         throw error;
@@ -241,7 +246,7 @@ class unsetBp extends Subcommand {
     const res = await prismaClient.batphone.findMany();
 
     return res.map((opt) => {
-      return { name: opt.key, value: opt.message };
+      return { name: opt.key, value: opt.key };
     });
   }
 
