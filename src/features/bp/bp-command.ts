@@ -14,83 +14,66 @@ import { batphoneChannelId, raiderRoleId, wakeupChannelId } from "../../config";
 import { authorizeByMemberRoles } from "../../shared/command/util";
 import { officerRoleId, modRoleId, knightRoleId } from "../../config";
 import { error } from "console";
-import { redisClient } from "../../redis/client";
-import { isObject } from "lodash";
 import { container } from "tsyringe";
 import { WakeupService } from "../wakeup/wakeup.service";
 import { truncate } from "lodash";
 import { RequestBotButtonCommand } from "./request-bot-button-command";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { LocationService } from "../../services/location";
-import { PrismaClient } from "@prisma/client";
 
 class sendBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    // authorize
-    authorizeByMemberRoles(
-      [officerRoleId, modRoleId, knightRoleId],
-      interaction
-    );
-
-    const bpChannel = await getTextChannel(batphoneChannelId);
-    const val = this.getOption("message", interaction)?.value as string;
-    // const savedMsg = await redisClient.hGet("bp", String(val));
-    const savedBp = await prismaClient.batphone.findFirst({
-      where: {
-        key: val,
-      },
-    });
-    const message = savedBp?.message || val;
-    if (typeof message === "string") {
-      const formattedMessage = message.replace(
-        /\\n/g,
-        `
-`
+    try {
+      // authorize
+      authorizeByMemberRoles(
+        [officerRoleId, modRoleId, knightRoleId],
+        interaction
       );
-      const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
-        await this.getBotButtonComponents(savedBp?.location || "");
-      await bpChannel.send({
-        content:
-          `[${interaction.user}] <@&${raiderRoleId}> 
-` + formattedMessage,
-        components: savedBp?.location ? components : undefined,
+
+      const bpChannel = await getTextChannel(batphoneChannelId);
+      const val = this.getOption("message", interaction)?.value as string;
+      // const savedMsg = await redisClient.hGet("bp", String(val));
+      const savedBp = await prismaClient.batphone.findFirst({
+        where: {
+          key: val,
+        },
       });
-
-      interaction.editReply("Batphone posted: " + message);
-
-      // Wakeup
-      if (wakeupChannelId) {
-        const wakeupService = container.resolve(WakeupService);
-        wakeupService.runWakeup(
-          `Batphone. ${interaction.user} sent ${message}`
+      savedBp
+        ? console.log(
+            `Found saved batphone ${savedBp.key} for ${savedBp.location}`
+          )
+        : console.log(`No key found for ${val}`);
+      const message = savedBp?.message || val;
+      if (typeof message === "string") {
+        const formattedMessage = message.replace(
+          /\\n/g,
+          `
+`
         );
-      }
-    } else {
-      interaction.editReply("Failed to post batphone.");
-    }
-  }
-
-  private async getBotButtonComponents(location: string) {
-    const bots = await PublicAccountsFactory.getService().getBotsForBatphone(
-      location
-    );
-    const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
-    let row;
-    for (let i = 0; i < bots.length; i++) {
-      if (i % 5 === 0) {
-        row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
-          type: ComponentType.ActionRow,
-          components: [],
+        const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
+          await getBotButtonComponents(savedBp?.location || "");
+        await bpChannel.send({
+          content:
+            `[${interaction.user}] <@&${raiderRoleId}> 
+` + formattedMessage,
+          components: savedBp?.location ? components : undefined,
         });
-        components.push(row);
+
+        interaction.editReply("Batphone posted: " + message);
+
+        // Wakeup
+        if (wakeupChannelId) {
+          const wakeupService = container.resolve(WakeupService);
+          wakeupService.runWakeup(
+            `Batphone. ${interaction.user} sent ${message}`
+          );
+        }
+      } else {
+        interaction.editReply("Failed to post batphone.");
       }
-      row?.addComponents(
-        new RequestBotButtonCommand(
-          `requestbot_${bots[i].name}`
-        ).getButtonBuilder(bots[i])
-      );
+    } catch (error: unknown) {
+      console.log("Failed to post batphone: " + error);
     }
-    return components;
   }
 
   public async getOptionAutocomplete(
@@ -116,6 +99,30 @@ class sendBp extends Subcommand {
     );
   }
 }
+
+export const getBotButtonComponents = async (location: string) => {
+  const bots = await PublicAccountsFactory.getService().getBotsForBatphone(
+    location
+  );
+  const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
+  let row;
+  for (let i = 0; i < bots.length; i++) {
+    if (i % 5 === 0) {
+      row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
+        type: ComponentType.ActionRow,
+        components: [],
+      });
+      components.push(row);
+    }
+    console.log(`adding button for ${bots[i].name}`);
+    row?.addComponents(
+      new RequestBotButtonCommand(
+        `requestbot_${bots[i].name}`
+      ).getButtonBuilder(bots[i])
+    );
+  }
+  return components;
+};
 
 class setBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -279,8 +286,18 @@ ${formattedMessage}
 Location: ${savedMsg?.location || "NO LOCATION SET"}
 To change this message, use \`/bp unset ${key}\` and then \`/bp set\` to set a new message.
 `;
+        savedMsg
+          ? console.log(
+              `Found saved batphone ${savedMsg.key} for ${savedMsg.location}`
+            )
+          : console.log(`No key found for ${val}`);
+        const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
+          await getBotButtonComponents(savedMsg?.location || "");
         if (interaction.channel) {
-          interaction.channel.send(replyMsg); // todo: send message in channel
+          interaction.channel.send({
+            content: replyMsg,
+            components: savedMsg?.location ? components : undefined,
+          }); // todo: send message in channel
           interaction.deleteReply();
         }
       }
