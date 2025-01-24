@@ -93,9 +93,7 @@ Password: ${spoiler(details.password)}
         content: response,
       });
       const logMsg = await thread.send("OK");
-      logMsg.edit(
-        `${status} ${interaction.user} access to ${foundBot} with batphone button.`
-      );
+      logMsg.edit(`${status} ${interaction.user} access to ${foundBot}`);
 
       if (await this.isBotPublic(foundBot)) {
         try {
