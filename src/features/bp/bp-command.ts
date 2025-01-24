@@ -53,7 +53,7 @@ class sendBp extends Subcommand {
         content:
           `[${interaction.user}] <@&${raiderRoleId}> 
 ` + formattedMessage,
-        components: components,
+        components: savedBp?.location ? components : undefined,
       });
 
       interaction.editReply("Batphone posted: " + message);
