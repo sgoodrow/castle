@@ -249,6 +249,7 @@ Password: ${spoiler(details.password)}
     return await prismaClient.bot.findMany({
       where: {
         location: location,
+        currentPilot: "",
         class: {
           not: "Mage",
         },
