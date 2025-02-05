@@ -10,7 +10,12 @@ import {
 import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
 import { getTextChannel, prismaClient } from "../..";
-import { batphoneChannelId, raiderRoleId, trackerRoleId, wakeupChannelId } from "../../config";
+import {
+  batphoneChannelId,
+  raiderRoleId,
+  trackerRoleId,
+  wakeupChannelId,
+} from "../../config";
 import { authorizeByMemberRoles } from "../../shared/command/util";
 import { officerRoleId, modRoleId, knightRoleId } from "../../config";
 import { error } from "console";
@@ -26,7 +31,7 @@ class sendBp extends Subcommand {
     try {
       // authorize
       authorizeByMemberRoles(
-        [officerRoleId, modRoleId, knightRoleId],
+        [officerRoleId, modRoleId, knightRoleId, trackerRoleId],
         interaction
       );
 
@@ -216,7 +221,7 @@ class unsetBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     // authorize
     authorizeByMemberRoles(
-      [officerRoleId, modRoleId, knightRoleId, trackerRoleId],
+      [officerRoleId, modRoleId, knightRoleId],
       interaction
     );
 
@@ -265,7 +270,7 @@ class getBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     // authorize
     authorizeByMemberRoles(
-      [officerRoleId, modRoleId, knightRoleId],
+      [officerRoleId, modRoleId, knightRoleId, trackerRoleId],
       interaction
     );
 
