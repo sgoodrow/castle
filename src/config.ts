@@ -24,6 +24,7 @@ export const {
   raiderRoleId,
   inactiveRaiderRoleId,
   knightRoleId,
+  trackerRoleId,
   reinforcementsRoleId,
   castleRoleId,
   membersAndAlliesRoleId,
@@ -135,6 +136,7 @@ export const {
   bankerRoleId: string;
   knightRoleId: string;
   modRoleId: string;
+  trackerRoleId: string;
 
   // Raider role IDs
   raiderRoleId: string;
