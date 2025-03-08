@@ -10,6 +10,7 @@ import {
 import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
 import { getTextChannel, prismaClient } from "../..";
+import { Prisma } from "@prisma/client"
 import {
   batphoneChannelId,
   raiderRoleId,
@@ -154,7 +155,7 @@ class setBp extends Subcommand {
           key = message.split(" ")[0].toLowerCase();
         }
         const location = this.getOption("location", interaction)
-          ?.value as string;
+          ?.value as string || "";
         key = truncate(String(key), { length: 100 }); // max option length = 100
         await prismaClient.batphone.create({
           data: {
@@ -174,7 +175,15 @@ class setBp extends Subcommand {
       }
     } catch (err) {
       console.error(err);
-      interaction.editReply("Failed save batphone message: " + err);
+      let errMsg = err;
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2002') {
+            errMsg = "Key already exists";
+        } else {
+          errMsg = err.code;
+        }
+      }
+      interaction.editReply("Failed save batphone message: " + errMsg);
     }
   }
   public async getOptionAutocomplete(
@@ -283,7 +292,11 @@ class getBp extends Subcommand {
           key: val,
         },
       });
-      const message = savedMsg?.message || val;
+      const message = savedMsg?.message;
+      if (!message) {
+        throw new Error(`No batphone with key ${val}`);
+      }
+      
       if (typeof message === "string") {
         const formattedMessage = message.replace(
           /\\n/g,
@@ -297,7 +310,7 @@ ${formattedMessage}
 
 --------
 Location: ${savedMsg?.location || "NO LOCATION SET"}
-To change this message, use \`/bp unset ${key}\` and then \`/bp set\` to set a new message.
+To change this message, use \`/bp update\` to set a new message.
 `;
         savedMsg
           ? console.log(
@@ -344,6 +357,110 @@ To change this message, use \`/bp unset ${key}\` and then \`/bp set\` to set a n
   }
 }
 
+class updateBp extends Subcommand {
+  public async execute(interaction: CommandInteraction<CacheType>) {
+    // authorize
+    authorizeByMemberRoles(
+      [officerRoleId, modRoleId, knightRoleId],
+      interaction
+    );
+
+    const message = this.getOption("message", interaction)?.value;
+    try {
+      if (typeof message === "string") {
+        if (message.length > 2000) {
+          // max message length is 2000 chars
+          throw new Error("Message is too long.");
+        }
+        let key = this.getOption("key", interaction)?.value;
+        if (!key) {
+          key = message.split(" ")[0].toLowerCase();
+        }
+        const location = this.getOption("location", interaction)
+          ?.value as string || "";
+        key = truncate(String(key), { length: 100 }); // max option length = 100
+
+        let updateNoLocation = {
+          message: message
+        };
+
+        let updateWithLocation = {
+          message: message,
+          location: location
+        };
+
+        let update = location ?  updateWithLocation : updateNoLocation;
+
+        await prismaClient.batphone.update({
+          where: {
+            key: key
+          },
+          data: update
+        });
+
+        console.log(
+          `Updated batphone - key: ${key}, location: ${
+            location || "unset"
+          }, message: ${message}`
+        );
+        interaction.editReply("Updated Batphone: " + key);
+      } else {
+        throw error;
+      }
+    } catch (err) {
+      console.error(err);
+      let errMsg = err;
+      if (err instanceof Prisma.PrismaClientKnownRequestError) {
+        if (err.code === 'P2025') {
+            errMsg = "No batphone found with the provided key";
+        } else {
+          errMsg = err.code;
+        }
+      }
+      interaction.editReply("Failed update batphone message: " + errMsg);
+    }
+  }
+
+  public async getOptionAutocomplete(
+    option: string,
+    interaction: AutocompleteInteraction<CacheType>
+  ): Promise<
+    ApplicationCommandOptionChoiceData<string | number>[] | undefined
+  > {
+    switch (option) {
+      case "location":
+        return LocationService.getInstance().getLocationOptions();
+      default:
+        return [];
+    }
+  }
+
+  public get command() {
+    return super.command
+      .addStringOption((o) =>
+        o
+          .setName("message")
+          .setDescription("BP Message")
+          .setRequired(true)
+          .setAutocomplete(false)
+      )
+      .addStringOption((o) =>
+        o
+          .setName("key")
+          .setDescription("Key (optional")
+          .setRequired(false)
+          .setAutocomplete(false)
+      )
+      .addStringOption((o) =>
+        o
+          .setName("location")
+          .setDescription("Location of the batphone")
+          .setRequired(false)
+          .setAutocomplete(true)
+      );
+  }
+}
+
 export const batphoneCommand = new Command(
   "bp",
   "set and send batphone messages",
@@ -352,5 +469,6 @@ export const batphoneCommand = new Command(
     new setBp("set", "save a BP preset"),
     new unsetBp("unset", "remove BP preset"),
     new getBp("get", "show BP message in this channel"),
+    new updateBp("update", "update a BP")
   ]
 );
