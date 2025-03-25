@@ -4,6 +4,9 @@ import {
   GuildMemberRoleManager,
   MessageComponentInteraction,
   spoiler,
+  ActionRowBuilder,
+  MessageActionRowComponentBuilder,
+  ComponentType
 } from "discord.js";
 import { Moment } from "moment";
 import {
@@ -21,6 +24,7 @@ import { getMembers, prismaClient } from "../..";
 import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
 import { getClassAbreviation } from "../../shared/classes";
 import { raidBotInstructions } from "../../features/raid-bots/update-bots";
+import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-command"
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private prisma!: PrismaClient;
@@ -58,6 +62,26 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     }
   }
 
+  async getBotCheckoutButtonComponents (name: string)
+  {
+    const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
+    let row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
+        type: ComponentType.ActionRow,
+        components: [],
+    });
+    components.push(row);
+
+    try {
+      let bot = await this.getBotByName(name);
+      if (bot) {
+        row.addComponents(new ParkBotButtonCommand(
+          `parkbot_${name}`
+          ).getButtonBuilder(bot));
+      }
+    } catch {}
+    return components;
+  };
+
   async doBotCheckout(
     name: string,
     interaction: MessageComponentInteraction | CommandInteraction
@@ -84,13 +108,16 @@ Password: ${spoiler(details.password)}
 
 **If a bot can be moved**, and you move it, please include the location in your /bot park\n\n`;
 
+      let components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = await this.getBotCheckoutButtonComponents(name);
       if (currentPilot) {
         response += `**Please note that ${currentPilot} is marked as the pilot of ${foundBot} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
       }
       response += `The credentials for ${foundBot} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
 
+      
       await interaction.editReply({
         content: response,
+        components: components
       });
       const logMsg = await thread.send("OK");
       logMsg.edit(`${status} ${interaction.user} access to ${foundBot}`);
@@ -137,7 +164,7 @@ Password: ${spoiler(details.password)}
     }
   }
 
-  async getCurrentBotPilot(botName: string): Promise<string | undefined> {
+  async getBotByName(botName: string): Promise<bot | null> {
     const bot = await prismaClient.bot.findFirst({
       where: {
         name: {
@@ -146,6 +173,13 @@ Password: ${spoiler(details.password)}
         },
       },
     });
+    
+    return bot;
+  }
+
+  async getCurrentBotPilot(botName: string): Promise<string | undefined> {
+    const bot = await this.getBotByName(botName);
+    
     if (bot) {
       return bot.currentPilot;
     }
