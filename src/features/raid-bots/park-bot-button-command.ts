@@ -33,14 +33,14 @@ import {
           [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
           [BOT_SPREADSHEET_COLUMNS.CurrentLocation]: undefined,
         };
-  
-        await PublicAccountsFactory.getService().updateBotRowDetails(name, parkDetails);
-        await interaction.editReply(`${name} was released in its previous location`);
-        
+
         const guildUser = await interaction.guild?.members.fetch(
           interaction.user.id
         );
         console.log(`${guildUser?.nickname || guildUser?.user.username} clicked bot park button for ${name}`);
+  
+        await PublicAccountsFactory.getService().updateBotRowDetails(name, parkDetails);
+        await interaction.editReply(`${name} was released in its previous location`);
         
       } catch (error) {
         await interaction.editReply(`Failed to move bot: ${error}`);
