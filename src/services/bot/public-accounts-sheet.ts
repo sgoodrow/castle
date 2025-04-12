@@ -44,7 +44,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
   getBotsForBatphone(location: string): Promise<bot[]> {
     throw new Error("Method not implemented.");
   }
-  getFirstAvailableBotByLocation(location: string, roles: GuildMemberRoleManager): Promise<string> {
+  getFirstAvailableBotByLocation(location: string, roles: GuildMemberRoleManager, interaction: MessageComponentInteraction | CommandInteraction): Promise<string> {
     throw new Error("Method not implemented.");
   }
 
@@ -148,6 +148,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
   public async getFirstAvailableBotByClass(
     botClass: string,
     roles: GuildMemberRoleManager,
+    interaction: MessageComponentInteraction | CommandInteraction,
     location?: string
   ) {
     await this.loadBots();
