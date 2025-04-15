@@ -23,12 +23,14 @@ export interface IPublicAccountService {
   getFirstAvailableBotByClass(
     botClass: string,
     roles: GuildMemberRoleManager,
+    interaction: MessageComponentInteraction | CommandInteraction,
     location?: string,
     bindLocation?: string
   ): Promise<string>;
   getFirstAvailableBotByLocation(
     location: string,
-    roles: GuildMemberRoleManager
+    roles: GuildMemberRoleManager,
+    interaction: MessageComponentInteraction | CommandInteraction
   ): Promise<string>;
   getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]>;
   isBotPublic(botName: string): Promise<boolean | undefined>;
