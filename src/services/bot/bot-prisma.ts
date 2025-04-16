@@ -26,6 +26,8 @@ import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
 import { getClassAbreviation } from "../../shared/classes";
 import { raidBotInstructions } from "../../features/raid-bots/update-bots";
 import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-command"
+import { ParkBotDropdownCommand } from "../../features/raid-bots/park-bot-dropdown-command"
+import { LocationService } from "../location";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private prisma!: PrismaClient;
@@ -63,7 +65,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     }
   }
 
-  async getBotCheckoutButtonComponents (name: string)
+  async getBotParkButtonComponents (name: string)
   {
     const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
     let row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
@@ -74,10 +76,14 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
     try {
       let bot = await this.getBotByName(name);
+      let locations = await LocationService.getInstance().getLocationOptions();
       if (bot) {
         row.addComponents(new ParkBotButtonCommand(
           `parkbot_${name}`
           ).getButtonBuilder(bot));
+        row.addComponents(new ParkBotDropdownCommand(
+          `parkbot_${name}_dropdown`
+          ).getSelectMenuBuilder(locations));  
       }
     } catch {}
     return components;
@@ -118,7 +124,7 @@ Password: ${spoiler(details.password)}
 
 **If a bot can be moved**, and you move it, please include the location in your /bot park\n\n`;
 
-      let components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = await this.getBotCheckoutButtonComponents(name);
+      let components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = await this.getBotParkButtonComponents(name);
       if (currentPilot) {
         response += `**Please note that ${currentPilot} is marked as the pilot of ${foundBot} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
       }
@@ -155,6 +161,7 @@ Password: ${spoiler(details.password)}
 
       await interaction.editReply(response);
     } catch (err) {
+      console.log(err);
       status = "❌ Denied";
       const logMsg = await thread.send("OK");
       logMsg.edit(`${status} ${interaction.user} access to ${name}.`);
