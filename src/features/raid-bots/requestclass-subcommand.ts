@@ -45,7 +45,7 @@ export class RequestClassSubcommand extends Subcommand {
     let firstBot = "";
     const release = await this.mutex.acquire();
     const publicAccounts = PublicAccountsFactory.getService();
-    
+
     const guildUser = await interaction.guild?.members.fetch(
       interaction.user.id
     );
@@ -64,27 +64,62 @@ export class RequestClassSubcommand extends Subcommand {
         firstBot = await publicAccounts.getFirstAvailableBotByClass(
           botClass,
           interaction.member?.roles as GuildMemberRoleManager,
-          interaction,
           location,
           bindLocation
         );
-        
-        await publicAccounts.doBotCheckout(firstBot, interaction);
-
       } catch (err) {
         status = "❌ Denied";
         await interaction.editReply(
-          `No bot was found matching the provided criteria.\n${err}`
+          `No bot was found matching the provided criteria.`
         );
         const message = await thread.send("OK");
         let response = `${status} ${interaction.user} access to the first available ${botClass}`;
         if (location) {
           response += ` in ${location}`;
         }
-        response += `.\n(${err})`;
+        response += `. (${err})`;
         await message.edit(response);
         return;
       }
+
+      try {
+        const details = await accounts.getAccount(
+          firstBot,
+          interaction.member?.roles as GuildMemberRoleManager
+        );
+
+        await interaction.editReply({
+          content: `Your name has been added to the public bot sheet along with a timestamp.
+          
+**Assigned:** ${details.characters} (${details.purpose})
+**Account:** ${details.accountName}
+**Password:** ${spoiler(details.password)}
+  
+Please use \`/bot park <name> <location if you moved it>\` when you are finished in order to automatically remove your details from the public sheet.`,
+        });
+
+        // Update public record
+        try {
+          await publicAccounts.updateBotRowDetails(firstBot, {
+            [BOT_SPREADSHEET_COLUMNS.CurrentPilot]:
+              guildUser?.nickname || guildUser?.user.username || "UNKNOWN USER",
+            [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment().toString(),
+          });
+        } catch (err) {
+          throw new Error(
+            "Failed to update public record, check the configuration"
+          );
+        }
+      } catch (err) {
+        status = "❌ Denied";
+
+        await interaction.editReply(
+          `You do not have the correct permissions to access ${firstBot}.`
+        );
+      }
+      const message = await thread.send("OK");
+      const response = `${status} ${interaction.user} access to the first available ${botClass}: ${firstBot}.`;
+      message.edit(response);
     } finally {
       release();
     }

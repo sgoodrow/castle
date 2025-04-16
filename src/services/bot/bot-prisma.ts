@@ -4,10 +4,6 @@ import {
   GuildMemberRoleManager,
   MessageComponentInteraction,
   spoiler,
-  ActionRowBuilder,
-  MessageActionRowComponentBuilder,
-  ComponentType,
-  GuildMember
 } from "discord.js";
 import { Moment } from "moment";
 import {
@@ -25,7 +21,6 @@ import { getMembers, prismaClient } from "../..";
 import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
 import { getClassAbreviation } from "../../shared/classes";
 import { raidBotInstructions } from "../../features/raid-bots/update-bots";
-import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-command"
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private prisma!: PrismaClient;
@@ -63,26 +58,6 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     }
   }
 
-  async getBotCheckoutButtonComponents (name: string)
-  {
-    const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
-    let row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
-        type: ComponentType.ActionRow,
-        components: [],
-    });
-    components.push(row);
-
-    try {
-      let bot = await this.getBotByName(name);
-      if (bot) {
-        row.addComponents(new ParkBotButtonCommand(
-          `parkbot_${name}`
-          ).getButtonBuilder(bot));
-      }
-    } catch {}
-    return components;
-  };
-
   async doBotCheckout(
     name: string,
     interaction: MessageComponentInteraction | CommandInteraction
@@ -99,50 +74,47 @@ export class PrismaPublicAccounts implements IPublicAccountService {
         interaction.member?.roles as GuildMemberRoleManager
       );
 
-      const guildUser = await interaction.guild?.members.fetch(
-        interaction.user.id
-      );
-
-      const discordName = this.getDiscordNameFromUser(guildUser);
-
       const foundBot = details.characters;
 
-      let currentPilot = await this.getCurrentBotPilot(foundBot);
+      const currentPilot = await this.getCurrentBotPilot(foundBot);
 
-      if (currentPilot == discordName) {
-          currentPilot = "";
-      }
       let response = `${details.characters} (${details.purpose})
 Account: ${details.accountName}
 Password: ${spoiler(details.password)}
 
 **If a bot can be moved**, and you move it, please include the location in your /bot park\n\n`;
 
-      let components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = await this.getBotCheckoutButtonComponents(name);
       if (currentPilot) {
         response += `**Please note that ${currentPilot} is marked as the pilot of ${foundBot} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
       }
       response += `The credentials for ${foundBot} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
 
-      
       await interaction.editReply({
         content: response,
-        components: components
       });
       const logMsg = await thread.send("OK");
       logMsg.edit(`${status} ${interaction.user} access to ${foundBot}`);
 
       if (await this.isBotPublic(foundBot)) {
         try {
+          const guildUser = await interaction.guild?.members.fetch(
+            interaction.user.id
+          );
+
           console.log(
-            `${discordName} requested ${name} and got ${details.characters} ${
+            `${
+              guildUser?.nickname || guildUser?.user.username
+            } requested ${name} and got ${details.characters} ${
               currentPilot ? `who is checked out by ${currentPilot}` : ""
             }`
           );
 
           if (!currentPilot) {
             await this.updateBotRowDetails(foundBot, {
-              [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: discordName,
+              [BOT_SPREADSHEET_COLUMNS.CurrentPilot]:
+                guildUser?.nickname ||
+                guildUser?.user.username ||
+                "UNKNOWN USER",
               [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment().toString(),
             });
           }
@@ -165,13 +137,7 @@ Password: ${spoiler(details.password)}
     }
   }
 
-  getDiscordNameFromUser = (guildUser: GuildMember | undefined) => {
-    return guildUser?.nickname ||
-    guildUser?.user.username ||
-    "UNKNOWN USER";
-  }
-
-  async getBotByName(botName: string): Promise<bot | null> {
+  async getCurrentBotPilot(botName: string): Promise<string | undefined> {
     const bot = await prismaClient.bot.findFirst({
       where: {
         name: {
@@ -180,13 +146,6 @@ Password: ${spoiler(details.password)}
         },
       },
     });
-    
-    return bot;
-  }
-
-  async getCurrentBotPilot(botName: string): Promise<string | undefined> {
-    const bot = await this.getBotByName(botName);
-    
     if (bot) {
       return bot.currentPilot;
     }
@@ -196,137 +155,84 @@ Password: ${spoiler(details.password)}
   async getFirstAvailableBotByClass(
     botClass: string,
     roles: GuildMemberRoleManager,
-    interaction: MessageComponentInteraction | CommandInteraction,
     location?: string | undefined,
     bindLocation?: string | undefined
   ): Promise<string> {
-
-    const guildUser = await interaction.guild?.members.fetch(
-      interaction.user.id
-    );
-
-    let botName = "";
-    let localError = false;
+    const bot = await prismaClient.bot.findFirst({
+      where: {
+        class: botClass,
+        currentPilot: "",
+        requiredRoles: {
+          hasSome: Array.from(roles.valueOf().keys()),
+        },
+        ...(location
+          ? { location: { equals: location, mode: "insensitive" } }
+          : {}),
+        ...(bindLocation
+          ? { bindLocation: { equals: bindLocation, mode: "insensitive" } }
+          : {}),
+      },
+      orderBy: {
+        bindLocation: "desc",
+      },
+    });
     const locationString = location ? ` in ${location}` : "";
-      // Create a transaction to find the first available bot and update
-      // If this fails it'll throw an exception rather than allowing two people to check out
-    try {
-      await prismaClient.$transaction(async (tx) => {
-        const bot = await tx.bot.findFirst({
-          where: {
-            class: botClass,
-            currentPilot: "",
-            requiredRoles: {
-              hasSome: Array.from(roles.valueOf().keys()),
-            },
-            ...(location
-              ? { location: { equals: location, mode: "insensitive" } }
-              : {}),
-            ...(bindLocation
-              ? { bindLocation: { equals: bindLocation, mode: "insensitive" } }
-              : {}),
-          },
-          orderBy: {
-            bindLocation: "desc",
-          }
-        });
+    if (bot && bot.name) {
+      log(
+        `PublicAccountsPrisma - found bot ${bot.name} when looking for a ${botClass}${locationString}`
+      );
 
-        // Most likely error - no bot found with the information provided
-        if (!bot || !bot.name) {
-          localError = true;
-          throw new Error(`Couldn't find an available bot for class ${botClass}${locationString}`);
-        }
+      bot.currentPilot = "reserved";
 
-        bot.currentPilot = this.getDiscordNameFromUser(guildUser);
-  
-        await tx.bot.update({
-          where: {
-            name: bot.name,
-            currentPilot: "",
-          },
-          data: bot,
-        });
+      await prismaClient.bot.update({
+        where: {
+          name: bot.name,
+        },
+        data: bot,
+      });
 
-        log(`PublicAccountsPrisma - reserved ${bot.name} for ${bot.currentPilot}${locationString}`);
-        botName = bot.name;
-      }); // End of transaction
-
-      if (botName) {
-        return botName;
-      }
-    } catch(err) {
-      // Likely is our error for not finding a bot in location, but may be a Prisma error if the transaction failed
-   }
-  
-   if (localError) {
-    throw new Error(`Couldn't find an available ${botClass}${locationString}.`);
-   } else {
-    throw new Error(`Couldn't find an available ${botClass}${locationString}.\nThis may be a timing issue so feel free to try again if bots are still available`);
-   }
+      return bot.name;
+    } else {
+      throw new Error(
+        `Couldn't find an available ${botClass}${locationString}`
+      );
+    }
   }
 
   async getFirstAvailableBotByLocation(
     location: string,
-    roles: GuildMemberRoleManager,
-    interaction: MessageComponentInteraction | CommandInteraction
+    roles: GuildMemberRoleManager
   ): Promise<string> {
-
-    let localError = false;
-    try {
-
-      const guildUser = await interaction.guild?.members.fetch(
-        interaction.user.id
+    const bot = await prismaClient.bot.findFirst({
+      where: {
+        location: location,
+        currentPilot: "",
+        requiredRoles: {
+          hasSome: Array.from(roles.valueOf().keys()),
+        },
+      },
+      orderBy: {
+        bindLocation: "desc",
+      },
+    });
+    if (bot && bot.name) {
+      log(
+        `PublicAccountsPrisma - found bot ${bot.name} when looking for a bot in ${location}`
       );
 
-      let botName = "";
-      // Create a transaction to find the first available bot and update
-      // If this fails it'll throw an exception rather than allowing two people to check out
-      await prismaClient.$transaction(async (tx) => {
-        const bot = await tx.bot.findFirst({
-          where: {
-            location: location,
-            currentPilot: "",
-            requiredRoles: {
-              hasSome: Array.from(roles.valueOf().keys()),
-            },
-          },
-          orderBy: {
-            bindLocation: "desc",
-          },
-        });
+      bot.currentPilot = "reserved";
 
-        // Most likely error - no bot found with the information provided
-        if (!bot || !bot.name) {
-          localError = true;
-          throw new Error(`Couldn't find an available bot in ${location}`);
-        }
+      await prismaClient.bot.update({
+        where: {
+          name: bot.name,
+        },
+        data: bot,
+      });
 
-        bot.currentPilot = this.getDiscordNameFromUser(guildUser);
-  
-        await tx.bot.update({
-          where: {
-            name: bot.name,
-            currentPilot: "",
-          },
-          data: bot,
-        });
-
-        log(`PublicAccountsPrisma - reserved ${bot.name} for ${bot.currentPilot} in ${location}`);
-        botName = bot.name;
-      }); // End of transaction
-
-      if (botName) {
-        return botName;
-      }
-    } catch(err) {
-      // Likely is our error for not finding a bot in location, but may be a Prisma error if the transaction failed
-   }
-  
-   if (localError) {
-    throw new Error(`Couldn't find an available bot in ${location}`);
-   } else {
-    throw new Error(`Couldn't find an available bot in ${location}.\nThis may be a timing issue so feel free to try again if bots are still available`);
-   }
+      return bot.name;
+    } else {
+      throw new Error(`Couldn't find an available bot in ${location}`);
+    }
   }
 
   async getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]> {
