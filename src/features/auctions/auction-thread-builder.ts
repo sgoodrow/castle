@@ -58,7 +58,7 @@ export class AuctionThreadBuilder extends ThreadBuilder {
 
 **Bid Format:**
 - The number of DKP and one of your raiding character names, e.g.: "**3 Potatus**".
-- **Reply to the bidder you are raising so they receive a notification**.
+- **Reply to the bidder you are raising so they receive a notification. Bids that do not reply to the prior bidder will NOT be considered valid.**
 
 **Rules:**
 - The auction ends when nobody has bid for 12 consecutive hours and the auction has been open for at least 24.${this.raidRules}${this.requireScribeRule}
