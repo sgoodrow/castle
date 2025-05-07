@@ -6,7 +6,7 @@ import { code } from "../../shared/util";
 import { CreditData } from "./create/credit-parser";
 import { LootData } from "./raid-report";
 
-export const UPLOAD_DATE_FORMAT = "YYYY-MM-DD HH:mm";
+export const UPLOAD_DATE_FORMAT = "YYYY-MM-DD";
 export const EVERYONE = "Everyone";
 
 export interface AdjustmentData {
