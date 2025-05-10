@@ -197,23 +197,23 @@ Kill bonus values: https://castledkp.com/index.php/External/Boss-bonuses-11.html
     }).addFields([
       {
         name: "Add a name to raid ticks. Tick numbers and context are optional.",
-        value: "`!add Pumped 2, 3 (context)`",
+        value: "`!add Matil 2, 3 (context)`",
       },
       {
         name: "Remove a name from raid ticks. Tick numbers and context are optional.",
-        value: "`!rem Pumped 2, 3 (context)`",
+        value: "`!rem Matil 2, 3 (context)`",
       },
       {
         name: "Replace a name on raid ticks. Tick numbers and context are optional.",
-        value: "`!rep Pumped with Iceburgh 2, 3 (context)`",
+        value: "`!rep Ratburgh with Matil 2, 3 (context)`",
       },
       {
         name: "Add an adjustment to the first raid tick. Context is optional.",
-        value: "`!adj Pumped 5 reason (context)`",
+        value: "`!adj Matil 5 reason (context)`",
       },
       {
         name: `Deputies: Assign raid tick event types and values.`,
-        value: '`/raid tick tick: "1" event: "Cazic Thule" value: "3"`',
+        value: '`/raid tick event: "Cazic Thule" tick: "1" value: "3"`',
       },
     ]);
   }
