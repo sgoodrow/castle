@@ -110,3 +110,6 @@ dist
 
 #google account credentials
 src/google/*.json
+
+#os files
+.DS_Store
