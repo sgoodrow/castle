@@ -27,7 +27,7 @@ class UpdateRaiderInfoAction extends InstructionsReadyAction {
       title: `Join the Raid Force`,
       description: `📜 **Raider Requirements**
 - Read and understand the Castle DKP rules (https://tinyurl.com/rules-castle-dkp)
-- Understand raid level requirements in the DKP rules and pinned announcement: https://discord.com/channels/539189546630381579/995406820950675558/1251567586773045318
+- Understand raid level requirements in the DKP rules and pinned announcement (same as DKP document above but linked here for convenience after being raider tagged): https://discord.com/channels/539189546630381579/995406820950675558/1251567586773045318
 - Not raiding with any other guilds
 - Not PvP flagged
 
