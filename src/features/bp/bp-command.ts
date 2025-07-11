@@ -26,6 +26,7 @@ import { truncate } from "lodash";
 import { RequestBotButtonCommand } from "./request-bot-button-command";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { LocationService } from "../../services/location";
+import { log } from "../../shared/logger"
 
 class sendBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -45,10 +46,10 @@ class sendBp extends Subcommand {
         },
       });
       savedBp
-        ? console.log(
+        ? log(
             `Found saved batphone ${savedBp.key} for ${savedBp.location}`
           )
-        : console.log(`No key found for ${val}`);
+        : log(`No key found for ${val}`);
       const message = savedBp?.message || val;
       if (typeof message === "string") {
         const formattedMessage = message.replace(
@@ -78,7 +79,7 @@ class sendBp extends Subcommand {
         interaction.editReply("Failed to post batphone.");
       }
     } catch (error: unknown) {
-      console.log("Failed to post batphone: " + error);
+      log("Failed to post batphone: " + error);
     }
   }
 
@@ -110,7 +111,7 @@ export const getBotButtonComponents = async (location: string) => {
   const bots = await PublicAccountsFactory.getService().getBotsForBatphone(
     location
   );
-  console.log(
+  log(
     `loading bots for batphone in ${location} - ${bots
       .map((b) => b.name)
       .join(",")}`
@@ -125,7 +126,7 @@ export const getBotButtonComponents = async (location: string) => {
       });
       components.push(row);
     }
-    console.log(`adding button for ${bots[i].name}`);
+    log(`adding button for ${bots[i].name}`);
     row?.addComponents(
       new RequestBotButtonCommand(
         `requestbot_${bots[i].name}`
@@ -164,7 +165,7 @@ class setBp extends Subcommand {
             location: location,
           },
         });
-        console.log(
+        log(
           `Created batphone - key: ${key}, location: ${
             location || "unset"
           }, message: ${message}`
@@ -313,10 +314,10 @@ Location: ${savedMsg?.location || "NO LOCATION SET"}
 To change this message, use \`/bp update\` to set a new message.
 `;
         savedMsg
-          ? console.log(
+          ? log(
               `Found saved batphone ${savedMsg.key} for ${savedMsg.location}`
             )
-          : console.log(`No key found for ${val}`);
+          : log(`No key found for ${val}`);
         const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
           await getBotButtonComponents(savedMsg?.location || "");
         if (interaction.channel) {
@@ -398,7 +399,7 @@ class updateBp extends Subcommand {
           data: update
         });
 
-        console.log(
+        log(
           `Updated batphone - key: ${key}, location: ${
             location || "unset"
           }, message: ${message}`

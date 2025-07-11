@@ -1,5 +1,6 @@
 import { CacheType, Interaction } from "discord.js";
 import { getButton, getCommand } from "./register-commands";
+import { log } from "../shared/logger"
 
 export const interactionCreateListener = async (
   interaction: Interaction<CacheType>
@@ -13,7 +14,7 @@ export const interactionCreateListener = async (
     try {
       await interaction.deferReply({ ephemeral: true });
       await getButton(interaction).execute(interaction);
-      console.log(`/${interaction.customId} succeeded`);
+      log(`/${interaction.customId} succeeded`);
     } catch (error) {
       console.error(`/${interaction.customId} ${error}`);
       await interaction.editReply({ content: String(error) });
@@ -26,7 +27,7 @@ export const interactionCreateListener = async (
       const command = getCommand(interaction);
       await interaction.deferReply({ ephemeral: command.ephemeral });
       await getCommand(interaction).execute(interaction);
-      console.log(`/${interaction.commandName} succeeded`);
+      log(`/${interaction.commandName} succeeded`);
     } catch (error) {
       console.error(`/${interaction.commandName} ${error}`);
       await interaction.editReply(String(error));

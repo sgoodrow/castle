@@ -10,14 +10,17 @@ import { bot } from "@prisma/client";
 import { knightRoleId, raiderRoleId } from "../../config";
 import { getClassAbreviation } from "../../shared/classes";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
+import { log } from "../../shared/logger"
 
 export class RequestBotButtonCommand extends ButtonCommand {
   constructor(name: string) {
     super(name);
   }
+
   public async execute(
     interaction: ButtonInteraction<CacheType>
   ): Promise<void> {
+
     await this.setButtonState(interaction, false);
 
     interaction.editReply({
@@ -26,15 +29,15 @@ export class RequestBotButtonCommand extends ButtonCommand {
 
     const name = interaction.customId.split("_")[1];
     try {
-      await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
       const guildUser = await interaction.guild?.members.fetch(
         interaction.user.id
       );
-      console.log(
+      log(
         `${
           guildUser?.nickname || guildUser?.user.username
         } clicked batphone button for ${name}`
       );
+      await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
     } catch (err: unknown) {
       await this.setButtonState(interaction, true);
     }

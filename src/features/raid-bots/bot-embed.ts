@@ -10,6 +10,7 @@ import {
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import moment from "moment";
 import { getClassAbreviation } from "../../shared/classes";
+import { log } from "../../shared/logger"
 
 export const botEmbedInstructions = new InstructionsReadyAction(
   Name.BotStatusEmbed,
@@ -66,6 +67,6 @@ export const refreshBotEmbed = async () => {
       }),
     })
     .catch((reason) => {
-      console.log("Embed update failed: " + reason);
+      log(`Embed update failed: ${reason}`);
     });
 };

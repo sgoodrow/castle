@@ -4,6 +4,7 @@ import { IPublicAccountService } from "../../services/bot/public-accounts.i";
 import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
+import { log } from "../../shared/logger"
 
 export enum Option {
   Name = "name",
@@ -47,7 +48,7 @@ export class ParkSubcommand extends Subcommand {
       const guildUser = await interaction.guild?.members.fetch(
         interaction.user.id
       );
-      console.log(
+      log(
         `${guildUser?.nickname || guildUser?.user.username} parked ${name} ${
           location ? `in ${location}` : ""
         }`
