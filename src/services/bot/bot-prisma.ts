@@ -62,7 +62,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     }
   }
 
-  async getBotCheckoutButtonComponents (name: string)
+  async getBotParkButtonComponents (name: string)
   {
     const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
     let row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
@@ -108,9 +108,13 @@ Password: ${spoiler(details.password)}
 
 **If a bot can be moved**, and you move it, please include the location in your /bot park\n\n`;
 
-      let components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = await this.getBotCheckoutButtonComponents(name);
+      let components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
       if (currentPilot) {
         response += `**Please note that ${currentPilot} is marked as the pilot of ${foundBot} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
+      }
+      else
+      {
+        components = await this.getBotParkButtonComponents(name);
       }
       response += `The credentials for ${foundBot} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
 
