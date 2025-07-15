@@ -30,6 +30,9 @@ class ApproveRaidBonusRequestReactionAction extends ReactionAction {
     }
 
     const actor = await this.members?.fetch(this.user.id);
+    if (!actor || actor?.user.username === this.message.author?.username) {
+      return;
+    }
 
     await getAction(content).tryExecute(this.message, actor);
   }
