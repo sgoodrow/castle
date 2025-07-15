@@ -16,9 +16,10 @@ class RaidBonusMessageAction extends MessageAction {
     }
 
     const actor = await this.members?.fetch(this.message.author.id);
-    if (!actor) {
+    if (!actor || actor?.user.username === this.message.author?.username) {
       return;
     }
+
     try {
       await getAction(content).tryExecute(this.message, actor);
     } catch (err) {
