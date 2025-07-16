@@ -26,6 +26,10 @@ import {
       });
   
       const name = interaction.customId.split("_")[1];
+      const guildUser = await interaction.guild?.members.fetch(
+        interaction.user.id
+      );
+      console.log(`${guildUser?.nickname || guildUser?.user.username} clicked bot park button for ${name}`);
       
       try {
         const parkDetails = {
@@ -37,10 +41,6 @@ import {
         await PublicAccountsFactory.getService().updateBotRowDetails(name, parkDetails);
         await interaction.editReply(`${name} was released in its previous location`);
         
-        const guildUser = await interaction.guild?.members.fetch(
-          interaction.user.id
-        );
-        console.log(`${guildUser?.nickname || guildUser?.user.username} clicked bot park button for ${name}`);
         
       } catch (error) {
         await interaction.editReply(`Failed to move bot: ${error}`);
