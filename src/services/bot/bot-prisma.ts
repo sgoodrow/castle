@@ -17,7 +17,7 @@ import { IPublicAccountService } from "./public-accounts.i";
 import { bot, PrismaClient } from "@prisma/client";
 import moment from "moment";
 import { truncate } from "lodash";
-import { log } from "console";
+import { log } from "../../shared/logger";
 import { accounts } from "../accounts";
 import { Bot, SheetPublicAccountService } from "./public-accounts-sheet";
 import { getMembers, prismaClient } from "../..";
@@ -132,7 +132,7 @@ Password: ${spoiler(details.password)}
             interaction.user.id
           );
 
-          console.log(
+          log(
             `${
               guildUser?.nickname || guildUser?.user.username
             } requested ${name} and got ${details.characters} ${
@@ -347,6 +347,7 @@ Password: ${spoiler(details.password)}
       const pilot = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentPilot];
       const location = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentLocation];
       const bindLocation = botRowData[BOT_SPREADSHEET_COLUMNS.BindLocation];
+      log(`bot-prisma: updateBotRowDetails for bot ${bot.name}. Pilot ${pilot}. location ${location} `)
       if (checkoutTime !== undefined) {
         // Set time or clear if not undefined
         bot.checkoutTime = botRowData[
@@ -452,7 +453,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
             }
           );
 
-          console.log(
+          log(
             `Auto-parked ${bot.name} and sent a DM to ${pilot.user.username}`
           );
 

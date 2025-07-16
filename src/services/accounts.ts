@@ -19,6 +19,7 @@ import { some, truncate } from "lodash";
 import { checkGoogleCredentials } from "./gdrive";
 import moment from "moment";
 import { getClassAbreviation } from "../shared/classes";
+import { log } from "../shared/logger"
 
 enum SPREADSHEET_COLUMNS {
   Characters = "Characters",
@@ -89,7 +90,7 @@ const getAccounts = async () => {
   if (cache.size) {
     return cache;
   }
-  console.log(`Loading bots - cache stale`);
+  log(`Loading bots - cache stale`);
   const start = moment.now();
   await authorize(sheet);
   await sheet.loadInfo();
@@ -110,7 +111,7 @@ const getAccounts = async () => {
     }
   });
   const end = moment.now();
-  console.log(`Took ${end - start}ms to load bot data`);
+  log(`Took ${end - start}ms to load bot data`);
   return cache;
 };
 
@@ -136,7 +137,7 @@ export const accounts = {
     const accounts = await getAccounts();
     const d = accounts.get(botName.toLowerCase());
     if (!d) {
-      console.log(`Roles for ${botName} could not be found`);
+      log(`Roles for ${botName} could not be found`);
       return [];
     }
     return d.requiredRoles;

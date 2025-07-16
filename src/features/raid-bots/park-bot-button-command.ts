@@ -11,6 +11,7 @@ import {
   import { getClassAbreviation } from "../../shared/classes";
   import { PublicAccountsFactory } from "../../services/bot/bot-factory";
   import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
+  import { log } from "../../shared/logger";
   
   export class ParkBotButtonCommand extends ButtonCommand {
     constructor(name: string) {
@@ -29,7 +30,7 @@ import {
       const guildUser = await interaction.guild?.members.fetch(
         interaction.user.id
       );
-      console.log(`${guildUser?.nickname || guildUser?.user.username} clicked bot park button for ${name}`);
+      log(`${guildUser?.nickname || guildUser?.user.username} clicked bot park button for ${name}`);
       
       try {
         const parkDetails = {

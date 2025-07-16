@@ -14,6 +14,7 @@ import { Mutex } from "async-mutex";
 import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
+import { log } from "../../shared/logger"
 
 export enum Option {
   Location = "location",
@@ -48,7 +49,7 @@ export class RequestZoneSubcommand extends Subcommand {
     }
 
     try {
-      console.log(
+      log(
         `${
           guildUser.nickname || guildUser.user.username
         } requested anything in ${location}`
