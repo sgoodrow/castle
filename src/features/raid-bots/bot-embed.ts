@@ -21,6 +21,11 @@ export const updateBotEmbed = (options: Options) => {
     await refreshBotEmbed();
   }, options);
 };
+
+ const truncate = (str: string, maxLength: number) => {
+  if (str.length <= maxLength) return str;
+  return str.slice(0, maxLength - 3) + '...';
+}
 export const refreshBotEmbed = async () => {
   const publicAccounts = PublicAccountsFactory.getService();
   let botString = "";
@@ -30,7 +35,8 @@ export const refreshBotEmbed = async () => {
 
   bots.forEach((bot: Bot) => {
     let icon = "";
-    if (bot.currentPilot) {
+    const pilotName = truncate(bot.currentPilot, 10);
+    if (pilotName) {
       icon = "❌";
     } else {
       if (!bot.requiredRoles?.includes(raiderRoleId as string)) {
@@ -39,11 +45,11 @@ export const refreshBotEmbed = async () => {
         icon = "🟢";
       }
     }
-    const botRow = `${icon} ${bot.currentPilot ? "~~" : ""} ${bot.name} (${
+    const botRow = `${icon} ${pilotName ? "~~" : ""} ${bot.name} (${
       bot.level
     } ${getClassAbreviation(bot.class)}) - ${bot.location} ${
-      bot.currentPilot ? "~~" : ""
-    } ${bot.currentPilot ? "- " + bot.currentPilot : ""}\u200B\n`;
+      pilotName ? "~~" : ""
+    } ${pilotName ? "- " + pilotName : ""}\u200B\n`;
     if (botString.length + botRow.length > 3000) {
       botMessages.push(botString);
       botString = "";
