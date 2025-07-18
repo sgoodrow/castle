@@ -21,7 +21,7 @@ export const updateApplicationInfo = (
   options?: ReadyActionExecutorOptions
 ) => readyActionExecutor(new UpdateApplicationInfoAction(client), options);
 
-class UpdateApplicationInfoAction extends InstructionsReadyAction {
+export class UpdateApplicationInfoAction extends InstructionsReadyAction {
   public async execute(): Promise<void> {
     await this.createOrUpdateInstructions(
       {
