@@ -1,35 +1,34 @@
 import { Guild, TextChannel, PublicThreadChannel } from "discord.js";
-import { jest } from "@jest/globals";
-import { createTypedMockWithImplementation } from "../utils/mock-helpers";
+import { createTypedMock } from "../utils/create-typed-mock";
 import {
-  TestTextChannel,
+  MockTextChannel,
   createMockTextChannel,
 } from "./create-mock-text-channel";
 import {
-  TestThreadChannel,
+  MockThreadChannel,
   createMockThreadChannel,
 } from "./create-mock-thread-channel";
 
-export type TestGuild = Pick<Guild, "id"> & {
+export type MockGuild = Pick<Guild, "id"> & {
   channels: {
     fetch: jest.MockedFunction<
-      (channelId: string) => Promise<TextChannel | PublicThreadChannel | null>
+      (id: string) => Promise<TextChannel | PublicThreadChannel | null>
     >;
   };
 };
 
 export interface MockGuildOptions {
   id?: string;
-  textChannels?: Array<{ id: string; channel?: TestTextChannel }>;
-  threadChannels?: Array<{ id: string; channel?: TestThreadChannel }>;
+  textChannels?: Array<{ id: string; channel?: MockTextChannel }>;
+  threadChannels?: Array<{ id: string; channel?: MockThreadChannel }>;
 }
 
 export function createMockGuild({
   id = "444555666",
   textChannels = [],
   threadChannels = [],
-}: MockGuildOptions = {}): TestGuild {
-  const channelMap = new Map<string, TestTextChannel | TestThreadChannel>();
+}: MockGuildOptions = {}): MockGuild {
+  const channelMap = new Map<string, MockTextChannel | MockThreadChannel>();
 
   textChannels.forEach(({ id: channelId, channel }) => {
     channelMap.set(
@@ -45,11 +44,17 @@ export function createMockGuild({
     );
   });
 
-  const fetchMock = createTypedMockWithImplementation<
-    (channelId: string) => Promise<TextChannel | PublicThreadChannel | null>
-  >((channelId: any) => {
+  const fetchMock =
+    createTypedMock<
+      (id: string) => Promise<TextChannel | PublicThreadChannel | null>
+    >();
+
+  // Set up the mock implementation to return channels from the map
+  fetchMock.mockImplementation((channelId: string) => {
     const channel = channelMap.get(channelId);
-    return Promise.resolve(channel || null);
+    return Promise.resolve(
+      channel as unknown as TextChannel | PublicThreadChannel | null
+    );
   });
 
   return {

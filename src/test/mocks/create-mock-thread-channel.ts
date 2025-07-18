@@ -1,9 +1,15 @@
-import { PublicThreadChannel, ChannelType, Message } from "discord.js";
-import { jest } from "@jest/globals";
-import { createTypedMock } from "../utils/mock-helpers";
+import {
+  PublicThreadChannel,
+  ChannelType,
+  Message,
+  MessageCreateOptions,
+} from "discord.js";
+import { createTypedMock } from "../utils/create-typed-mock";
 
-export type TestThreadChannel = Pick<PublicThreadChannel, "id" | "type"> & {
-  send: jest.MockedFunction<(content: string) => Promise<Message>>;
+export type MockThreadChannel = Pick<PublicThreadChannel, "id" | "type"> & {
+  send: jest.MockedFunction<
+    (options: MessageCreateOptions | string) => Promise<Message>
+  >;
 };
 
 export interface MockChannelOptions {
@@ -13,11 +19,12 @@ export interface MockChannelOptions {
 
 export function createMockThreadChannel({
   id = "111222333",
-  type = ChannelType.PublicThread,
-}: MockChannelOptions = {}): TestThreadChannel {
+}: MockChannelOptions = {}): MockThreadChannel {
   return {
     id,
     type: ChannelType.PublicThread,
-    send: createTypedMock<(content: string) => Promise<Message>>(),
+    send: createTypedMock<
+      (options: MessageCreateOptions | string) => Promise<Message>
+    >(),
   };
 }

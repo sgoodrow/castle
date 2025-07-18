@@ -1,12 +1,9 @@
 import { EmbedBuilder } from "discord.js";
 import {
-  bankOfficeChannelId,
-  bankerRoleId,
   clientId,
   guardOfficeChannelId,
   guardRoleId,
   raidBotsChannelId,
-  raiderRoleId,
 } from "../../config";
 import { Name } from "../../db/instructions";
 import { accounts } from "../../services/accounts";
@@ -34,12 +31,6 @@ export const updateRaidBotsInfo = (options: Options) =>
       );
       return;
     }
-    const raiderAccounts = await accounts.getAccountsForRole(raiderRoleId);
-    const sorted = sortBy(
-      raiderAccounts,
-      (b) => b.purpose,
-      (b) => b.characters
-    );
     await raidBotInstructions.createOrUpdateInstructions({
       embeds: [
         new EmbedBuilder({

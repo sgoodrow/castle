@@ -1,4 +1,4 @@
-import { ButtonInteraction, CacheType, ChannelType, Collection, User } from "discord.js";
+import { ButtonInteraction, CacheType, ChannelType, User } from "discord.js";
 import { bankerRoleId, bankRequestsChannelId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 import {
@@ -13,11 +13,11 @@ class BankingButtonCommand extends ButtonCommand {
 
     const messages = await bankRequestsChannel.messages.fetch();
 
-    const botMentions = messages.filter(
-        (m) => (m.member?.user.bot && m.content.match("requests:") && m.mentions)
-      ).map(
-        (m) => Array.from(m.mentions.parsedUsers.values())[0]
+    const botMentions = messages
+      .filter(
+        (m) => m.member?.user.bot && m.content.match("requests:") && m.mentions
       )
+      .map((m) => Array.from(m.mentions.parsedUsers.values())[0]);
 
     // get all non-banker messages
     const users = [
@@ -25,12 +25,12 @@ class BankingButtonCommand extends ButtonCommand {
         messages
           .filter(
             (m) =>
-              !(m.member?.roles.cache.has(bankerRoleId)||m.member?.user.bot)
+              !(m.member?.roles.cache.has(bankerRoleId) || m.member?.user.bot)
           )
           .map((r) => r.member?.user)
           .filter(Boolean)
           .concat(botMentions)
-        )
+      ),
     ];
 
     const attention = await getAttentionMessage(

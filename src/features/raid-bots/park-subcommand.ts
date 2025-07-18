@@ -4,7 +4,7 @@ import { IPublicAccountService } from "../../services/bot/public-accounts.i";
 import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
-import { log } from "../../shared/logger"
+import { log } from "../../shared/logger";
 
 export enum Option {
   Name = "name",

@@ -23,8 +23,8 @@ export abstract class MessageAction {
   public async replyError(err: string) {
     try {
       await this.message.reply(`⚠️${err}`);
-    } catch(err) {
-      console.error(err)
+    } catch (err) {
+      console.error(err);
     }
   }
 

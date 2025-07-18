@@ -1,36 +1,39 @@
 import {
   ButtonInteraction,
   CacheType,
-  Message,
-  InteractionResponse,
+  InteractionType,
+  ComponentType,
+  Client,
 } from "discord.js";
-import { jest } from "@jest/globals";
-import { createTypedMock } from "../utils/mock-helpers";
-import { TestUser, createMockUser } from "./create-mock-user";
-import { TestClient, createMockClient } from "./create-mock-client";
-import { TestGuild, createMockGuild } from "./create-mock-guild";
+import { createTypedMock } from "../utils/create-typed-mock";
+import { MockUser, createMockUser } from "./create-mock-user";
+import { createMockClient } from "./create-mock-client";
+import { MockGuild, createMockGuild } from "./create-mock-guild";
 
-export type TestButtonInteraction = Pick<
+// Create a partial ButtonInteraction that focuses on what we actually test
+type TestableButtonInteraction = Pick<
   ButtonInteraction<CacheType>,
-  "customId"
+  | "customId"
+  | "type"
+  | "componentType"
+  | "id"
+  | "token"
+  | "version"
+  | "applicationId"
 > & {
-  editReply: jest.MockedFunction<
-    (options: { content: string }) => Promise<Message>
-  >;
-  reply: jest.MockedFunction<
-    (options: { content: string }) => Promise<InteractionResponse>
-  >;
-  deferReply: jest.MockedFunction<() => Promise<InteractionResponse>>;
-  user: TestUser;
-  guild: TestGuild;
-  client: TestClient;
+  user: MockUser;
+  guild: MockGuild | null;
+  client: Client;
+  editReply: jest.MockedFunction<ButtonInteraction["editReply"]>;
+  reply: jest.MockedFunction<ButtonInteraction["reply"]>;
+  deferReply: jest.MockedFunction<ButtonInteraction["deferReply"]>;
 };
 
 export interface MockButtonInteractionOptions {
   customId?: string;
-  user?: TestUser;
-  guild?: TestGuild;
-  client?: TestClient;
+  user?: MockUser;
+  guild?: MockGuild;
+  client?: Client;
 }
 
 export function createMockButtonInteraction({
@@ -38,18 +41,25 @@ export function createMockButtonInteraction({
   user = createMockUser(),
   client = createMockClient(),
   guild = createMockGuild(),
-}: MockButtonInteractionOptions = {}): TestButtonInteraction {
-  return {
+}: MockButtonInteractionOptions = {}): ButtonInteraction<CacheType> {
+  const mock: TestableButtonInteraction = {
     customId,
     user,
     guild,
     client,
-    editReply:
-      createTypedMock<(options: { content: string }) => Promise<Message>>(),
-    reply:
-      createTypedMock<
-        (options: { content: string }) => Promise<InteractionResponse>
-      >(),
-    deferReply: createTypedMock<() => Promise<InteractionResponse>>(),
+    type: InteractionType.MessageComponent,
+    componentType: ComponentType.Button,
+    id: "interaction-id",
+    token: "interaction-token",
+    version: 1,
+    applicationId: "app-id",
+    editReply: createTypedMock<ButtonInteraction["editReply"]>(),
+    reply: createTypedMock<ButtonInteraction["reply"]>(),
+    deferReply: createTypedMock<ButtonInteraction["deferReply"]>(),
   };
+
+  // TypeScript magic: return as full ButtonInteraction
+  // This works because ButtonInteraction will have all the properties we need,
+  // and TypeScript structural typing means our mock is compatible
+  return mock as unknown as ButtonInteraction<CacheType>;
 }

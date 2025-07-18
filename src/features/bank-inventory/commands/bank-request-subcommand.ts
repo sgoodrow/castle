@@ -37,7 +37,7 @@ class BankRequest extends Subcommand {
         itemName = String(this.getOptionValue("item", interaction));
       } else {
         itemName = stockList?.name || "unknown";
-        const count = stockList?.stock[0].count;
+        stockList?.stock[0].count;
         const countAvailable = stockList?.stock.reduce(
           (total, s) => total + (s.count || 0),
           0
@@ -124,7 +124,7 @@ class BankRequest extends Subcommand {
       case Option.Count:
         return [{ name: "1", value: "1" }];
       // add price autocomplete
-      case Option.Price:
+      case Option.Price: {
         const itemId = await interaction.options.getString(Option.Item);
         if (itemId) {
           const price = await autoCompleteItemPrice(itemId);
@@ -141,6 +141,8 @@ class BankRequest extends Subcommand {
         } else {
           return [];
         }
+        break;
+      }
       default:
         return [];
     }

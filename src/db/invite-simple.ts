@@ -30,7 +30,9 @@ export class InviteSimple {
 
   public getDiscordDisplayName(members: Members) {
     const member = members?.get(this.discordId);
-    return member ? `**${member.displayName}** (<@${member.id}>)` : `**Left the server** (<@${this.discordId}>)`;
+    return member
+      ? `**${member.displayName}** (<@${member.id}>)`
+      : `**Left the server** (<@${this.discordId}>)`;
   }
 
   public getRichLabel(members: Members) {

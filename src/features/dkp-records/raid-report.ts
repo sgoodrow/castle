@@ -32,8 +32,7 @@ const SECOND_COLUMN_LENGTH = 6;
 const isRaidReportMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
 
-const isNotEmpty = (m: Message) =>
-  !!m.embeds.find((e) => e.length === 0);
+const isNotEmpty = (m: Message) => !!m.embeds.find((e) => e.length === 0);
 
 export const isRaidInstructionsMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === INSTRUCTIONS_TITLE);
@@ -61,7 +60,12 @@ export const getRaidReportMessages = async (channel: TextBasedChannel) => {
   const messages = [
     ...all
       .reverse()
-      .filter((m) => isRaidReportMessage(m) || isRaidInstructionsMessage(m) || isNotEmpty(m))
+      .filter(
+        (m) =>
+          isRaidReportMessage(m) ||
+          isRaidInstructionsMessage(m) ||
+          isNotEmpty(m)
+      )
       .values(),
   ];
   if (messages.length === 0) {
@@ -125,7 +129,9 @@ export class RaidReport {
           ", "
         )
       : `${this.filename.replace(/[^a-zA-Z]+/g, "")}?`;
-    return `${emoji} ${this.ticks[0].shortDate} (${Math.round(this.netDkp)}) ${label || "Unidentified"}`;
+    return `${emoji} ${this.ticks[0].shortDate} (${Math.round(this.netDkp)}) ${
+      label || "Unidentified"
+    }`;
   }
 
   public getCreditCommands(): string[] {

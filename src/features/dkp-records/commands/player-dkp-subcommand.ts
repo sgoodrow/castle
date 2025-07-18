@@ -48,9 +48,8 @@ ${result}${code}`;
     if (spam) {
       await interaction.channel?.send({ content });
       await interaction.editReply({
-
         content: "Done.",
-     });
+      });
     } else {
       await interaction.editReply({
         content,

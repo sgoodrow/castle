@@ -1,10 +1,7 @@
-import { TestUser, createMockUser } from "../mocks/create-mock-user";
-import { TestGuild, createMockGuild } from "../mocks/create-mock-guild";
-import {
-  TestButtonInteraction,
-  createMockButtonInteraction,
-} from "../mocks/create-mock-button-interaction";
-import { TestThreadChannel } from "../mocks/create-mock-thread-channel";
+import { createMockUser } from "../mocks/create-mock-user";
+import { createMockGuild } from "../mocks/create-mock-guild";
+import { createMockButtonInteraction } from "../mocks/create-mock-button-interaction";
+import { MessageCreateOptions } from "discord.js";
 
 export interface ApplicationTestSetupOptions {
   requestDumpThreadId?: string;
@@ -13,7 +10,7 @@ export interface ApplicationTestSetupOptions {
   username?: string;
 }
 
-export function setupApplicationTest({
+export async function setupApplicationTest({
   requestDumpThreadId = "111222333",
   customId = "volunteer-application",
   userId = "123456789",
@@ -29,7 +26,7 @@ export function setupApplicationTest({
     guild,
   });
 
-  const threadChannel = guild.channels.fetch(requestDumpThreadId);
+  const threadChannel = await guild.channels.fetch(requestDumpThreadId);
 
   return {
     interaction,
@@ -38,4 +35,13 @@ export function setupApplicationTest({
     threadChannel,
     requestDumpThreadId,
   };
+}
+
+export function extractDmContent(interaction: {
+  user: { send: jest.MockedFunction<any> };
+}): string {
+  const dmCall = interaction.user.send.mock.calls[0]?.[0];
+  return typeof dmCall === "string"
+    ? dmCall
+    : (dmCall as MessageCreateOptions)?.content || "";
 }

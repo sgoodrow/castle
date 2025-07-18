@@ -14,7 +14,7 @@ import {
 } from "../../shared/action/ready-action";
 import { RequestApplication } from "./request-application-button-commands";
 
-export const applicationCommandButton = new RequestApplication();
+const applicationCommandButton = new RequestApplication();
 
 export const updateApplicationInfo = (
   client: Client,

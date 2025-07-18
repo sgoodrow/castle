@@ -1,9 +1,7 @@
 import {
   ApplicationCommandOptionChoiceData,
-  AutocompleteInteraction,
   CacheType,
   CommandInteraction,
-  ThreadMemberFlagsBitField,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { authorizeByMemberRoles } from "../../shared/command/util";
@@ -17,7 +15,6 @@ import { container } from "tsyringe";
 import { WakeupService } from "./wakeup.service";
 
 export class WakeupTestSubcommand extends Subcommand {
-  
   constructor(name: string, description: string) {
     super(name, description);
   }
@@ -40,10 +37,7 @@ export class WakeupTestSubcommand extends Subcommand {
     return super.command;
   }
 
-  public getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
-  ): Promise<
+  public getOptionAutocomplete(): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
     throw new Error("Method not implemented.");

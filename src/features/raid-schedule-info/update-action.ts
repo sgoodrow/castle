@@ -10,7 +10,7 @@ import { getGuild } from "../..";
 import {
   raiderRoleId,
   membersAndAlliesRoleId,
-  raidScheduleChannelId
+  raidScheduleChannelId,
 } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
@@ -67,7 +67,6 @@ ${events.map((e) => e.toString()).join("\n\n")}`
     if (!membersRole) {
       throw new Error("Could not locate the members role");
     }
-    
 
     const nextWeek = Date.now() + 7 * DAYS;
 
@@ -75,20 +74,19 @@ ${events.map((e) => e.toString()).join("\n\n")}`
       .filter(
         (e) =>
           e.channel?.type != ChannelType.GuildVoice ||
-          e.channel?.type === ChannelType.GuildVoice &&
-          !!e.scheduledStartTimestamp &&
-          [
-            GuildScheduledEventStatus.Scheduled,
-            GuildScheduledEventStatus.Active,
-          ].includes(e.status) && (
-            e.channel
+          (e.channel?.type === ChannelType.GuildVoice &&
+            !!e.scheduledStartTimestamp &&
+            [
+              GuildScheduledEventStatus.Scheduled,
+              GuildScheduledEventStatus.Active,
+            ].includes(e.status) &&
+            (e.channel
               .permissionsFor(raiderRole)
-              .has(PermissionFlagsBits.ViewChannel) || 
-            e.channel
-              .permissionsFor(membersRole)
-              .has(PermissionFlagsBits.ViewChannel)
-          ) &&
-          e.scheduledStartTimestamp <= nextWeek // Added filter condition
+              .has(PermissionFlagsBits.ViewChannel) ||
+              e.channel
+                .permissionsFor(membersRole)
+                .has(PermissionFlagsBits.ViewChannel)) &&
+            e.scheduledStartTimestamp <= nextWeek) // Added filter condition
       )
       .sort(
         (a, b) =>

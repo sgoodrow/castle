@@ -6,19 +6,20 @@ import {
   Message,
   InteractionResponse,
 } from "discord.js";
-import * as fs from "fs";
-import * as path from "path";
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace jest {
     interface Matchers<R> {
       toHaveSentDm(expectedContent?: string | RegExp): R;
       toHaveSentMessage(expectedContent?: string | RegExp): R;
+      toHaveReceivedMessage(expectedContent?: string | RegExp): R;
       toHaveLabel(expectedLabel: string): R;
       toHaveCustomId(expectedCustomId: string): R;
       toHaveReplied(expectedContent: string | RegExp): R;
       toHaveEditedReply(expectedContent: string | RegExp): R;
       toMatchFixture(expectedEmbed: object): R;
+      toHaveReceivedButtonStyle(expectedStyle: number): R;
     }
   }
 }
@@ -53,7 +54,7 @@ expect.extend({
     const actualContent =
       typeof messageOptions === "string"
         ? messageOptions
-        : (messageOptions as any)?.content;
+        : (messageOptions as { content?: string })?.content;
 
     if (!actualContent) {
       return {
@@ -105,7 +106,7 @@ expect.extend({
     const actualContent =
       typeof messageOptions === "string"
         ? messageOptions
-        : (messageOptions as any)?.content;
+        : (messageOptions as { content?: string })?.content;
 
     if (!actualContent) {
       return {
@@ -125,6 +126,58 @@ expect.extend({
         contentMatches
           ? `Expected channel to not have sent a message with content matching ${expectedContent}, but it did`
           : `Expected channel to have sent a message with content matching ${expectedContent}, but received: ${actualContent}`,
+      pass: contentMatches,
+    };
+  },
+
+  toHaveReceivedMessage(
+    received: {
+      send: jest.MockedFunction<(content: string) => Promise<Message>>;
+    },
+    expectedContent?: string | RegExp
+  ) {
+    const mockSend = received.send;
+
+    if (!mockSend.mock.calls.length) {
+      return {
+        message: () =>
+          `Expected to have received a message, but no message was received`,
+        pass: false,
+      };
+    }
+
+    if (!expectedContent) {
+      return {
+        message: () => `Expected to have received a message`,
+        pass: true,
+      };
+    }
+
+    const lastCall = mockSend.mock.calls[mockSend.mock.calls.length - 1];
+    const messageOptions = lastCall[0];
+    const actualContent =
+      typeof messageOptions === "string"
+        ? messageOptions
+        : (messageOptions as { content?: string })?.content;
+
+    if (!actualContent) {
+      return {
+        message: () =>
+          `Expected to have received a message with content, but no content found`,
+        pass: false,
+      };
+    }
+
+    const contentMatches =
+      typeof expectedContent === "string"
+        ? actualContent === expectedContent
+        : expectedContent.test(actualContent);
+
+    return {
+      message: () =>
+        contentMatches
+          ? `Expected to not have received a message with content matching ${expectedContent}, but it did`
+          : `Expected to have received a message with content matching ${expectedContent}, but received: ${actualContent}`,
       pass: contentMatches,
     };
   },
@@ -153,7 +206,7 @@ expect.extend({
       "customId" in received
         ? received.customId
         : "data" in received
-        ? (received.data as any).custom_id
+        ? (received.data as { custom_id?: string }).custom_id
         : undefined;
     const customIdMatches = actualCustomId === expectedCustomId;
 
@@ -252,6 +305,19 @@ expect.extend({
               2
             )}\n\nReceived:\n${JSON.stringify(actualEmbed, null, 2)}`,
       pass: embedsMatch,
+    };
+  },
+
+  toHaveReceivedButtonStyle(received: ButtonBuilder, expectedStyle: number) {
+    const actualStyle = received.data.style;
+    const styleMatches = actualStyle === expectedStyle;
+
+    return {
+      message: () =>
+        styleMatches
+          ? `Expected button to not have style "${expectedStyle}", but it did`
+          : `Expected button to have style "${expectedStyle}", but received: "${actualStyle}"`,
+      pass: styleMatches,
     };
   },
 });

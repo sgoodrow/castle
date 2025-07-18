@@ -1,6 +1,5 @@
 import { VoiceChannel, Guild } from "discord.js";
 import {
-  AudioResource,
   StreamType,
   VoiceConnectionStatus,
   createAudioPlayer,
@@ -41,59 +40,56 @@ export class WakeupService implements IWakeupService {
         adapterCreator: this.wakeupChannel.guild.voiceAdapterCreator,
       });
 
-      voiceConnection.on(
-        VoiceConnectionStatus.Ready,
-        async (oldState, newState) => {
-          try {
-            // First TTS
-            this.wakeupChannel?.send({
-              content: textMessage,
-              tts: true,
-            });
-            const player = createAudioPlayer();
+      voiceConnection.on(VoiceConnectionStatus.Ready, async () => {
+        try {
+          // First TTS
+          this.wakeupChannel?.send({
+            content: textMessage,
+            tts: true,
+          });
+          const player = createAudioPlayer();
 
-            player.on("error", (error) => {
-              console.error(`Error: ${error.message}`);
-            });
+          player.on("error", (error) => {
+            console.error(`Error: ${error.message}`);
+          });
 
-            // Play wakeup song
-            let songUrl = await redisClient.hGet("wakeup", "song");
-            if (!songUrl) {
-              songUrl = "media/daddychill.mp3";
-            }
-
-            console.log(`Wakeup song url ${songUrl}`);
-
-            let audio: string | internal.Readable | undefined = undefined;
-            if (songUrl.includes("youtu")) {
-              audio = ytdl(songUrl, {
-                filter: "audioonly",
-              });
-            } else if (songUrl.includes(".mp3")) {
-              audio = songUrl;
-            }
-
-            if (!audio) {
-              throw new Error("No valid audio provided");
-            }
-
-            const resource = createAudioResource(audio, {
-              inputType: StreamType.Arbitrary,
-            });
-
-            voiceConnection.subscribe(player);
-            player.play(resource);
-
-            setTimeout(async () => {
-              player.stop(true);
-              // Leave channel
-              voiceConnection.destroy();
-            }, 60000);
-          } catch (error: unknown) {
-            console.log(`Error during wakeup: ${error}`);
+          // Play wakeup song
+          let songUrl = await redisClient.hGet("wakeup", "song");
+          if (!songUrl) {
+            songUrl = "media/daddychill.mp3";
           }
+
+          console.log(`Wakeup song url ${songUrl}`);
+
+          let audio: string | internal.Readable | undefined = undefined;
+          if (songUrl.includes("youtu")) {
+            audio = ytdl(songUrl, {
+              filter: "audioonly",
+            });
+          } else if (songUrl.includes(".mp3")) {
+            audio = songUrl;
+          }
+
+          if (!audio) {
+            throw new Error("No valid audio provided");
+          }
+
+          const resource = createAudioResource(audio, {
+            inputType: StreamType.Arbitrary,
+          });
+
+          voiceConnection.subscribe(player);
+          player.play(resource);
+
+          setTimeout(async () => {
+            player.stop(true);
+            // Leave channel
+            voiceConnection.destroy();
+          }, 60000);
+        } catch (error: unknown) {
+          console.log(`Error during wakeup: ${error}`);
         }
-      );
+      });
     }
   }
 }

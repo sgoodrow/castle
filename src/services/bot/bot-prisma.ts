@@ -6,7 +6,7 @@ import {
   spoiler,
   ActionRowBuilder,
   MessageActionRowComponentBuilder,
-  ComponentType
+  ComponentType,
 } from "discord.js";
 import { Moment } from "moment";
 import {
@@ -24,7 +24,7 @@ import { getMembers, prismaClient } from "../..";
 import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
 import { getClassAbreviation } from "../../shared/classes";
 import { raidBotInstructions } from "../../features/raid-bots/update-bots";
-import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-command"
+import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-command";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private prisma!: PrismaClient;
@@ -62,25 +62,26 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     }
   }
 
-  async getBotParkButtonComponents (name: string)
-  {
+  async getBotParkButtonComponents(name: string) {
     const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
-    let row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
-        type: ComponentType.ActionRow,
-        components: [],
+    const row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
+      type: ComponentType.ActionRow,
+      components: [],
     });
     components.push(row);
 
     try {
-      let bot = await this.getBotByName(name);
+      const bot = await this.getBotByName(name);
       if (bot) {
-        row.addComponents(new ParkBotButtonCommand(
-          `parkbot_${name}`
-          ).getButtonBuilder(bot));
+        row.addComponents(
+          new ParkBotButtonCommand(`parkbot_${name}`).getButtonBuilder(bot)
+        );
       }
-    } catch {}
+    } catch {
+      // Ignore bot lookup errors, continue without park button
+    }
     return components;
-  };
+  }
 
   async doBotCheckout(
     name: string,
@@ -111,17 +112,14 @@ Password: ${spoiler(details.password)}
       let components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
       if (currentPilot) {
         response += `**Please note that ${currentPilot} is marked as the pilot of ${foundBot} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
-      }
-      else
-      {
+      } else {
         components = await this.getBotParkButtonComponents(name);
       }
       response += `The credentials for ${foundBot} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
 
-      
       await interaction.editReply({
         content: response,
-        components: components
+        components: components,
       });
       const logMsg = await thread.send("OK");
       logMsg.edit(`${status} ${interaction.user} access to ${foundBot}`);
@@ -177,13 +175,13 @@ Password: ${spoiler(details.password)}
         },
       },
     });
-    
+
     return bot;
   }
 
   async getCurrentBotPilot(botName: string): Promise<string | undefined> {
     const bot = await this.getBotByName(botName);
-    
+
     if (bot) {
       return bot.currentPilot;
     }
@@ -347,7 +345,9 @@ Password: ${spoiler(details.password)}
       const pilot = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentPilot];
       const location = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentLocation];
       const bindLocation = botRowData[BOT_SPREADSHEET_COLUMNS.BindLocation];
-      log(`bot-prisma: updateBotRowDetails for bot ${bot.name}. Pilot ${pilot}. location ${location} `)
+      log(
+        `bot-prisma: updateBotRowDetails for bot ${bot.name}. Pilot ${pilot}. location ${location} `
+      );
       if (checkoutTime !== undefined) {
         // Set time or clear if not undefined
         bot.checkoutTime = botRowData[
@@ -385,7 +385,6 @@ Password: ${spoiler(details.password)}
   }
 
   async cleanupCheckouts(hours: number): Promise<number> {
-    const cleanupCount = 0;
     const cutoffTime = moment().subtract(hours, "hours");
     const botsToPark: Bot[] = [];
     // Could probably use a DateTime lte comparison here but the schema

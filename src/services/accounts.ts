@@ -15,11 +15,11 @@ import {
   ApplicationCommandOptionChoiceData,
   GuildMemberRoleManager,
 } from "discord.js";
-import { some, truncate } from "lodash";
+import { some } from "lodash";
 import { checkGoogleCredentials } from "./gdrive";
 import moment from "moment";
 import { getClassAbreviation } from "../shared/classes";
-import { log } from "../shared/logger"
+import { log } from "../shared/logger";
 
 enum SPREADSHEET_COLUMNS {
   Characters = "Characters",

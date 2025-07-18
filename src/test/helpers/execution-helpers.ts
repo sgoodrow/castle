@@ -1,15 +1,17 @@
-import { TestButtonInteraction } from "../mocks/create-mock-button-interaction";
-import { TestClient } from "../mocks/create-mock-client";
+import { ButtonInteraction, Client, CacheType } from "discord.js";
+
 export async function executeButtonCommand(
-  command: { execute: (interaction: TestButtonInteraction) => Promise<void> },
-  interaction: TestButtonInteraction
+  command: {
+    execute: (interaction: ButtonInteraction<CacheType>) => Promise<void>;
+  },
+  interaction: ButtonInteraction<CacheType>
 ): Promise<void> {
-  return command.execute(interaction);
+  await command.execute(interaction);
 }
 
-export function executeWithMockClient<T>(
-  fn: (client: TestClient) => T,
-  client: TestClient
-): T {
+export async function executeReadyAction<T>(
+  fn: (client: Client) => T,
+  client: Client
+): Promise<T> {
   return fn(client);
 }

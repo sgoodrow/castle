@@ -1,5 +1,5 @@
-import { APIEmbed, EmbedBuilder, Utils } from "discord.js";
-import { botEmbedChannelId, knightRoleId, raiderRoleId } from "../../config";
+import { EmbedBuilder } from "discord.js";
+import { botEmbedChannelId, raiderRoleId } from "../../config";
 import { Name } from "../../db/instructions";
 import { Bot } from "../../services/bot/public-accounts-sheet";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action-2";
@@ -10,7 +10,7 @@ import {
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import moment from "moment";
 import { getClassAbreviation } from "../../shared/classes";
-import { log } from "../../shared/logger"
+import { log } from "../../shared/logger";
 
 export const botEmbedInstructions = new InstructionsReadyAction(
   Name.BotStatusEmbed,
@@ -23,15 +23,14 @@ export const updateBotEmbed = (options: Options) => {
   }, options);
 };
 
- const truncate = (str: string, maxLength: number) => {
+const truncate = (str: string, maxLength: number) => {
   if (str.length <= maxLength) return str;
-  return str.slice(0, maxLength - 3) + '...';
-}
+  return str.slice(0, maxLength - 3) + "...";
+};
 export const refreshBotEmbed = async () => {
   const publicAccounts = PublicAccountsFactory.getService();
   let botString = "";
   const botMessages: string[] = [];
-  const start = moment.now();
   const bots = await publicAccounts.getBots();
 
   bots.forEach((bot: Bot) => {

@@ -7,10 +7,10 @@ import {
 } from "discord.js";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { bot } from "@prisma/client";
-import { knightRoleId, raiderRoleId } from "../../config";
+import { raiderRoleId } from "../../config";
 import { getClassAbreviation } from "../../shared/classes";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
-import { log } from "../../shared/logger"
+import { log } from "../../shared/logger";
 
 export class RequestBotButtonCommand extends ButtonCommand {
   constructor(name: string) {
@@ -20,7 +20,6 @@ export class RequestBotButtonCommand extends ButtonCommand {
   public async execute(
     interaction: ButtonInteraction<CacheType>
   ): Promise<void> {
-
     await this.setButtonState(interaction, false);
 
     interaction.editReply({

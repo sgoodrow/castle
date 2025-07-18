@@ -1,85 +1,117 @@
 import { RequestApplication } from "./request-application-button-commands";
-import { setupApplicationTest } from "../../test/helpers/test-setup";
+import { updateApplicationInfo } from "./update-applications";
+import {
+  setupApplicationTest,
+  extractDmContent,
+} from "../../test/helpers/test-setup";
+import {
+  mockCreateOrUpdateInstructions,
+  mockGetChannel,
+  resetApplicationMocks,
+} from "../../test/helpers/application-mocks";
 import { createMockGuild } from "../../test/mocks/create-mock-guild";
 import { createMockButtonInteraction } from "../../test/mocks/create-mock-button-interaction";
-import { asButtonInteraction } from "../../test/utils/discord-conversions";
-import { executeButtonCommand } from "../../test/helpers/execution-helpers";
-import { MessageCreateOptions } from "discord.js";
+import { createMockClient } from "../../test/mocks/create-mock-client";
+import { ButtonStyle, Client } from "discord.js";
 
+// =============================================================================
+// MOCKS - These replace external dependencies for testing
+// =============================================================================
+
+// Replace config with test values (must be inline due to Jest hoisting)
 jest.mock("../../config", () => ({
   requestDumpThreadId: "111222333",
+  applicationsChannelId: "999888777",
 }));
 
-describe("RequestApplication", () => {
-  let requestApplication: RequestApplication;
+// Replace Discord API operations with controllable mocks
+jest.mock("../../shared/action/instructions-ready-action", () => ({
+  InstructionsReadyAction: class {
+    createOrUpdateInstructions = mockCreateOrUpdateInstructions;
+    getChannel = mockGetChannel;
+  },
+}));
 
+// Replace action executor with simple pass-through
+jest.mock("../../shared/action/ready-action", () => ({
+  readyActionExecutor: jest.fn((action) => action.execute()),
+}));
+
+// =============================================================================
+// TESTS
+// =============================================================================
+
+describe("Application System", () => {
   beforeEach(() => {
-    requestApplication = new RequestApplication();
+    resetApplicationMocks();
   });
 
-  describe("execute", () => {
-    it("should send DM to user and log to request dump channel", async () => {
-      const { interaction, threadChannel } = setupApplicationTest();
-      const resolvedThreadChannel = await threadChannel;
+  describe("Integration Tests (via updateApplicationInfo)", () => {
+    let client: Client;
 
-      await requestApplication.execute(asButtonInteraction(interaction));
+    beforeEach(() => {
+      client = createMockClient();
+    });
 
-      expect(interaction.user).toHaveSentDm(/DO NOT REPLY TO THIS MESSAGE/);
+    it("should create and execute volunteer application workflow end-to-end", async () => {
+      // 1. updateApplicationInfo creates the Discord UI with button
+      await updateApplicationInfo(client);
+
+      // Verify the UI was created with correct button
+      expect(mockCreateOrUpdateInstructions).toHaveBeenCalledWith(
+        expect.objectContaining({
+          components: expect.arrayContaining([
+            expect.objectContaining({
+              components: expect.arrayContaining([
+                expect.objectContaining({
+                  data: expect.objectContaining({
+                    custom_id: "volunteer-application",
+                    label: "Volunteer Application",
+                  }),
+                }),
+              ]),
+            }),
+          ]),
+        }),
+        "applicationInstructions"
+      );
+
+      // 2. User clicks the button that was created
+      const { interaction, threadChannel } = await setupApplicationTest();
+      const requestApplication = new RequestApplication();
+      await requestApplication.execute(interaction);
+
+      // 3. Verify the complete user journey works
+      expect(interaction.user).toHaveReceivedMessage(
+        /DO NOT REPLY TO THIS MESSAGE/
+      );
       expect(interaction).toHaveEditedReply(
         "You have been DM'd the **Volunteer Application**."
       );
-      expect(resolvedThreadChannel).toHaveSentMessage(
+      expect(threadChannel).toHaveReceivedMessage(
         `Volunteer Application sent to **${interaction.user.username}** (<@${interaction.user.id}>)`
       );
     });
 
-    it("should throw error if request dump channel not found", async () => {
-      const guild = createMockGuild({ threadChannels: [] });
-      const interaction = createMockButtonInteraction({ guild });
+    it("should create button with correct properties for Discord integration", async () => {
+      await updateApplicationInfo(client);
 
-      await expect(
-        requestApplication.execute(asButtonInteraction(interaction))
-      ).rejects.toThrow("Could not locate the request dump channel");
-    });
-
-    it("should throw error if channel is not a public thread", async () => {
-      const guild = createMockGuild({
-        textChannels: [{ id: "111222333" }], // Wrong channel type
-      });
-      const interaction = createMockButtonInteraction({ guild });
-
-      await expect(
-        requestApplication.execute(asButtonInteraction(interaction))
-      ).rejects.toThrow("111222333 is not a text channel");
-    });
-  });
-
-  describe("label", () => {
-    it("should return correct label", () => {
-      expect(requestApplication.label).toBe("Volunteer Application");
-    });
-  });
-
-  describe("getButtonBuilder", () => {
-    it("should create button with correct properties", () => {
-      const buttonBuilder = requestApplication.getButtonBuilder(1); // ButtonStyle.Primary
+      const call = mockCreateOrUpdateInstructions.mock.calls[0][0];
+      const buttonBuilder = call.components[0].components[0];
 
       expect(buttonBuilder).toHaveCustomId("volunteer-application");
       expect(buttonBuilder).toHaveLabel("Volunteer Application");
-      expect(buttonBuilder.data.style).toBe(1);
+      expect(buttonBuilder).toHaveReceivedButtonStyle(ButtonStyle.Primary);
     });
-  });
 
-  describe("content", () => {
-    it("should contain required application information", async () => {
-      const { interaction } = setupApplicationTest();
+    it("should include complete application content in DM", async () => {
+      await updateApplicationInfo(client);
 
-      await requestApplication.execute(asButtonInteraction(interaction));
+      const { interaction } = await setupApplicationTest();
+      const requestApplication = new RequestApplication();
+      await requestApplication.execute(interaction);
 
-      const dmCall = interaction.user.send.mock.calls[0][0];
-      const content =
-        typeof dmCall === "string" ? dmCall : (dmCall as any).content;
-
+      const content = extractDmContent(interaction);
       expect(content).toContain("DO NOT REPLY TO THIS MESSAGE");
       expect(content).toContain("How do I apply?");
       expect(content).toContain(
@@ -90,9 +122,49 @@ describe("RequestApplication", () => {
     });
   });
 
-  describe("customId", () => {
-    it("should inherit customId from ButtonCommand constructor", () => {
+  describe("Unit Tests (Edge Cases & Error Handling)", () => {
+    let requestApplication: RequestApplication;
+
+    beforeEach(() => {
+      requestApplication = new RequestApplication();
+    });
+
+    it("should throw error if request dump channel not found", async () => {
+      const guild = createMockGuild({ threadChannels: [] });
+      const interaction = createMockButtonInteraction({ guild });
+
+      await expect(requestApplication.execute(interaction)).rejects.toThrow(
+        "Could not locate the request dump channel"
+      );
+    });
+
+    it("should throw error if channel is not a public thread", async () => {
+      const guild = createMockGuild({
+        textChannels: [{ id: "111222333" }], // Wrong channel type
+      });
+      const interaction = createMockButtonInteraction({ guild });
+
+      await expect(requestApplication.execute(interaction)).rejects.toThrow(
+        "111222333 is not a text channel"
+      );
+    });
+
+    it("should have correct label for button creation", () => {
+      expect(requestApplication.label).toBe("Volunteer Application");
+    });
+
+    it("should have correct customId inherited from ButtonCommand", () => {
       expect(requestApplication.customId).toBe("volunteer-application");
+    });
+
+    it("should create button builder with specified style", () => {
+      const buttonBuilder = requestApplication.getButtonBuilder(
+        ButtonStyle.Secondary
+      );
+
+      expect(buttonBuilder).toHaveCustomId("volunteer-application");
+      expect(buttonBuilder).toHaveLabel("Volunteer Application");
+      expect(buttonBuilder).toHaveReceivedButtonStyle(ButtonStyle.Secondary);
     });
   });
 });

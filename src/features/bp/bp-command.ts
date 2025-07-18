@@ -10,7 +10,7 @@ import {
 import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
 import { getTextChannel, prismaClient } from "../..";
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@prisma/client";
 import {
   batphoneChannelId,
   raiderRoleId,
@@ -26,7 +26,7 @@ import { truncate } from "lodash";
 import { RequestBotButtonCommand } from "./request-bot-button-command";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { LocationService } from "../../services/location";
-import { log } from "../../shared/logger"
+import { log } from "../../shared/logger";
 
 class sendBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -46,9 +46,7 @@ class sendBp extends Subcommand {
         },
       });
       savedBp
-        ? log(
-            `Found saved batphone ${savedBp.key} for ${savedBp.location}`
-          )
+        ? log(`Found saved batphone ${savedBp.key} for ${savedBp.location}`)
         : log(`No key found for ${val}`);
       const message = savedBp?.message || val;
       if (typeof message === "string") {
@@ -83,10 +81,7 @@ class sendBp extends Subcommand {
     }
   }
 
-  public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
-  ): Promise<
+  public async getOptionAutocomplete(): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
     const res = await prismaClient.batphone.findMany();
@@ -155,8 +150,8 @@ class setBp extends Subcommand {
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
-        const location = this.getOption("location", interaction)
-          ?.value as string || "";
+        const location =
+          (this.getOption("location", interaction)?.value as string) || "";
         key = truncate(String(key), { length: 100 }); // max option length = 100
         await prismaClient.batphone.create({
           data: {
@@ -178,8 +173,8 @@ class setBp extends Subcommand {
       console.error(err);
       let errMsg = err;
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        if (err.code === 'P2002') {
-            errMsg = "Key already exists";
+        if (err.code === "P2002") {
+          errMsg = "Key already exists";
         } else {
           errMsg = err.code;
         }
@@ -188,12 +183,12 @@ class setBp extends Subcommand {
     }
   }
   public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
+    _option: string,
+    _interaction: AutocompleteInteraction<CacheType>
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
-    switch (option) {
+    switch (_option) {
       case "location":
         return LocationService.getInstance().getLocationOptions();
       default:
@@ -252,10 +247,7 @@ class unsetBp extends Subcommand {
       interaction.editReply("Failed save batphone message.");
     }
   }
-  public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
-  ): Promise<
+  public async getOptionAutocomplete(): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
     const res = await prismaClient.batphone.findMany();
@@ -297,7 +289,7 @@ class getBp extends Subcommand {
       if (!message) {
         throw new Error(`No batphone with key ${val}`);
       }
-      
+
       if (typeof message === "string") {
         const formattedMessage = message.replace(
           /\\n/g,
@@ -314,9 +306,7 @@ Location: ${savedMsg?.location || "NO LOCATION SET"}
 To change this message, use \`/bp update\` to set a new message.
 `;
         savedMsg
-          ? log(
-              `Found saved batphone ${savedMsg.key} for ${savedMsg.location}`
-            )
+          ? log(`Found saved batphone ${savedMsg.key} for ${savedMsg.location}`)
           : log(`No key found for ${val}`);
         const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
           await getBotButtonComponents(savedMsg?.location || "");
@@ -334,10 +324,7 @@ To change this message, use \`/bp update\` to set a new message.
     }
   }
 
-  public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
-  ): Promise<
+  public async getOptionAutocomplete(): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
     const res = await prismaClient.batphone.findMany();
@@ -377,26 +364,26 @@ class updateBp extends Subcommand {
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
-        const location = this.getOption("location", interaction)
-          ?.value as string || "";
+        const location =
+          (this.getOption("location", interaction)?.value as string) || "";
         key = truncate(String(key), { length: 100 }); // max option length = 100
 
-        let updateNoLocation = {
-          message: message
-        };
-
-        let updateWithLocation = {
+        const updateNoLocation = {
           message: message,
-          location: location
         };
 
-        let update = location ?  updateWithLocation : updateNoLocation;
+        const updateWithLocation = {
+          message: message,
+          location: location,
+        };
+
+        const update = location ? updateWithLocation : updateNoLocation;
 
         await prismaClient.batphone.update({
           where: {
-            key: key
+            key: key,
           },
-          data: update
+          data: update,
         });
 
         log(
@@ -412,8 +399,8 @@ class updateBp extends Subcommand {
       console.error(err);
       let errMsg = err;
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        if (err.code === 'P2025') {
-            errMsg = "No batphone found with the provided key";
+        if (err.code === "P2025") {
+          errMsg = "No batphone found with the provided key";
         } else {
           errMsg = err.code;
         }
@@ -423,8 +410,7 @@ class updateBp extends Subcommand {
   }
 
   public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
+    option: string
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
@@ -470,6 +456,6 @@ export const batphoneCommand = new Command(
     new setBp("set", "save a BP preset"),
     new unsetBp("unset", "remove BP preset"),
     new getBp("get", "show BP message in this channel"),
-    new updateBp("update", "update a BP")
+    new updateBp("update", "update a BP"),
   ]
 );

@@ -1,6 +1,6 @@
 import { CacheType, Interaction } from "discord.js";
 import { getButton, getCommand } from "./register-commands";
-import { log } from "../shared/logger"
+import { log } from "../shared/logger";
 
 export const interactionCreateListener = async (
   interaction: Interaction<CacheType>

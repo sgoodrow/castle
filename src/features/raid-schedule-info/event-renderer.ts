@@ -1,6 +1,5 @@
 import { GuildScheduledEvent } from "discord.js";
 import { HOURS } from "../../shared/time";
-import { compactDescription } from "../../shared/util";
 
 export class EventRenderer {
   public constructor(
@@ -57,14 +56,5 @@ ${this.date}${this.countdown}${this.description}`;
       return "";
     }
     return `\n([more info](${this.data.url}))`;
-    // const compact = compactDescription(
-    //  this.data.description,
-    //  this.descriptionLength
-    //);
-    //let moreInfo = "";
-    //if (compact.length < this.data.description.length) {
-    //  moreInfo = ` ([more info](${this.data.url}))`;
-    //}
-    //return `\n${compact}${moreInfo}`;
   }
 }

@@ -7,7 +7,7 @@ import {
   CommandInteraction,
 } from "discord.js";
 import { clientId, guildId, token } from "../config";
-import { applicationCommandButton } from "../features/applications/update-applications";
+import { applicationCommandButton } from "../features/applications";
 import { auctionCommand } from "../features/auctions/command";
 import { bankHourCommand } from "../features/bank-hours/command";
 import { bankCleanupButtonCommand } from "../features/bank-request-info/bank-cleanup-button-command";
@@ -31,7 +31,7 @@ import { botCommand } from "../features/raid-bots/command";
 import { batphoneCommand } from "../features/bp/bp-command";
 import { wakeupCommand } from "../features/wakeup/wakeup-command";
 import { requestBotButtonCommand } from "../features/bp/request-bot-button-command";
-import { parkBotButtonCommand } from "../features/raid-bots/park-bot-button-command"
+import { parkBotButtonCommand } from "../features/raid-bots/park-bot-button-command";
 
 const slashCommands = [
   bankHourCommand,
@@ -59,7 +59,7 @@ const buttonCommands = [
   removePlayerInviteButtonCommand,
   applicationCommandButton,
   requestBotButtonCommand,
-  parkBotButtonCommand
+  parkBotButtonCommand,
 ];
 
 export const getCommand = (

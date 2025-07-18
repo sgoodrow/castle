@@ -1,12 +1,9 @@
 import {
   ApplicationCommandOptionChoiceData,
-  AutocompleteInteraction,
   CacheType,
   CommandInteraction,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { IPublicAccountService } from "../../services/bot/public-accounts.i";
-import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { authorizeByMemberRoles } from "../../shared/command/util";
 import { officerRoleId, knightRoleId } from "../../config";
 import { redisClient } from "../../redis/client";
@@ -15,7 +12,6 @@ export enum SetSongOption {
   URL = "url",
 }
 export class SetSongSubcommand extends Subcommand {
-  
   constructor(name: string, description: string) {
     super(name, description);
   }
@@ -46,10 +42,7 @@ export class SetSongSubcommand extends Subcommand {
     return command;
   }
 
-  public getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
-  ): Promise<
+  public getOptionAutocomplete(): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
     throw new Error("Method not implemented.");

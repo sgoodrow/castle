@@ -3,7 +3,6 @@ import {
   CacheType,
   ChannelType,
   PermissionFlagsBits,
-  Permissions,
 } from "discord.js";
 import { getGuild } from "../..";
 import { inviteListChannelId } from "../../config";
