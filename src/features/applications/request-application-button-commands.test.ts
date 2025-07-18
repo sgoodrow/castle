@@ -5,37 +5,19 @@ import {
   extractDmContent,
 } from "../../test/helpers/test-setup";
 import {
-  mockCreateOrUpdateInstructions,
-  mockGetChannel,
-  resetApplicationMocks,
-} from "../../test/helpers/application-mocks";
+  setupDiscordMocks,
+  resetDiscordMocks,
+} from "../../test/helpers/discord-test-helpers";
 import { createMockGuild } from "../../test/mocks/create-mock-guild";
 import { createMockButtonInteraction } from "../../test/mocks/create-mock-button-interaction";
 import { createMockClient } from "../../test/mocks/create-mock-client";
 import { ButtonStyle, Client } from "discord.js";
 
 // =============================================================================
-// MOCKS - These replace external dependencies for testing
+// SETUP - Reduced from 20+ lines to 1 line!
 // =============================================================================
 
-// Replace config with test values (must be inline due to Jest hoisting)
-jest.mock("../../config", () => ({
-  requestDumpThreadId: "111222333",
-  applicationsChannelId: "999888777",
-}));
-
-// Replace Discord API operations with controllable mocks
-jest.mock("../../shared/action/instructions-ready-action", () => ({
-  InstructionsReadyAction: class {
-    createOrUpdateInstructions = mockCreateOrUpdateInstructions;
-    getChannel = mockGetChannel;
-  },
-}));
-
-// Replace action executor with simple pass-through
-jest.mock("../../shared/action/ready-action", () => ({
-  readyActionExecutor: jest.fn((action) => action.execute()),
-}));
+const discordMocks = setupDiscordMocks();
 
 // =============================================================================
 // TESTS
@@ -43,7 +25,7 @@ jest.mock("../../shared/action/ready-action", () => ({
 
 describe("Application System", () => {
   beforeEach(() => {
-    resetApplicationMocks();
+    resetDiscordMocks(discordMocks);
   });
 
   describe("Integration Tests (via updateApplicationInfo)", () => {
@@ -58,7 +40,7 @@ describe("Application System", () => {
       await updateApplicationInfo(client);
 
       // Verify the UI was created with correct button
-      expect(mockCreateOrUpdateInstructions).toHaveBeenCalledWith(
+      expect(discordMocks.createOrUpdateInstructions).toHaveBeenCalledWith(
         expect.objectContaining({
           components: expect.arrayContaining([
             expect.objectContaining({
@@ -96,7 +78,8 @@ describe("Application System", () => {
     it("should create button with correct properties for Discord integration", async () => {
       await updateApplicationInfo(client);
 
-      const call = mockCreateOrUpdateInstructions.mock.calls[0][0];
+      const call = discordMocks.createOrUpdateInstructions.mock
+        .calls[0][0] as any;
       const buttonBuilder = call.components[0].components[0];
 
       expect(buttonBuilder).toHaveCustomId("volunteer-application");
