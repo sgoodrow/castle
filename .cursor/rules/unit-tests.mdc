@@ -1,0 +1,33 @@
+---
+description: Testing guidelines and best practices for unit tests
+alwaysApply: true
+---
+
+# Unit Testing Guidelines
+
+## Test Execution Rules
+
+- **Always use `yarn test:ci`** to run tests in CI mode
+- **Never use `yarn test`** - it runs in watch mode which is not suitable for one-off test runs
+- **Always fix tests one at a time** in a tight development loop
+- **Always use `.only`** to isolate a single test when debugging or fixing issues
+- **When using `.only`, run the specific test file** with `yarn test:ci path/to/test-file.test.ts` for complete isolation
+
+## Test Quality Standards
+
+- **Always fix tests properly** - never give up on a failing test
+- **Never remove or descope tests** - good tests are crucial and cannot be skipped
+- **Tests must be comprehensive** and cover all important functionality
+- **Maintain high test quality** as tests are essential for code reliability
+
+## Development Workflow
+
+1. Run `yarn test:ci` to identify failing tests
+2. Use `.only` on a single failing test to isolate it
+3. Run `yarn test:ci path/to/test-file.test.ts` to run only that test file
+4. Fix the test thoroughly and properly
+5. Remove `.only` and verify the test passes with `yarn test:ci path/to/test-file.test.ts`
+6. Move to the next failing test
+7. Repeat until all tests pass
+
+Remember: **Good tests are non-negotiable** - they ensure code quality and prevent regressions.
