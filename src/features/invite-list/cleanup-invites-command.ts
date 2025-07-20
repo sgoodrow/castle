@@ -17,10 +17,7 @@ const OLD_LIMIT = 2 * WEEKS;
 
 class CleanupInvitesCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {
-    requireInteractionMemberPermission(
-      PermissionFlagsBits.ManageRoles,
-      interaction
-    );
+    requireInteractionMemberPermission(PermissionFlagsBits.ManageRoles, interaction);
 
     const oldInvites = await this.getOldInvites();
     if (!oldInvites.length) {
@@ -45,14 +42,9 @@ ${removed}
     await updateInviteListInfo(interaction.client);
   }
 
-  protected getUsers(
-    invites: InviteSimple[],
-    interaction: ButtonInteraction<CacheType>
-  ) {
+  protected getUsers(invites: InviteSimple[], interaction: ButtonInteraction<CacheType>) {
     const discordIds = [...new Set(invites.map((i) => i.discordId))];
-    return interaction.guild?.members.cache?.filter((m) =>
-      discordIds.includes(m.id)
-    );
+    return interaction.guild?.members.cache?.filter((m) => discordIds.includes(m.id));
   }
 
   protected async removeMains(
@@ -97,12 +89,8 @@ Thank you!`);
     const inviteRepository = dataSource.getRepository(InviteSimple);
     const invites = await inviteRepository.findBy({});
     const now = new Date().getTime();
-    return invites.filter(
-      (i) => Number(now - i.createdAt.getTime()) > OLD_LIMIT
-    );
+    return invites.filter((i) => Number(now - i.createdAt.getTime()) > OLD_LIMIT);
   }
 }
 
-export const cleanupInvitesCommand = new CleanupInvitesCommand(
-  "cleanupInvites"
-);
+export const cleanupInvitesCommand = new CleanupInvitesCommand("cleanupInvites");

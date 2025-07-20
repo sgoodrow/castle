@@ -1,18 +1,10 @@
-import {
-  ButtonInteraction,
-  CacheType,
-  ChannelType,
-  PermissionFlagsBits,
-} from "discord.js";
+import { ButtonInteraction, CacheType, ChannelType, PermissionFlagsBits } from "discord.js";
 import { getGuild } from "../..";
 import { inviteListChannelId } from "../../config";
 import { dataSource } from "../../db/data-source";
 import { InviteSimple } from "../../db/invite-simple";
 import { ButtonCommand } from "../../shared/command/button-command";
-import {
-  getChannel,
-  requireInteractionMemberPermission,
-} from "../../shared/command/util";
+import { getChannel, requireInteractionMemberPermission } from "../../shared/command/util";
 import { HOURS } from "../../shared/time";
 
 const getPresenceIcon = (status = "unknown") => {
@@ -53,19 +45,13 @@ ${statuses.map(({ user, status }) => `${status} <@${user}>`).join("\n")}`;
 
 class PingInviteListCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {
-    const inviteListChannel = await getChannel(
-      inviteListChannelId,
-      interaction
-    );
+    const inviteListChannel = await getChannel(inviteListChannelId, interaction);
 
     if (inviteListChannel?.type !== ChannelType.GuildText) {
       throw new Error("The invite list channel is not a text channel.");
     }
 
-    requireInteractionMemberPermission(
-      PermissionFlagsBits.ManageRoles,
-      interaction
-    );
+    requireInteractionMemberPermission(PermissionFlagsBits.ManageRoles, interaction);
 
     const users = await this.getPendingInviteUsers();
     const attention = await getAttentionMessage(users);
@@ -74,9 +60,7 @@ class PingInviteListCommand extends ButtonCommand {
 
 ${attention}`;
 
-    await interaction.channel
-      ?.send(alert)
-      .then((m) => setTimeout(() => m.delete(), 1 * HOURS));
+    await interaction.channel?.send(alert).then((m) => setTimeout(() => m.delete(), 1 * HOURS));
 
     await interaction.editReply("The invite list has been notified.");
   }
@@ -88,6 +72,4 @@ ${attention}`;
   }
 }
 
-export const pingInviteListButtonCommand = new PingInviteListCommand(
-  "pingInviteList"
-);
+export const pingInviteListButtonCommand = new PingInviteListCommand("pingInviteList");

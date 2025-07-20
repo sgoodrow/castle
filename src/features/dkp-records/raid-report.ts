@@ -1,9 +1,4 @@
-import {
-  Message,
-  EmbedBuilder,
-  TextBasedChannel,
-  ThreadChannel,
-} from "discord.js";
+import { Message, EmbedBuilder, TextBasedChannel, ThreadChannel } from "discord.js";
 import { every, flatMap, max, uniq } from "lodash";
 import { raiderRoleId } from "../../config";
 import { redisChannels, redisClient } from "../../redis/client";
@@ -29,8 +24,7 @@ const INSTRUCTIONS_TITLE = "Instructions";
 const THREAD_EMBED_CHAR_LIMIT = 4000;
 const SECOND_COLUMN_LENGTH = 6;
 
-const isRaidReportMessage = (m: Message) =>
-  !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
+const isRaidReportMessage = (m: Message) => !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
 
 const isNotEmpty = (m: Message) => !!m.embeds.find((e) => e.length === 0);
 
@@ -39,9 +33,7 @@ export const isRaidInstructionsMessage = (m: Message) =>
 
 export const getRaidReportMessages = async (channel: TextBasedChannel) => {
   if (!channel.isThread()) {
-    throw new Error(
-      "Could not find raid report messages because channel is not a thread."
-    );
+    throw new Error("Could not find raid report messages because channel is not a thread.");
   }
 
   const starter = await channel.fetchStarterMessage();
@@ -60,12 +52,7 @@ export const getRaidReportMessages = async (channel: TextBasedChannel) => {
   const messages = [
     ...all
       .reverse()
-      .filter(
-        (m) =>
-          isRaidReportMessage(m) ||
-          isRaidInstructionsMessage(m) ||
-          isNotEmpty(m)
-      )
+      .filter((m) => isRaidReportMessage(m) || isRaidInstructionsMessage(m) || isNotEmpty(m))
       .values(),
   ];
   if (messages.length === 0) {
@@ -95,11 +82,7 @@ export class RaidReport {
     this.ticks = data.ticks.map((t) => new RaidTick(t));
 
     this.firstColumnLength =
-      max(
-        [...this.allAttendees, ...this.allAdjustees, EVERYONE].map(
-          (a) => a.length
-        )
-      ) || 0;
+      max([...this.allAttendees, ...this.allAdjustees, EVERYONE].map((a) => a.length)) || 0;
   }
 
   public get allTicksHaveEvent(): boolean {
@@ -125,9 +108,7 @@ export class RaidReport {
   public getThreadName(): string {
     const emoji = this.finished ? "✅" : this.allTicksHaveEvent ? "❕" : "❔";
     const label = every(this.ticks, (t) => t.hasEvent)
-      ? uniq(this.ticks.map(({ eventAbreviation }) => eventAbreviation)).join(
-          ", "
-        )
+      ? uniq(this.ticks.map(({ eventAbreviation }) => eventAbreviation)).join(", ")
       : `${this.filename.replace(/[^a-zA-Z]+/g, "")}?`;
     return `${emoji} ${this.ticks[0].shortDate} (${Math.round(this.netDkp)}) ${
       label || "Unidentified"
@@ -141,9 +122,7 @@ export class RaidReport {
   public async updateMessages(messages: Message[]) {
     const raidReportEmbeds = this.getRaidReportEmbeds();
     if (raidReportEmbeds.length > messages.length) {
-      throw new Error(
-        "Insufficient messages for number of embeds. This should never happen"
-      );
+      throw new Error("Insufficient messages for number of embeds. This should never happen");
     }
 
     try {
@@ -162,9 +141,7 @@ export class RaidReport {
         })
       );
     } catch (err) {
-      throw new Error(
-        `Could not generate edited raid report with action values: ${err}`
-      );
+      throw new Error(`Could not generate edited raid report with action values: ${err}`);
     }
   }
 
@@ -224,10 +201,7 @@ Kill bonus values: https://castledkp.com/index.php/External/Boss-bonuses-11.html
     ]);
   }
 
-  public getReceiptEmbeds(
-    created: CreateRaidResponse[],
-    failed: string[]
-  ): EmbedBuilder[] {
+  public getReceiptEmbeds(created: CreateRaidResponse[], failed: string[]): EmbedBuilder[] {
     const embeds = created.map(({ eventUrlSlug, id, invalidNames, tick }) =>
       tick.getCreatedEmbed(eventUrlSlug, id, invalidNames)
     );
@@ -251,10 +225,7 @@ ${this.attendance}`;
 
     const pages: string[] = [""];
     report.split("\n").forEach((line) => {
-      if (
-        pages[pages.length - 1].length + line.length >
-        THREAD_EMBED_CHAR_LIMIT
-      ) {
+      if (pages[pages.length - 1].length + line.length > THREAD_EMBED_CHAR_LIMIT) {
         pages.push("");
       }
       pages[pages.length - 1] += `\n${line}`;
@@ -272,9 +243,7 @@ ${p}${code}`,
 
   public async uploadRemainingRaidTicks(threadUrl: string) {
     const settled = await Promise.allSettled(
-      this.ticks
-        .filter((t) => !t.data.finished)
-        .map((t) => t.uploadAsRaid(threadUrl))
+      this.ticks.filter((t) => !t.data.finished).map((t) => t.uploadAsRaid(threadUrl))
     );
 
     const created: CreateRaidResponse[] = [];
@@ -303,28 +272,17 @@ ${p}${code}`,
     this.getRaidTicks(tickNumbers).forEach((t) => t.removePlayer(name));
   }
 
-  public replacePlayer(
-    replacer: string,
-    replaced: string,
-    tickNumbers: number[]
-  ) {
-    this.getRaidTicks(tickNumbers).forEach((t) =>
-      t.replacePlayer(replacer, replaced)
-    );
+  public replacePlayer(replacer: string, replaced: string, tickNumbers: number[]) {
+    this.getRaidTicks(tickNumbers).forEach((t) => t.replacePlayer(replacer, replaced));
   }
 
   private getRaidTicks(tickNumbers: number[]): RaidTick[] {
-    return (tickNumbers.length === 0 ? this.allTickNumbers : tickNumbers).map(
-      (t) => this.getRaidTick(t)
+    return (tickNumbers.length === 0 ? this.allTickNumbers : tickNumbers).map((t) =>
+      this.getRaidTick(t)
     );
   }
 
-  public updateRaidTick(
-    event: RaidEventData,
-    value: number,
-    tick?: number,
-    note?: string
-  ) {
+  public updateRaidTick(event: RaidEventData, value: number, tick?: number, note?: string) {
     const tickNumbers = tick ? [tick] : this.allTickNumbers;
     tickNumbers.forEach((t) => this.getRaidTick(t).update(event, value, note));
     return tickNumbers;

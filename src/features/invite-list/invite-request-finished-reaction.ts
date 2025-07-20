@@ -1,23 +1,12 @@
-import {
-  MessageReaction,
-  PartialMessageReaction,
-  PartialUser,
-  User,
-} from "discord.js";
+import { MessageReaction, PartialMessageReaction, PartialUser, User } from "discord.js";
 import { inviteListChannelId, guardRoleId, officerRoleId } from "../../config";
-import {
-  ReactionAction,
-  reactionActionExecutor,
-} from "../../shared/action/reaction-action";
+import { ReactionAction, reactionActionExecutor } from "../../shared/action/reaction-action";
 import { removePlayer } from "./remove-subcommand";
 
 export const tryInviteRequestFinishedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
   user: User | PartialUser
-) =>
-  reactionActionExecutor(
-    new InviteRequestFinishedReactionAction(reaction, user)
-  );
+) => reactionActionExecutor(new InviteRequestFinishedReactionAction(reaction, user));
 
 class InviteRequestFinishedReactionAction extends ReactionAction {
   public async execute() {
@@ -33,12 +22,7 @@ class InviteRequestFinishedReactionAction extends ReactionAction {
 
     // authorize user
     const reactor = await this.members?.fetch(this.user.id);
-    if (
-      !(
-        reactor?.roles.cache.has(guardRoleId) ||
-        reactor?.roles.cache.has(officerRoleId)
-      )
-    ) {
+    if (!(reactor?.roles.cache.has(guardRoleId) || reactor?.roles.cache.has(officerRoleId))) {
       return;
     }
 
@@ -54,9 +38,7 @@ class InviteRequestFinishedReactionAction extends ReactionAction {
         })
       ).values(),
     ];
-    const requesterMessages = messages.filter(
-      (m) => m.member?.id === this.message.member?.id
-    );
+    const requesterMessages = messages.filter((m) => m.member?.id === this.message.member?.id);
     const requesterMessageIds = requesterMessages.map((m) => m.id);
     const replies = messages.filter(
       (m) =>
@@ -67,9 +49,7 @@ class InviteRequestFinishedReactionAction extends ReactionAction {
         // its a reply to a message that is queued to be deleted
         requesterMessageIds.includes(m.reference.messageId)
     );
-    requesterMessages
-      .filter((m) => m.embeds.length === 0)
-      .map((m) => m.delete());
+    requesterMessages.filter((m) => m.embeds.length === 0).map((m) => m.delete());
     replies.filter((m) => m.embeds.length === 0).map((m) => m.delete());
   }
 }

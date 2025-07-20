@@ -6,10 +6,7 @@ import { updateInviteListInfo } from "./update-invite-action";
 import { checkInvite } from "./util";
 
 class AddPlayerButton extends ButtonCommand {
-  public constructor(
-    public readonly customId: string,
-    public readonly alt = false
-  ) {
+  public constructor(public readonly customId: string, public readonly alt = false) {
     super(customId);
   }
 
@@ -27,11 +24,6 @@ class AddPlayerButton extends ButtonCommand {
   }
 }
 
-export const addPlayerInviteButtonCommand = new AddPlayerButton(
-  "addPlayerInvite"
-);
+export const addPlayerInviteButtonCommand = new AddPlayerButton("addPlayerInvite");
 
-export const addAltInviteButtonCommand = new AddPlayerButton(
-  "addAltInvite",
-  true
-);
+export const addAltInviteButtonCommand = new AddPlayerButton("addAltInvite", true);

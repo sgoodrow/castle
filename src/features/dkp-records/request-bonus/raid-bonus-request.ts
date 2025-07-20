@@ -14,10 +14,7 @@ export abstract class RaidBonusRequest {
     return new Error(`Invalid "${this.constructor.name}" format, ${error}`);
   }
 
-  public async tryExecute(
-    message: PartialMessage | Message,
-    actor?: GuildMember
-  ) {
+  public async tryExecute(message: PartialMessage | Message, actor?: GuildMember) {
     if (await checkReactionFromClient(message, "✅")) {
       return;
     }
@@ -25,12 +22,7 @@ export abstract class RaidBonusRequest {
     await this.validateArgs();
 
     // authorize execution
-    if (
-      !(
-        actor?.roles.cache.has(dkpDeputyRoleId) ||
-        actor?.roles.cache.has(officerRoleId)
-      )
-    ) {
+    if (!(actor?.roles.cache.has(dkpDeputyRoleId) || actor?.roles.cache.has(officerRoleId))) {
       return false;
     }
 

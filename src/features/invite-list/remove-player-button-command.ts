@@ -21,6 +21,4 @@ class RemovePlayerInvite extends ButtonCommand {
   }
 }
 
-export const removePlayerInviteButtonCommand = new RemovePlayerInvite(
-  "removePlayerInvite"
-);
+export const removePlayerInviteButtonCommand = new RemovePlayerInvite("removePlayerInvite");

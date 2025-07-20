@@ -1,13 +1,5 @@
-import {
-  CacheType,
-  CommandInteraction,
-  GuildMemberRoleManager,
-} from "discord.js";
-import {
-  dkpDeputyRoleId,
-  dkpRecordsChannelId,
-  officerRoleId,
-} from "../../../config";
+import { CacheType, CommandInteraction, GuildMemberRoleManager } from "discord.js";
+import { dkpDeputyRoleId, dkpRecordsChannelId, officerRoleId } from "../../../config";
 import { castledkp } from "../../../services/castledkp";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { getRaidReport } from "../raid-report";
@@ -44,10 +36,7 @@ export class SetTickSubcommand extends Subcommand {
     // get raid report
     const { report } = await getRaidReport(interaction.channel);
 
-    const eventName = this.getRequiredOptionValue<string>(
-      Option.Event,
-      interaction
-    );
+    const eventName = this.getRequiredOptionValue<string>(Option.Event, interaction);
     const note = this.getOptionValue<string>(Option.Note, interaction);
     const tick = this.getOptionValue<number>(Option.Tick, interaction);
     let value = this.getOptionValue<number>(Option.Value, interaction);
@@ -67,9 +56,9 @@ export class SetTickSubcommand extends Subcommand {
 
     await report.tryUpdateThreadName(interaction.channel);
 
-    const message = `${interaction.user} identified ${ticksUpdated.join(
-      ", "
-    )} as "${event.shortName} (${value})".`;
+    const message = `${interaction.user} identified ${ticksUpdated.join(", ")} as "${
+      event.shortName
+    } (${value})".`;
 
     await interaction.channel.send(message);
 
@@ -100,9 +89,7 @@ export class SetTickSubcommand extends Subcommand {
           )
       )
       .addStringOption((o) =>
-        o
-          .setName(Option.Note)
-          .setDescription("An optional note to be added to the raid tick.")
+        o.setName(Option.Note).setDescription("An optional note to be added to the raid tick.")
       );
   }
 

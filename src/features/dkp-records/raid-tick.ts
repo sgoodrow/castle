@@ -135,8 +135,7 @@ export class RaidTick {
   }
 
   public renderTick(firstColumnLength: number, secondColumnLength: number) {
-    const ready =
-      this.data.value !== undefined && this.data.event !== undefined;
+    const ready = this.data.value !== undefined && this.data.event !== undefined;
     const all = EVERYONE.padEnd(firstColumnLength);
     const attendanceValue = `${this.getPaddedDkp(
       secondColumnLength,
@@ -156,21 +155,13 @@ export class RaidTick {
     ];
     const change =
       changes.length > 0
-        ? `\n${this.renderChanges(
-            changes,
-            firstColumnLength,
-            secondColumnLength
-          )}`
+        ? `\n${this.renderChanges(changes, firstColumnLength, secondColumnLength)}`
         : "";
     return `--- ${this.name} ---
 ${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${change}`;
   }
 
-  public getCreatedEmbed(
-    eventUrlSlug: string,
-    id: number,
-    invalidNames: string[]
-  ): EmbedBuilder {
+  public getCreatedEmbed(eventUrlSlug: string, id: number, invalidNames: string[]): EmbedBuilder {
     const net = this.earned - this.spent;
     const result =
       net === 0
@@ -180,9 +171,7 @@ ${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${change}`;
         : `- Economy decrease     ${net}`;
     const notIncluded =
       invalidNames.length > 0
-        ? `These characters were not included because they do not exist ${invalidNames.join(
-            ", "
-          )}`
+        ? `These characters were not included because they do not exist ${invalidNames.join(", ")}`
         : "";
     return new EmbedBuilder({
       title: `${this.name}`,
