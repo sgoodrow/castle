@@ -3,10 +3,7 @@ import { Attachment, Message } from "discord.js";
 import { Inventory, bankData } from "../bank-data";
 
 // import { bankerRoleId } from "../../config"; TODO: verify role?
-import {
-  MessageAction,
-  messageActionExecutor,
-} from "../../../shared/action/message-action";
+import { MessageAction, messageActionExecutor } from "../../../shared/action/message-action";
 import { bankInventoryChannelId } from "../../../config";
 import { parseInventoryFile, uploadToGDrive } from "../inventory-files";
 

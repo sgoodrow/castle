@@ -1,10 +1,7 @@
 import { ButtonInteraction, CacheType, ChannelType } from "discord.js";
 import { jewelerRoleId, jewelryChannelId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
-import {
-  getChannel,
-  requireInteractionMemberRole,
-} from "../../shared/command/util";
+import { getChannel, requireInteractionMemberRole } from "../../shared/command/util";
 
 class CraftingButtonCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {
@@ -16,10 +13,7 @@ class CraftingButtonCommand extends ButtonCommand {
     const users = [
       ...new Set(
         messages
-          .filter(
-            (m) =>
-              !(m.member?.roles.cache.has(jewelerRoleId) || m.member?.user.bot)
-          )
+          .filter((m) => !(m.member?.roles.cache.has(jewelerRoleId) || m.member?.user.bot))
           .map((r) => r.member?.user)
           .filter(Boolean)
       ),
@@ -32,9 +26,7 @@ class CraftingButtonCommand extends ButtonCommand {
       return;
     }
 
-    await interaction.editReply(`**${
-      interaction.member?.user
-    } is now handling jewelry requests!**
+    await interaction.editReply(`**${interaction.member?.user} is now handling jewelry requests!**
 
 Attn: ${users.map((u) => `${u}`).join(" ")}`);
   }

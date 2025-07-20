@@ -18,10 +18,7 @@ export const services: Service[] = [
   {
     title: "OT Hammer Event Scheduling",
     icon: Icon.Sold,
-    requestFormats: [
-      "OT Hammer Event",
-      "OT Hammer Event: Date, Time (include timezone)",
-    ],
+    requestFormats: ["OT Hammer Event", "OT Hammer Event: Date, Time (include timezone)"],
     bullets: [
       "_The Overthere, Outpost_ Look for monthly threads for date/time",
       "Bring 1 Jade and either 1750pp (members and allies) or 2500p (non-allies)",
@@ -89,9 +86,7 @@ export const services: Service[] = [
   {
     title: "Dropped Spell Spreadsheet",
     icon: Icon.Sold,
-    requestFormats: [
-      "Dropped spell: Class, Level, Spell name (Mule name, Quantity available)",
-    ],
+    requestFormats: ["Dropped spell: Class, Level, Spell name (Mule name, Quantity available)"],
     inventoryUrl: "https://tinyurl.com/castle-spell-spreadsheet",
     bullets: [
       "_North Freeport Bank_",

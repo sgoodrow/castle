@@ -2,10 +2,7 @@ import { CacheType, CommandInteraction } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { bankerRoleId, officerRoleId, modRoleId } from "../../../config";
 import { findFiles, getFile } from "../../../services/gdrive";
-import {
-  parseInventoryFile,
-  bankInventoriesFolderId,
-} from "../inventory-files";
+import { parseInventoryFile, bankInventoriesFolderId } from "../inventory-files";
 import { bankData } from "../bank-data";
 import { authorizeByMemberRoles } from "../../../shared/command/util";
 import { drive_v3 } from "googleapis";
@@ -15,10 +12,7 @@ let replyTxt = "";
 class SyncBankDb extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     // authorize
-    authorizeByMemberRoles(
-      [bankerRoleId, officerRoleId, modRoleId],
-      interaction
-    );
+    authorizeByMemberRoles([bankerRoleId, officerRoleId, modRoleId], interaction);
 
     this.appendReplyTxt("Updating bank database from GDrive...", interaction);
 
@@ -26,20 +20,14 @@ class SyncBankDb extends Subcommand {
       `'${bankInventoriesFolderId}' in parents and trashed = false`
     );
 
-    const bankersUpdated = await this.updateBankInventoryFolders(
-      bankInventoryFolders,
-      interaction
-    );
+    const bankersUpdated = await this.updateBankInventoryFolders(bankInventoryFolders, interaction);
 
     const unmatchedChars = await bankData.getUnmatchedChars(bankersUpdated);
 
     console.log("remove unmatched:", unmatchedChars);
 
     if (unmatchedChars && unmatchedChars.length > 0) {
-      await this.appendReplyTxt(
-        "Removing unmatched character inventories:",
-        interaction
-      );
+      await this.appendReplyTxt("Removing unmatched character inventories:", interaction);
       for (const char of unmatchedChars) {
         await this.appendReplyTxt("Removed: " + char.name, interaction);
         await this.appendReplyTxt("Removed: " + char.name, interaction);
@@ -59,10 +47,10 @@ class SyncBankDb extends Subcommand {
     const bankersUpdated = [];
     for (const f of bankInventoryFolders) {
       try {
-        const files = await findFiles(
-          `'${f.id}' in parents and trashed = false`
-        );
-        if (files.length === 0) continue;
+        const files = await findFiles(`'${f.id}' in parents and trashed = false`);
+        if (files.length === 0) {
+          continue;
+        }
         for (const file of files) {
           if (file && file.id && file.name) {
             const data = await getFile(file.id);
@@ -70,10 +58,7 @@ class SyncBankDb extends Subcommand {
             const inventory = await parseInventoryFile(file.name, String(data));
             await bankData.setInventory(inventory);
             bankersUpdated.push(inventory.charName);
-            await this.appendReplyTxt(
-              file.name + " -> " + inventory.charName,
-              interaction
-            );
+            await this.appendReplyTxt(file.name + " -> " + inventory.charName, interaction);
           }
         }
       } catch (err) {

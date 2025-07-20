@@ -1,8 +1,4 @@
-import {
-  AutocompleteInteraction,
-  CacheType,
-  CommandInteraction,
-} from "discord.js";
+import { AutocompleteInteraction, CacheType, CommandInteraction } from "discord.js";
 import { bankerRoleId } from "../../config";
 import { dataSource } from "../../db/data-source";
 import { updateBankRequestInfo } from "../bank-request-info/update-action";
@@ -18,13 +14,9 @@ class Remove extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     await this.authorize(interaction);
 
-    const bankHourId = Number(
-      this.getOption(Option.BankHourID, interaction)?.value
-    );
+    const bankHourId = Number(this.getOption(Option.BankHourID, interaction)?.value);
 
-    const bankHour = await dataSource
-      .getRepository(BankHour)
-      .findOneByOrFail({ id: bankHourId });
+    const bankHour = await dataSource.getRepository(BankHour).findOneByOrFail({ id: bankHourId });
 
     await dataSource.manager.remove(bankHour);
 
@@ -37,9 +29,7 @@ class Remove extends Subcommand {
     return super.command.addIntegerOption((o) =>
       o
         .setName(Option.BankHourID)
-        .setDescription(
-          "The bank hour ID. Set a banker to get a list of hours."
-        )
+        .setDescription("The bank hour ID. Set a banker to get a list of hours.")
         .setAutocomplete(true)
         .setRequired(true)
     );
@@ -57,14 +47,10 @@ class Remove extends Subcommand {
     }
   }
 
-  private async autocompleteBankHourIdOption(
-    interaction: AutocompleteInteraction<CacheType>
-  ) {
+  private async autocompleteBankHourIdOption(interaction: AutocompleteInteraction<CacheType>) {
     const weeklyBankAvailabilities = dataSource.getRepository(BankHour);
     const bankHour = await weeklyBankAvailabilities.findBy({});
-    await Promise.all(
-      bankHour.map(async (h) => interaction.guild?.members.fetch(h.userId))
-    );
+    await Promise.all(bankHour.map(async (h) => interaction.guild?.members.fetch(h.userId)));
     return bankHour?.map((h) => ({
       name: `${
         interaction.guild?.members.cache.get(h.userId)?.displayName

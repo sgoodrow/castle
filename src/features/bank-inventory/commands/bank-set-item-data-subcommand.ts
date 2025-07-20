@@ -1,9 +1,4 @@
-import {
-  AutocompleteInteraction,
-  CacheType,
-  CommandInteraction,
-  EmbedBuilder,
-} from "discord.js";
+import { AutocompleteInteraction, CacheType, CommandInteraction, EmbedBuilder } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { bankerRoleId, officerRoleId, modRoleId } from "../../../config";
 import { bankData } from "../bank-data";
@@ -19,10 +14,7 @@ enum Option {
 class SetItemData extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     // authorize
-    authorizeByMemberRoles(
-      [bankerRoleId, officerRoleId, modRoleId],
-      interaction
-    );
+    authorizeByMemberRoles([bankerRoleId, officerRoleId, modRoleId], interaction);
 
     const item = this.getOption(Option.Item, interaction);
     const price = this.getOption(Option.Price, interaction);
@@ -32,16 +24,11 @@ class SetItemData extends Subcommand {
     if (!item || !price) {
       throw new Error(`An item and price is required.`);
     } else {
-      const itemData = await bankData.getItemStockById(
-        parseInt(String(item.value))
-      );
+      const itemData = await bankData.getItemStockById(parseInt(String(item.value)));
       if (itemData) {
         await bankData.setItemData(itemData.id, String(price.value));
 
-        const countAvailable = itemData?.stock.reduce(
-          (total, s) => total + (s.count || 0),
-          0
-        );
+        const countAvailable = itemData?.stock.reduce((total, s) => total + (s.count || 0), 0);
         embed.setTitle("UPDATED: " + itemData.name);
         embed.setDescription(
           "id: " +
@@ -90,10 +77,7 @@ class SetItemData extends Subcommand {
       );
   }
 
-  public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction
-  ) {
+  public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction) {
     const input = interaction.options.getString("item");
     // console.log("input", input)
     switch (option) {

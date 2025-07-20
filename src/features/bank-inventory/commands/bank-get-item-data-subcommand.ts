@@ -1,9 +1,4 @@
-import {
-  AutocompleteInteraction,
-  CacheType,
-  CommandInteraction,
-  EmbedBuilder,
-} from "discord.js";
+import { AutocompleteInteraction, CacheType, CommandInteraction, EmbedBuilder } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { bankerRoleId, officerRoleId, modRoleId } from "../../../config";
 import { bankData } from "../bank-data";
@@ -17,10 +12,7 @@ enum Option {
 class GetItemData extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     // authorize
-    authorizeByMemberRoles(
-      [bankerRoleId, officerRoleId, modRoleId],
-      interaction
-    );
+    authorizeByMemberRoles([bankerRoleId, officerRoleId, modRoleId], interaction);
 
     const item = this.getOption(Option.Item, interaction);
     const embed = new EmbedBuilder();
@@ -28,15 +20,10 @@ class GetItemData extends Subcommand {
     if (!item) {
       throw new Error(`An item is required.`);
     } else {
-      const itemData = await bankData.getItemStockById(
-        parseInt(String(item.value))
-      );
+      const itemData = await bankData.getItemStockById(parseInt(String(item.value)));
 
       if (itemData) {
-        const countAvailable = itemData?.stock.reduce(
-          (total, s) => total + (s.count || 0),
-          0
-        );
+        const countAvailable = itemData?.stock.reduce((total, s) => total + (s.count || 0), 0);
         embed.setTitle(itemData.name);
         embed.setDescription(
           "id: " +
@@ -71,10 +58,7 @@ class GetItemData extends Subcommand {
     );
   }
 
-  public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction
-  ) {
+  public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction) {
     const input = interaction.options.getString("item");
     // console.log("input", input)
     switch (option) {

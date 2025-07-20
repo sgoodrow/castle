@@ -1,9 +1,4 @@
-import {
-  AutocompleteInteraction,
-  CacheType,
-  CommandInteraction,
-  EmbedBuilder,
-} from "discord.js";
+import { AutocompleteInteraction, CacheType, CommandInteraction, EmbedBuilder } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { bankData } from "../bank-data";
 import { bankRequestsChannelId } from "../../../config";
@@ -26,9 +21,7 @@ class BankRequest extends Subcommand {
     if (!item) {
       throw new Error(`An item is required.`);
     } else {
-      const stockList = await bankData.getItemStockById(
-        parseInt(String(item.value))
-      );
+      const stockList = await bankData.getItemStockById(parseInt(String(item.value)));
       let itemName = "unknown";
       if (!stockList?.stock || stockList?.stock.length === 0) {
         stockEmbed
@@ -38,10 +31,7 @@ class BankRequest extends Subcommand {
       } else {
         itemName = stockList?.name || "unknown";
         stockList?.stock[0].count;
-        const countAvailable = stockList?.stock.reduce(
-          (total, s) => total + (s.count || 0),
-          0
-        );
+        const countAvailable = stockList?.stock.reduce((total, s) => total + (s.count || 0), 0);
         let inStock = "";
         for (let i = 0; i < stockList?.stock.length && i <= 5; i++) {
           inStock += `${stockList?.stock[i].charName}: ${stockList?.stock[i].slot} (${stockList?.stock[i].count})\n`;
@@ -52,9 +42,7 @@ class BankRequest extends Subcommand {
         // todo: add confirmation buttons https://discordjs.guide/message-components/interactions.html#awaiting-components
         // interaction.editReply({
         // })
-        stockEmbed
-          .setTitle(`${countAvailable} available:`)
-          .setDescription(inStock);
+        stockEmbed.setTitle(`${countAvailable} available:`).setDescription(inStock);
       }
 
       let message = `${Icon.Request} ${interaction.user} requests:`;
@@ -89,18 +77,10 @@ class BankRequest extends Subcommand {
           .setAutocomplete(true)
       )
       .addStringOption((o) =>
-        o
-          .setName("count")
-          .setDescription("How many?")
-          .setRequired(true)
-          .setAutocomplete(true)
+        o.setName("count").setDescription("How many?").setRequired(true).setAutocomplete(true)
       )
       .addStringOption((o) =>
-        o
-          .setName("price")
-          .setDescription("Total price.")
-          .setRequired(false)
-          .setAutocomplete(true)
+        o.setName("price").setDescription("Total price.").setRequired(false).setAutocomplete(true)
       )
       .addStringOption((o) =>
         o
@@ -111,13 +91,12 @@ class BankRequest extends Subcommand {
       );
   }
 
-  public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction
-  ) {
+  public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction) {
     const input = interaction.options.getString("item");
     // console.log("input", input)
-    if (!input || input.length < 3) return [];
+    if (!input || input.length < 3) {
+      return [];
+    }
     switch (option) {
       case Option.Item:
         return await autoCompleteStockedItems(input);
@@ -157,7 +136,4 @@ async function autoCompleteItemPrice(itemId: string) {
   }
 }
 
-export const bankRequest = new BankRequest(
-  "request",
-  "Request an item from the guild bank."
-);
+export const bankRequest = new BankRequest("request", "Request an item from the guild bank.");

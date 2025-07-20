@@ -1,16 +1,7 @@
-import {
-  ButtonInteraction,
-  CacheType,
-  ChannelType,
-  Message,
-  User,
-} from "discord.js";
+import { ButtonInteraction, CacheType, ChannelType, Message, User } from "discord.js";
 import { bankerRoleId, bankRequestsChannelId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
-import {
-  getChannel,
-  requireInteractionMemberRole,
-} from "../../shared/command/util";
+import { getChannel, requireInteractionMemberRole } from "../../shared/command/util";
 
 class BankCleanupCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {
@@ -19,9 +10,7 @@ class BankCleanupCommand extends ButtonCommand {
     const messages = await bankRequestsChannel.messages.fetch();
 
     const nonBankerMessagesMap = messages
-      .filter(
-        (m) => !(m.member?.roles.cache.has(bankerRoleId) || m.member?.user.bot)
-      )
+      .filter((m) => !(m.member?.roles.cache.has(bankerRoleId) || m.member?.user.bot))
       .reduce((map, message) => {
         const id = message.author.id;
         if (!map[id]) {
@@ -56,9 +45,7 @@ ${messages.map((m) => this.getQuotedContent(m.content)).join("\n")}`);
     });
 
     await interaction.editReply({
-      content: `Removed stale bank requests from: ${Object.values(
-        nonBankerMessagesMap
-      )
+      content: `Removed stale bank requests from: ${Object.values(nonBankerMessagesMap)
         .map(({ user }) => user)
         .map((u) => `${u}`)
         .join(" ")}`,

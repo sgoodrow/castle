@@ -1,10 +1,5 @@
 import { InventoryItem } from "./bank-data";
-import {
-  uploadFileToFolder,
-  DriveFile,
-  findFiles,
-  updateFile,
-} from "../../services/gdrive";
+import { uploadFileToFolder, DriveFile, findFiles, updateFile } from "../../services/gdrive";
 
 export const outputfilesFolderId = "1DBaLEyUFsxCcYwJzFYblILgPu5sK8uT5";
 export const defaultUploadsFolderId = "1hYIR3o94diHF1dtNs_-x7BSp33bq4lDp";

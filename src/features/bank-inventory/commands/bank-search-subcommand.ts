@@ -1,9 +1,4 @@
-import {
-  AutocompleteInteraction,
-  CacheType,
-  CommandInteraction,
-  EmbedBuilder,
-} from "discord.js";
+import { AutocompleteInteraction, CacheType, CommandInteraction, EmbedBuilder } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { bankData } from "../bank-data";
 import { autoCompleteStockedItems } from "../helpers";
@@ -19,18 +14,13 @@ class BankSearch extends Subcommand {
     if (!item) {
       throw new Error(`An item is required.`);
     } else {
-      const stockList = await bankData.getItemStockById(
-        parseInt(String(item.value))
-      );
+      const stockList = await bankData.getItemStockById(parseInt(String(item.value)));
       if (!stockList?.stock || stockList?.stock.length === 0) {
         stockEmbed
           .setTitle("No stock found.")
           .setDescription("Item not found in current bank inventory.");
       } else {
-        const countAvailable = stockList?.stock.reduce(
-          (total, s) => total + (s.count || 0),
-          0
-        );
+        const countAvailable = stockList?.stock.reduce((total, s) => total + (s.count || 0), 0);
         let inStock = "";
         for (let i = 0; i < stockList?.stock.length && i <= 30; i++) {
           inStock += `${stockList?.stock[i].charName}: ${stockList?.stock[i].slot} (${stockList?.stock[i].count})\n`;
@@ -38,9 +28,7 @@ class BankSearch extends Subcommand {
         if (stockList?.stock.length > 40) {
           inStock += "[list truncated]";
         }
-        stockEmbed
-          .setTitle(`${countAvailable} available:`)
-          .setDescription(inStock);
+        stockEmbed.setTitle(`${countAvailable} available:`).setDescription(inStock);
       }
       interaction.editReply({
         content: "",
@@ -59,10 +47,7 @@ class BankSearch extends Subcommand {
     );
   }
 
-  public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction
-  ) {
+  public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction) {
     const input = interaction.options.getString("item");
     // console.log("input", input)
     switch (option) {
@@ -78,7 +63,4 @@ class BankSearch extends Subcommand {
   }
 }
 
-export const bankSearch = new BankSearch(
-  "search",
-  "Search for an item in the guild bank."
-);
+export const bankSearch = new BankSearch("search", "Search for an item in the guild bank.");
