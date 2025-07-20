@@ -11,12 +11,7 @@ import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
 import { getTextChannel, prismaClient } from "../..";
 import { Prisma } from "@prisma/client";
-import {
-  batphoneChannelId,
-  raiderRoleId,
-  trackerRoleId,
-  wakeupChannelId,
-} from "../../config";
+import { batphoneChannelId, raiderRoleId, trackerRoleId, wakeupChannelId } from "../../config";
 import { authorizeByMemberRoles } from "../../shared/command/util";
 import { officerRoleId, modRoleId, knightRoleId } from "../../config";
 import { error } from "console";
@@ -32,10 +27,7 @@ class sendBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     try {
       // authorize
-      authorizeByMemberRoles(
-        [officerRoleId, modRoleId, knightRoleId, trackerRoleId],
-        interaction
-      );
+      authorizeByMemberRoles([officerRoleId, modRoleId, knightRoleId, trackerRoleId], interaction);
 
       const bpChannel = await getTextChannel(batphoneChannelId);
       const val = this.getOption("message", interaction)?.value as string;
@@ -69,9 +61,7 @@ class sendBp extends Subcommand {
         // Wakeup
         if (wakeupChannelId) {
           const wakeupService = container.resolve(WakeupService);
-          wakeupService.runWakeup(
-            `Batphone. ${interaction.user} sent ${message}`
-          );
+          wakeupService.runWakeup(`Batphone. ${interaction.user} sent ${message}`);
         }
       } else {
         interaction.editReply("Failed to post batphone.");
@@ -93,24 +83,14 @@ class sendBp extends Subcommand {
 
   public get command() {
     return super.command.addStringOption((o) =>
-      o
-        .setName("message")
-        .setDescription("BP Message")
-        .setRequired(true)
-        .setAutocomplete(true)
+      o.setName("message").setDescription("BP Message").setRequired(true).setAutocomplete(true)
     );
   }
 }
 
 export const getBotButtonComponents = async (location: string) => {
-  const bots = await PublicAccountsFactory.getService().getBotsForBatphone(
-    location
-  );
-  log(
-    `loading bots for batphone in ${location} - ${bots
-      .map((b) => b.name)
-      .join(",")}`
-  );
+  const bots = await PublicAccountsFactory.getService().getBotsForBatphone(location);
+  log(`loading bots for batphone in ${location} - ${bots.map((b) => b.name).join(",")}`);
   const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
   let row;
   for (let i = 0; i < bots.length; i++) {
@@ -123,9 +103,7 @@ export const getBotButtonComponents = async (location: string) => {
     }
     log(`adding button for ${bots[i].name}`);
     row?.addComponents(
-      new RequestBotButtonCommand(
-        `requestbot_${bots[i].name}`
-      ).getButtonBuilder(bots[i])
+      new RequestBotButtonCommand(`requestbot_${bots[i].name}`).getButtonBuilder(bots[i])
     );
   }
   return components;
@@ -134,10 +112,7 @@ export const getBotButtonComponents = async (location: string) => {
 class setBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     // authorize
-    authorizeByMemberRoles(
-      [officerRoleId, modRoleId, knightRoleId],
-      interaction
-    );
+    authorizeByMemberRoles([officerRoleId, modRoleId, knightRoleId], interaction);
 
     const message = this.getOption("message", interaction)?.value;
     try {
@@ -150,8 +125,7 @@ class setBp extends Subcommand {
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
-        const location =
-          (this.getOption("location", interaction)?.value as string) || "";
+        const location = (this.getOption("location", interaction)?.value as string) || "";
         key = truncate(String(key), { length: 100 }); // max option length = 100
         await prismaClient.batphone.create({
           data: {
@@ -161,9 +135,7 @@ class setBp extends Subcommand {
           },
         });
         log(
-          `Created batphone - key: ${key}, location: ${
-            location || "unset"
-          }, message: ${message}`
+          `Created batphone - key: ${key}, location: ${location || "unset"}, message: ${message}`
         );
         interaction.editReply("Saved preset message: " + message);
       } else {
@@ -185,9 +157,7 @@ class setBp extends Subcommand {
   public async getOptionAutocomplete(
     _option: string,
     _interaction: AutocompleteInteraction<CacheType>
-  ): Promise<
-    ApplicationCommandOptionChoiceData<string | number>[] | undefined
-  > {
+  ): Promise<ApplicationCommandOptionChoiceData<string | number>[] | undefined> {
     switch (_option) {
       case "location":
         return LocationService.getInstance().getLocationOptions();
@@ -199,18 +169,10 @@ class setBp extends Subcommand {
   public get command() {
     return super.command
       .addStringOption((o) =>
-        o
-          .setName("message")
-          .setDescription("BP Message")
-          .setRequired(true)
-          .setAutocomplete(false)
+        o.setName("message").setDescription("BP Message").setRequired(true).setAutocomplete(false)
       )
       .addStringOption((o) =>
-        o
-          .setName("key")
-          .setDescription("Key (optional")
-          .setRequired(false)
-          .setAutocomplete(false)
+        o.setName("key").setDescription("Key (optional").setRequired(false).setAutocomplete(false)
       )
       .addStringOption((o) =>
         o
@@ -225,10 +187,7 @@ class setBp extends Subcommand {
 class unsetBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     // authorize
-    authorizeByMemberRoles(
-      [officerRoleId, modRoleId, knightRoleId],
-      interaction
-    );
+    authorizeByMemberRoles([officerRoleId, modRoleId, knightRoleId], interaction);
 
     const key = this.getOption("message", interaction)?.value;
     try {
@@ -259,11 +218,7 @@ class unsetBp extends Subcommand {
 
   public get command() {
     return super.command.addStringOption((o) =>
-      o
-        .setName("message")
-        .setDescription("BP Message")
-        .setRequired(true)
-        .setAutocomplete(true)
+      o.setName("message").setDescription("BP Message").setRequired(true).setAutocomplete(true)
     );
   }
 }
@@ -271,10 +226,7 @@ class unsetBp extends Subcommand {
 class getBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     // authorize
-    authorizeByMemberRoles(
-      [officerRoleId, modRoleId, knightRoleId, trackerRoleId],
-      interaction
-    );
+    authorizeByMemberRoles([officerRoleId, modRoleId, knightRoleId, trackerRoleId], interaction);
 
     try {
       const val = this.getOption("message", interaction)?.value as string;
@@ -336,11 +288,7 @@ To change this message, use \`/bp update\` to set a new message.
 
   public get command() {
     return super.command.addStringOption((o) =>
-      o
-        .setName("message")
-        .setDescription("BP Message")
-        .setRequired(true)
-        .setAutocomplete(true)
+      o.setName("message").setDescription("BP Message").setRequired(true).setAutocomplete(true)
     );
   }
 }
@@ -348,10 +296,7 @@ To change this message, use \`/bp update\` to set a new message.
 class updateBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     // authorize
-    authorizeByMemberRoles(
-      [officerRoleId, modRoleId, knightRoleId],
-      interaction
-    );
+    authorizeByMemberRoles([officerRoleId, modRoleId, knightRoleId], interaction);
 
     const message = this.getOption("message", interaction)?.value;
     try {
@@ -364,8 +309,7 @@ class updateBp extends Subcommand {
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
-        const location =
-          (this.getOption("location", interaction)?.value as string) || "";
+        const location = (this.getOption("location", interaction)?.value as string) || "";
         key = truncate(String(key), { length: 100 }); // max option length = 100
 
         const updateNoLocation = {
@@ -387,9 +331,7 @@ class updateBp extends Subcommand {
         });
 
         log(
-          `Updated batphone - key: ${key}, location: ${
-            location || "unset"
-          }, message: ${message}`
+          `Updated batphone - key: ${key}, location: ${location || "unset"}, message: ${message}`
         );
         interaction.editReply("Updated Batphone: " + key);
       } else {
@@ -411,9 +353,7 @@ class updateBp extends Subcommand {
 
   public async getOptionAutocomplete(
     option: string
-  ): Promise<
-    ApplicationCommandOptionChoiceData<string | number>[] | undefined
-  > {
+  ): Promise<ApplicationCommandOptionChoiceData<string | number>[] | undefined> {
     switch (option) {
       case "location":
         return LocationService.getInstance().getLocationOptions();
@@ -425,18 +365,10 @@ class updateBp extends Subcommand {
   public get command() {
     return super.command
       .addStringOption((o) =>
-        o
-          .setName("message")
-          .setDescription("BP Message")
-          .setRequired(true)
-          .setAutocomplete(false)
+        o.setName("message").setDescription("BP Message").setRequired(true).setAutocomplete(false)
       )
       .addStringOption((o) =>
-        o
-          .setName("key")
-          .setDescription("Key (optional")
-          .setRequired(false)
-          .setAutocomplete(false)
+        o.setName("key").setDescription("Key (optional").setRequired(false).setAutocomplete(false)
       )
       .addStringOption((o) =>
         o
@@ -448,14 +380,10 @@ class updateBp extends Subcommand {
   }
 }
 
-export const batphoneCommand = new Command(
-  "bp",
-  "set and send batphone messages",
-  [
-    new sendBp("send", "send batphone"),
-    new setBp("set", "save a BP preset"),
-    new unsetBp("unset", "remove BP preset"),
-    new getBp("get", "show BP message in this channel"),
-    new updateBp("update", "update a BP"),
-  ]
-);
+export const batphoneCommand = new Command("bp", "set and send batphone messages", [
+  new sendBp("send", "send batphone"),
+  new setBp("set", "save a BP preset"),
+  new unsetBp("unset", "remove BP preset"),
+  new getBp("get", "show BP message in this channel"),
+  new updateBp("update", "update a BP"),
+]);

@@ -7,24 +7,15 @@ import {
   PermissionFlagsBits,
 } from "discord.js";
 import { getGuild } from "../..";
-import {
-  raiderRoleId,
-  membersAndAlliesRoleId,
-  raidScheduleChannelId,
-} from "../../config";
+import { raiderRoleId, membersAndAlliesRoleId, raidScheduleChannelId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
-import {
-  readyActionExecutor,
-  ReadyActionExecutorOptions,
-} from "../../shared/action/ready-action";
+import { readyActionExecutor, ReadyActionExecutorOptions } from "../../shared/action/ready-action";
 import { DAYS } from "../../shared/time";
 import { EventRenderer } from "./event-renderer";
 
-export const updateRaidSchedule = (
-  client: Client,
-  options?: ReadyActionExecutorOptions
-) => readyActionExecutor(new UpdateRaidScheduleInfoAction(client), options);
+export const updateRaidSchedule = (client: Client, options?: ReadyActionExecutorOptions) =>
+  readyActionExecutor(new UpdateRaidScheduleInfoAction(client), options);
 
 class UpdateRaidScheduleInfoAction extends InstructionsReadyAction {
   public async execute() {
@@ -76,22 +67,14 @@ ${events.map((e) => e.toString()).join("\n\n")}`
           e.channel?.type != ChannelType.GuildVoice ||
           (e.channel?.type === ChannelType.GuildVoice &&
             !!e.scheduledStartTimestamp &&
-            [
-              GuildScheduledEventStatus.Scheduled,
-              GuildScheduledEventStatus.Active,
-            ].includes(e.status) &&
-            (e.channel
-              .permissionsFor(raiderRole)
-              .has(PermissionFlagsBits.ViewChannel) ||
-              e.channel
-                .permissionsFor(membersRole)
-                .has(PermissionFlagsBits.ViewChannel)) &&
+            [GuildScheduledEventStatus.Scheduled, GuildScheduledEventStatus.Active].includes(
+              e.status
+            ) &&
+            (e.channel.permissionsFor(raiderRole).has(PermissionFlagsBits.ViewChannel) ||
+              e.channel.permissionsFor(membersRole).has(PermissionFlagsBits.ViewChannel)) &&
             e.scheduledStartTimestamp <= nextWeek) // Added filter condition
       )
-      .sort(
-        (a, b) =>
-          (a.scheduledStartTimestamp || 0) - (b.scheduledStartTimestamp || 0)
-      )
+      .sort((a, b) => (a.scheduledStartTimestamp || 0) - (b.scheduledStartTimestamp || 0))
       .map((e) => new EventRenderer(e, 100))
       .slice(0, 12);
   }

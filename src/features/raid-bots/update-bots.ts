@@ -1,16 +1,8 @@
 import { EmbedBuilder } from "discord.js";
-import {
-  clientId,
-  guardOfficeChannelId,
-  guardRoleId,
-  raidBotsChannelId,
-} from "../../config";
+import { clientId, guardOfficeChannelId, guardRoleId, raidBotsChannelId } from "../../config";
 import { Name } from "../../db/instructions";
 import { accounts } from "../../services/accounts";
-import {
-  Options,
-  readyActionExecutor,
-} from "../../shared/action/ready-action-2";
+import { Options, readyActionExecutor } from "../../shared/action/ready-action-2";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action-2";
 import { sortBy } from "lodash";
 import { checkGoogleCredentials } from "../../services/gdrive";

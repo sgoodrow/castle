@@ -18,14 +18,8 @@ export class BindSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const name = this.getRequiredOptionValue(
-      Option.Name,
-      interaction
-    ) as string;
-    const bindLocation = this.getOptionValue(
-      Option.BindLocation,
-      interaction
-    ) as string;
+    const name = this.getRequiredOptionValue(Option.Name, interaction) as string;
+    const bindLocation = this.getOptionValue(Option.BindLocation, interaction) as string;
 
     try {
       this.publicAccountService.updateBotRowDetails(name, {
@@ -72,7 +66,4 @@ export class BindSubcommand extends Subcommand {
   }
 }
 
-export const bindSubCommand = new BindSubcommand(
-  "bind",
-  "Update a bot's bound location"
-);
+export const bindSubCommand = new BindSubcommand("bind", "Update a bot's bound location");

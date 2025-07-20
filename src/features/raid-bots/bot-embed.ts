@@ -3,10 +3,7 @@ import { botEmbedChannelId, raiderRoleId } from "../../config";
 import { Name } from "../../db/instructions";
 import { Bot } from "../../services/bot/public-accounts-sheet";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action-2";
-import {
-  Options,
-  readyActionExecutor,
-} from "../../shared/action/ready-action-2";
+import { Options, readyActionExecutor } from "../../shared/action/ready-action-2";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import moment from "moment";
 import { getClassAbreviation } from "../../shared/classes";
@@ -24,7 +21,9 @@ export const updateBotEmbed = (options: Options) => {
 };
 
 const truncate = (str: string, maxLength: number) => {
-  if (str.length <= maxLength) return str;
+  if (str.length <= maxLength) {
+    return str;
+  }
   return str.slice(0, maxLength - 3) + "...";
 };
 export const refreshBotEmbed = async () => {
@@ -47,9 +46,9 @@ export const refreshBotEmbed = async () => {
     }
     const botRow = `${icon} ${pilotName ? "~~" : ""} ${bot.name} (${
       bot.level
-    } ${getClassAbreviation(bot.class)}) - ${bot.location} ${
-      pilotName ? "~~" : ""
-    } ${pilotName ? "- " + pilotName : ""}\u200B\n`;
+    } ${getClassAbreviation(bot.class)}) - ${bot.location} ${pilotName ? "~~" : ""} ${
+      pilotName ? "- " + pilotName : ""
+    }\u200B\n`;
     if (botString.length + botRow.length > 3000) {
       botMessages.push(botString);
       botString = "";
@@ -63,10 +62,7 @@ export const refreshBotEmbed = async () => {
     .createOrUpdateInstructions({
       embeds: botMessages.map((message: string, idx: number) => {
         return new EmbedBuilder({
-          title:
-            idx === 0
-              ? `Castle bots - last updated ${moment().toLocaleString()}`
-              : "",
+          title: idx === 0 ? `Castle bots - last updated ${moment().toLocaleString()}` : "",
           description: message,
         });
       }),

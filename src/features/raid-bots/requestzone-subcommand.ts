@@ -1,9 +1,4 @@
-import {
-  CacheType,
-  CommandInteraction,
-  GuildMemberRoleManager,
-  spoiler,
-} from "discord.js";
+import { CacheType, CommandInteraction, GuildMemberRoleManager, spoiler } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { accounts } from "../../services/accounts";
 import { raidBotInstructions } from "./update-bots";
@@ -26,8 +21,7 @@ export class RequestZoneSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const location = this.getOption(Option.Location, interaction)
-      ?.value as string;
+    const location = this.getOption(Option.Location, interaction)?.value as string;
     const thread = await raidBotInstructions.getThread();
     if (!thread) {
       throw new Error(`Could not locate bot request thread.`);
@@ -38,20 +32,14 @@ export class RequestZoneSubcommand extends Subcommand {
     const release = await this.mutex.acquire();
     const publicAccounts = PublicAccountsFactory.getService();
 
-    const guildUser = await interaction.guild?.members.fetch(
-      interaction.user.id
-    );
+    const guildUser = await interaction.guild?.members.fetch(interaction.user.id);
 
     if (!guildUser) {
       throw new Error("Couldn't identify user requesting bot");
     }
 
     try {
-      log(
-        `${
-          guildUser.nickname || guildUser.user.username
-        } requested anything in ${location}`
-      );
+      log(`${guildUser.nickname || guildUser.user.username} requested anything in ${location}`);
       try {
         firstBot = await publicAccounts.getFirstAvailableBotByLocation(
           location,
@@ -59,9 +47,7 @@ export class RequestZoneSubcommand extends Subcommand {
         );
       } catch (err) {
         status = "❌ Denied";
-        await interaction.editReply(
-          `No bot was found matching the provided criteria.`
-        );
+        await interaction.editReply(`No bot was found matching the provided criteria.`);
         const message = await thread.send("OK");
         let response = `${status} ${interaction.user} access to the first available bot at ${location}`;
         response += `. (${err})`;
@@ -93,9 +79,7 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
             [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment().toString(),
           });
         } catch (err) {
-          throw new Error(
-            "Failed to update public record, check the configuration"
-          );
+          throw new Error("Failed to update public record, check the configuration");
         }
       } catch (err) {
         status = "❌ Denied";

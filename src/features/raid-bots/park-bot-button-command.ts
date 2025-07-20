@@ -1,9 +1,4 @@
-import {
-  ButtonBuilder,
-  ButtonInteraction,
-  ButtonStyle,
-  CacheType,
-} from "discord.js";
+import { ButtonBuilder, ButtonInteraction, ButtonStyle, CacheType } from "discord.js";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { bot } from "@prisma/client";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
@@ -15,22 +10,14 @@ export class ParkBotButtonCommand extends ButtonCommand {
     super(name);
   }
 
-  public async execute(
-    interaction: ButtonInteraction<CacheType>
-  ): Promise<void> {
+  public async execute(interaction: ButtonInteraction<CacheType>): Promise<void> {
     interaction.editReply({
       content: "Checking permissions",
     });
 
     const name = interaction.customId.split("_")[1];
-    const guildUser = await interaction.guild?.members.fetch(
-      interaction.user.id
-    );
-    log(
-      `${
-        guildUser?.nickname || guildUser?.user.username
-      } clicked bot park button for ${name}`
-    );
+    const guildUser = await interaction.guild?.members.fetch(interaction.user.id);
+    log(`${guildUser?.nickname || guildUser?.user.username} clicked bot park button for ${name}`);
 
     try {
       const parkDetails = {
@@ -39,13 +26,8 @@ export class ParkBotButtonCommand extends ButtonCommand {
         [BOT_SPREADSHEET_COLUMNS.CurrentLocation]: undefined,
       };
 
-      await PublicAccountsFactory.getService().updateBotRowDetails(
-        name,
-        parkDetails
-      );
-      await interaction.editReply(
-        `${name} was released in its previous location`
-      );
+      await PublicAccountsFactory.getService().updateBotRowDetails(name, parkDetails);
+      await interaction.editReply(`${name} was released in its previous location`);
     } catch (error) {
       await interaction.editReply(`Failed to move bot: ${error}`);
     }

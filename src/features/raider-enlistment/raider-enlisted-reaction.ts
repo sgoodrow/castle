@@ -1,9 +1,4 @@
-import {
-  MessageReaction,
-  PartialMessageReaction,
-  PartialUser,
-  User,
-} from "discord.js";
+import { MessageReaction, PartialMessageReaction, PartialUser, User } from "discord.js";
 import {
   inactiveRaiderRoleId,
   knightRoleId,
@@ -11,10 +6,7 @@ import {
   raiderEnlistmentChannelId,
   raiderRoleId,
 } from "../../config";
-import {
-  ReactionAction,
-  reactionActionExecutor,
-} from "../../shared/action/reaction-action";
+import { ReactionAction, reactionActionExecutor } from "../../shared/action/reaction-action";
 
 export const tryRaiderEnlistedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -35,12 +27,7 @@ class RaiderEnlistedReactionAction extends ReactionAction {
 
     // authorize user
     const reactor = await this.members?.fetch(this.user.id);
-    if (
-      !(
-        reactor?.roles.cache.has(knightRoleId) ||
-        reactor?.roles.cache.has(officerRoleId)
-      )
-    ) {
+    if (!(reactor?.roles.cache.has(knightRoleId) || reactor?.roles.cache.has(officerRoleId))) {
       return;
     }
 
@@ -67,9 +54,7 @@ class RaiderEnlistedReactionAction extends ReactionAction {
         })
       ).values(),
     ];
-    const newRaiderMessages = messages.filter(
-      (m) => m.author.id === newRaider.id
-    );
+    const newRaiderMessages = messages.filter((m) => m.author.id === newRaider.id);
     const newRaiderMessagesIds = newRaiderMessages.map((m) => m.id);
     const repliesToNewRaiderMessages = messages.filter(
       (m) =>
@@ -80,11 +65,7 @@ class RaiderEnlistedReactionAction extends ReactionAction {
         // its a reply to a message that is queued to be deleted
         newRaiderMessagesIds.includes(m.reference.messageId)
     );
-    newRaiderMessages
-      .filter((m) => m.embeds.length === 0)
-      .map((m) => m.delete());
-    repliesToNewRaiderMessages
-      .filter((m) => m.embeds.length === 0)
-      .map((m) => m.delete());
+    newRaiderMessages.filter((m) => m.embeds.length === 0).map((m) => m.delete());
+    repliesToNewRaiderMessages.filter((m) => m.embeds.length === 0).map((m) => m.delete());
   }
 }

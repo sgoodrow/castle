@@ -19,14 +19,8 @@ export class ParkSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const name = this.getRequiredOptionValue(
-      Option.Name,
-      interaction
-    ) as string;
-    const location = this.getOptionValue(
-      Option.Location,
-      interaction
-    ) as string;
+    const name = this.getRequiredOptionValue(Option.Name, interaction) as string;
+    const location = this.getOptionValue(Option.Location, interaction) as string;
 
     try {
       const parkDetails = {
@@ -37,17 +31,11 @@ export class ParkSubcommand extends Subcommand {
 
       await this.publicAccountService.updateBotRowDetails(name, parkDetails);
       if (location) {
-        await interaction.editReply(
-          `${name} was released and moved to ${location}`
-        );
+        await interaction.editReply(`${name} was released and moved to ${location}`);
       } else {
-        await interaction.editReply(
-          `${name} was released in its previous location`
-        );
+        await interaction.editReply(`${name} was released in its previous location`);
       }
-      const guildUser = await interaction.guild?.members.fetch(
-        interaction.user.id
-      );
+      const guildUser = await interaction.guild?.members.fetch(interaction.user.id);
       log(
         `${guildUser?.nickname || guildUser?.user.username} parked ${name} ${
           location ? `in ${location}` : ""

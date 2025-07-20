@@ -14,9 +14,7 @@ ${this.date}${this.countdown}${this.description}`;
 
   private get countdown() {
     return this.within24Hours(this.data.scheduledStartTimestamp || 0)
-      ? ` (<t:${Math.floor(
-          (this.data.scheduledStartTimestamp || 0) / 1000
-        )}:R>)`
+      ? ` (<t:${Math.floor((this.data.scheduledStartTimestamp || 0) / 1000)}:R>)`
       : "";
   }
 

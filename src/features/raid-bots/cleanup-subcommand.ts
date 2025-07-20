@@ -27,17 +27,10 @@ export class CleanupSubcommand extends Subcommand {
       if (!thread) {
         throw new Error(`Could not locate bot request thread.`);
       }
-      const hours = this.getRequiredOptionValue(
-        Option.Hours,
-        interaction
-      ) as number;
-      const cleanupCount = await this.publicAccountService.cleanupCheckouts(
-        hours
-      );
+      const hours = this.getRequiredOptionValue(Option.Hours, interaction) as number;
+      const cleanupCount = await this.publicAccountService.cleanupCheckouts(hours);
       if (hours) {
-        await interaction.editReply(
-          `Checkouts older than ${hours} hour(s) have been cleaned up`
-        );
+        await interaction.editReply(`Checkouts older than ${hours} hour(s) have been cleaned up`);
         const logMsg = await thread.send("OK");
         logMsg.edit(
           `✅ ${interaction.user} ran the bot cleanup command: ${hours} hour(s) cleaned up, ${cleanupCount} bot(s) auto-parked`
@@ -62,9 +55,7 @@ export class CleanupSubcommand extends Subcommand {
   public getOptionAutocomplete(
     option: string,
     interaction: AutocompleteInteraction<CacheType>
-  ): Promise<
-    ApplicationCommandOptionChoiceData<string | number>[] | undefined
-  > {
+  ): Promise<ApplicationCommandOptionChoiceData<string | number>[] | undefined> {
     throw new Error("Method not implemented.");
   }
 }
