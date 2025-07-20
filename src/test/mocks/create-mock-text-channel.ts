@@ -1,15 +1,8 @@
-import {
-  TextChannel,
-  ChannelType,
-  Message,
-  MessageCreateOptions,
-} from "discord.js";
+import { TextChannel, ChannelType, Message, MessageCreateOptions } from "discord.js";
 import { createTypedMock } from "../utils/create-typed-mock";
 
 export type MockTextChannel = Pick<TextChannel, "id" | "type"> & {
-  send: jest.MockedFunction<
-    (options: MessageCreateOptions | string) => Promise<Message>
-  >;
+  send: jest.MockedFunction<(options: MessageCreateOptions | string) => Promise<Message>>;
 };
 
 export interface MockChannelOptions {
@@ -23,8 +16,6 @@ export function createMockTextChannel({
   return {
     id,
     type: ChannelType.GuildText,
-    send: createTypedMock<
-      (options: MessageCreateOptions | string) => Promise<Message>
-    >(),
+    send: createTypedMock<(options: MessageCreateOptions | string) => Promise<Message>>(),
   };
 }

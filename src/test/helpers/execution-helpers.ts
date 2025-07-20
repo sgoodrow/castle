@@ -9,9 +9,6 @@ export async function executeButtonCommand(
   await command.execute(interaction);
 }
 
-export async function executeReadyAction<T>(
-  fn: (client: Client) => T,
-  client: Client
-): Promise<T> {
+export async function executeReadyAction<T>(fn: (client: Client) => T, client: Client): Promise<T> {
   return fn(client);
 }

@@ -2,9 +2,7 @@ import { User, Message, MessageCreateOptions } from "discord.js";
 import { createTypedMock } from "../utils/create-typed-mock";
 
 export type MockUser = Pick<User, "id" | "username"> & {
-  send: jest.MockedFunction<
-    (options: MessageCreateOptions) => Promise<Message>
-  >;
+  send: jest.MockedFunction<(options: MessageCreateOptions) => Promise<Message>>;
 };
 
 export interface MockUserOptions {
@@ -19,8 +17,6 @@ export function createMockUser({
   return {
     id,
     username,
-    send: createTypedMock<
-      (options: MessageCreateOptions) => Promise<Message>
-    >(),
+    send: createTypedMock<(options: MessageCreateOptions) => Promise<Message>>(),
   };
 }

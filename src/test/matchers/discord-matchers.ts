@@ -27,9 +27,7 @@ declare global {
 expect.extend({
   toHaveSentDm(
     received: {
-      send: jest.MockedFunction<
-        (options: MessageCreateOptions) => Promise<Message>
-      >;
+      send: jest.MockedFunction<(options: MessageCreateOptions) => Promise<Message>>;
     },
     expectedContent?: string | RegExp
   ) {
@@ -58,8 +56,7 @@ expect.extend({
 
     if (!actualContent) {
       return {
-        message: () =>
-          `Expected user to have sent a DM with content, but no content found`,
+        message: () => `Expected user to have sent a DM with content, but no content found`,
         pass: false,
       };
     }
@@ -88,8 +85,7 @@ expect.extend({
 
     if (!mockSend.mock.calls.length) {
       return {
-        message: () =>
-          `Expected channel to have sent a message, but no message was sent`,
+        message: () => `Expected channel to have sent a message, but no message was sent`,
         pass: false,
       };
     }
@@ -110,8 +106,7 @@ expect.extend({
 
     if (!actualContent) {
       return {
-        message: () =>
-          `Expected channel to have sent a message with content, but no content found`,
+        message: () => `Expected channel to have sent a message with content, but no content found`,
         pass: false,
       };
     }
@@ -140,8 +135,7 @@ expect.extend({
 
     if (!mockSend.mock.calls.length) {
       return {
-        message: () =>
-          `Expected to have received a message, but no message was received`,
+        message: () => `Expected to have received a message, but no message was received`,
         pass: false,
       };
     }
@@ -162,8 +156,7 @@ expect.extend({
 
     if (!actualContent) {
       return {
-        message: () =>
-          `Expected to have received a message with content, but no content found`,
+        message: () => `Expected to have received a message with content, but no content found`,
         pass: false,
       };
     }
@@ -196,10 +189,7 @@ expect.extend({
   },
 
   toHaveCustomId(
-    received:
-      | ButtonBuilder
-      | { customId: string }
-      | { data: { custom_id: string } },
+    received: ButtonBuilder | { customId: string } | { data: { custom_id: string } },
     expectedCustomId: string
   ) {
     const actualCustomId =
@@ -221,9 +211,7 @@ expect.extend({
 
   toHaveReplied(
     received: {
-      reply: jest.MockedFunction<
-        (options: { content: string }) => Promise<InteractionResponse>
-      >;
+      reply: jest.MockedFunction<(options: { content: string }) => Promise<InteractionResponse>>;
     },
     expectedContent: string | RegExp
   ) {
@@ -231,8 +219,7 @@ expect.extend({
 
     if (!mockReply.mock.calls.length) {
       return {
-        message: () =>
-          `Expected interaction to have replied, but no reply was sent`,
+        message: () => `Expected interaction to have replied, but no reply was sent`,
         pass: false,
       };
     }
@@ -256,9 +243,7 @@ expect.extend({
 
   toHaveEditedReply(
     received: {
-      editReply: jest.MockedFunction<
-        (options: { content: string }) => Promise<Message>
-      >;
+      editReply: jest.MockedFunction<(options: { content: string }) => Promise<Message>>;
     },
     expectedContent: string | RegExp
   ) {
@@ -266,14 +251,12 @@ expect.extend({
 
     if (!mockEditReply.mock.calls.length) {
       return {
-        message: () =>
-          `Expected interaction to have edited a reply, but no edit-reply was sent`,
+        message: () => `Expected interaction to have edited a reply, but no edit-reply was sent`,
         pass: false,
       };
     }
 
-    const lastCall =
-      mockEditReply.mock.calls[mockEditReply.mock.calls.length - 1];
+    const lastCall = mockEditReply.mock.calls[mockEditReply.mock.calls.length - 1];
     const actualContent = lastCall[0]?.content || lastCall[0];
 
     const contentMatches =
@@ -292,8 +275,7 @@ expect.extend({
 
   toMatchFixture(received: EmbedBuilder, expectedEmbed: object) {
     const actualEmbed = received.toJSON();
-    const embedsMatch =
-      JSON.stringify(expectedEmbed) === JSON.stringify(actualEmbed);
+    const embedsMatch = JSON.stringify(expectedEmbed) === JSON.stringify(actualEmbed);
 
     return {
       message: () =>

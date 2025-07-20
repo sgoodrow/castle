@@ -4,9 +4,7 @@ export interface MockClientOptions {
   id?: string;
 }
 
-export function createMockClient({
-  id = "bot123456",
-}: MockClientOptions = {}): Client {
+export function createMockClient({ id = "bot123456" }: MockClientOptions = {}): Client {
   // Create a minimal Client mock that satisfies the interface
   const mockClient = {
     user: {

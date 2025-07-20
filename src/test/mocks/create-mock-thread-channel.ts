@@ -1,15 +1,8 @@
-import {
-  PublicThreadChannel,
-  ChannelType,
-  Message,
-  MessageCreateOptions,
-} from "discord.js";
+import { PublicThreadChannel, ChannelType, Message, MessageCreateOptions } from "discord.js";
 import { createTypedMock } from "../utils/create-typed-mock";
 
 export type MockThreadChannel = Pick<PublicThreadChannel, "id" | "type"> & {
-  send: jest.MockedFunction<
-    (options: MessageCreateOptions | string) => Promise<Message>
-  >;
+  send: jest.MockedFunction<(options: MessageCreateOptions | string) => Promise<Message>>;
 };
 
 export interface MockChannelOptions {
@@ -23,8 +16,6 @@ export function createMockThreadChannel({
   return {
     id,
     type: ChannelType.PublicThread,
-    send: createTypedMock<
-      (options: MessageCreateOptions | string) => Promise<Message>
-    >(),
+    send: createTypedMock<(options: MessageCreateOptions | string) => Promise<Message>>(),
   };
 }

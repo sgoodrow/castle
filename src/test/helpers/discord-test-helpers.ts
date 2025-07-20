@@ -1,70 +1,45 @@
 /**
- * Lightweight helpers to reduce Discord test boilerplate
- * Drop these into existing tests without changing test structure
+ * Discord testing utilities and constants
+ * NOTE: Mocking is now handled globally in src/test/setup.ts
+ * This file contains only utility functions and constants
  */
 
 /**
- * Common config values for Discord tests
+ * Standard test configuration constants
+ * Use these in your tests to avoid magic strings
  */
 export const DISCORD_TEST_CONFIG = {
-  requestDumpThreadId: "111222333",
   applicationsChannelId: "999888777",
+  requestDumpThreadId: "111222333",
 } as const;
 
 /**
- * Helper to create the standard Discord action mocks
- * Returns the mock functions so you can use them in assertions
+ * Common Discord channel types for testing
  */
-export function createDiscordActionMocks() {
-  const mockCreateOrUpdateInstructions = jest.fn();
-  const mockGetChannel = jest.fn();
+export const DISCORD_CHANNEL_TYPES = {
+  GUILD_TEXT: 0,
+  PUBLIC_THREAD: 11,
+  PRIVATE_THREAD: 12,
+} as const;
 
+/**
+ * Helper to create a consistent thread channel mock structure
+ */
+export function createThreadChannelMock(id = "111222333") {
   return {
-    mocks: {
-      createOrUpdateInstructions: mockCreateOrUpdateInstructions,
-      getChannel: mockGetChannel,
-    },
-    mockClass: class {
-      createOrUpdateInstructions = mockCreateOrUpdateInstructions;
-      getChannel = mockGetChannel;
-    },
+    id,
+    type: DISCORD_CHANNEL_TYPES.PUBLIC_THREAD,
+    send: jest.fn().mockResolvedValue(undefined),
   };
 }
 
 /**
- * Helper to quickly set up the standard Discord test mocks
- * Use this to replace the repetitive jest.mock() calls
+ * Helper to create a consistent text channel mock structure
  */
-export function setupDiscordMocks(configOverrides: Record<string, any> = {}) {
-  const actionMocks = createDiscordActionMocks();
-
-  // Mock config
-  jest.mock("../../config", () => ({
-    ...DISCORD_TEST_CONFIG,
-    ...configOverrides,
-  }));
-
-  // Mock instructions ready action
-  jest.mock("../../shared/action/instructions-ready-action", () => ({
-    InstructionsReadyAction: actionMocks.mockClass,
-  }));
-
-  // Mock ready action executor
-  jest.mock("../../shared/action/ready-action", () => ({
-    readyActionExecutor: jest.fn((action) => action.execute()),
-  }));
-
-  return actionMocks.mocks;
+export function createTextChannelMock(id = "999888777") {
+  return {
+    id,
+    type: DISCORD_CHANNEL_TYPES.GUILD_TEXT,
+    send: jest.fn().mockResolvedValue(undefined),
+  };
 }
-
-/**
- * Helper to reset all common Discord mocks
- * Call this in beforeEach instead of manually resetting each mock
- */
-export function resetDiscordMocks(mocks: {
-  createOrUpdateInstructions: jest.MockedFunction<any>;
-  getChannel: jest.MockedFunction<any>;
-}) {
-  mocks.createOrUpdateInstructions.mockReset();
-  mocks.getChannel.mockReset();
-} 
