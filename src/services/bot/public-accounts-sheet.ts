@@ -6,10 +6,7 @@ import {
 } from "../../config";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../../shared/time";
-import {
-  ApplicationCommandOptionChoiceData,
-  GuildMemberRoleManager,
-} from "discord.js";
+import { ApplicationCommandOptionChoiceData, GuildMemberRoleManager } from "discord.js";
 import { truncate } from "lodash";
 import { checkGoogleCredentials } from "../gdrive";
 import moment from "moment";
@@ -63,25 +60,14 @@ export class SheetPublicAccountService implements IPublicAccountService {
   }
 
   public async updateBotLocation(botName: string, location: string) {
-    await this.updatePublicAccountSheet(
-      botName,
-      BOT_SPREADSHEET_COLUMNS.CurrentLocation,
-      location
-    );
+    await this.updatePublicAccountSheet(botName, BOT_SPREADSHEET_COLUMNS.CurrentLocation, location);
   }
 
   public async updateBotPilot(botName: string, botPilot: string) {
-    await this.updatePublicAccountSheet(
-      botName,
-      BOT_SPREADSHEET_COLUMNS.CurrentPilot,
-      botPilot
-    );
+    await this.updatePublicAccountSheet(botName, BOT_SPREADSHEET_COLUMNS.CurrentPilot, botPilot);
   }
 
-  public async updateBotCheckoutTime(
-    botName: string,
-    dateTime: moment.Moment | null
-  ) {
+  public async updateBotCheckoutTime(botName: string, dateTime: moment.Moment | null) {
     await this.updatePublicAccountSheet(
       botName,
       BOT_SPREADSHEET_COLUMNS.CheckoutTime,
@@ -98,9 +84,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
       const botRowIndex = rows.findIndex(
-        (r) =>
-          r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
-          botName.toLowerCase()
+        (r) => r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() === botName.toLowerCase()
       );
       if (botRowIndex !== -1) {
         // do update
@@ -130,9 +114,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
       const botRowIndex = rows.findIndex(
-        (r) =>
-          r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
-          botName.toLowerCase()
+        (r) => r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() === botName.toLowerCase()
       );
       if (botRowIndex !== -1) {
         // do update
@@ -167,16 +149,13 @@ export class SheetPublicAccountService implements IPublicAccountService {
       const rows = await this.botInfoSheet.getRows();
       const classRows = rows.filter(
         (r) =>
-          (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() ===
-          botClass.toUpperCase()
+          (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() === botClass.toUpperCase()
       );
       if (!classRows.length) {
         throw Error(`Could not find any classes matching ${botClass}.`);
       }
       log(`Looking for ${botClass} and found ${classRows.length} options.`);
-      const availableClassRows = classRows.filter(
-        (r) => !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
-      );
+      const availableClassRows = classRows.filter((r) => !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]);
       log(`Looking for ${botClass} and found ${classRows.length} available.`);
       const matches = location
         ? availableClassRows.filter((r) =>
@@ -200,15 +179,11 @@ export class SheetPublicAccountService implements IPublicAccountService {
     throw new Error("Method not implemented.");
   }
 
-  public async getCurrentBotPilot(
-    botName: string
-  ): Promise<string | undefined> {
+  public async getCurrentBotPilot(botName: string): Promise<string | undefined> {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
-      const botRowIndex = rows.findIndex(
-        (r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName
-      );
+      const botRowIndex = rows.findIndex((r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName);
       if (botRowIndex !== -1) {
         // do update
         const row = rows.at(botRowIndex);
@@ -226,9 +201,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
       const botRowIndex = rows.findIndex(
-        (r) =>
-          r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
-          botName.toLowerCase()
+        (r) => r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() === botName.toLowerCase()
       );
       return botRowIndex !== -1;
     }
@@ -277,9 +250,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
     if (this.sheet) {
       return this.sheet.useServiceAccountAuth({
         client_email: GOOGLE_CLIENT_EMAIL,
-        private_key: (GOOGLE_PRIVATE_KEY || "")
-          .split(String.raw`\n`)
-          .join("\n"),
+        private_key: (GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join("\n"),
       });
     }
   }

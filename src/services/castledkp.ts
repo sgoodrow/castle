@@ -4,11 +4,7 @@ import { partition } from "lodash";
 import LRUCache from "lru-cache";
 import moment from "moment";
 import { castleDkpTokenRO } from "../config";
-import {
-  AdjustmentData,
-  RaidTick,
-  UPLOAD_DATE_FORMAT,
-} from "../features/dkp-records/raid-tick";
+import { AdjustmentData, RaidTick, UPLOAD_DATE_FORMAT } from "../features/dkp-records/raid-tick";
 import { MINUTES, MONTHS } from "../shared/time";
 import { betaDkpService } from "./betaDkpService";
 
@@ -73,10 +69,7 @@ const getEvents = async () => {
     if (name.includes("legacy")) {
       return;
     }
-    const abreviation = name.substring(
-      name.indexOf("[") + 1,
-      name.indexOf("]")
-    );
+    const abreviation = name.substring(name.indexOf("[") + 1, name.indexOf("]"));
     const shortName = name.replace(`[${abreviation}]`, "").trim();
     events.set(name.trim(), {
       id,
@@ -164,23 +157,15 @@ export const castledkp = {
       raid_note: `${name} ${threadUrl}`,
     };
     console.log("Creating new raid:", payload);
-    const { data } = await client.post<{ raid_id: number }>(
-      route("add_raid"),
-      payload
-    );
+    const { data } = await client.post<{ raid_id: number }>(route("add_raid"), payload);
 
     return {
-      eventUrlSlug: event.name
-        .toLowerCase()
-        .replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
+      eventUrlSlug: event.name.toLowerCase().replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
       id: data.raid_id,
     };
   },
 
-  createRaidFromTick: async (
-    tick: RaidTick,
-    threadUrl: string
-  ): Promise<CreateRaidResponse> => {
+  createRaidFromTick: async (tick: RaidTick, threadUrl: string): Promise<CreateRaidResponse> => {
     // validate ticks
     if (tick.data.event === undefined) {
       throw new Error(`Tick is missing an event type.`);
@@ -190,9 +175,7 @@ export const castledkp = {
     }
 
     // get character ids
-    const { characters, invalidNames } = await castledkp.getCharacters([
-      ...tick.data.attendees,
-    ]);
+    const { characters, invalidNames } = await castledkp.getCharacters([...tick.data.attendees]);
     const characterIds = characters.map((v) => v.id);
     if (!characterIds.length) {
       throw new Error(`Tick has no valid characters.`);
@@ -207,23 +190,16 @@ export const castledkp = {
       raid_note: `${tick.uploadNote} ${threadUrl}`,
     };
     console.log("Creating raid tick", payload);
-    const { data } = await client.post<{ raid_id: number }>(
-      route("add_raid"),
-      payload
-    );
+    const { data } = await client.post<{ raid_id: number }>(route("add_raid"), payload);
 
     // add items to raid
     console.log("Adding items to raid", tick.data.loot);
-    await Promise.all(
-      tick.data.loot.map((l) => castledkp.addItem(data.raid_id, l))
-    );
+    await Promise.all(tick.data.loot.map((l) => castledkp.addItem(data.raid_id, l)));
 
     // add adjustments to raid
     console.log("Adding adjustments to raid", tick.data.adjustments);
     await Promise.all(
-      tick.data.adjustments?.map((a) =>
-        castledkp.addAdjustment(data.raid_id, a)
-      ) || []
+      tick.data.adjustments?.map((a) => castledkp.addAdjustment(data.raid_id, a)) || []
     );
 
     // Temporarily create data using the beta service as well; this is not async and is fault tolerant.
@@ -246,9 +222,7 @@ export const castledkp = {
       });
 
     return {
-      eventUrlSlug: tick.data.event.name
-        .toLowerCase()
-        .replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
+      eventUrlSlug: tick.data.event.name.toLowerCase().replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
       id: data.raid_id,
       tick: tick,
       invalidNames,
@@ -274,9 +248,7 @@ export const castledkp = {
   getCharacter: async (name: string, requireExists = true) => {
     const character = await getCharacter(name);
     if (!character && requireExists) {
-      throw new Error(
-        `Character named '${name}' does not exist on CastleDKP.com`
-      );
+      throw new Error(`Character named '${name}' does not exist on CastleDKP.com`);
     }
     return character;
   },
@@ -291,9 +263,7 @@ export const castledkp = {
   ) => {
     const character = await castledkp.getCharacter(loot.buyer);
     if (!character) {
-      throw new Error(
-        `Cannot add item to non-existent character ${loot.buyer}`
-      );
+      throw new Error(`Cannot add item to non-existent character ${loot.buyer}`);
     }
     return client.post(route("add_item"), {
       item_date: moment().format(UPLOAD_DATE_FORMAT),
@@ -308,9 +278,7 @@ export const castledkp = {
   addAdjustment: async (raidId: number, adjustment: AdjustmentData) => {
     const character = await castledkp.getCharacter(adjustment.player);
     if (!character) {
-      throw new Error(
-        `Cannot add adjustment to non-existent character ${adjustment.player}`
-      );
+      throw new Error(`Cannot add adjustment to non-existent character ${adjustment.player}`);
     }
     return client.post(route("add_adjustment"), {
       adjustment_date: moment().format(UPLOAD_DATE_FORMAT),

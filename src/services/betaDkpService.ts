@@ -22,10 +22,10 @@ client.interceptors.request.use((config) => {
 
 export const betaDkpService = {
   upsertRaidActivityType: async (name: string, defaultPayout: number) => {
-    const response = await client.post<{ id: number }>(
-      "/api/v1/raid-activity-type/upsert",
-      { name, defaultPayout }
-    );
+    const response = await client.post<{ id: number }>("/api/v1/raid-activity-type/upsert", {
+      name,
+      defaultPayout,
+    });
     return response.data.id;
   },
 
@@ -44,10 +44,7 @@ export const betaDkpService = {
       activity: {
         typeId,
         createdAt: raidTick.data.date,
-        payout:
-          raidTick.data.value === undefined
-            ? undefined
-            : Number(raidTick.data.value),
+        payout: raidTick.data.value === undefined ? undefined : Number(raidTick.data.value),
         note: raidTick.note,
         attendees: raidTick.data.attendees.map((name) => ({
           characterName: name,

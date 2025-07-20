@@ -21,9 +21,6 @@ dataSource
     // https://github.com/typeorm/typeorm/issues/3286#issuecomment-486991573
     const driver = c.driver as unknown;
     driver.postgres.defaults.parseInputDatesAsUTC = true;
-    driver.postgres.types.setTypeParser(
-      1114,
-      (str: string) => new Date(str + "Z")
-    );
+    driver.postgres.types.setTypeParser(1114, (str: string) => new Date(str + "Z"));
   })
   .catch(console.error);
