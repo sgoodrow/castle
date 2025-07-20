@@ -1,9 +1,4 @@
-import {
-  MessageReaction,
-  PartialMessageReaction,
-  PartialUser,
-  User,
-} from "discord.js";
+import { MessageReaction, PartialMessageReaction, PartialUser, User } from "discord.js";
 
 export const reactionActionExecutor = async (action: ReactionAction) => {
   await action.initialize();
@@ -40,9 +35,7 @@ export abstract class ReactionAction {
   protected get authorId() {
     const authorId = this.reaction.message.author?.id;
     if (!authorId) {
-      throw new Error(
-        "Something went wrong when retrieving the message author."
-      );
+      throw new Error("Something went wrong when retrieving the message author.");
     }
     return authorId;
   }

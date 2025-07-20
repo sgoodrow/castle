@@ -10,10 +10,7 @@ export class InstructionsReadyAction {
     private readonly threadName?: string
   ) {}
 
-  public async createOrUpdateInstructions(
-    options: BaseMessageOptions,
-    pin = false
-  ) {
+  public async createOrUpdateInstructions(options: BaseMessageOptions, pin = false) {
     let message = await this.getInstructionsMessage();
 
     if (!message) {

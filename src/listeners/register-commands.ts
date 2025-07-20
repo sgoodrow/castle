@@ -63,27 +63,19 @@ const buttonCommands = [
 ];
 
 export const getCommand = (
-  interaction:
-    | CommandInteraction<CacheType>
-    | AutocompleteInteraction<CacheType>
+  interaction: CommandInteraction<CacheType> | AutocompleteInteraction<CacheType>
 ) => {
   const command = slashCommands.find((c) => c.name === interaction.commandName);
   if (!command) {
-    throw new Error(
-      `Could not find slash command **/${interaction.commandName}**`
-    );
+    throw new Error(`Could not find slash command **/${interaction.commandName}**`);
   }
   return command;
 };
 
 export const getButton = (interaction: ButtonInteraction<CacheType>) => {
-  const command = buttonCommands.find((c) =>
-    interaction.customId.includes(c.customId)
-  );
+  const command = buttonCommands.find((c) => interaction.customId.includes(c.customId));
   if (!command) {
-    throw new Error(
-      `Could not find button command **${interaction.customId}**`
-    );
+    throw new Error(`Could not find button command **${interaction.customId}**`);
   }
   return command;
 };

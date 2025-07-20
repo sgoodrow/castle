@@ -147,8 +147,7 @@ export const itemsData = {
   "a stone key": "/A_Stone_Key",
   "a strategic map of kithicor": "/A_strategic_map_of_Kithicor",
   "a tattered note": "/A_tattered_note",
-  "a tattered note (shaman skull quest 2)":
-    "/A_Tattered_Note_(Shaman_Skull_Quest_2)",
+  "a tattered note (shaman skull quest 2)": "/A_Tattered_Note_(Shaman_Skull_Quest_2)",
   "a torch": "/A_Torch",
   "a tump stump": "/A_Tump_Stump",
   "a twisted stalk": "/A_Twisted_Stalk",
@@ -686,8 +685,7 @@ export const itemsData = {
   "bixie essence": "/Bixie_Essence",
   "bixie parts": "/Bixie_Parts",
   "bixie stinger": "/Bixie_Stinger",
-  "bixie stinger (bixie god's stinger)":
-    "/Bixie_Stinger_(Bixie_God%27s_Stinger)",
+  "bixie stinger (bixie god's stinger)": "/Bixie_Stinger_(Bixie_God%27s_Stinger)",
   "bixie sword blade": "/Bixie_Sword_Blade",
   "bixie wing": "/Bixie_Wing",
   "bjek's head": "/Bjek%27s_Head",
@@ -942,8 +940,7 @@ export const itemsData = {
   "blood spirit": "/Blood_Spirit",
   "blood splattered veil": "/Blood_Splattered_Veil",
   "blood stained note": "/Blood_Stained_Note",
-  "blood stained note (klunga's blood)":
-    "/Blood_Stained_Note_(Klunga%27s_Blood)",
+  "blood stained note (klunga's blood)": "/Blood_Stained_Note_(Klunga%27s_Blood)",
   "blood temper": "/Blood_Temper",
   "blood thorn extract": "/Blood_Thorn_Extract",
   "blood wolf harness": "/Blood_Wolf_Harness",
@@ -1408,8 +1405,7 @@ export const itemsData = {
   "carved darkwood 1-cam bow (linen)": "/Carved_Darkwood_1-Cam_Bow_(Linen)",
   "carved darkwood 1-cam bow (silk)": "/Carved_Darkwood_1-Cam_Bow_(Silk)",
   "carved darkwood compound bow (hemp)": "/Carved_Darkwood_Compound_Bow_(Hemp)",
-  "carved darkwood compound bow (linen)":
-    "/Carved_Darkwood_Compound_Bow_(Linen)",
+  "carved darkwood compound bow (linen)": "/Carved_Darkwood_Compound_Bow_(Linen)",
   "carved darkwood compound bow (silk)": "/Carved_Darkwood_Compound_Bow_(Silk)",
   "carved darkwood recurve bow (hemp)": "/Carved_Darkwood_Recurve_Bow_(Hemp)",
   "carved darkwood recurve bow (linen)": "/Carved_Darkwood_Recurve_Bow_(Linen)",
@@ -2568,8 +2564,7 @@ export const itemsData = {
   "dwarven battle shield": "/Dwarven_Battle_Shield",
   "dwarven battle shield (imbued)": "/Dwarven_Battle_Shield_(Imbued)",
   "dwarven blood": "/Dwarven_Blood",
-  "dwarven breastplate (enchanted imbued)":
-    "/Dwarven_Breastplate_(Enchanted_Imbued)",
+  "dwarven breastplate (enchanted imbued)": "/Dwarven_Breastplate_(Enchanted_Imbued)",
   "dwarven chain boots": "/Dwarven_Chain_Boots",
   "dwarven chain bracelet": "/Dwarven_Chain_Bracelet",
   "dwarven chain cloak": "/Dwarven_Chain_Cloak",
@@ -2584,42 +2579,31 @@ export const itemsData = {
   "dwarven chain veil": "/Dwarven_Chain_Veil",
   "dwarven mace": "/Dwarven_Mace",
   "dwarven plate boots": "/Dwarven_Plate_Boots",
-  "dwarven plate boots (enchanted imbued)":
-    "/Dwarven_Plate_Boots_(Enchanted_Imbued)",
+  "dwarven plate boots (enchanted imbued)": "/Dwarven_Plate_Boots_(Enchanted_Imbued)",
   "dwarven plate bracers": "/Dwarven_Plate_Bracers",
-  "dwarven plate bracers (enchanted imbued)":
-    "/Dwarven_Plate_Bracers_(Enchanted_Imbued)",
+  "dwarven plate bracers (enchanted imbued)": "/Dwarven_Plate_Bracers_(Enchanted_Imbued)",
   "dwarven plate breastplate": "/Dwarven_Plate_Breastplate",
   "dwarven plate collar": "/Dwarven_Plate_Collar",
-  "dwarven plate collar (enchanted imbued)":
-    "/Dwarven_Plate_Collar_(Enchanted_Imbued)",
+  "dwarven plate collar (enchanted imbued)": "/Dwarven_Plate_Collar_(Enchanted_Imbued)",
   "dwarven plate gauntlets": "/Dwarven_Plate_Gauntlets",
-  "dwarven plate gauntlets (enchanted imbued)":
-    "/Dwarven_Plate_Gauntlets_(Enchanted_Imbued)",
+  "dwarven plate gauntlets (enchanted imbued)": "/Dwarven_Plate_Gauntlets_(Enchanted_Imbued)",
   "dwarven plate girdle": "/Dwarven_Plate_Girdle",
-  "dwarven plate girdle (enchanted imbued)":
-    "/Dwarven_Plate_Girdle_(Enchanted_Imbued)",
+  "dwarven plate girdle (enchanted imbued)": "/Dwarven_Plate_Girdle_(Enchanted_Imbued)",
   "dwarven plate greaves": "/Dwarven_Plate_Greaves",
-  "dwarven plate greaves (enchanted imbued)":
-    "/Dwarven_Plate_Greaves_(Enchanted_Imbued)",
+  "dwarven plate greaves (enchanted imbued)": "/Dwarven_Plate_Greaves_(Enchanted_Imbued)",
   "dwarven plate helm": "/Dwarven_Plate_Helm",
-  "dwarven plate helm (enchanted imbued)":
-    "/Dwarven_Plate_Helm_(Enchanted_Imbued)",
+  "dwarven plate helm (enchanted imbued)": "/Dwarven_Plate_Helm_(Enchanted_Imbued)",
   "dwarven plate pauldron": "/Dwarven_Plate_Pauldron",
-  "dwarven plate pauldron (enchanted imbued)":
-    "/Dwarven_Plate_Pauldron_(Enchanted_Imbued)",
+  "dwarven plate pauldron (enchanted imbued)": "/Dwarven_Plate_Pauldron_(Enchanted_Imbued)",
   "dwarven plate vambraces": "/Dwarven_Plate_Vambraces",
-  "dwarven plate vambraces (enchanted imbued)":
-    "/Dwarven_Plate_Vambraces_(Enchanted_Imbued)",
+  "dwarven plate vambraces (enchanted imbued)": "/Dwarven_Plate_Vambraces_(Enchanted_Imbued)",
   "dwarven plate visor": "/Dwarven_Plate_Visor",
-  "dwarven plate visor (enchanted imbued)":
-    "/Dwarven_Plate_Visor_(Enchanted_Imbued)",
+  "dwarven plate visor (enchanted imbued)": "/Dwarven_Plate_Visor_(Enchanted_Imbued)",
   "dwarven ringmail tunic": "/Dwarven_Ringmail_Tunic",
   "dwarven sap": "/Dwarven_Sap",
   "dwarven smithy hammer": "/Dwarven_Smithy_Hammer",
   "dwarven splinted cloak": "/Dwarven_Splinted_Cloak",
-  "dwarven splinted cloak (enchanted imbued)":
-    "/Dwarven_Splinted_Cloak_(Enchanted_Imbued)",
+  "dwarven splinted cloak (enchanted imbued)": "/Dwarven_Splinted_Cloak_(Enchanted_Imbued)",
   "dwarven two-handed axe": "/Dwarven_Two-Handed_Axe",
   "dwarven wire": "/Dwarven_Wire",
   "dwarven work boots": "/Dwarven_Work_Boots",
@@ -2814,10 +2798,8 @@ export const itemsData = {
   "encased velium etched rune": "/Encased_Velium_etched_rune",
   "enchanted adamantite jointing": "/Enchanted_Adamantite_Jointing",
   "enchanted adamantite rings": "/Enchanted_Adamantite_Rings",
-  "enchanted antonian long sword (fire emerald)":
-    "/Enchanted_Antonian_Long_Sword_(Fire_Emerald)",
-  "enchanted antonian long sword (star ruby)":
-    "/Enchanted_Antonian_Long_Sword_(Star_Ruby)",
+  "enchanted antonian long sword (fire emerald)": "/Enchanted_Antonian_Long_Sword_(Fire_Emerald)",
+  "enchanted antonian long sword (star ruby)": "/Enchanted_Antonian_Long_Sword_(Star_Ruby)",
   "enchanted block of adamantite": "/Enchanted_Block_of_Adamantite",
   "enchanted block of brellium": "/Enchanted_Block_of_Brellium",
   "enchanted block of mithril": "/Enchanted_Block_of_Mithril",
@@ -2858,90 +2840,54 @@ export const itemsData = {
   "enchanted folded brellium sheet": "/Enchanted_Folded_Brellium_Sheet",
   "enchanted folded sheet metal": "/Enchanted_Folded_Sheet_Metal",
   "enchanted folded sheet of mithril": "/Enchanted_Folded_Sheet_of_Mithril",
-  "enchanted full breastplate (electrum)":
-    "/Enchanted_Full_Breastplate_(electrum)",
+  "enchanted full breastplate (electrum)": "/Enchanted_Full_Breastplate_(electrum)",
   "enchanted full breastplate (gold)": "/Enchanted_Full_Breastplate_(gold)",
-  "enchanted full breastplate (platinum)":
-    "/Enchanted_Full_Breastplate_(platinum)",
+  "enchanted full breastplate (platinum)": "/Enchanted_Full_Breastplate_(platinum)",
   "enchanted full breastplate (silver)": "/Enchanted_Full_Breastplate_(silver)",
-  "enchanted full plate boots (electrum)":
-    "/Enchanted_Full_Plate_Boots_(electrum)",
+  "enchanted full plate boots (electrum)": "/Enchanted_Full_Plate_Boots_(electrum)",
   "enchanted full plate boots (gold)": "/Enchanted_Full_Plate_Boots_(gold)",
-  "enchanted full plate boots (platinum)":
-    "/Enchanted_Full_Plate_Boots_(platinum)",
+  "enchanted full plate boots (platinum)": "/Enchanted_Full_Plate_Boots_(platinum)",
   "enchanted full plate boots (silver)": "/Enchanted_Full_Plate_Boots_(silver)",
-  "enchanted full plate bracers (electrum)":
-    "/Enchanted_Full_Plate_Bracers_(electrum)",
+  "enchanted full plate bracers (electrum)": "/Enchanted_Full_Plate_Bracers_(electrum)",
   "enchanted full plate bracers (gold)": "/Enchanted_Full_Plate_Bracers_(gold)",
-  "enchanted full plate bracers (platinum)":
-    "/Enchanted_Full_Plate_Bracers_(platinum)",
-  "enchanted full plate bracers (silver)":
-    "/Enchanted_Full_Plate_Bracers_(silver)",
-  "enchanted full plate collar (electrum)":
-    "/Enchanted_Full_Plate_Collar_(electrum)",
+  "enchanted full plate bracers (platinum)": "/Enchanted_Full_Plate_Bracers_(platinum)",
+  "enchanted full plate bracers (silver)": "/Enchanted_Full_Plate_Bracers_(silver)",
+  "enchanted full plate collar (electrum)": "/Enchanted_Full_Plate_Collar_(electrum)",
   "enchanted full plate collar (gold)": "/Enchanted_Full_Plate_Collar_(gold)",
-  "enchanted full plate collar (platinum)":
-    "/Enchanted_Full_Plate_Collar_(platinum)",
-  "enchanted full plate collar (silver)":
-    "/Enchanted_Full_Plate_Collar_(silver)",
-  "enchanted full plate gauntlets (electrum)":
-    "/Enchanted_Full_Plate_Gauntlets_(electrum)",
-  "enchanted full plate gauntlets (gold)":
-    "/Enchanted_Full_Plate_Gauntlets_(gold)",
-  "enchanted full plate gauntlets (platinum)":
-    "/Enchanted_Full_Plate_Gauntlets_(platinum)",
-  "enchanted full plate gauntlets (silver)":
-    "/Enchanted_Full_Plate_Gauntlets_(silver)",
-  "enchanted full plate girdle (electrum)":
-    "/Enchanted_Full_Plate_Girdle_(electrum)",
+  "enchanted full plate collar (platinum)": "/Enchanted_Full_Plate_Collar_(platinum)",
+  "enchanted full plate collar (silver)": "/Enchanted_Full_Plate_Collar_(silver)",
+  "enchanted full plate gauntlets (electrum)": "/Enchanted_Full_Plate_Gauntlets_(electrum)",
+  "enchanted full plate gauntlets (gold)": "/Enchanted_Full_Plate_Gauntlets_(gold)",
+  "enchanted full plate gauntlets (platinum)": "/Enchanted_Full_Plate_Gauntlets_(platinum)",
+  "enchanted full plate gauntlets (silver)": "/Enchanted_Full_Plate_Gauntlets_(silver)",
+  "enchanted full plate girdle (electrum)": "/Enchanted_Full_Plate_Girdle_(electrum)",
   "enchanted full plate girdle (gold)": "/Enchanted_Full_Plate_Girdle_(gold)",
-  "enchanted full plate girdle (platinum)":
-    "/Enchanted_Full_Plate_Girdle_(platinum)",
-  "enchanted full plate girdle (silver)":
-    "/Enchanted_Full_Plate_Girdle_(silver)",
-  "enchanted full plate greaves (electrum)":
-    "/Enchanted_Full_Plate_Greaves_(electrum)",
+  "enchanted full plate girdle (platinum)": "/Enchanted_Full_Plate_Girdle_(platinum)",
+  "enchanted full plate girdle (silver)": "/Enchanted_Full_Plate_Girdle_(silver)",
+  "enchanted full plate greaves (electrum)": "/Enchanted_Full_Plate_Greaves_(electrum)",
   "enchanted full plate greaves (gold)": "/Enchanted_Full_Plate_Greaves_(gold)",
-  "enchanted full plate greaves (platinum)":
-    "/Enchanted_Full_Plate_Greaves_(platinum)",
-  "enchanted full plate greaves (silver)":
-    "/Enchanted_Full_Plate_Greaves_(silver)",
-  "enchanted full plate helm (electrum)":
-    "/Enchanted_Full_Plate_Helm_(electrum)",
+  "enchanted full plate greaves (platinum)": "/Enchanted_Full_Plate_Greaves_(platinum)",
+  "enchanted full plate greaves (silver)": "/Enchanted_Full_Plate_Greaves_(silver)",
+  "enchanted full plate helm (electrum)": "/Enchanted_Full_Plate_Helm_(electrum)",
   "enchanted full plate helm (gold)": "/Enchanted_Full_Plate_Helm_(gold)",
-  "enchanted full plate helm (platinum)":
-    "/Enchanted_Full_Plate_Helm_(platinum)",
+  "enchanted full plate helm (platinum)": "/Enchanted_Full_Plate_Helm_(platinum)",
   "enchanted full plate helm (silver)": "/Enchanted_Full_Plate_Helm_(silver)",
-  "enchanted full plate pauldron (electrum)":
-    "/Enchanted_Full_Plate_Pauldron_(electrum)",
-  "enchanted full plate pauldron (gold)":
-    "/Enchanted_Full_Plate_Pauldron_(gold)",
-  "enchanted full plate pauldron (platinum)":
-    "/Enchanted_Full_Plate_Pauldron_(platinum)",
-  "enchanted full plate pauldron (silver)":
-    "/Enchanted_Full_Plate_Pauldron_(silver)",
-  "enchanted full plate vambraces (electrum)":
-    "/Enchanted_Full_Plate_Vambraces_(electrum)",
-  "enchanted full plate vambraces (gold)":
-    "/Enchanted_Full_Plate_Vambraces_(gold)",
-  "enchanted full plate vambraces (platinum)":
-    "/Enchanted_Full_Plate_Vambraces_(platinum)",
-  "enchanted full plate vambraces (silver)":
-    "/Enchanted_Full_Plate_Vambraces_(silver)",
-  "enchanted full plate visor (electrum)":
-    "/Enchanted_Full_Plate_Visor_(electrum)",
+  "enchanted full plate pauldron (electrum)": "/Enchanted_Full_Plate_Pauldron_(electrum)",
+  "enchanted full plate pauldron (gold)": "/Enchanted_Full_Plate_Pauldron_(gold)",
+  "enchanted full plate pauldron (platinum)": "/Enchanted_Full_Plate_Pauldron_(platinum)",
+  "enchanted full plate pauldron (silver)": "/Enchanted_Full_Plate_Pauldron_(silver)",
+  "enchanted full plate vambraces (electrum)": "/Enchanted_Full_Plate_Vambraces_(electrum)",
+  "enchanted full plate vambraces (gold)": "/Enchanted_Full_Plate_Vambraces_(gold)",
+  "enchanted full plate vambraces (platinum)": "/Enchanted_Full_Plate_Vambraces_(platinum)",
+  "enchanted full plate vambraces (silver)": "/Enchanted_Full_Plate_Vambraces_(silver)",
+  "enchanted full plate visor (electrum)": "/Enchanted_Full_Plate_Visor_(electrum)",
   "enchanted full plate visor (gold)": "/Enchanted_Full_Plate_Visor_(gold)",
-  "enchanted full plate visor (platinum)":
-    "/Enchanted_Full_Plate_Visor_(platinum)",
+  "enchanted full plate visor (platinum)": "/Enchanted_Full_Plate_Visor_(platinum)",
   "enchanted full plate visor (silver)": "/Enchanted_Full_Plate_Visor_(silver)",
-  "enchanted full splinted cloak (electrum)":
-    "/Enchanted_Full_Splinted_Cloak_(electrum)",
-  "enchanted full splinted cloak (gold)":
-    "/Enchanted_Full_Splinted_Cloak_(gold)",
-  "enchanted full splinted cloak (platinum)":
-    "/Enchanted_Full_Splinted_Cloak_(platinum)",
-  "enchanted full splinted cloak (silver)":
-    "/Enchanted_Full_Splinted_Cloak_(silver)",
+  "enchanted full splinted cloak (electrum)": "/Enchanted_Full_Splinted_Cloak_(electrum)",
+  "enchanted full splinted cloak (gold)": "/Enchanted_Full_Splinted_Cloak_(gold)",
+  "enchanted full splinted cloak (platinum)": "/Enchanted_Full_Splinted_Cloak_(platinum)",
+  "enchanted full splinted cloak (silver)": "/Enchanted_Full_Splinted_Cloak_(silver)",
   "enchanted gloves": "/Enchanted_Gloves",
   "enchanted gold bar": "/Enchanted_Gold_Bar",
   "enchanted kelp gauntlets": "/Enchanted_Kelp_Gauntlets",
@@ -3249,8 +3195,7 @@ export const itemsData = {
   "fine steel morning star": "/Fine_Steel_Morning_Star",
   "fine steel naginata": "/Fine_Steel_Naginata",
   "fine steel rapier": "/Fine_Steel_Rapier",
-  "fine steel rapier (gunthak pirate rapier)":
-    "/Fine_Steel_Rapier_(Gunthak_Pirate_Rapier)",
+  "fine steel rapier (gunthak pirate rapier)": "/Fine_Steel_Rapier_(Gunthak_Pirate_Rapier)",
   "fine steel scimitar": "/Fine_Steel_Scimitar",
   "fine steel short sword": "/Fine_Steel_Short_Sword",
   "fine steel spear": "/Fine_Steel_Spear",
@@ -4412,8 +4357,7 @@ export const itemsData = {
   "holgresh spirit beads": "/Holgresh_Spirit_Beads",
   "holgresh wing": "/Holgresh_Wing",
   "hollow bone shank": "/Hollow_Bone_Shank",
-  "hollow skull (skull of the tower cook)":
-    "/Hollow_Skull_(Skull_of_the_Tower_Cook)",
+  "hollow skull (skull of the tower cook)": "/Hollow_Skull_(Skull_of_the_Tower_Cook)",
   "hollow skull (skull of wun toque)": "/Hollow_Skull_(Skull_of_Wun_Toque)",
   "hollowed bone bracers": "/Hollowed_Bone_Bracers",
   "holy cask": "/Holy_Cask",
@@ -4616,12 +4560,9 @@ export const itemsData = {
   "imbued black pearl electrum choker": "/Imbued_Black_Pearl_Electrum_Choker",
   "imbued black pearl platinum ring": "/Imbued_Black_Pearl_Platinum_Ring",
   "imbued black sapphire": "/Imbued_Black_Sapphire",
-  "imbued black sapphire electrum earring":
-    "/Imbued_Black_Sapphire_Electrum_Earring",
-  "imbued black sapphire platinum necklace":
-    "/Imbued_Black_Sapphire_Platinum_Necklace",
-  "imbued black sapphire silvered necklace":
-    "/Imbued_Black_Sapphire_Silvered_Necklace",
+  "imbued black sapphire electrum earring": "/Imbued_Black_Sapphire_Electrum_Earring",
+  "imbued black sapphire platinum necklace": "/Imbued_Black_Sapphire_Platinum_Necklace",
+  "imbued black sapphire silvered necklace": "/Imbued_Black_Sapphire_Silvered_Necklace",
   "imbued blackened pearl silver ring": "/Imbued_Blackened_Pearl_Silver_Ring",
   "imbued cabilis scale belt": "/Imbued_Cabilis_Scale_Belt",
   "imbued cabilis scale boots": "/Imbued_Cabilis_Scale_Boots",
@@ -4638,54 +4579,30 @@ export const itemsData = {
   "imbued diamond": "/Imbued_Diamond",
   "imbued diamond electrum mask": "/Imbued_Diamond_Electrum_Mask",
   "imbued dwarven breastplate": "/Imbued_Dwarven_Breastplate",
-  "imbued dwarven chain boots (brell serilis)":
-    "/Imbued_Dwarven_Chain_Boots_(Brell_Serilis)",
-  "imbued dwarven chain boots (bristlebane)":
-    "/Imbued_Dwarven_Chain_Boots_(Bristlebane)",
-  "imbued dwarven chain bracelet (brell serilis)":
-    "/Imbued_Dwarven_Chain_Bracelet_(Brell_Serilis)",
-  "imbued dwarven chain bracelet (bristlebane)":
-    "/Imbued_Dwarven_Chain_Bracelet_(Bristlebane)",
-  "imbued dwarven chain cloak (brell serilis)":
-    "/Imbued_Dwarven_Chain_Cloak_(Brell_Serilis)",
-  "imbued dwarven chain cloak (bristlebane)":
-    "/Imbued_Dwarven_Chain_Cloak_(Bristlebane)",
-  "imbued dwarven chain coif (brell serilis)":
-    "/Imbued_Dwarven_Chain_Coif_(Brell_Serilis)",
-  "imbued dwarven chain coif (bristlebane)":
-    "/Imbued_Dwarven_Chain_Coif_(Bristlebane)",
-  "imbued dwarven chain gloves (brell serilis)":
-    "/Imbued_Dwarven_Chain_Gloves_(Brell_Serilis)",
-  "imbued dwarven chain gloves (bristlebane)":
-    "/Imbued_Dwarven_Chain_Gloves_(Bristlebane)",
-  "imbued dwarven chain gorget (brell serilis)":
-    "/Imbued_Dwarven_Chain_Gorget_(Brell_Serilis)",
-  "imbued dwarven chain gorget (bristlebane)":
-    "/Imbued_Dwarven_Chain_Gorget_(Bristlebane)",
-  "imbued dwarven chain leggings (brell serilis)":
-    "/Imbued_Dwarven_Chain_Leggings_(Brell_Serilis)",
-  "imbued dwarven chain leggings (bristlebane)":
-    "/Imbued_Dwarven_Chain_Leggings_(Bristlebane)",
-  "imbued dwarven chain mail (brell serilis)":
-    "/Imbued_Dwarven_Chain_Mail_(Brell_Serilis)",
-  "imbued dwarven chain mail (bristlebane)":
-    "/Imbued_Dwarven_Chain_Mail_(Bristlebane)",
-  "imbued dwarven chain mantle (brell serilis)":
-    "/Imbued_Dwarven_Chain_Mantle_(Brell_Serilis)",
-  "imbued dwarven chain mantle (bristlebane)":
-    "/Imbued_Dwarven_Chain_Mantle_(Bristlebane)",
-  "imbued dwarven chain skirt (brell serilis)":
-    "/Imbued_Dwarven_Chain_Skirt_(Brell_Serilis)",
-  "imbued dwarven chain skirt (bristlebane)":
-    "/Imbued_Dwarven_Chain_Skirt_(Bristlebane)",
-  "imbued dwarven chain sleeves (brell serilis)":
-    "/Imbued_Dwarven_Chain_Sleeves_(Brell_Serilis)",
-  "imbued dwarven chain sleeves (bristlebane)":
-    "/Imbued_Dwarven_Chain_Sleeves_(Bristlebane)",
-  "imbued dwarven chain veil (brell serilis)":
-    "/Imbued_Dwarven_Chain_Veil_(Brell_Serilis)",
-  "imbued dwarven chain veil (bristlebane)":
-    "/Imbued_Dwarven_Chain_Veil_(Bristlebane)",
+  "imbued dwarven chain boots (brell serilis)": "/Imbued_Dwarven_Chain_Boots_(Brell_Serilis)",
+  "imbued dwarven chain boots (bristlebane)": "/Imbued_Dwarven_Chain_Boots_(Bristlebane)",
+  "imbued dwarven chain bracelet (brell serilis)": "/Imbued_Dwarven_Chain_Bracelet_(Brell_Serilis)",
+  "imbued dwarven chain bracelet (bristlebane)": "/Imbued_Dwarven_Chain_Bracelet_(Bristlebane)",
+  "imbued dwarven chain cloak (brell serilis)": "/Imbued_Dwarven_Chain_Cloak_(Brell_Serilis)",
+  "imbued dwarven chain cloak (bristlebane)": "/Imbued_Dwarven_Chain_Cloak_(Bristlebane)",
+  "imbued dwarven chain coif (brell serilis)": "/Imbued_Dwarven_Chain_Coif_(Brell_Serilis)",
+  "imbued dwarven chain coif (bristlebane)": "/Imbued_Dwarven_Chain_Coif_(Bristlebane)",
+  "imbued dwarven chain gloves (brell serilis)": "/Imbued_Dwarven_Chain_Gloves_(Brell_Serilis)",
+  "imbued dwarven chain gloves (bristlebane)": "/Imbued_Dwarven_Chain_Gloves_(Bristlebane)",
+  "imbued dwarven chain gorget (brell serilis)": "/Imbued_Dwarven_Chain_Gorget_(Brell_Serilis)",
+  "imbued dwarven chain gorget (bristlebane)": "/Imbued_Dwarven_Chain_Gorget_(Bristlebane)",
+  "imbued dwarven chain leggings (brell serilis)": "/Imbued_Dwarven_Chain_Leggings_(Brell_Serilis)",
+  "imbued dwarven chain leggings (bristlebane)": "/Imbued_Dwarven_Chain_Leggings_(Bristlebane)",
+  "imbued dwarven chain mail (brell serilis)": "/Imbued_Dwarven_Chain_Mail_(Brell_Serilis)",
+  "imbued dwarven chain mail (bristlebane)": "/Imbued_Dwarven_Chain_Mail_(Bristlebane)",
+  "imbued dwarven chain mantle (brell serilis)": "/Imbued_Dwarven_Chain_Mantle_(Brell_Serilis)",
+  "imbued dwarven chain mantle (bristlebane)": "/Imbued_Dwarven_Chain_Mantle_(Bristlebane)",
+  "imbued dwarven chain skirt (brell serilis)": "/Imbued_Dwarven_Chain_Skirt_(Brell_Serilis)",
+  "imbued dwarven chain skirt (bristlebane)": "/Imbued_Dwarven_Chain_Skirt_(Bristlebane)",
+  "imbued dwarven chain sleeves (brell serilis)": "/Imbued_Dwarven_Chain_Sleeves_(Brell_Serilis)",
+  "imbued dwarven chain sleeves (bristlebane)": "/Imbued_Dwarven_Chain_Sleeves_(Bristlebane)",
+  "imbued dwarven chain veil (brell serilis)": "/Imbued_Dwarven_Chain_Veil_(Brell_Serilis)",
+  "imbued dwarven chain veil (bristlebane)": "/Imbued_Dwarven_Chain_Veil_(Bristlebane)",
   "imbued dwarven plate boots": "/Imbued_Dwarven_Plate_Boots",
   "imbued dwarven plate bracers": "/Imbued_Dwarven_Plate_Bracers",
   "imbued dwarven plate collar": "/Imbued_Dwarven_Plate_Collar",
@@ -4717,166 +4634,95 @@ export const itemsData = {
   "imbued elven chainmail sleeves": "/Imbued_Elven_Chainmail_Sleeves",
   "imbued emerald": "/Imbued_Emerald",
   "imbued emerald electrum bracelet": "/Imbued_Emerald_Electrum_Bracelet",
-  "imbued field breastplate (bertoxxulous)":
-    "/Imbued_Field_Breastplate_(Bertoxxulous)",
-  "imbued field breastplate (erollisi marr)":
-    "/Imbued_Field_Breastplate_(Erollisi_Marr)",
+  "imbued field breastplate (bertoxxulous)": "/Imbued_Field_Breastplate_(Bertoxxulous)",
+  "imbued field breastplate (erollisi marr)": "/Imbued_Field_Breastplate_(Erollisi_Marr)",
   "imbued field breastplate (innoruuk)": "/Imbued_Field_Breastplate_(Innoruuk)",
   "imbued field breastplate (karana)": "/Imbued_Field_Breastplate_(Karana)",
-  "imbued field breastplate (mithaniel marr)":
-    "/Imbued_Field_Breastplate_(Mithaniel_Marr)",
-  "imbued field breastplate (rallos zek)":
-    "/Imbued_Field_Breastplate_(Rallos_Zek)",
-  "imbued field breastplate (rodcet nife)":
-    "/Imbued_Field_Breastplate_(Rodcet_Nife)",
-  "imbued field plate boots (bertoxxulous)":
-    "/Imbued_Field_Plate_Boots_(Bertoxxulous)",
-  "imbued field plate boots (erollisi marr)":
-    "/Imbued_Field_Plate_Boots_(Erollisi_Marr)",
+  "imbued field breastplate (mithaniel marr)": "/Imbued_Field_Breastplate_(Mithaniel_Marr)",
+  "imbued field breastplate (rallos zek)": "/Imbued_Field_Breastplate_(Rallos_Zek)",
+  "imbued field breastplate (rodcet nife)": "/Imbued_Field_Breastplate_(Rodcet_Nife)",
+  "imbued field plate boots (bertoxxulous)": "/Imbued_Field_Plate_Boots_(Bertoxxulous)",
+  "imbued field plate boots (erollisi marr)": "/Imbued_Field_Plate_Boots_(Erollisi_Marr)",
   "imbued field plate boots (innoruuk)": "/Imbued_Field_Plate_Boots_(Innoruuk)",
   "imbued field plate boots (karana)": "/Imbued_Field_Plate_Boots_(Karana)",
-  "imbued field plate boots (mithaniel marr)":
-    "/Imbued_Field_Plate_Boots_(Mithaniel_Marr)",
-  "imbued field plate boots (rallos zek)":
-    "/Imbued_Field_Plate_Boots_(Rallos_Zek)",
-  "imbued field plate boots (rodcet nife)":
-    "/Imbued_Field_Plate_Boots_(Rodcet_Nife)",
-  "imbued field plate bracers (bertoxxulous)":
-    "/Imbued_Field_Plate_Bracers_(Bertoxxulous)",
-  "imbued field plate bracers (erollisi marr)":
-    "/Imbued_Field_Plate_Bracers_(Erollisi_Marr)",
-  "imbued field plate bracers (innoruuk)":
-    "/Imbued_Field_Plate_Bracers_(Innoruuk)",
+  "imbued field plate boots (mithaniel marr)": "/Imbued_Field_Plate_Boots_(Mithaniel_Marr)",
+  "imbued field plate boots (rallos zek)": "/Imbued_Field_Plate_Boots_(Rallos_Zek)",
+  "imbued field plate boots (rodcet nife)": "/Imbued_Field_Plate_Boots_(Rodcet_Nife)",
+  "imbued field plate bracers (bertoxxulous)": "/Imbued_Field_Plate_Bracers_(Bertoxxulous)",
+  "imbued field plate bracers (erollisi marr)": "/Imbued_Field_Plate_Bracers_(Erollisi_Marr)",
+  "imbued field plate bracers (innoruuk)": "/Imbued_Field_Plate_Bracers_(Innoruuk)",
   "imbued field plate bracers (karana)": "/Imbued_Field_Plate_Bracers_(Karana)",
-  "imbued field plate bracers (mithaniel marr)":
-    "/Imbued_Field_Plate_Bracers_(Mithaniel_Marr)",
-  "imbued field plate bracers (rallos zek)":
-    "/Imbued_Field_Plate_Bracers_(Rallos_Zek)",
-  "imbued field plate bracers (rodcet nife)":
-    "/Imbued_Field_Plate_Bracers_(Rodcet_Nife)",
-  "imbued field plate cloak (bertoxxulous)":
-    "/Imbued_Field_Plate_Cloak_(Bertoxxulous)",
-  "imbued field plate cloak (erollisi marr)":
-    "/Imbued_Field_Plate_Cloak_(Erollisi_Marr)",
+  "imbued field plate bracers (mithaniel marr)": "/Imbued_Field_Plate_Bracers_(Mithaniel_Marr)",
+  "imbued field plate bracers (rallos zek)": "/Imbued_Field_Plate_Bracers_(Rallos_Zek)",
+  "imbued field plate bracers (rodcet nife)": "/Imbued_Field_Plate_Bracers_(Rodcet_Nife)",
+  "imbued field plate cloak (bertoxxulous)": "/Imbued_Field_Plate_Cloak_(Bertoxxulous)",
+  "imbued field plate cloak (erollisi marr)": "/Imbued_Field_Plate_Cloak_(Erollisi_Marr)",
   "imbued field plate cloak (innoruuk)": "/Imbued_Field_Plate_Cloak_(Innoruuk)",
   "imbued field plate cloak (karana)": "/Imbued_Field_Plate_Cloak_(Karana)",
-  "imbued field plate cloak (mithaniel marr)":
-    "/Imbued_Field_Plate_Cloak_(Mithaniel_Marr)",
-  "imbued field plate cloak (rallos zek)":
-    "/Imbued_Field_Plate_Cloak_(Rallos_Zek)",
-  "imbued field plate cloak (rodcet nife)":
-    "/Imbued_Field_Plate_Cloak_(Rodcet_Nife)",
-  "imbued field plate collar (bertoxxulous)":
-    "/Imbued_Field_Plate_Collar_(Bertoxxulous)",
-  "imbued field plate collar (erollisi marr)":
-    "/Imbued_Field_Plate_Collar_(Erollisi_Marr)",
-  "imbued field plate collar (innoruuk)":
-    "/Imbued_Field_Plate_Collar_(Innoruuk)",
+  "imbued field plate cloak (mithaniel marr)": "/Imbued_Field_Plate_Cloak_(Mithaniel_Marr)",
+  "imbued field plate cloak (rallos zek)": "/Imbued_Field_Plate_Cloak_(Rallos_Zek)",
+  "imbued field plate cloak (rodcet nife)": "/Imbued_Field_Plate_Cloak_(Rodcet_Nife)",
+  "imbued field plate collar (bertoxxulous)": "/Imbued_Field_Plate_Collar_(Bertoxxulous)",
+  "imbued field plate collar (erollisi marr)": "/Imbued_Field_Plate_Collar_(Erollisi_Marr)",
+  "imbued field plate collar (innoruuk)": "/Imbued_Field_Plate_Collar_(Innoruuk)",
   "imbued field plate collar (karana)": "/Imbued_Field_Plate_Collar_(Karana)",
-  "imbued field plate collar (mithaniel marr)":
-    "/Imbued_Field_Plate_Collar_(Mithaniel_Marr)",
-  "imbued field plate collar (rallos zek)":
-    "/Imbued_Field_Plate_Collar_(Rallos_Zek)",
-  "imbued field plate collar (rodcet nife)":
-    "/Imbued_Field_Plate_Collar_(Rodcet_Nife)",
-  "imbued field plate gauntlets (bertoxxulous)":
-    "/Imbued_Field_Plate_Gauntlets_(Bertoxxulous)",
-  "imbued field plate gauntlets (erollisi marr)":
-    "/Imbued_Field_Plate_Gauntlets_(Erollisi_Marr)",
-  "imbued field plate gauntlets (innoruuk)":
-    "/Imbued_Field_Plate_Gauntlets_(Innoruuk)",
-  "imbued field plate gauntlets (karana)":
-    "/Imbued_Field_Plate_Gauntlets_(Karana)",
-  "imbued field plate gauntlets (mithaniel marr)":
-    "/Imbued_Field_Plate_Gauntlets_(Mithaniel_Marr)",
-  "imbued field plate gauntlets (rallos zek)":
-    "/Imbued_Field_Plate_Gauntlets_(Rallos_Zek)",
-  "imbued field plate gauntlets (rodcet nife)":
-    "/Imbued_Field_Plate_Gauntlets_(Rodcet_Nife)",
-  "imbued field plate girdle (bertoxxulous)":
-    "/Imbued_Field_Plate_Girdle_(Bertoxxulous)",
-  "imbued field plate girdle (erollisi marr)":
-    "/Imbued_Field_Plate_Girdle_(Erollisi_Marr)",
-  "imbued field plate girdle (innoruuk)":
-    "/Imbued_Field_Plate_Girdle_(Innoruuk)",
+  "imbued field plate collar (mithaniel marr)": "/Imbued_Field_Plate_Collar_(Mithaniel_Marr)",
+  "imbued field plate collar (rallos zek)": "/Imbued_Field_Plate_Collar_(Rallos_Zek)",
+  "imbued field plate collar (rodcet nife)": "/Imbued_Field_Plate_Collar_(Rodcet_Nife)",
+  "imbued field plate gauntlets (bertoxxulous)": "/Imbued_Field_Plate_Gauntlets_(Bertoxxulous)",
+  "imbued field plate gauntlets (erollisi marr)": "/Imbued_Field_Plate_Gauntlets_(Erollisi_Marr)",
+  "imbued field plate gauntlets (innoruuk)": "/Imbued_Field_Plate_Gauntlets_(Innoruuk)",
+  "imbued field plate gauntlets (karana)": "/Imbued_Field_Plate_Gauntlets_(Karana)",
+  "imbued field plate gauntlets (mithaniel marr)": "/Imbued_Field_Plate_Gauntlets_(Mithaniel_Marr)",
+  "imbued field plate gauntlets (rallos zek)": "/Imbued_Field_Plate_Gauntlets_(Rallos_Zek)",
+  "imbued field plate gauntlets (rodcet nife)": "/Imbued_Field_Plate_Gauntlets_(Rodcet_Nife)",
+  "imbued field plate girdle (bertoxxulous)": "/Imbued_Field_Plate_Girdle_(Bertoxxulous)",
+  "imbued field plate girdle (erollisi marr)": "/Imbued_Field_Plate_Girdle_(Erollisi_Marr)",
+  "imbued field plate girdle (innoruuk)": "/Imbued_Field_Plate_Girdle_(Innoruuk)",
   "imbued field plate girdle (karana)": "/Imbued_Field_Plate_Girdle_(Karana)",
-  "imbued field plate girdle (mithaniel marr)":
-    "/Imbued_Field_Plate_Girdle_(Mithaniel_Marr)",
-  "imbued field plate girdle (rallos zek)":
-    "/Imbued_Field_Plate_Girdle_(Rallos_Zek)",
-  "imbued field plate girdle (rodcet nife)":
-    "/Imbued_Field_Plate_Girdle_(Rodcet_Nife)",
-  "imbued field plate greaves (bertoxxulous)":
-    "/Imbued_Field_Plate_Greaves_(Bertoxxulous)",
-  "imbued field plate greaves (erollisi marr)":
-    "/Imbued_Field_Plate_Greaves_(Erollisi_Marr)",
-  "imbued field plate greaves (innoruuk)":
-    "/Imbued_Field_Plate_Greaves_(Innoruuk)",
+  "imbued field plate girdle (mithaniel marr)": "/Imbued_Field_Plate_Girdle_(Mithaniel_Marr)",
+  "imbued field plate girdle (rallos zek)": "/Imbued_Field_Plate_Girdle_(Rallos_Zek)",
+  "imbued field plate girdle (rodcet nife)": "/Imbued_Field_Plate_Girdle_(Rodcet_Nife)",
+  "imbued field plate greaves (bertoxxulous)": "/Imbued_Field_Plate_Greaves_(Bertoxxulous)",
+  "imbued field plate greaves (erollisi marr)": "/Imbued_Field_Plate_Greaves_(Erollisi_Marr)",
+  "imbued field plate greaves (innoruuk)": "/Imbued_Field_Plate_Greaves_(Innoruuk)",
   "imbued field plate greaves (karana)": "/Imbued_Field_Plate_Greaves_(Karana)",
-  "imbued field plate greaves (mithaniel marr)":
-    "/Imbued_Field_Plate_Greaves_(Mithaniel_Marr)",
-  "imbued field plate greaves (rallos zek)":
-    "/Imbued_Field_Plate_Greaves_(Rallos_Zek)",
-  "imbued field plate greaves (rodcet nife)":
-    "/Imbued_Field_Plate_Greaves_(Rodcet_Nife)",
-  "imbued field plate helm (bertoxxulous)":
-    "/Imbued_Field_Plate_Helm_(Bertoxxulous)",
-  "imbued field plate helm (erollisi marr)":
-    "/Imbued_Field_Plate_Helm_(Erollisi_Marr)",
+  "imbued field plate greaves (mithaniel marr)": "/Imbued_Field_Plate_Greaves_(Mithaniel_Marr)",
+  "imbued field plate greaves (rallos zek)": "/Imbued_Field_Plate_Greaves_(Rallos_Zek)",
+  "imbued field plate greaves (rodcet nife)": "/Imbued_Field_Plate_Greaves_(Rodcet_Nife)",
+  "imbued field plate helm (bertoxxulous)": "/Imbued_Field_Plate_Helm_(Bertoxxulous)",
+  "imbued field plate helm (erollisi marr)": "/Imbued_Field_Plate_Helm_(Erollisi_Marr)",
   "imbued field plate helm (innoruuk)": "/Imbued_Field_Plate_Helm_(Innoruuk)",
   "imbued field plate helm (karana)": "/Imbued_Field_Plate_Helm_(Karana)",
-  "imbued field plate helm (mithaniel marr)":
-    "/Imbued_Field_Plate_Helm_(Mithaniel_Marr)",
-  "imbued field plate helm (rallos zek)":
-    "/Imbued_Field_Plate_Helm_(Rallos_Zek)",
-  "imbued field plate helm (rodcet nife)":
-    "/Imbued_Field_Plate_Helm_(Rodcet_Nife)",
-  "imbued field plate pauldron (bertoxxulous)":
-    "/Imbued_Field_Plate_Pauldron_(Bertoxxulous)",
-  "imbued field plate pauldron (erollisi marr)":
-    "/Imbued_Field_Plate_Pauldron_(Erollisi_Marr)",
-  "imbued field plate pauldron (innoruuk)":
-    "/Imbued_Field_Plate_Pauldron_(Innoruuk)",
-  "imbued field plate pauldron (karana)":
-    "/Imbued_Field_Plate_Pauldron_(Karana)",
-  "imbued field plate pauldron (mithaniel marr)":
-    "/Imbued_Field_Plate_Pauldron_(Mithaniel_Marr)",
-  "imbued field plate pauldron (rallos zek)":
-    "/Imbued_Field_Plate_Pauldron_(Rallos_Zek)",
-  "imbued field plate pauldron (rodcet nife)":
-    "/Imbued_Field_Plate_Pauldron_(Rodcet_Nife)",
-  "imbued field plate vambraces (bertoxxulous)":
-    "/Imbued_Field_Plate_Vambraces_(Bertoxxulous)",
-  "imbued field plate vambraces (erollisi marr)":
-    "/Imbued_Field_Plate_Vambraces_(Erollisi_Marr)",
-  "imbued field plate vambraces (innoruuk)":
-    "/Imbued_Field_Plate_Vambraces_(Innoruuk)",
-  "imbued field plate vambraces (karana)":
-    "/Imbued_Field_Plate_Vambraces_(Karana)",
-  "imbued field plate vambraces (mithaniel marr)":
-    "/Imbued_Field_Plate_Vambraces_(Mithaniel_Marr)",
-  "imbued field plate vambraces (rallos zek)":
-    "/Imbued_Field_Plate_Vambraces_(Rallos_Zek)",
-  "imbued field plate vambraces (rodcet nife)":
-    "/Imbued_Field_Plate_Vambraces_(Rodcet_Nife)",
-  "imbued field plate visor (bertoxxulous)":
-    "/Imbued_Field_Plate_Visor_(Bertoxxulous)",
-  "imbued field plate visor (erollisi marr)":
-    "/Imbued_Field_Plate_Visor_(Erollisi_Marr)",
+  "imbued field plate helm (mithaniel marr)": "/Imbued_Field_Plate_Helm_(Mithaniel_Marr)",
+  "imbued field plate helm (rallos zek)": "/Imbued_Field_Plate_Helm_(Rallos_Zek)",
+  "imbued field plate helm (rodcet nife)": "/Imbued_Field_Plate_Helm_(Rodcet_Nife)",
+  "imbued field plate pauldron (bertoxxulous)": "/Imbued_Field_Plate_Pauldron_(Bertoxxulous)",
+  "imbued field plate pauldron (erollisi marr)": "/Imbued_Field_Plate_Pauldron_(Erollisi_Marr)",
+  "imbued field plate pauldron (innoruuk)": "/Imbued_Field_Plate_Pauldron_(Innoruuk)",
+  "imbued field plate pauldron (karana)": "/Imbued_Field_Plate_Pauldron_(Karana)",
+  "imbued field plate pauldron (mithaniel marr)": "/Imbued_Field_Plate_Pauldron_(Mithaniel_Marr)",
+  "imbued field plate pauldron (rallos zek)": "/Imbued_Field_Plate_Pauldron_(Rallos_Zek)",
+  "imbued field plate pauldron (rodcet nife)": "/Imbued_Field_Plate_Pauldron_(Rodcet_Nife)",
+  "imbued field plate vambraces (bertoxxulous)": "/Imbued_Field_Plate_Vambraces_(Bertoxxulous)",
+  "imbued field plate vambraces (erollisi marr)": "/Imbued_Field_Plate_Vambraces_(Erollisi_Marr)",
+  "imbued field plate vambraces (innoruuk)": "/Imbued_Field_Plate_Vambraces_(Innoruuk)",
+  "imbued field plate vambraces (karana)": "/Imbued_Field_Plate_Vambraces_(Karana)",
+  "imbued field plate vambraces (mithaniel marr)": "/Imbued_Field_Plate_Vambraces_(Mithaniel_Marr)",
+  "imbued field plate vambraces (rallos zek)": "/Imbued_Field_Plate_Vambraces_(Rallos_Zek)",
+  "imbued field plate vambraces (rodcet nife)": "/Imbued_Field_Plate_Vambraces_(Rodcet_Nife)",
+  "imbued field plate visor (bertoxxulous)": "/Imbued_Field_Plate_Visor_(Bertoxxulous)",
+  "imbued field plate visor (erollisi marr)": "/Imbued_Field_Plate_Visor_(Erollisi_Marr)",
   "imbued field plate visor (innoruuk)": "/Imbued_Field_Plate_Visor_(Innoruuk)",
   "imbued field plate visor (karana)": "/Imbued_Field_Plate_Visor_(Karana)",
-  "imbued field plate visor (mithaniel marr)":
-    "/Imbued_Field_Plate_Visor_(Mithaniel_Marr)",
-  "imbued field plate visor (rallos zek)":
-    "/Imbued_Field_Plate_Visor_(Rallos_Zek)",
-  "imbued field plate visor (rodcet nife)":
-    "/Imbued_Field_Plate_Visor_(Rodcet_Nife)",
+  "imbued field plate visor (mithaniel marr)": "/Imbued_Field_Plate_Visor_(Mithaniel_Marr)",
+  "imbued field plate visor (rallos zek)": "/Imbued_Field_Plate_Visor_(Rallos_Zek)",
+  "imbued field plate visor (rodcet nife)": "/Imbued_Field_Plate_Visor_(Rodcet_Nife)",
   "imbued fighters staff": "/Imbued_Fighters_Staff",
   "imbued fire opal": "/Imbued_Fire_Opal",
   "imbued golden amber earring": "/Imbued_Golden_Amber_Earring",
   "imbued golden black pearl choker": "/Imbued_Golden_Black_Pearl_Choker",
-  "imbued golden black sapphire earring":
-    "/Imbued_Golden_Black_Sapphire_Earring",
+  "imbued golden black sapphire earring": "/Imbued_Golden_Black_Sapphire_Earring",
   "imbued golden diamond mask": "/Imbued_Golden_Diamond_Mask",
   "imbued golden emerald bracelet": "/Imbued_Golden_Emerald_Bracelet",
   "imbued golden fire ring": "/Imbued_Golden_Fire_Ring",
@@ -4952,41 +4798,28 @@ export const itemsData = {
   "imbued northman ring sleeves": "/Imbued_Northman_Ring_Sleeves",
   "imbued ogre war boots (cazic thule)": "/Imbued_Ogre_War_Boots_(Cazic_Thule)",
   "imbued ogre war boots (rallos zek)": "/Imbued_Ogre_War_Boots_(Rallos_Zek)",
-  "imbued ogre war bracer (cazic thule)":
-    "/Imbued_Ogre_War_Bracer_(Cazic_Thule)",
+  "imbued ogre war bracer (cazic thule)": "/Imbued_Ogre_War_Bracer_(Cazic_Thule)",
   "imbued ogre war bracer (rallos zek)": "/Imbued_Ogre_War_Bracer_(Rallos_Zek)",
-  "imbued ogre war breastplate (cazic thule)":
-    "/Imbued_Ogre_War_Breastplate_(Cazic_Thule)",
-  "imbued ogre war breastplate (rallos zek)":
-    "/Imbued_Ogre_War_Breastplate_(Rallos_Zek)",
+  "imbued ogre war breastplate (cazic thule)": "/Imbued_Ogre_War_Breastplate_(Cazic_Thule)",
+  "imbued ogre war breastplate (rallos zek)": "/Imbued_Ogre_War_Breastplate_(Rallos_Zek)",
   "imbued ogre war cloak (cazic thule)": "/Imbued_Ogre_War_Cloak_(Cazic_Thule)",
   "imbued ogre war cloak (rallos zek)": "/Imbued_Ogre_War_Cloak_(Rallos_Zek)",
-  "imbued ogre war collar (cazic thule)":
-    "/Imbued_Ogre_War_Collar_(Cazic_Thule)",
+  "imbued ogre war collar (cazic thule)": "/Imbued_Ogre_War_Collar_(Cazic_Thule)",
   "imbued ogre war collar (rallos zek)": "/Imbued_Ogre_War_Collar_(Rallos_Zek)",
-  "imbued ogre war gauntlets (cazic thule)":
-    "/Imbued_Ogre_War_Gauntlets_(Cazic_Thule)",
-  "imbued ogre war gauntlets (rallos zek)":
-    "/Imbued_Ogre_War_Gauntlets_(Rallos_Zek)",
-  "imbued ogre war girdle (cazic thule)":
-    "/Imbued_Ogre_War_Girdle_(Cazic_Thule)",
+  "imbued ogre war gauntlets (cazic thule)": "/Imbued_Ogre_War_Gauntlets_(Cazic_Thule)",
+  "imbued ogre war gauntlets (rallos zek)": "/Imbued_Ogre_War_Gauntlets_(Rallos_Zek)",
+  "imbued ogre war girdle (cazic thule)": "/Imbued_Ogre_War_Girdle_(Cazic_Thule)",
   "imbued ogre war girdle (rallos zek)": "/Imbued_Ogre_War_Girdle_(Rallos_Zek)",
-  "imbued ogre war greaves (cazic thule)":
-    "/Imbued_Ogre_War_Greaves_(Cazic_Thule)",
-  "imbued ogre war greaves (rallos zek)":
-    "/Imbued_Ogre_War_Greaves_(Rallos_Zek)",
+  "imbued ogre war greaves (cazic thule)": "/Imbued_Ogre_War_Greaves_(Cazic_Thule)",
+  "imbued ogre war greaves (rallos zek)": "/Imbued_Ogre_War_Greaves_(Rallos_Zek)",
   "imbued ogre war hammer": "/Imbued_Ogre_War_Hammer",
   "imbued ogre war helm (cazic thule)": "/Imbued_Ogre_War_Helm_(Cazic_Thule)",
   "imbued ogre war helm (rallos zek)": "/Imbued_Ogre_War_Helm_(Rallos_Zek)",
   "imbued ogre war mace": "/Imbued_Ogre_War_Mace",
-  "imbued ogre war pauldron (cazic thule)":
-    "/Imbued_Ogre_War_Pauldron_(Cazic_Thule)",
-  "imbued ogre war pauldron (rallos zek)":
-    "/Imbued_Ogre_War_Pauldron_(Rallos_Zek)",
-  "imbued ogre war vambraces (cazic thule)":
-    "/Imbued_Ogre_War_Vambraces_(Cazic_Thule)",
-  "imbued ogre war vambraces (rallos zek)":
-    "/Imbued_Ogre_War_Vambraces_(Rallos_Zek)",
+  "imbued ogre war pauldron (cazic thule)": "/Imbued_Ogre_War_Pauldron_(Cazic_Thule)",
+  "imbued ogre war pauldron (rallos zek)": "/Imbued_Ogre_War_Pauldron_(Rallos_Zek)",
+  "imbued ogre war vambraces (cazic thule)": "/Imbued_Ogre_War_Vambraces_(Cazic_Thule)",
+  "imbued ogre war vambraces (rallos zek)": "/Imbued_Ogre_War_Vambraces_(Rallos_Zek)",
   "imbued ogre war visor (cazic thule)": "/Imbued_Ogre_War_Visor_(Cazic_Thule)",
   "imbued ogre war visor (rallos zek)": "/Imbued_Ogre_War_Visor_(Rallos_Zek)",
   "imbued opal": "/Imbued_Opal",
@@ -5023,60 +4856,42 @@ export const itemsData = {
   "imbued skyiron fer`esh": "/Imbued_Skyiron_Fer%60Esh",
   "imbued skyiron shan`tok": "/Imbued_Skyiron_Shan%60Tok",
   "imbued skyiron sheer blade": "/Imbued_Skyiron_Sheer_Blade",
-  "imbued steelsilk boots (cazic thule)":
-    "/Imbued_Steelsilk_Boots_(Cazic_Thule)",
+  "imbued steelsilk boots (cazic thule)": "/Imbued_Steelsilk_Boots_(Cazic_Thule)",
   "imbued steelsilk boots (prexus)": "/Imbued_Steelsilk_Boots_(Prexus)",
   "imbued steelsilk boots (quellious)": "/Imbued_Steelsilk_Boots_(Quellious)",
-  "imbued steelsilk bracers (cazic thule)":
-    "/Imbued_Steelsilk_Bracers_(Cazic_Thule)",
+  "imbued steelsilk bracers (cazic thule)": "/Imbued_Steelsilk_Bracers_(Cazic_Thule)",
   "imbued steelsilk bracers (prexus)": "/Imbued_Steelsilk_Bracers_(Prexus)",
-  "imbued steelsilk bracers (quellious)":
-    "/Imbued_Steelsilk_Bracers_(Quellious)",
-  "imbued steelsilk breastplate (cazic thule)":
-    "/Imbued_Steelsilk_Breastplate_(Cazic_Thule)",
-  "imbued steelsilk breastplate (prexus)":
-    "/Imbued_Steelsilk_Breastplate_(Prexus)",
-  "imbued steelsilk breastplate (quellious)":
-    "/Imbued_Steelsilk_Breastplate_(Quellious)",
-  "imbued steelsilk cloak (cazic thule)":
-    "/Imbued_Steelsilk_Cloak_(Cazic_Thule)",
+  "imbued steelsilk bracers (quellious)": "/Imbued_Steelsilk_Bracers_(Quellious)",
+  "imbued steelsilk breastplate (cazic thule)": "/Imbued_Steelsilk_Breastplate_(Cazic_Thule)",
+  "imbued steelsilk breastplate (prexus)": "/Imbued_Steelsilk_Breastplate_(Prexus)",
+  "imbued steelsilk breastplate (quellious)": "/Imbued_Steelsilk_Breastplate_(Quellious)",
+  "imbued steelsilk cloak (cazic thule)": "/Imbued_Steelsilk_Cloak_(Cazic_Thule)",
   "imbued steelsilk cloak (prexus)": "/Imbued_Steelsilk_Cloak_(Prexus)",
   "imbued steelsilk cloak (quellious)": "/Imbued_Steelsilk_Cloak_(Quellious)",
-  "imbued steelsilk collar (cazic thule)":
-    "/Imbued_Steelsilk_Collar_(Cazic_Thule)",
+  "imbued steelsilk collar (cazic thule)": "/Imbued_Steelsilk_Collar_(Cazic_Thule)",
   "imbued steelsilk collar (prexus)": "/Imbued_Steelsilk_Collar_(Prexus)",
   "imbued steelsilk collar (quellious)": "/Imbued_Steelsilk_Collar_(Quellious)",
-  "imbued steelsilk gauntlets (cazic thule)":
-    "/Imbued_Steelsilk_Gauntlets_(Cazic_Thule)",
+  "imbued steelsilk gauntlets (cazic thule)": "/Imbued_Steelsilk_Gauntlets_(Cazic_Thule)",
   "imbued steelsilk gauntlets (prexus)": "/Imbued_Steelsilk_Gauntlets_(Prexus)",
-  "imbued steelsilk gauntlets (quellious)":
-    "/Imbued_Steelsilk_Gauntlets_(Quellious)",
-  "imbued steelsilk greaves (cazic thule)":
-    "/Imbued_Steelsilk_Greaves_(Cazic_Thule)",
+  "imbued steelsilk gauntlets (quellious)": "/Imbued_Steelsilk_Gauntlets_(Quellious)",
+  "imbued steelsilk greaves (cazic thule)": "/Imbued_Steelsilk_Greaves_(Cazic_Thule)",
   "imbued steelsilk greaves (prexus)": "/Imbued_Steelsilk_Greaves_(Prexus)",
-  "imbued steelsilk greaves (quellious)":
-    "/Imbued_Steelsilk_Greaves_(Quellious)",
+  "imbued steelsilk greaves (quellious)": "/Imbued_Steelsilk_Greaves_(Quellious)",
   "imbued steelsilk helm (cazic thule)": "/Imbued_Steelsilk_Helm_(Cazic_Thule)",
   "imbued steelsilk helm (prexus)": "/Imbued_Steelsilk_Helm_(Prexus)",
   "imbued steelsilk helm (quellious)": "/Imbued_Steelsilk_Helm_(Quellious)",
   "imbued steelsilk mask (cazic thule)": "/Imbued_Steelsilk_Mask_(Cazic_Thule)",
   "imbued steelsilk mask (prexus)": "/Imbued_Steelsilk_Mask_(Prexus)",
   "imbued steelsilk mask (quellious)": "/Imbued_Steelsilk_Mask_(Quellious)",
-  "imbued steelsilk pauldron (cazic thule)":
-    "/Imbued_Steelsilk_Pauldron_(Cazic_Thule)",
+  "imbued steelsilk pauldron (cazic thule)": "/Imbued_Steelsilk_Pauldron_(Cazic_Thule)",
   "imbued steelsilk pauldron (prexus)": "/Imbued_Steelsilk_Pauldron_(Prexus)",
-  "imbued steelsilk pauldron (quellious)":
-    "/Imbued_Steelsilk_Pauldron_(Quellious)",
-  "imbued steelsilk vambraces (cazic thule)":
-    "/Imbued_Steelsilk_Vambraces_(Cazic_Thule)",
+  "imbued steelsilk pauldron (quellious)": "/Imbued_Steelsilk_Pauldron_(Quellious)",
+  "imbued steelsilk vambraces (cazic thule)": "/Imbued_Steelsilk_Vambraces_(Cazic_Thule)",
   "imbued steelsilk vambraces (prexus)": "/Imbued_Steelsilk_Vambraces_(Prexus)",
-  "imbued steelsilk vambraces (quellious)":
-    "/Imbued_Steelsilk_Vambraces_(Quellious)",
-  "imbued steelsilk waistband (cazic thule)":
-    "/Imbued_Steelsilk_Waistband_(Cazic_Thule)",
+  "imbued steelsilk vambraces (quellious)": "/Imbued_Steelsilk_Vambraces_(Quellious)",
+  "imbued steelsilk waistband (cazic thule)": "/Imbued_Steelsilk_Waistband_(Cazic_Thule)",
   "imbued steelsilk waistband (prexus)": "/Imbued_Steelsilk_Waistband_(Prexus)",
-  "imbued steelsilk waistband (quellious)":
-    "/Imbued_Steelsilk_Waistband_(Quellious)",
+  "imbued steelsilk waistband (quellious)": "/Imbued_Steelsilk_Waistband_(Quellious)",
   "imbued teir`dal chain bracelet": "/Imbued_Teir%60Dal_Chain_Bracelet",
   "imbued teir`dal chain cape": "/Imbued_Teir%60Dal_Chain_Cape",
   "imbued teir`dal chain coif": "/Imbued_Teir%60Dal_Chain_Coif",
@@ -6581,54 +6396,30 @@ export const itemsData = {
   "ogre butcher apron": "/Ogre_Butcher_Apron",
   "ogre butcher gloves": "/Ogre_Butcher_Gloves",
   "ogre head": "/Ogre_Head",
-  "ogre imbued splint belt (cazic thule)":
-    "/Ogre_Imbued_Splint_Belt_(Cazic_Thule)",
-  "ogre imbued splint belt (rallos zek)":
-    "/Ogre_Imbued_Splint_Belt_(Rallos_Zek)",
-  "ogre imbued splint boots (cazic thule)":
-    "/Ogre_Imbued_Splint_Boots_(Cazic_Thule)",
-  "ogre imbued splint boots (rallos zek)":
-    "/Ogre_Imbued_Splint_Boots_(Rallos_Zek)",
-  "ogre imbued splint bracer (cazic thule)":
-    "/Ogre_Imbued_Splint_Bracer_(Cazic_Thule)",
-  "ogre imbued splint bracer (rallos zek)":
-    "/Ogre_Imbued_Splint_Bracer_(Rallos_Zek)",
-  "ogre imbued splint cloak (cazic thule)":
-    "/Ogre_Imbued_Splint_Cloak_(Cazic_Thule)",
-  "ogre imbued splint cloak (rallos zek)":
-    "/Ogre_Imbued_Splint_Cloak_(Rallos_Zek)",
-  "ogre imbued splint gauntlets (cazic thule)":
-    "/Ogre_Imbued_Splint_Gauntlets_(Cazic_Thule)",
-  "ogre imbued splint gauntlets (rallos zek)":
-    "/Ogre_Imbued_Splint_Gauntlets_(Rallos_Zek)",
-  "ogre imbued splint gorget (cazic thule)":
-    "/Ogre_Imbued_Splint_Gorget_(Cazic_Thule)",
-  "ogre imbued splint gorget (rallos zek)":
-    "/Ogre_Imbued_Splint_Gorget_(Rallos_Zek)",
-  "ogre imbued splint helm (cazic thule)":
-    "/Ogre_Imbued_Splint_Helm_(Cazic_Thule)",
-  "ogre imbued splint helm (rallos zek)":
-    "/Ogre_Imbued_Splint_Helm_(Rallos_Zek)",
-  "ogre imbued splint leggings (cazic thule)":
-    "/Ogre_Imbued_Splint_Leggings_(Cazic_Thule)",
-  "ogre imbued splint leggings (rallos zek)":
-    "/Ogre_Imbued_Splint_Leggings_(Rallos_Zek)",
-  "ogre imbued splint mail (cazic thule)":
-    "/Ogre_Imbued_Splint_Mail_(Cazic_Thule)",
-  "ogre imbued splint mail (rallos zek)":
-    "/Ogre_Imbued_Splint_Mail_(Rallos_Zek)",
-  "ogre imbued splint mantle (cazic thule)":
-    "/Ogre_Imbued_Splint_Mantle_(Cazic_Thule)",
-  "ogre imbued splint mantle (rallos zek)":
-    "/Ogre_Imbued_Splint_Mantle_(Rallos_Zek)",
-  "ogre imbued splint mask (cazic thule)":
-    "/Ogre_Imbued_Splint_Mask_(Cazic_Thule)",
-  "ogre imbued splint mask (rallos zek)":
-    "/Ogre_Imbued_Splint_Mask_(Rallos_Zek)",
-  "ogre imbued splint sleeves (cazic thule)":
-    "/Ogre_Imbued_Splint_Sleeves_(Cazic_Thule)",
-  "ogre imbued splint sleeves (rallos zek)":
-    "/Ogre_Imbued_Splint_Sleeves_(Rallos_Zek)",
+  "ogre imbued splint belt (cazic thule)": "/Ogre_Imbued_Splint_Belt_(Cazic_Thule)",
+  "ogre imbued splint belt (rallos zek)": "/Ogre_Imbued_Splint_Belt_(Rallos_Zek)",
+  "ogre imbued splint boots (cazic thule)": "/Ogre_Imbued_Splint_Boots_(Cazic_Thule)",
+  "ogre imbued splint boots (rallos zek)": "/Ogre_Imbued_Splint_Boots_(Rallos_Zek)",
+  "ogre imbued splint bracer (cazic thule)": "/Ogre_Imbued_Splint_Bracer_(Cazic_Thule)",
+  "ogre imbued splint bracer (rallos zek)": "/Ogre_Imbued_Splint_Bracer_(Rallos_Zek)",
+  "ogre imbued splint cloak (cazic thule)": "/Ogre_Imbued_Splint_Cloak_(Cazic_Thule)",
+  "ogre imbued splint cloak (rallos zek)": "/Ogre_Imbued_Splint_Cloak_(Rallos_Zek)",
+  "ogre imbued splint gauntlets (cazic thule)": "/Ogre_Imbued_Splint_Gauntlets_(Cazic_Thule)",
+  "ogre imbued splint gauntlets (rallos zek)": "/Ogre_Imbued_Splint_Gauntlets_(Rallos_Zek)",
+  "ogre imbued splint gorget (cazic thule)": "/Ogre_Imbued_Splint_Gorget_(Cazic_Thule)",
+  "ogre imbued splint gorget (rallos zek)": "/Ogre_Imbued_Splint_Gorget_(Rallos_Zek)",
+  "ogre imbued splint helm (cazic thule)": "/Ogre_Imbued_Splint_Helm_(Cazic_Thule)",
+  "ogre imbued splint helm (rallos zek)": "/Ogre_Imbued_Splint_Helm_(Rallos_Zek)",
+  "ogre imbued splint leggings (cazic thule)": "/Ogre_Imbued_Splint_Leggings_(Cazic_Thule)",
+  "ogre imbued splint leggings (rallos zek)": "/Ogre_Imbued_Splint_Leggings_(Rallos_Zek)",
+  "ogre imbued splint mail (cazic thule)": "/Ogre_Imbued_Splint_Mail_(Cazic_Thule)",
+  "ogre imbued splint mail (rallos zek)": "/Ogre_Imbued_Splint_Mail_(Rallos_Zek)",
+  "ogre imbued splint mantle (cazic thule)": "/Ogre_Imbued_Splint_Mantle_(Cazic_Thule)",
+  "ogre imbued splint mantle (rallos zek)": "/Ogre_Imbued_Splint_Mantle_(Rallos_Zek)",
+  "ogre imbued splint mask (cazic thule)": "/Ogre_Imbued_Splint_Mask_(Cazic_Thule)",
+  "ogre imbued splint mask (rallos zek)": "/Ogre_Imbued_Splint_Mask_(Rallos_Zek)",
+  "ogre imbued splint sleeves (cazic thule)": "/Ogre_Imbued_Splint_Sleeves_(Cazic_Thule)",
+  "ogre imbued splint sleeves (rallos zek)": "/Ogre_Imbued_Splint_Sleeves_(Rallos_Zek)",
   "ogre meat cleaver": "/Ogre_Meat_Cleaver",
   "ogre splintmail belt": "/Ogre_Splintmail_Belt",
   "ogre splintmail boots": "/Ogre_Splintmail_Boots",
@@ -6817,20 +6608,14 @@ export const itemsData = {
   "part of a large key": "/Part_of_a_Large_Key",
   "part of potion of marr": "/Part_of_Potion_of_Marr",
   "part of tasarin's grimoire pg. 23": "/Part_of_Tasarin%27s_Grimoire_Pg._23",
-  "part of tasarin's grimoire pg. 23 (left)":
-    "/Part_of_Tasarin%27s_Grimoire_Pg._23_(Left)",
-  "part of tasarin's grimoire pg. 23 (right)":
-    "/Part_of_Tasarin%27s_Grimoire_Pg._23_(Right)",
+  "part of tasarin's grimoire pg. 23 (left)": "/Part_of_Tasarin%27s_Grimoire_Pg._23_(Left)",
+  "part of tasarin's grimoire pg. 23 (right)": "/Part_of_Tasarin%27s_Grimoire_Pg._23_(Right)",
   "part of tasarin's grimoire pg. 24": "/Part_of_Tasarin%27s_Grimoire_Pg._24",
-  "part of tasarin's grimoire pg. 24 (left)":
-    "/Part_of_Tasarin%27s_Grimoire_Pg._24_(Left)",
-  "part of tasarin's grimoire pg. 24 (right)":
-    "/Part_of_Tasarin%27s_Grimoire_Pg._24_(Right)",
+  "part of tasarin's grimoire pg. 24 (left)": "/Part_of_Tasarin%27s_Grimoire_Pg._24_(Left)",
+  "part of tasarin's grimoire pg. 24 (right)": "/Part_of_Tasarin%27s_Grimoire_Pg._24_(Right)",
   "part of tasarin's grimoire pg. 26": "/Part_of_Tasarin%27s_Grimoire_Pg._26",
-  "part of tasarin's grimoire pg. 26 (left)":
-    "/Part_of_Tasarin%27s_Grimoire_Pg._26_(Left)",
-  "part of tasarin's grimoire pg. 26 (right)":
-    "/Part_of_Tasarin%27s_Grimoire_Pg._26_(Right)",
+  "part of tasarin's grimoire pg. 26 (left)": "/Part_of_Tasarin%27s_Grimoire_Pg._26_(Left)",
+  "part of tasarin's grimoire pg. 26 (right)": "/Part_of_Tasarin%27s_Grimoire_Pg._26_(Right)",
   "part of tasarin's grimoire pg. 30": "/Part_of_Tasarin%27s_Grimoire_Pg._30",
   "part of tasarin's grimoire pg. 312": "/Part_of_Tasarin%27s_Grimoire_Pg._312",
   "part of tasarin's grimoire pg. 375": "/Part_of_Tasarin%27s_Grimoire_Pg._375",
@@ -8302,8 +8087,7 @@ export const itemsData = {
   "shaped darkwood 1-cam bow (linen)": "/Shaped_Darkwood_1-Cam_Bow_(Linen)",
   "shaped darkwood 1-cam bow (silk)": "/Shaped_Darkwood_1-Cam_Bow_(Silk)",
   "shaped darkwood compound bow (hemp)": "/Shaped_Darkwood_Compound_Bow_(Hemp)",
-  "shaped darkwood compound bow (linen)":
-    "/Shaped_Darkwood_Compound_Bow_(Linen)",
+  "shaped darkwood compound bow (linen)": "/Shaped_Darkwood_Compound_Bow_(Linen)",
   "shaped darkwood compound bow (silk)": "/Shaped_Darkwood_Compound_Bow_(Silk)",
   "shaped darkwood recurve bow (hemp)": "/Shaped_Darkwood_Recurve_Bow_(Hemp)",
   "shaped darkwood recurve bow (linen)": "/Shaped_Darkwood_Recurve_Bow_(Linen)",
@@ -9558,62 +9342,41 @@ export const itemsData = {
   "tears of erollisi": "/Tears_of_Erollisi",
   "tears of prexus": "/Tears_of_Prexus",
   "teir`dal adamantite boots": "/Teir%60Dal_Adamantite_Boots",
-  "teir`dal adamantite boots (enchanted)":
-    "/Teir%60Dal_Adamantite_Boots_(Enchanted)",
+  "teir`dal adamantite boots (enchanted)": "/Teir%60Dal_Adamantite_Boots_(Enchanted)",
   "teir`dal adamantite boots (imbued)": "/Teir%60Dal_Adamantite_Boots_(Imbued)",
   "teir`dal adamantite bracers": "/Teir%60Dal_Adamantite_Bracers",
-  "teir`dal adamantite bracers (enchanted)":
-    "/Teir%60Dal_Adamantite_Bracers_(Enchanted)",
-  "teir`dal adamantite bracers (imbued)":
-    "/Teir%60Dal_Adamantite_Bracers_(Imbued)",
+  "teir`dal adamantite bracers (enchanted)": "/Teir%60Dal_Adamantite_Bracers_(Enchanted)",
+  "teir`dal adamantite bracers (imbued)": "/Teir%60Dal_Adamantite_Bracers_(Imbued)",
   "teir`dal adamantite breastplate": "/Teir%60Dal_Adamantite_Breastplate",
-  "teir`dal adamantite breastplate (enchanted)":
-    "/Teir%60Dal_Adamantite_Breastplate_(Enchanted)",
-  "teir`dal adamantite breastplate (imbued)":
-    "/Teir%60Dal_Adamantite_Breastplate_(Imbued)",
+  "teir`dal adamantite breastplate (enchanted)": "/Teir%60Dal_Adamantite_Breastplate_(Enchanted)",
+  "teir`dal adamantite breastplate (imbued)": "/Teir%60Dal_Adamantite_Breastplate_(Imbued)",
   "teir`dal adamantite cloak": "/Teir%60Dal_Adamantite_Cloak",
-  "teir`dal adamantite cloak (enchanted)":
-    "/Teir%60Dal_Adamantite_Cloak_(Enchanted)",
+  "teir`dal adamantite cloak (enchanted)": "/Teir%60Dal_Adamantite_Cloak_(Enchanted)",
   "teir`dal adamantite cloak (imbued)": "/Teir%60Dal_Adamantite_Cloak_(Imbued)",
   "teir`dal adamantite collar": "/Teir%60Dal_Adamantite_Collar",
-  "teir`dal adamantite collar (enchanted)":
-    "/Teir%60Dal_Adamantite_Collar_(Enchanted)",
-  "teir`dal adamantite collar (imbued)":
-    "/Teir%60Dal_Adamantite_Collar_(Imbued)",
+  "teir`dal adamantite collar (enchanted)": "/Teir%60Dal_Adamantite_Collar_(Enchanted)",
+  "teir`dal adamantite collar (imbued)": "/Teir%60Dal_Adamantite_Collar_(Imbued)",
   "teir`dal adamantite gauntlets": "/Teir%60Dal_Adamantite_Gauntlets",
-  "teir`dal adamantite gauntlets (enchanted)":
-    "/Teir%60Dal_Adamantite_Gauntlets_(Enchanted)",
-  "teir`dal adamantite gauntlets (imbued)":
-    "/Teir%60Dal_Adamantite_Gauntlets_(Imbued)",
+  "teir`dal adamantite gauntlets (enchanted)": "/Teir%60Dal_Adamantite_Gauntlets_(Enchanted)",
+  "teir`dal adamantite gauntlets (imbued)": "/Teir%60Dal_Adamantite_Gauntlets_(Imbued)",
   "teir`dal adamantite girdle": "/Teir%60Dal_Adamantite_Girdle",
-  "teir`dal adamantite girdle (enchanted)":
-    "/Teir%60Dal_Adamantite_Girdle_(Enchanted)",
-  "teir`dal adamantite girdle (imbued)":
-    "/Teir%60Dal_Adamantite_Girdle_(Imbued)",
+  "teir`dal adamantite girdle (enchanted)": "/Teir%60Dal_Adamantite_Girdle_(Enchanted)",
+  "teir`dal adamantite girdle (imbued)": "/Teir%60Dal_Adamantite_Girdle_(Imbued)",
   "teir`dal adamantite greaves": "/Teir%60Dal_Adamantite_Greaves",
-  "teir`dal adamantite greaves (dropped)":
-    "/Teir%60Dal_Adamantite_Greaves_(Dropped)",
-  "teir`dal adamantite greaves (enchanted)":
-    "/Teir%60Dal_Adamantite_Greaves_(Enchanted)",
-  "teir`dal adamantite greaves (imbued)":
-    "/Teir%60Dal_Adamantite_Greaves_(Imbued)",
+  "teir`dal adamantite greaves (dropped)": "/Teir%60Dal_Adamantite_Greaves_(Dropped)",
+  "teir`dal adamantite greaves (enchanted)": "/Teir%60Dal_Adamantite_Greaves_(Enchanted)",
+  "teir`dal adamantite greaves (imbued)": "/Teir%60Dal_Adamantite_Greaves_(Imbued)",
   "teir`dal adamantite helm": "/Teir%60Dal_Adamantite_Helm",
-  "teir`dal adamantite helm (enchanted)":
-    "/Teir%60Dal_Adamantite_Helm_(Enchanted)",
+  "teir`dal adamantite helm (enchanted)": "/Teir%60Dal_Adamantite_Helm_(Enchanted)",
   "teir`dal adamantite helm (imbued)": "/Teir%60Dal_Adamantite_Helm_(Imbued)",
   "teir`dal adamantite pauldron": "/Teir%60Dal_Adamantite_Pauldron",
-  "teir`dal adamantite pauldron (enchanted)":
-    "/Teir%60Dal_Adamantite_Pauldron_(Enchanted)",
-  "teir`dal adamantite pauldron (imbued)":
-    "/Teir%60Dal_Adamantite_Pauldron_(Imbued)",
+  "teir`dal adamantite pauldron (enchanted)": "/Teir%60Dal_Adamantite_Pauldron_(Enchanted)",
+  "teir`dal adamantite pauldron (imbued)": "/Teir%60Dal_Adamantite_Pauldron_(Imbued)",
   "teir`dal adamantite vambraces": "/Teir%60Dal_Adamantite_Vambraces",
-  "teir`dal adamantite vambraces (enchanted)":
-    "/Teir%60Dal_Adamantite_Vambraces_(Enchanted)",
-  "teir`dal adamantite vambraces (imbued)":
-    "/Teir%60Dal_Adamantite_Vambraces_(Imbued)",
+  "teir`dal adamantite vambraces (enchanted)": "/Teir%60Dal_Adamantite_Vambraces_(Enchanted)",
+  "teir`dal adamantite vambraces (imbued)": "/Teir%60Dal_Adamantite_Vambraces_(Imbued)",
   "teir`dal adamantite visor": "/Teir%60Dal_Adamantite_Visor",
-  "teir`dal adamantite visor (enchanted)":
-    "/Teir%60Dal_Adamantite_Visor_(Enchanted)",
+  "teir`dal adamantite visor (enchanted)": "/Teir%60Dal_Adamantite_Visor_(Enchanted)",
   "teir`dal adamantite visor (imbued)": "/Teir%60Dal_Adamantite_Visor_(Imbued)",
   "teir`dal blood pact": "/Teir%60Dal_Blood_Pact",
   "teir`dal chain coif": "/Teir%60Dal_Chain_Coif",

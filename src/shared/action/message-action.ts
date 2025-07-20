@@ -31,9 +31,7 @@ export abstract class MessageAction {
   protected get authorId() {
     const authorId = this.message.author?.id;
     if (!authorId) {
-      throw new Error(
-        "Something went wrong when retrieving the message author."
-      );
+      throw new Error("Something went wrong when retrieving the message author.");
     }
     return authorId;
   }

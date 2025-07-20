@@ -20,10 +20,7 @@ export const guildScheduledEventStartedListener = async (
   }
   // run when its completed or canceled
   if (
-    [
-      GuildScheduledEventStatus.Completed,
-      GuildScheduledEventStatus.Canceled,
-    ].includes(after.status)
+    [GuildScheduledEventStatus.Completed, GuildScheduledEventStatus.Canceled].includes(after.status)
   ) {
     recordRaidStarted(client, after);
   }

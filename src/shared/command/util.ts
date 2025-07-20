@@ -53,18 +53,13 @@ export const requireInteractionMemberPermission = (
   }
 };
 
-export const getChannel = async (
-  channelId: string,
-  interaction: ButtonInteraction<CacheType>
-) => {
+export const getChannel = async (channelId: string, interaction: ButtonInteraction<CacheType>) => {
   return await interaction.guild?.channels.fetch(channelId);
 };
 
 export const getRole = (
   roleId: string,
-  interaction:
-    | CommandInteraction<CacheType>
-    | AutocompleteInteraction<CacheType>
+  interaction: CommandInteraction<CacheType> | AutocompleteInteraction<CacheType>
 ) => {
   return interaction.guild?.roles.cache.get(roleId);
 };
@@ -72,9 +67,7 @@ export const getRole = (
 export const requireUserRole = (
   userId: string,
   roleId: string,
-  interaction:
-    | CommandInteraction<CacheType>
-    | AutocompleteInteraction<CacheType>
+  interaction: CommandInteraction<CacheType> | AutocompleteInteraction<CacheType>
 ) => {
   const role = getRole(roleId, interaction);
   if (!role?.members.get(userId)) {
@@ -82,10 +75,7 @@ export const requireUserRole = (
   }
 };
 
-export const fetchRole = async (
-  interaction: CommandInteraction<CacheType>,
-  roleId: string
-) => {
+export const fetchRole = async (interaction: CommandInteraction<CacheType>, roleId: string) => {
   const roles = await interaction.guild?.roles.fetch();
   const role = roles?.filter((r) => r.id === roleId);
   if (!role) {
@@ -96,9 +86,7 @@ export const fetchRole = async (
 
 const MESSAGE_CHAR_LIMIT = 1800;
 
-export const listThreadMembers = async (
-  interaction: CommandInteraction<CacheType>
-) => {
+export const listThreadMembers = async (interaction: CommandInteraction<CacheType>) => {
   if (!interaction.channel?.isThread()) {
     throw new Error(`Channel is not a thread.`);
   }
@@ -144,10 +132,7 @@ export const listThreadMembers = async (
   return names.length;
 };
 
-export const addRoleToThread = async (
-  roleId: string,
-  channel: ThreadChannel
-) => {
+export const addRoleToThread = async (roleId: string, channel: ThreadChannel) => {
   const roles = await getRoles();
   const everyone = await getMembers();
   const message = await channel.send("Temporary message.");

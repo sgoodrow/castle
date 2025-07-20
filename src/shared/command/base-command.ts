@@ -30,7 +30,5 @@ export abstract class BaseCommand {
     interaction: AutocompleteInteraction<CacheType>
   ): Promise<ApplicationCommandOptionChoiceData[] | undefined>;
 
-  public abstract execute(
-    interaction: CommandInteraction<CacheType>
-  ): Promise<void>;
+  public abstract execute(interaction: CommandInteraction<CacheType>): Promise<void>;
 }

@@ -23,10 +23,7 @@ export abstract class InstructionsReadyAction extends ReadyAction {
     | TextChannel
     | ThreadChannel;
 
-  protected async createOrUpdateInstructions(
-    options: BaseMessageOptions,
-    name: Name
-  ) {
+  protected async createOrUpdateInstructions(options: BaseMessageOptions, name: Name) {
     const embed = await this.getEmbed(name);
 
     if (embed) {
