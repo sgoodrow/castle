@@ -2,9 +2,7 @@ import { ChannelType, GuildMember, PartialGuildMember } from "discord.js";
 import moment from "moment";
 import { membersAndAlliesRoleId, removedChannelId } from "../../config";
 
-export const guildMemberLeaveListener = async (
-  member: GuildMember | PartialGuildMember
-) => {
+export const guildMemberLeaveListener = async (member: GuildMember | PartialGuildMember) => {
   // Verify they're a member
   if (!member.roles.cache.has(membersAndAlliesRoleId)) {
     return;

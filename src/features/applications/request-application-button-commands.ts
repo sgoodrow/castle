@@ -1,20 +1,15 @@
-import {
-  ButtonInteraction,
-  CacheType,
-  ButtonBuilder,
-  ButtonStyle,
-  ChannelType,
-} from "discord.js";
+import { ButtonInteraction, CacheType, ButtonBuilder, ButtonStyle, ChannelType } from "discord.js";
 import { requestDumpThreadId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
+import { VOLUNTEER_APPLICATION, APPLICATION_MESSAGE_TEMPLATE } from "./constants";
 
 export class RequestApplication extends ButtonCommand {
   public constructor() {
-    super("volunteer-application");
+    super(VOLUNTEER_APPLICATION.CUSTOM_ID);
   }
 
   public get label() {
-    return "Volunteer Application";
+    return VOLUNTEER_APPLICATION.LABEL;
   }
 
   public async execute(interaction: ButtonInteraction<CacheType>) {
@@ -25,9 +20,7 @@ export class RequestApplication extends ButtonCommand {
       content: `You have been DM'd the **${this.label}**.`,
     });
 
-    const channel = await interaction.guild?.channels.fetch(
-      requestDumpThreadId
-    );
+    const channel = await interaction.guild?.channels.fetch(requestDumpThreadId);
     if (!channel) {
       throw new Error("Could not locate the request dump channel");
     }
@@ -41,21 +34,10 @@ export class RequestApplication extends ButtonCommand {
   }
 
   public getButtonBuilder(style: ButtonStyle) {
-    return new ButtonBuilder()
-      .setCustomId(this.customId)
-      .setStyle(style)
-      .setLabel(this.label);
+    return new ButtonBuilder().setCustomId(this.customId).setStyle(style).setLabel(this.label);
   }
 
   private get content() {
-    return `**DO NOT REPLY TO THIS MESSAGE.**
-
-In Castle, leadership and volunteering are duties with no special privileges. Volunteers may step down at any time.
-
-**How do I apply?**
-Fill out the following Google form: https://docs.google.com/forms/d/e/1FAIpQLSelYSgoouJCOIV9qoOQ1FdOXj8oGC2pfv7P47iUUd1hjOic-g/viewform.
-
-**What happens to an application?**
-Applications are reviewed by current officers. This process typically takes less than a week.`;
+    return APPLICATION_MESSAGE_TEMPLATE;
   }
 }

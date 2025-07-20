@@ -1,9 +1,4 @@
-import {
-  CacheType,
-  ChannelType,
-  CommandInteraction,
-  GuildMemberRoleManager,
-} from "discord.js";
+import { CacheType, ChannelType, CommandInteraction, GuildMemberRoleManager } from "discord.js";
 import { auctionChannelId, bankerRoleId, raiderRoleId } from "../../config";
 import { Subcommand } from "../../shared/command/subcommand";
 import { addRoleToThread } from "../../shared/command/util";
@@ -59,9 +54,7 @@ export class AuctionSubcommand extends Subcommand {
       .addStringOption((o) =>
         o
           .setName(Option.Raid)
-          .setDescription(
-            "The raid to restrict bidders to. Defaults to no restriction"
-          )
+          .setDescription("The raid to restrict bidders to. Defaults to no restriction")
       )
       .addStringOption((o) =>
         o
@@ -74,9 +67,7 @@ export class AuctionSubcommand extends Subcommand {
       command.addBooleanOption((o) =>
         o
           .setName(Option.RequireScribe)
-          .setDescription(
-            "Add a rule that the bidders must be able to scribe the spell."
-          )
+          .setDescription("Add a rule that the bidders must be able to scribe the spell.")
       );
     }
     return command;

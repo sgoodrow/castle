@@ -12,10 +12,7 @@ import {
   dkpDeputyRoleId,
   officerRoleId,
 } from "../../config";
-import {
-  ReactionAction,
-  reactionActionExecutor,
-} from "../../shared/action/reaction-action";
+import { ReactionAction, reactionActionExecutor } from "../../shared/action/reaction-action";
 import { castledkp } from "../../services/castledkp";
 import { some } from "lodash";
 
@@ -64,9 +61,7 @@ class AuctionFinishedReactionAction extends ReactionAction {
 
     // handle banked
     if (this.reaction.emoji.name === "🏦") {
-      if (
-        this.message.embeds.find((e) => e.title?.includes("view on P99 Wiki"))
-      ) {
+      if (this.message.embeds.find((e) => e.title?.includes("view on P99 Wiki"))) {
         // provide receipt
         await this.message.reply({
           content: "Auction closed. Item is property of the guild bank.",
@@ -80,14 +75,10 @@ class AuctionFinishedReactionAction extends ReactionAction {
 
     // parse message
     if (!this.message.content) {
-      throw new Error(
-        "Tried to finish an auction, but the message has no content."
-      );
+      throw new Error("Tried to finish an auction, but the message has no content.");
     }
     if (!this.message.author) {
-      throw new Error(
-        "Tried to finish an auction, but the message has no author."
-      );
+      throw new Error("Tried to finish an auction, but the message has no author.");
     }
     const { price, character } = await this.parseBid(this.message.content);
     const item = await this.getItem(name);
@@ -136,9 +127,7 @@ ${this.example}`);
     const name = reg[reg.length - 1];
     const character = await this.getCharacter(name);
     if (!character) {
-      throw new Error(
-        `Cannot finish auction because character ${name} does not exist`
-      );
+      throw new Error(`Cannot finish auction because character ${name} does not exist`);
     }
 
     return { price, character };

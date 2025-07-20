@@ -8,18 +8,13 @@ import {
 import { applicationsChannelId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
-import {
-  readyActionExecutor,
-  ReadyActionExecutorOptions,
-} from "../../shared/action/ready-action";
+import { readyActionExecutor, ReadyActionExecutorOptions } from "../../shared/action/ready-action";
 import { RequestApplication } from "./request-application-button-commands";
 
 const applicationCommandButton = new RequestApplication();
 
-export const updateApplicationInfo = (
-  client: Client,
-  options?: ReadyActionExecutorOptions
-) => readyActionExecutor(new UpdateApplicationInfoAction(client), options);
+export const updateApplicationInfo = (client: Client, options?: ReadyActionExecutorOptions) =>
+  readyActionExecutor(new UpdateApplicationInfoAction(client), options);
 
 export class UpdateApplicationInfoAction extends InstructionsReadyAction {
   public async execute(): Promise<void> {
@@ -31,9 +26,7 @@ export class UpdateApplicationInfoAction extends InstructionsReadyAction {
         components: [
           new ActionRowBuilder<MessageActionRowComponentBuilder>({
             type: 1,
-            components: [
-              applicationCommandButton.getButtonBuilder(ButtonStyle.Primary),
-            ],
+            components: [applicationCommandButton.getButtonBuilder(ButtonStyle.Primary)],
           }),
         ],
       },

@@ -32,10 +32,7 @@ class Add extends Subcommand {
 
   public get command() {
     return super.command.addRoleOption((o) =>
-      o
-        .setName(Option.RoleId)
-        .setDescription("The Discord role to add")
-        .setRequired(true)
+      o.setName(Option.RoleId).setDescription("The Discord role to add").setRequired(true)
     );
   }
 
@@ -44,7 +41,4 @@ class Add extends Subcommand {
   }
 }
 
-export const addSubcommand = new Add(
-  "add",
-  "Add all members of a role to the thread."
-);
+export const addSubcommand = new Add("add", "Add all members of a role to the thread.");

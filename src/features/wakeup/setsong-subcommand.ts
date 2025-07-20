@@ -1,8 +1,4 @@
-import {
-  ApplicationCommandOptionChoiceData,
-  CacheType,
-  CommandInteraction,
-} from "discord.js";
+import { ApplicationCommandOptionChoiceData, CacheType, CommandInteraction } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { authorizeByMemberRoles } from "../../shared/command/util";
 import { officerRoleId, knightRoleId } from "../../config";
@@ -17,10 +13,7 @@ export class SetSongSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const URL = this.getRequiredOptionValue(
-      SetSongOption.URL,
-      interaction
-    ) as string;
+    const URL = this.getRequiredOptionValue(SetSongOption.URL, interaction) as string;
 
     try {
       authorizeByMemberRoles([officerRoleId, knightRoleId], interaction);
@@ -49,7 +42,4 @@ export class SetSongSubcommand extends Subcommand {
   }
 }
 
-export const setSongSubCommand = new SetSongSubcommand(
-  "setsong",
-  "Sets the wakeup song (be nice)"
-);
+export const setSongSubCommand = new SetSongSubcommand("setsong", "Sets the wakeup song (be nice)");
