@@ -58,6 +58,12 @@ export const refreshBotEmbed = async () => {
     botString += botRow;
   });
 
+  if (botString.length > 6000) {
+    console.log(`Embed length too long (${botString.length}), 
+      not attempting update`);
+    return;
+  }
+
   botMessages.push(botString);
 
   await botEmbedInstructions
