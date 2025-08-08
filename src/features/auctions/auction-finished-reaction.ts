@@ -18,6 +18,7 @@ import {
 } from "../../shared/action/reaction-action";
 import { castledkp } from "../../services/castledkp";
 import { some } from "lodash";
+import { openDkpService } from "../../services/openDkpService";
 
 const code = "```";
 const emojis = ["✅", "🏦"];
@@ -97,6 +98,14 @@ class AuctionFinishedReactionAction extends ReactionAction {
     }
 
     // add item to raid
+    await openDkpService.addItem(
+      character.name,
+      item,
+      `Auction - ${
+        this.message.thread?.name || item
+      } - ${this.message.createdAt.toDateString()}`,
+      price
+    );
     await castledkp.addItem(Number(castleDkpAuctionRaidId), {
       item,
       buyer: character.name,
