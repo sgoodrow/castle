@@ -1,6 +1,12 @@
 import { ChannelType, Client, GatewayIntentBits, Partials } from "discord.js";
 import { interactionCreateListener } from "./listeners/interaction-create-listener";
-import { guildId, token } from "./config";
+import {
+  guildId,
+  openDkpAuthClientId,
+  openDkpPassword,
+  openDkpUsername,
+  token,
+} from "./config";
 import { readyListener } from "./listeners/ready-listener";
 import { messageReactionAddListener } from "./listeners/message-reaction-add-listener";
 import { registerSlashCommands } from "./listeners/register-commands";
@@ -17,7 +23,8 @@ import { updateRaidReport } from "./features/dkp-records/update/update-raid-repo
 import { guildMemberUpdateListener } from "./listeners/guild-member-update-listener";
 import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
-import { log } from "./shared/logger"
+import { log } from "./shared/logger";
+import { openDkpService } from "./services/openDkpService";
 
 // Global
 https.globalAgent.maxSockets = 5;
@@ -96,4 +103,14 @@ redisListener.pSubscribe(redisChannels.raidReportChange(), updateRaidReport);
 export const prismaClient = new PrismaClient();
 prismaClient.$connect();
 
+if (openDkpUsername && openDkpPassword && openDkpAuthClientId) {
+  openDkpService
+    .doUserPasswordAuth(openDkpUsername, openDkpPassword, openDkpAuthClientId)
+    .then(() => {
+      console.log("Authenticated with OpenDKP");
+    })
+    .catch((reason) => {
+      console.log("Failed to authenticate with OpenDKP: " + reason);
+    });
+}
 log("Listening...");

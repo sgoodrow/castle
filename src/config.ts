@@ -12,6 +12,11 @@ export const {
   castleDkp2TokenRW,
   castleDkpAuctionRaidId,
   castleDkpBonusesCharId,
+  openDkpUsername,
+  openDkpPassword,
+  openDkpDomain,
+  openDkpSiteClientId,
+  openDkpAuthClientId,
   sharedCharactersGoogleSheetId,
   publicCharactersGoogleSheetId,
   commandSuffix,
@@ -95,6 +100,28 @@ export const {
    * castledkp.vercel.app read/write token
    */
   castleDkp2TokenRW?: string;
+  /*
+   * castle.opendkp.com username
+   */
+  openDkpUsername?: string;
+  /*
+   * castle.opendkp.com password
+   */
+  openDkpPassword?: string;
+  /*
+   * castle.opendkp.com subdomain
+   */
+  openDkpDomain?: string;
+
+  /*
+   * castle.opendkp.com site client id
+   */
+  openDkpSiteClientId?: string;
+
+  /*
+   * castle.opendkp.com auth client id
+   */
+  openDkpAuthClientId?: string;
 
   /**
    * CastleDKP.com Raid ID for DKP auctions.
