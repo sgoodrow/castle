@@ -1,16 +1,18 @@
+/**
+ * MockButtonInteraction for Discord Testing Library
+ */
+
 import { ButtonInteraction, CacheType, InteractionType, ComponentType, Client } from "discord.js";
 import { createTypedMock } from "../utils/create-typed-mock";
-import { MockUser, createMockUser } from "./create-mock-user";
 import { createMockClient } from "./create-mock-client";
-import { MockGuild, createMockGuild } from "./create-mock-guild";
 
 // Create a partial ButtonInteraction that focuses on what we actually test
 type TestableButtonInteraction = Pick<
   ButtonInteraction<CacheType>,
   "customId" | "type" | "componentType" | "id" | "token" | "version" | "applicationId"
 > & {
-  user: MockUser;
-  guild: MockGuild | null;
+  user: any; // MockUser
+  guild: any; // MockGuild | null
   client: Client;
   editReply: jest.MockedFunction<ButtonInteraction["editReply"]>;
   reply: jest.MockedFunction<ButtonInteraction["reply"]>;
@@ -22,16 +24,16 @@ type TestableButtonInteraction = Pick<
 
 export interface MockButtonInteractionOptions {
   customId?: string;
-  user?: MockUser;
-  guild?: MockGuild;
+  user?: any; // MockUser
+  guild?: any; // MockGuild
   client?: Client;
 }
 
 export function createMockButtonInteraction({
   customId = "test-button",
-  user = createMockUser(),
+  user,
   client = createMockClient(),
-  guild = createMockGuild(),
+  guild,
 }: MockButtonInteractionOptions = {}): ButtonInteraction<CacheType> {
   const mock: TestableButtonInteraction = {
     customId,
