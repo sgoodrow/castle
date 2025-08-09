@@ -6,13 +6,10 @@ import {
   spoiler,
   ActionRowBuilder,
   MessageActionRowComponentBuilder,
-  ComponentType
+  ComponentType,
 } from "discord.js";
 import { Moment } from "moment";
-import {
-  BOT_SPREADSHEET_COLUMNS,
-  PublicSheetService,
-} from "../sheet-updater/public-sheet";
+import { BOT_SPREADSHEET_COLUMNS, PublicSheetService } from "../sheet-updater/public-sheet";
 import { IPublicAccountService } from "./public-accounts.i";
 import { bot, PrismaClient } from "@prisma/client";
 import moment from "moment";
@@ -24,7 +21,7 @@ import { getMembers, prismaClient } from "../..";
 import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
 import { getClassAbreviation } from "../../shared/classes";
 import { raidBotInstructions } from "../../features/raid-bots/update-bots";
-import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-command"
+import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-command";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private prisma!: PrismaClient;
@@ -43,9 +40,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     await prismaClient.bot.deleteMany({});
     for (const row of rows) {
       const time = moment(row[BOT_SPREADSHEET_COLUMNS.CheckoutTime]);
-      const roles = await accounts.getRolesForAccount(
-        row[BOT_SPREADSHEET_COLUMNS.Name]
-      );
+      const roles = await accounts.getRolesForAccount(row[BOT_SPREADSHEET_COLUMNS.Name]);
 
       await prismaClient.bot.create({
         data: {
@@ -62,25 +57,24 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     }
   }
 
-  async getBotParkButtonComponents (name: string)
-  {
+  async getBotParkButtonComponents(name: string) {
     const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
-    let row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
-        type: ComponentType.ActionRow,
-        components: [],
+    const row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
+      type: ComponentType.ActionRow,
+      components: [],
     });
     components.push(row);
 
     try {
-      let bot = await this.getBotByName(name);
+      const bot = await this.getBotByName(name);
       if (bot) {
-        row.addComponents(new ParkBotButtonCommand(
-          `parkbot_${name}`
-          ).getButtonBuilder(bot));
+        row.addComponents(new ParkBotButtonCommand(`parkbot_${name}`).getButtonBuilder(bot));
       }
-    } catch {}
+    } catch {
+      // Ignore bot lookup errors, continue without park button
+    }
     return components;
-  };
+  }
 
   async doBotCheckout(
     name: string,
@@ -111,48 +105,37 @@ Password: ${spoiler(details.password)}
       let components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
       if (currentPilot) {
         response += `**Please note that ${currentPilot} is marked as the pilot of ${foundBot} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
-      }
-      else
-      {
+      } else {
         components = await this.getBotParkButtonComponents(name);
       }
       response += `The credentials for ${foundBot} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
 
-      
       await interaction.editReply({
         content: response,
-        components: components
+        components: components,
       });
       const logMsg = await thread.send("OK");
       logMsg.edit(`${status} ${interaction.user} access to ${foundBot}`);
 
       if (await this.isBotPublic(foundBot)) {
         try {
-          const guildUser = await interaction.guild?.members.fetch(
-            interaction.user.id
-          );
+          const guildUser = await interaction.guild?.members.fetch(interaction.user.id);
 
           log(
-            `${
-              guildUser?.nickname || guildUser?.user.username
-            } requested ${name} and got ${details.characters} ${
-              currentPilot ? `who is checked out by ${currentPilot}` : ""
-            }`
+            `${guildUser?.nickname || guildUser?.user.username} requested ${name} and got ${
+              details.characters
+            } ${currentPilot ? `who is checked out by ${currentPilot}` : ""}`
           );
 
           if (!currentPilot) {
             await this.updateBotRowDetails(foundBot, {
               [BOT_SPREADSHEET_COLUMNS.CurrentPilot]:
-                guildUser?.nickname ||
-                guildUser?.user.username ||
-                "UNKNOWN USER",
+                guildUser?.nickname || guildUser?.user.username || "UNKNOWN USER",
               [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment().toString(),
             });
           }
         } catch (err) {
-          throw new Error(
-            "Failed to update public record, check the configuration"
-          );
+          throw new Error("Failed to update public record, check the configuration");
         }
       }
 
@@ -162,9 +145,7 @@ Password: ${spoiler(details.password)}
       const logMsg = await thread.send("OK");
       logMsg.edit(`${status} ${interaction.user} access to ${name}.`);
 
-      await interaction.editReply(
-        `You do not have the correct permissions to access ${name}.`
-      );
+      await interaction.editReply(`You do not have the correct permissions to access ${name}.`);
     }
   }
 
@@ -177,13 +158,13 @@ Password: ${spoiler(details.password)}
         },
       },
     });
-    
+
     return bot;
   }
 
   async getCurrentBotPilot(botName: string): Promise<string | undefined> {
     const bot = await this.getBotByName(botName);
-    
+
     if (bot) {
       return bot.currentPilot;
     }
@@ -203,12 +184,8 @@ Password: ${spoiler(details.password)}
         requiredRoles: {
           hasSome: Array.from(roles.valueOf().keys()),
         },
-        ...(location
-          ? { location: { equals: location, mode: "insensitive" } }
-          : {}),
-        ...(bindLocation
-          ? { bindLocation: { equals: bindLocation, mode: "insensitive" } }
-          : {}),
+        ...(location ? { location: { equals: location, mode: "insensitive" } } : {}),
+        ...(bindLocation ? { bindLocation: { equals: bindLocation, mode: "insensitive" } } : {}),
       },
       orderBy: {
         bindLocation: "desc",
@@ -231,9 +208,7 @@ Password: ${spoiler(details.password)}
 
       return bot.name;
     } else {
-      throw new Error(
-        `Couldn't find an available ${botClass}${locationString}`
-      );
+      throw new Error(`Couldn't find an available ${botClass}${locationString}`);
     }
   }
 
@@ -254,9 +229,7 @@ Password: ${spoiler(details.password)}
       },
     });
     if (bot && bot.name) {
-      log(
-        `PublicAccountsPrisma - found bot ${bot.name} when looking for a bot in ${location}`
-      );
+      log(`PublicAccountsPrisma - found bot ${bot.name} when looking for a bot in ${location}`);
 
       bot.currentPilot = "reserved";
 
@@ -347,27 +320,21 @@ Password: ${spoiler(details.password)}
       const pilot = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentPilot];
       const location = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentLocation];
       const bindLocation = botRowData[BOT_SPREADSHEET_COLUMNS.BindLocation];
-      log(`bot-prisma: updateBotRowDetails for bot ${bot.name}. Pilot ${pilot}. location ${location} `)
+      log(
+        `bot-prisma: updateBotRowDetails for bot ${bot.name}. Pilot ${pilot}. location ${location} `
+      );
       if (checkoutTime !== undefined) {
         // Set time or clear if not undefined
-        bot.checkoutTime = botRowData[
-          BOT_SPREADSHEET_COLUMNS.CheckoutTime
-        ] as string;
+        bot.checkoutTime = botRowData[BOT_SPREADSHEET_COLUMNS.CheckoutTime] as string;
       }
       if (pilot !== undefined) {
-        bot.currentPilot = botRowData[
-          BOT_SPREADSHEET_COLUMNS.CurrentPilot
-        ] as string;
+        bot.currentPilot = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentPilot] as string;
       }
       if (location !== undefined) {
-        bot.location = botRowData[
-          BOT_SPREADSHEET_COLUMNS.CurrentLocation
-        ] as string;
+        bot.location = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string;
       }
       if (bindLocation !== undefined) {
-        bot.bindLocation = botRowData[
-          BOT_SPREADSHEET_COLUMNS.BindLocation
-        ] as string;
+        bot.bindLocation = botRowData[BOT_SPREADSHEET_COLUMNS.BindLocation] as string;
       }
       await prismaClient.bot.update({
         where: {
@@ -378,14 +345,10 @@ Password: ${spoiler(details.password)}
       refreshBotEmbed();
     }
 
-    SheetPublicAccountService.getInstance().updateBotRowDetails(
-      botName,
-      botRowData
-    );
+    SheetPublicAccountService.getInstance().updateBotRowDetails(botName, botRowData);
   }
 
   async cleanupCheckouts(hours: number): Promise<number> {
-    const cleanupCount = 0;
     const cutoffTime = moment().subtract(hours, "hours");
     const botsToPark: Bot[] = [];
     // Could probably use a DateTime lte comparison here but the schema
@@ -445,17 +408,12 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
           });
 
           // Update sheet
-          await SheetPublicAccountService.getInstance().updateBotRowDetails(
-            bot.name,
-            {
-              [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
-              [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
-            }
-          );
+          await SheetPublicAccountService.getInstance().updateBotRowDetails(bot.name, {
+            [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
+            [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
+          });
 
-          log(
-            `Auto-parked ${bot.name} and sent a DM to ${pilot.user.username}`
-          );
+          log(`Auto-parked ${bot.name} and sent a DM to ${pilot.user.username}`);
 
           cleanupCount++;
         }
@@ -482,10 +440,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
       });
 
       // Also update the sheet
-      SheetPublicAccountService.getInstance().updateBotCheckoutTime(
-        botName,
-        dateTime
-      );
+      SheetPublicAccountService.getInstance().updateBotCheckoutTime(botName, dateTime);
     }
   }
 
@@ -504,9 +459,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
         },
         data: bot,
       });
-      log(
-        `PublicAccountsPrisma - updated bot location. Name: ${name}, Location: ${location}`
-      );
+      log(`PublicAccountsPrisma - updated bot location. Name: ${name}, Location: ${location}`);
       // Also update the sheet
       SheetPublicAccountService.getInstance().updateBotLocation(name, location);
     } else {
@@ -531,9 +484,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
         },
         data: bot,
       });
-      log(
-        `PublicAccountsPrisma - updated bot pilot. Name: ${name}, Pilot: ${pilotName}`
-      );
+      log(`PublicAccountsPrisma - updated bot pilot. Name: ${name}, Pilot: ${pilotName}`);
       // Also update the sheet
       SheetPublicAccountService.getInstance().updateBotPilot(name, pilotName);
     } else {

@@ -1,10 +1,7 @@
-import { ButtonInteraction, CacheType, ChannelType, Collection, User } from "discord.js";
+import { ButtonInteraction, CacheType, ChannelType, User } from "discord.js";
 import { bankerRoleId, bankRequestsChannelId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
-import {
-  getChannel,
-  requireInteractionMemberRole,
-} from "../../shared/command/util";
+import { getChannel, requireInteractionMemberRole } from "../../shared/command/util";
 import { getAttentionMessage } from "../invite-list/ping-invite-list-button-command";
 
 class BankingButtonCommand extends ButtonCommand {
@@ -13,32 +10,24 @@ class BankingButtonCommand extends ButtonCommand {
 
     const messages = await bankRequestsChannel.messages.fetch();
 
-    const botMentions = messages.filter(
-        (m) => (m.member?.user.bot && m.content.match("requests:") && m.mentions)
-      ).map(
-        (m) => Array.from(m.mentions.parsedUsers.values())[0]
-      )
+    const botMentions = messages
+      .filter((m) => m.member?.user.bot && m.content.match("requests:") && m.mentions)
+      .map((m) => Array.from(m.mentions.parsedUsers.values())[0]);
 
     // get all non-banker messages
     const users = [
       ...new Set(
         messages
-          .filter(
-            (m) =>
-              !(m.member?.roles.cache.has(bankerRoleId)||m.member?.user.bot)
-          )
+          .filter((m) => !(m.member?.roles.cache.has(bankerRoleId) || m.member?.user.bot))
           .map((r) => r.member?.user)
           .filter(Boolean)
           .concat(botMentions)
-        )
+      ),
     ];
 
-    const attention = await getAttentionMessage(
-      users.map((u) => (u as User).id)
-    );
+    const attention = await getAttentionMessage(users.map((u) => (u as User).id));
 
-    await interaction.channel
-      ?.send(`**${interaction.member?.user} is now banking!**
+    await interaction.channel?.send(`**${interaction.member?.user} is now banking!**
 
 ${attention}`);
 

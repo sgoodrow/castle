@@ -3,15 +3,11 @@ import { Attachment, Message } from "discord.js";
 import { Inventory, bankData } from "../bank-data";
 
 // import { bankerRoleId } from "../../config"; TODO: verify role?
-import {
-  MessageAction,
-  messageActionExecutor,
-} from "../../../shared/action/message-action";
+import { MessageAction, messageActionExecutor } from "../../../shared/action/message-action";
 import { bankInventoryChannelId } from "../../../config";
 import { parseInventoryFile, uploadToGDrive } from "../inventory-files";
 
 const supportedFormat = "text/plain; charset=utf-8";
-
 
 export const tryParseInventoryAction = (message: Message) =>
   messageActionExecutor(new UploadInventoryMessageAction(message));
@@ -45,5 +41,4 @@ class UploadInventoryMessageAction extends MessageAction {
     await bankData.setInventory(inventory);
     message.react("✅");
   }
-
 }

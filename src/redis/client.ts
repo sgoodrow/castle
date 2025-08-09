@@ -6,9 +6,7 @@ export const redisChannels = {
 };
 
 const onError = (err: Error) =>
-  err instanceof SocketClosedUnexpectedlyError
-    ? null
-    : console.error("Redis client error", err);
+  err instanceof SocketClosedUnexpectedlyError ? null : console.error("Redis client error", err);
 
 export const redisClient = createClient({ url: REDIS_URL });
 try {

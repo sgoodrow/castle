@@ -1,13 +1,11 @@
 import {
   ApplicationCommandOptionChoiceData,
-  ButtonInteraction,
   CommandInteraction,
   GuildMemberRoleManager,
   MessageComponentInteraction,
-  MessageInteraction,
 } from "discord.js";
 import { Bot } from "./public-accounts-sheet";
-import { bot, Prisma } from "@prisma/client";
+import { bot } from "@prisma/client";
 
 export interface IPublicAccountService {
   getBotsForBatphone(location: string): Promise<bot[]>;
@@ -26,10 +24,7 @@ export interface IPublicAccountService {
     location?: string,
     bindLocation?: string
   ): Promise<string>;
-  getFirstAvailableBotByLocation(
-    location: string,
-    roles: GuildMemberRoleManager
-  ): Promise<string>;
+  getFirstAvailableBotByLocation(location: string, roles: GuildMemberRoleManager): Promise<string>;
   getBotOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]>;
   isBotPublic(botName: string): Promise<boolean | undefined>;
   getBots(): Promise<Bot[]>;

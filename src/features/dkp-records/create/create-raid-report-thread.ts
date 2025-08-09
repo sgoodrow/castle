@@ -1,17 +1,13 @@
 import { Message, Attachment } from "discord.js";
 import { dkpDeputyRoleId, dkpRecordsChannelId } from "../../../config";
-import {
-  MessageAction,
-  messageActionExecutor,
-} from "../../../shared/action/message-action";
+import { MessageAction, messageActionExecutor } from "../../../shared/action/message-action";
 import { read, utils, WorkSheet } from "xlsx";
 import axios from "axios";
 import { RaidReport } from "../raid-report";
 import { addRoleToThread } from "../../../shared/command/util";
 import { isValidXlsxData, SheetParser } from "./sheet-parser";
 
-const supportedFormat =
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+const supportedFormat = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 export const tryCreateRaidReportThreadAction = (message: Message) =>
   messageActionExecutor(new CreateRaidReportThreadMessageAction(message));
@@ -86,9 +82,7 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     });
 
     // add credit messages
-    await Promise.all(
-      report.getCreditCommands().map((content) => thread.send({ content }))
-    );
+    await Promise.all(report.getCreditCommands().map((content) => thread.send({ content })));
 
     // add deputies to thread
     await addRoleToThread(dkpDeputyRoleId, thread);

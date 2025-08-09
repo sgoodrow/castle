@@ -85,9 +85,7 @@ export class AuctionThreadBuilder extends ThreadBuilder {
   }
 
   private get requireScribeRule() {
-    return this.requireScribe
-      ? `\n- Bid only if you can scribe the spell.`
-      : "";
+    return this.requireScribe ? `\n- Bid only if you can scribe the spell.` : "";
   }
 
   private get endDate() {

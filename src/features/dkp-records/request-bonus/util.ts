@@ -4,9 +4,7 @@ import { AddAdjustmentBonus } from "./add-adjustment-bonus";
 
 const multipleSpaces = /\s+/;
 
-export const getBonusMessageContent = async (
-  message: Message | PartialMessage
-) => {
+export const getBonusMessageContent = async (message: Message | PartialMessage) => {
   const thread = message.channel.isThread();
   if (!thread) {
     return;
@@ -27,9 +25,7 @@ export const getAction = (content: string) => {
   // remove parenthetical expressions
   const stripped = content.replace(/\(.+?\)/g, "").trim();
 
-  const [actionType, ...actionArguments] = stripped
-    .slice(1)
-    .split(multipleSpaces);
+  const [actionType, ...actionArguments] = stripped.slice(1).split(multipleSpaces);
 
   switch (actionType.toLowerCase()) {
     case "adj":

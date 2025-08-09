@@ -1,0 +1,46 @@
+---
+description: Guidelines for fixing formatting and linting issues
+alwaysApply: true
+---
+
+# Formatting and Linting Guidelines
+
+## Automatic Fix Commands
+
+**Always use automated tools to fix formatting and linting issues before attempting manual fixes.**
+
+### For All Files
+
+- **`yarn lint:fix`** - Fixes ESLint issues including formatting (recommended first step)
+- **`yarn format`** - Formats code using prettier-eslint
+- **`yarn cleanup`** - Runs both lint:fix AND format (most comprehensive)
+
+### For Specific Files
+
+When targeting a specific file, use npx directly:
+
+- **`npx eslint --fix path/to/file.ts`** - Fix ESLint issues in specific file
+- **`npx prettier-eslint --write path/to/file.ts`** - Format specific file
+
+## Command Priority and Usage
+
+1. **Start with `yarn lint:fix`** - This fixes most ESLint issues including formatting since prettier is integrated as an ESLint rule
+2. **Follow with `yarn format`** if needed - This handles any remaining formatting that prettier-eslint might catch
+3. **Use `yarn cleanup`** for comprehensive fixing - Runs both commands in sequence
+4. **For specific files** - Use the npx commands shown above
+
+## Why Both Commands Exist
+
+- **`yarn lint:fix`**: Fixes ESLint issues (including prettier formatting since prettier is integrated)
+- **`yarn format`**: Uses prettier-eslint to ensure formatting meets both prettier and ESLint standards
+- They complement each other and are not redundant
+
+## Manual Fixes
+
+Only attempt manual fixes for linting/formatting issues after running the automated tools. The automated tools handle:
+
+- Indentation and spacing
+- Semicolons and commas
+- Quotes and brackets
+- Import organization
+- Most TypeScript-specific formatting rules

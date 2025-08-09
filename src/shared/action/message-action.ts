@@ -23,17 +23,15 @@ export abstract class MessageAction {
   public async replyError(err: string) {
     try {
       await this.message.reply(`⚠️${err}`);
-    } catch(err) {
-      console.error(err)
+    } catch (err) {
+      console.error(err);
     }
   }
 
   protected get authorId() {
     const authorId = this.message.author?.id;
     if (!authorId) {
-      throw new Error(
-        "Something went wrong when retrieving the message author."
-      );
+      throw new Error("Something went wrong when retrieving the message author.");
     }
     return authorId;
   }

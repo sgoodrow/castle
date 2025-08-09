@@ -5,10 +5,7 @@ import { updateBankRequestInfo } from "../bank-request-info/update-action";
 import { Day, Days } from "../bank-request-info/types";
 import { BankHour } from "../../db/bank-hour";
 import { Subcommand } from "../../shared/command/subcommand";
-import {
-  requireInteractionMemberRole,
-  requireUserRole,
-} from "../../shared/command/util";
+import { requireInteractionMemberRole, requireUserRole } from "../../shared/command/util";
 
 enum Option {
   Banker = "banker",
@@ -35,9 +32,7 @@ class Add extends Subcommand {
 
     const bankHour = new BankHour();
     bankHour.userId = banker.id;
-    bankHour.day = String(
-      this.getOption(Option.Day, interaction)?.value
-    ) as Day;
+    bankHour.day = String(this.getOption(Option.Day, interaction)?.value) as Day;
     const pm = Boolean(this.getOption(Option.PM, interaction)?.value);
     bankHour.hour =
       Number(this.getOption(Option.Hour, interaction)?.value) +
@@ -87,7 +82,4 @@ class Add extends Subcommand {
   }
 }
 
-export const addSubcommand = new Add(
-  "add",
-  "Creates a banker hour. Specify time in EST."
-);
+export const addSubcommand = new Add("add", "Creates a banker hour. Specify time in EST.");

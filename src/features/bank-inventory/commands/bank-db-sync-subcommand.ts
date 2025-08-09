@@ -1,28 +1,18 @@
-import { 
-  CacheType, 
-  CommandInteraction,
-  GuildMemberRoleManager
- } from "discord.js";
+import { CacheType, CommandInteraction } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
-import { bankRequestsChannelId, bankerRoleId, officerRoleId, modRoleId } from "../../../config";
+import { bankerRoleId, officerRoleId, modRoleId } from "../../../config";
 import { findFiles, getFile } from "../../../services/gdrive";
-import { 
-  parseInventoryFile,
-  bankInventoriesFolderId
-} from "../inventory-files";
+import { parseInventoryFile, bankInventoriesFolderId } from "../inventory-files";
 import { bankData } from "../bank-data";
 import { authorizeByMemberRoles } from "../../../shared/command/util";
-import { drive_v3, file_v1 } from "googleapis";
+import { drive_v3 } from "googleapis";
 
-let replyTxt = ""    
+let replyTxt = "";
 
 class SyncBankDb extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-
     // authorize
-    authorizeByMemberRoles([
-      bankerRoleId, officerRoleId, modRoleId
-    ], interaction);
+    authorizeByMemberRoles([bankerRoleId, officerRoleId, modRoleId], interaction);
 
     this.appendReplyTxt("Updating bank database from GDrive...", interaction);
 
@@ -30,38 +20,40 @@ class SyncBankDb extends Subcommand {
       `'${bankInventoriesFolderId}' in parents and trashed = false`
     );
 
-    const bankersUpdated = await this.updateBankInventoryFolders(bankInventoryFolders, interaction)
-    
+    const bankersUpdated = await this.updateBankInventoryFolders(bankInventoryFolders, interaction);
+
     const unmatchedChars = await bankData.getUnmatchedChars(bankersUpdated);
 
-    console.log('remove unmatched:', unmatchedChars)
+    console.log("remove unmatched:", unmatchedChars);
 
-    if(unmatchedChars && unmatchedChars.length > 0) {
+    if (unmatchedChars && unmatchedChars.length > 0) {
       await this.appendReplyTxt("Removing unmatched character inventories:", interaction);
-      for (let char of unmatchedChars) {
+      for (const char of unmatchedChars) {
         await this.appendReplyTxt("Removed: " + char.name, interaction);
         await this.appendReplyTxt("Removed: " + char.name, interaction);
         bankData.removeInventory(char.name);
       }
     }
-
   }
 
   public async getOptionAutocomplete() {
     return [];
   }
 
-  private async updateBankInventoryFolders(bankInventoryFolders: drive_v3.Schema$File[], interaction: CommandInteraction<CacheType>) {
+  private async updateBankInventoryFolders(
+    bankInventoryFolders: drive_v3.Schema$File[],
+    interaction: CommandInteraction<CacheType>
+  ) {
     const bankersUpdated = [];
-    for (let f of bankInventoryFolders) {
+    for (const f of bankInventoryFolders) {
       try {
-        const files = await findFiles(
-          `'${f.id}' in parents and trashed = false`
-        )
-        if (files.length === 0) continue;
-        for (let file of files) {
+        const files = await findFiles(`'${f.id}' in parents and trashed = false`);
+        if (files.length === 0) {
+          continue;
+        }
+        for (const file of files) {
           if (file && file.id && file.name) {
-            const data = await getFile(file.id)
+            const data = await getFile(file.id);
             console.log("bank-db-sync:", file.name, file.id);
             const inventory = await parseInventoryFile(file.name, String(data));
             await bankData.setInventory(inventory);
@@ -86,7 +78,7 @@ class SyncBankDb extends Subcommand {
     if (message.length > length) {
       return message.slice(message.length - length);
     } else {
-        return message;
+      return message;
     }
   }
 }

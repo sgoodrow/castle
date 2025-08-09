@@ -15,10 +15,7 @@ import { dataSource } from "../../db/data-source";
 import { Name } from "../../db/instructions";
 import { InviteSimple } from "../../db/invite-simple";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
-import {
-  readyActionExecutor,
-  ReadyActionExecutorOptions,
-} from "../../shared/action/ready-action";
+import { readyActionExecutor, ReadyActionExecutorOptions } from "../../shared/action/ready-action";
 import {
   addAltInviteButtonCommand,
   addPlayerInviteButtonCommand,
@@ -31,10 +28,8 @@ import { removeSubcommand } from "./remove-subcommand";
 import { pingInviteListButtonCommand } from "./ping-invite-list-button-command";
 import { cleanupInvitesCommand } from "./cleanup-invites-command";
 
-export const updateInviteListInfo = (
-  client: Client,
-  options?: ReadyActionExecutorOptions
-) => readyActionExecutor(new UpdateInviteListInfoAction(client), options);
+export const updateInviteListInfo = (client: Client, options?: ReadyActionExecutorOptions) =>
+  readyActionExecutor(new UpdateInviteListInfoAction(client), options);
 
 export declare type Members = Collection<string, GuildMember> | undefined;
 

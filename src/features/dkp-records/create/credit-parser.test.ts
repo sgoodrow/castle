@@ -66,9 +66,7 @@ describe("reason", () => {
   });
 
   it("handles unknown for arrow tells", () => {
-    const parser = new CreditParser(
-      "[Sat Feb 25 16:15:47 2023] Pumped -> Someone: creditt"
-    );
+    const parser = new CreditParser("[Sat Feb 25 16:15:47 2023] Pumped -> Someone: creditt");
     const credit = parser.getCredit();
     expect(credit.type).toEqual("UNKNOWN");
     expect(credit.character).toEqual("Pumped");
@@ -79,9 +77,7 @@ describe("reason", () => {
   });
 
   it("handles unknown for arrow tells with long credit", () => {
-    const parser = new CreditParser(
-      "[Sat Feb 25 16:15:47 2023] Pumped -> Someone: credittt"
-    );
+    const parser = new CreditParser("[Sat Feb 25 16:15:47 2023] Pumped -> Someone: credittt");
     const credit = parser.getCredit();
     expect(credit.type).toEqual("UNKNOWN");
     expect(credit.character).toEqual("Pumped");

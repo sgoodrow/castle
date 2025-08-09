@@ -10,6 +10,9 @@
     "clean": "docker-compose down && rimraf postgres-db",
     "start": "node_modules/.bin/tsc && nodemon",
     "format": "prettier-eslint --write \"src/**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "cleanup": "npm run lint:fix && npm run format",
     "build": "node_modules/.bin/tsc --skipLibCheck",
     "predev": "docker-compose up -d --wait",
     "dev": "nodemon",
@@ -70,5 +73,6 @@
     "ts-jest": "^27.1.4",
     "ts-node": "^10.7.0",
     "typescript": "^4.6.3"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }

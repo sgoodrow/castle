@@ -1,0 +1,123 @@
+---
+description: Core development philosophy and successful patterns for beautiful, maintainable code
+alwaysApply: true
+---
+
+# Development Philosophy & Successful Patterns
+
+## Core Values
+
+### Beauty as Architecture
+- Optimize for code that is both beautiful to read AND architecturally sound
+- Never settle for "just working" - always ask "how can this be more beautiful and maintainable?"
+- Code should make developers smile when they read it
+
+### Incrementalism Rocks
+- Tackle one problem at a time, building on each success
+- Get tests passing first, then extract for beauty
+- Build reusable frameworks that benefit the entire codebase
+
+### Single Source of Truth
+- Eliminate duplication through shared constants and utilities
+- Production and test code must use the same constants for perfect sync
+- Extract magic strings and repeated patterns into reusable helpers
+
+## Testing Excellence
+
+### Follow Testing Rules Religiously
+- **Always use `yarn test:ci`** (never `yarn test` - that's watch mode)
+- **Fix tests one at a time** using `.only` to isolate failing tests
+- **Run specific test files** with `yarn test:ci path/to/test-file.test.ts`
+
+### Beautiful Test Structure
+- **BDD-style naming**: Tests should read like sentences
+  ```typescript
+  when("handling volunteer applications", (discord) => {
+    it("sends application form when user clicks volunteer button", async () => {
+  ```
+- **Intent-revealing helpers**: Extract complex assertions into beautiful functions
+- **Reusable test frameworks**: Build helpers that work across all features
+- **Shared constants**: Use production constants in tests for consistency
+
+### Discord Testing Patterns
+```typescript
+// ✅ Beautiful pattern to follow everywhere
+when("handling feature X", (discord) => {
+  it("accomplishes user goal Y", async () => {
+    await updateFeatureX(discord);
+    expectButtonCreated(FEATURE_X.CUSTOM_ID, FEATURE_X.LABEL);
+    expectInstructionsCreated("featureInstructions");
+    // ... rest of test
+  });
+});
+```
+
+## Code Organization Success Patterns
+
+### File Structure That Works
+```
+src/features/[feature]/
+├── constants.ts          # Shared between prod and test
+├── [feature].ts         # Main implementation  
+├── [feature].test.ts    # Beautiful BDD tests
+└── ...
+
+src/test/helpers/
+├── describe-discord.ts           # when() helper
+├── discord-ui-expectations.ts    # Reusable UI testing
+└── ...
+```
+
+### Development Flow
+1. **Start with working solution** - Get tests passing first
+2. **Extract for beauty** - Move constants, helpers to shared locations  
+3. **Build reusable frameworks** - Create tools future features can use
+4. **Optimize formatting** - Ensure code is beautiful (100 char line width)
+5. **Maintain consistency** - Every improvement should benefit whole codebase
+
+## Architectural Patterns
+
+### Constants Strategy
+- Create shared constants files (e.g., `features/[feature]/constants.ts`)
+- Export structured constant objects with clear naming
+- Use `as const` for immutability and strict typing
+- Import same constants in both production and test code
+
+### Testing Frameworks
+- Build reusable helpers like `discord-ui-expectations.ts`
+- Create semantic assertion functions that reveal intent
+- Extract repetitive setup into scenario builders
+- Use global mocks with proper reset strategies
+
+### Formatting & Style
+- Use 100 character line width for readability
+- Consistent formatting via `.prettierrc` configuration
+- Beautiful imports and function calls
+- Meaningful whitespace and organization
+
+## Project-Specific Commands
+
+### Essential Commands
+- **Run tests**: `yarn test:ci` 
+- **Format code**: `yarn format`
+- **Lint and fix**: `yarn lint:fix`
+- **Full cleanup**: `yarn cleanup`
+
+### Testing Workflow
+1. Run `yarn test:ci` to see all failing tests
+2. Use `.only` on one failing test to isolate it
+3. Run `yarn test:ci path/to/test-file.test.ts` for that file only
+4. Fix the test thoroughly and properly
+5. Remove `.only` and verify it passes
+6. Move to next failing test
+
+## Success Metrics
+
+Code is successful when:
+- **Tests read like stories** - Anyone can understand what the feature does
+- **Constants are shared** - No duplication between prod and test
+- **Helpers are reusable** - New features can use existing test infrastructure
+- **Formatting is beautiful** - Code is pleasant to read and maintain
+- **Architecture is sound** - Changes in one place automatically benefit everywhere
+
+Remember: **Optimize for beauty AND architectural soundness at every step.**

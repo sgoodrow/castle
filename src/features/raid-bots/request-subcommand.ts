@@ -1,15 +1,6 @@
-import {
-  CacheType,
-  CommandInteraction,
-  GuildMemberRoleManager,
-  spoiler,
-} from "discord.js";
+import { CacheType, CommandInteraction } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { accounts } from "../../services/accounts";
-import { raidBotInstructions } from "./update-bots";
-import moment from "moment";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
-import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
 import { IPublicAccountService } from "../../services/bot/public-accounts.i";
 
 export enum Option {

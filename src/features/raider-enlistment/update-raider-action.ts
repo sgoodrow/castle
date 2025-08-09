@@ -2,15 +2,10 @@ import { Client, Colors, EmbedBuilder } from "discord.js";
 import { raiderEnlistmentChannelId, raiderRoleId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
-import {
-  readyActionExecutor,
-  ReadyActionExecutorOptions,
-} from "../../shared/action/ready-action";
+import { readyActionExecutor, ReadyActionExecutorOptions } from "../../shared/action/ready-action";
 
-export const updateRaiderInfo = (
-  client: Client,
-  options?: ReadyActionExecutorOptions
-) => readyActionExecutor(new UpdateRaiderInfoAction(client), options);
+export const updateRaiderInfo = (client: Client, options?: ReadyActionExecutorOptions) =>
+  readyActionExecutor(new UpdateRaiderInfoAction(client), options);
 
 class UpdateRaiderInfoAction extends InstructionsReadyAction {
   public async execute(): Promise<void> {

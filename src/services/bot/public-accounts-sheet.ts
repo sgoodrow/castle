@@ -6,19 +6,14 @@ import {
 } from "../../config";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../../shared/time";
-import {
-  ApplicationCommandOptionChoiceData,
-  CommandInteraction,
-  GuildMemberRoleManager,
-  MessageComponentInteraction,
-} from "discord.js";
+import { ApplicationCommandOptionChoiceData, GuildMemberRoleManager } from "discord.js";
 import { truncate } from "lodash";
 import { checkGoogleCredentials } from "../gdrive";
 import moment from "moment";
 import { IPublicAccountService } from "./public-accounts.i";
 import { BOT_SPREADSHEET_COLUMNS } from "../sheet-updater/public-sheet";
 import { bot } from "@prisma/client";
-import { log } from "../../shared/logger"
+import { log } from "../../shared/logger";
 
 export const SHEET_TITLE = "Bot Info";
 
@@ -39,13 +34,13 @@ export class SheetPublicAccountService implements IPublicAccountService {
     }
     this.sheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
   }
-  doBotCheckout(name: string, interaction: MessageComponentInteraction | CommandInteraction): Promise<void> {
+  doBotCheckout(): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  getBotsForBatphone(location: string): Promise<bot[]> {
+  getBotsForBatphone(): Promise<bot[]> {
     throw new Error("Method not implemented.");
   }
-  getFirstAvailableBotByLocation(location: string, roles: GuildMemberRoleManager): Promise<string> {
+  getFirstAvailableBotByLocation(): Promise<string> {
     throw new Error("Method not implemented.");
   }
 
@@ -65,25 +60,14 @@ export class SheetPublicAccountService implements IPublicAccountService {
   }
 
   public async updateBotLocation(botName: string, location: string) {
-    await this.updatePublicAccountSheet(
-      botName,
-      BOT_SPREADSHEET_COLUMNS.CurrentLocation,
-      location
-    );
+    await this.updatePublicAccountSheet(botName, BOT_SPREADSHEET_COLUMNS.CurrentLocation, location);
   }
 
   public async updateBotPilot(botName: string, botPilot: string) {
-    await this.updatePublicAccountSheet(
-      botName,
-      BOT_SPREADSHEET_COLUMNS.CurrentPilot,
-      botPilot
-    );
+    await this.updatePublicAccountSheet(botName, BOT_SPREADSHEET_COLUMNS.CurrentPilot, botPilot);
   }
 
-  public async updateBotCheckoutTime(
-    botName: string,
-    dateTime: moment.Moment | null
-  ) {
+  public async updateBotCheckoutTime(botName: string, dateTime: moment.Moment | null) {
     await this.updatePublicAccountSheet(
       botName,
       BOT_SPREADSHEET_COLUMNS.CheckoutTime,
@@ -94,15 +78,13 @@ export class SheetPublicAccountService implements IPublicAccountService {
   private async updatePublicAccountSheet(
     botName: string,
     cell: BOT_SPREADSHEET_COLUMNS,
-    value: any
+    value: string | number
   ) {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
       const botRowIndex = rows.findIndex(
-        (r) =>
-          r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
-          botName.toLowerCase()
+        (r) => r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() === botName.toLowerCase()
       );
       if (botRowIndex !== -1) {
         // do update
@@ -121,16 +103,18 @@ export class SheetPublicAccountService implements IPublicAccountService {
     botName: string,
     rowDataMap: { [id: string]: moment.Moment | string | undefined }
   ) {
-    let currentPilot = rowDataMap[BOT_SPREADSHEET_COLUMNS.CurrentPilot] || "";
-    log(`public-accounts-sheet updateBotRowDetails - loading bots - ${botName} - pilot ${currentPilot}`);
+    const currentPilot = rowDataMap[BOT_SPREADSHEET_COLUMNS.CurrentPilot] || "";
+    log(
+      `public-accounts-sheet updateBotRowDetails - loading bots - ${botName} - pilot ${currentPilot}`
+    );
     await this.loadBots();
-    log(`public-accounts-sheet updateBotRowDetails - bots loaded - ${botName} - pilot ${currentPilot}`);
+    log(
+      `public-accounts-sheet updateBotRowDetails - bots loaded - ${botName} - pilot ${currentPilot}`
+    );
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
       const botRowIndex = rows.findIndex(
-        (r) =>
-          r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
-          botName.toLowerCase()
+        (r) => r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() === botName.toLowerCase()
       );
       if (botRowIndex !== -1) {
         // do update
@@ -141,9 +125,13 @@ export class SheetPublicAccountService implements IPublicAccountService {
               row[cellData[0]] = cellData[1];
             }
           });
-          log(`public-accounts-sheet updateBotRowDetails - save started for - ${botName} - pilot ${currentPilot}`);
+          log(
+            `public-accounts-sheet updateBotRowDetails - save started for - ${botName} - pilot ${currentPilot}`
+          );
           await row.save();
-          log(`public-accounts-sheet updateBotRowDetails - row saved for - ${botName} - pilot ${currentPilot}`);
+          log(
+            `public-accounts-sheet updateBotRowDetails - row saved for - ${botName} - pilot ${currentPilot}`
+          );
         }
       } else {
         throw Error(`Bot ${botName} not found.`);
@@ -161,21 +149,14 @@ export class SheetPublicAccountService implements IPublicAccountService {
       const rows = await this.botInfoSheet.getRows();
       const classRows = rows.filter(
         (r) =>
-          (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() ===
-          botClass.toUpperCase()
+          (r[BOT_SPREADSHEET_COLUMNS.Class] as string)?.toUpperCase() === botClass.toUpperCase()
       );
       if (!classRows.length) {
         throw Error(`Could not find any classes matching ${botClass}.`);
       }
-      log(
-        `Looking for ${botClass} and found ${classRows.length} options.`
-      );
-      const availableClassRows = classRows.filter(
-        (r) => !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
-      );
-      log(
-        `Looking for ${botClass} and found ${classRows.length} available.`
-      );
+      log(`Looking for ${botClass} and found ${classRows.length} options.`);
+      const availableClassRows = classRows.filter((r) => !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]);
+      log(`Looking for ${botClass} and found ${classRows.length} available.`);
       const matches = location
         ? availableClassRows.filter((r) =>
             (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
@@ -198,15 +179,11 @@ export class SheetPublicAccountService implements IPublicAccountService {
     throw new Error("Method not implemented.");
   }
 
-  public async getCurrentBotPilot(
-    botName: string
-  ): Promise<string | undefined> {
+  public async getCurrentBotPilot(botName: string): Promise<string | undefined> {
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
-      const botRowIndex = rows.findIndex(
-        (r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName
-      );
+      const botRowIndex = rows.findIndex((r) => r[BOT_SPREADSHEET_COLUMNS.Name] === botName);
       if (botRowIndex !== -1) {
         // do update
         const row = rows.at(botRowIndex);
@@ -224,9 +201,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
       const botRowIndex = rows.findIndex(
-        (r) =>
-          r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
-          botName.toLowerCase()
+        (r) => r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() === botName.toLowerCase()
       );
       return botRowIndex !== -1;
     }
@@ -275,9 +250,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
     if (this.sheet) {
       return this.sheet.useServiceAccountAuth({
         client_email: GOOGLE_CLIENT_EMAIL,
-        private_key: (GOOGLE_PRIVATE_KEY || "")
-          .split(String.raw`\n`)
-          .join("\n"),
+        private_key: (GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join("\n"),
       });
     }
   }

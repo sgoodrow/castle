@@ -1,10 +1,4 @@
-import {
-  MessageReaction,
-  PartialMessageReaction,
-  PartialUser,
-  Permissions,
-  User,
-} from "discord.js";
+import { MessageReaction, PartialMessageReaction, PartialUser, User } from "discord.js";
 import {
   castleRoleId,
   gatehouseChannelId,
@@ -15,10 +9,7 @@ import {
   guardRoleId,
   officerRoleId,
 } from "../../config";
-import {
-  ReactionAction,
-  reactionActionExecutor,
-} from "../../shared/action/reaction-action";
+import { ReactionAction, reactionActionExecutor } from "../../shared/action/reaction-action";
 import { greetingActivity } from "../gatehouse/guild-member-add-listener";
 import { actionConfigByReaction, Emoji, ActionType } from "./config";
 
@@ -36,12 +27,7 @@ class GatehouseReactionAction extends ReactionAction {
 
     // authorize user
     const reactor = await this.members?.fetch(this.user.id);
-    if (
-      !(
-        reactor?.roles.cache.has(guardRoleId) ||
-        reactor?.roles.cache.has(officerRoleId)
-      )
-    ) {
+    if (!(reactor?.roles.cache.has(guardRoleId) || reactor?.roles.cache.has(officerRoleId))) {
       return;
     }
 

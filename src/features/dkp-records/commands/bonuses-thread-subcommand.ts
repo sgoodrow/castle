@@ -39,10 +39,7 @@ export class BonusesThreadSubcommand extends Subcommand {
       throw new Error("The Castle DKP Bonuses Character ID is not set.");
     }
 
-    const eventName = this.getRequiredOptionValue<string>(
-      Option.Event,
-      interaction
-    );
+    const eventName = this.getRequiredOptionValue<string>(Option.Event, interaction);
     const event = await castledkp.getEvent(eventName);
     if (!event) {
       throw new Error(`The event type "${eventName}" could not be found.`);
@@ -51,9 +48,7 @@ export class BonusesThreadSubcommand extends Subcommand {
     const name = this.getRequiredOptionValue<string>(Option.Name, interaction);
 
     // create thread
-    const channel = await interaction.guild?.channels.fetch(
-      dkpBonusesChannelId
-    );
+    const channel = await interaction.guild?.channels.fetch(dkpBonusesChannelId);
     if (!channel) {
       throw new Error("Could not find DKP bonuses channel");
     }
@@ -123,10 +118,7 @@ export class BonusesThreadSubcommand extends Subcommand {
           .setRequired(true)
       )
       .addStringOption((o) =>
-        o
-          .setName(Option.Name)
-          .setDescription("The name of the raid bonuses.")
-          .setRequired(true)
+        o.setName(Option.Name).setDescription("The name of the raid bonuses.").setRequired(true)
       );
   }
 

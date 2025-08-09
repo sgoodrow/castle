@@ -1,8 +1,4 @@
-import {
-  AutocompleteInteraction,
-  CacheType,
-  ChatInputCommandInteraction,
-} from "discord.js";
+import { AutocompleteInteraction, CacheType, ChatInputCommandInteraction } from "discord.js";
 import { BaseCommand } from "./base-command";
 import { Subcommand } from "./subcommand";
 import { SlashCommandBuilder } from "@discordjs/builders";
@@ -17,9 +13,7 @@ export class Command extends BaseCommand {
     private readonly _subcommands: Subcommand[]
   ) {
     super(`${name}${commandSuffix || ""}`, description);
-    this.command = new SlashCommandBuilder()
-      .setName(this.name)
-      .setDescription(this.description);
+    this.command = new SlashCommandBuilder().setName(this.name).setDescription(this.description);
     this._subcommands.forEach((s) => this.command.addSubcommand(s.command));
   }
 
@@ -40,9 +34,6 @@ export class Command extends BaseCommand {
     interaction: AutocompleteInteraction<CacheType>
   ) {
     const subcommand = interaction.options.getSubcommand(true);
-    return this.subcommands[subcommand].getOptionAutocomplete(
-      option,
-      interaction
-    );
+    return this.subcommands[subcommand].getOptionAutocomplete(option, interaction);
   }
 }

@@ -1,22 +1,11 @@
-import {
-  MessageReaction,
-  PartialMessageReaction,
-  PartialUser,
-  User,
-} from "discord.js";
-import {
-  ReactionAction,
-  reactionActionExecutor,
-} from "../../../shared/action/reaction-action";
+import { MessageReaction, PartialMessageReaction, PartialUser, User } from "discord.js";
+import { ReactionAction, reactionActionExecutor } from "../../../shared/action/reaction-action";
 import { getAction, getRaidRevisionMessageContent } from "./util";
 
 export const tryApproveRaidReportRevisionReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
   user: User | PartialUser
-) =>
-  reactionActionExecutor(
-    new ApproveRaidReportRevisionReactionAction(reaction, user)
-  );
+) => reactionActionExecutor(new ApproveRaidReportRevisionReactionAction(reaction, user));
 
 class ApproveRaidReportRevisionReactionAction extends ReactionAction {
   public async execute() {

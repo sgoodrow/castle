@@ -29,10 +29,7 @@ class Add extends Subcommand {
   public get command() {
     return super.command
       .addUserOption((o) =>
-        o
-          .setName(Option.DiscordUser)
-          .setDescription("The Discord user to remove")
-          .setRequired(true)
+        o.setName(Option.DiscordUser).setDescription("The Discord user to remove").setRequired(true)
       )
       .addBooleanOption((o) =>
         o.setName(Option.Alt).setDescription("If the invite is for an alt.")

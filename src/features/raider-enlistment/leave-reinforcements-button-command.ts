@@ -1,8 +1,4 @@
-import {
-  ButtonInteraction,
-  CacheType,
-  GuildMemberRoleManager,
-} from "discord.js";
+import { ButtonInteraction, CacheType, GuildMemberRoleManager } from "discord.js";
 import { reinforcementsRoleId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 

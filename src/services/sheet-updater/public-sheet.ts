@@ -44,9 +44,7 @@ export class PublicSheetService {
     if (this.sheet) {
       return this.sheet.useServiceAccountAuth({
         client_email: GOOGLE_CLIENT_EMAIL,
-        private_key: (GOOGLE_PRIVATE_KEY || "")
-          .split(String.raw`\n`)
-          .join("\n"),
+        private_key: (GOOGLE_PRIVATE_KEY || "").split(String.raw`\n`).join("\n"),
       });
     }
   }

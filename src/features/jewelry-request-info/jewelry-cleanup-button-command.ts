@@ -1,16 +1,7 @@
-import {
-  ButtonInteraction,
-  CacheType,
-  ChannelType,
-  Message,
-  User,
-} from "discord.js";
+import { ButtonInteraction, CacheType, ChannelType, Message, User } from "discord.js";
 import { jewelerRoleId, jewelryChannelId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
-import {
-  getChannel,
-  requireInteractionMemberRole,
-} from "../../shared/command/util";
+import { getChannel, requireInteractionMemberRole } from "../../shared/command/util";
 
 class JeweleryCleanupCommand extends ButtonCommand {
   public async execute(interaction: ButtonInteraction<CacheType>) {
@@ -19,9 +10,7 @@ class JeweleryCleanupCommand extends ButtonCommand {
     const messages = await jewelryRequestsChannel.messages.fetch();
 
     const nonJewelerMessagesMap = messages
-      .filter(
-        (m) => !(m.member?.roles.cache.has(jewelerRoleId) || m.member?.user.bot)
-      )
+      .filter((m) => !(m.member?.roles.cache.has(jewelerRoleId) || m.member?.user.bot))
       .reduce((map, message) => {
         const id = message.author.id;
         if (!map[id]) {
@@ -56,9 +45,7 @@ ${messages.map((m) => this.getQuotedContent(m.content)).join("\n")}`);
     });
 
     await interaction.editReply({
-      content: `Removed stale jewelry requests from: ${Object.values(
-        nonJewelerMessagesMap
-      )
+      content: `Removed stale jewelry requests from: ${Object.values(nonJewelerMessagesMap)
         .map(({ user }) => user)
         .map((u) => `${u}`)
         .join(" ")}`,
@@ -85,6 +72,4 @@ ${messages.map((m) => this.getQuotedContent(m.content)).join("\n")}`);
   }
 }
 
-export const jewelryCleanupButtonCommand = new JeweleryCleanupCommand(
-  "jewelryCleanup"
-);
+export const jewelryCleanupButtonCommand = new JeweleryCleanupCommand("jewelryCleanup");

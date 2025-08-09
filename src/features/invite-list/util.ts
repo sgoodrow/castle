@@ -2,9 +2,7 @@ import { dataSource } from "../../db/data-source";
 import { InviteSimple } from "../../db/invite-simple";
 
 export const checkInvite = async (discordId: string) => {
-  const invite = await dataSource
-    .getRepository(InviteSimple)
-    .findOneBy({ discordId });
+  const invite = await dataSource.getRepository(InviteSimple).findOneBy({ discordId });
   if (invite) {
     throw new Error(`<@${discordId}> is already being tracked.`);
   }

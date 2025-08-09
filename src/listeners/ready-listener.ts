@@ -6,10 +6,7 @@ import { updateRaiderInfo } from "../features/raider-enlistment/update-raider-ac
 import { updateReinforcementInfo } from "../features/raider-enlistment/update-reinforcement-action";
 import { updateApplicationInfo as updateApplicationInfo } from "../features/applications/update-applications";
 import { updateRaidSchedule } from "../features/raid-schedule-info/update-action";
-import {
-  updateGuardBotInfo,
-  updateRaidBotsInfo,
-} from "../features/raid-bots/update-bots";
+import { updateGuardBotInfo, updateRaidBotsInfo } from "../features/raid-bots/update-bots";
 import { HOURS } from "../shared/time";
 import { updateBotEmbed } from "../features/raid-bots/bot-embed";
 

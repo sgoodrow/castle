@@ -19,11 +19,9 @@ dataSource
   .initialize()
   .then((c) => {
     // https://github.com/typeorm/typeorm/issues/3286#issuecomment-486991573
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const driver = c.driver as any;
     driver.postgres.defaults.parseInputDatesAsUTC = true;
-    driver.postgres.types.setTypeParser(
-      1114,
-      (str: string) => new Date(str + "Z")
-    );
+    driver.postgres.types.setTypeParser(1114, (str: string) => new Date(str + "Z"));
   })
   .catch(console.error);

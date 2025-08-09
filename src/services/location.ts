@@ -55,9 +55,7 @@ export class LocationService implements ILocationService {
     return Array.from(this.locationCache.values());
   }
 
-  async getLocationOptions(): Promise<
-    ApplicationCommandOptionChoiceData<string>[]
-  > {
+  async getLocationOptions(): Promise<ApplicationCommandOptionChoiceData<string>[]> {
     const locations = await this.getLocations();
 
     return locations.map((b) => ({

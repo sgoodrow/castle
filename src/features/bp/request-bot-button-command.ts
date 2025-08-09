@@ -7,20 +7,17 @@ import {
 } from "discord.js";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { bot } from "@prisma/client";
-import { knightRoleId, raiderRoleId } from "../../config";
+import { raiderRoleId } from "../../config";
 import { getClassAbreviation } from "../../shared/classes";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
-import { log } from "../../shared/logger"
+import { log } from "../../shared/logger";
 
 export class RequestBotButtonCommand extends ButtonCommand {
   constructor(name: string) {
     super(name);
   }
 
-  public async execute(
-    interaction: ButtonInteraction<CacheType>
-  ): Promise<void> {
-
+  public async execute(interaction: ButtonInteraction<CacheType>): Promise<void> {
     await this.setButtonState(interaction, false);
 
     interaction.editReply({
@@ -29,24 +26,15 @@ export class RequestBotButtonCommand extends ButtonCommand {
 
     const name = interaction.customId.split("_")[1];
     try {
-      const guildUser = await interaction.guild?.members.fetch(
-        interaction.user.id
-      );
-      log(
-        `${
-          guildUser?.nickname || guildUser?.user.username
-        } clicked batphone button for ${name}`
-      );
+      const guildUser = await interaction.guild?.members.fetch(interaction.user.id);
+      log(`${guildUser?.nickname || guildUser?.user.username} clicked batphone button for ${name}`);
       await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
     } catch (err: unknown) {
       await this.setButtonState(interaction, true);
     }
   }
 
-  private async setButtonState(
-    interaction: ButtonInteraction<CacheType>,
-    enabled: boolean
-  ) {
+  private async setButtonState(interaction: ButtonInteraction<CacheType>, enabled: boolean) {
     const rowIdx = interaction.message.components.findIndex((row) =>
       row.components.find((c) => c.customId === interaction.customId)
     );
@@ -69,14 +57,10 @@ export class RequestBotButtonCommand extends ButtonCommand {
   public getButtonBuilder(bot: bot): ButtonBuilder {
     const icon = !bot.requiredRoles.includes(raiderRoleId) ? "🛡️" : "";
     return new ButtonBuilder()
-      .setLabel(
-        `${icon}${bot.name} (${bot.level} ${getClassAbreviation(bot.class)})`
-      )
+      .setLabel(`${icon}${bot.name} (${bot.level} ${getClassAbreviation(bot.class)})`)
       .setCustomId(`requestbot_${bot.name}`)
       .setStyle(ButtonStyle.Primary);
   }
 }
 
-export const requestBotButtonCommand = new RequestBotButtonCommand(
-  "requestbot"
-);
+export const requestBotButtonCommand = new RequestBotButtonCommand("requestbot");

@@ -10,17 +10,12 @@ import {
 import { raiderEnlistmentChannelId, reinforcementsRoleId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
-import {
-  readyActionExecutor,
-  ReadyActionExecutorOptions,
-} from "../../shared/action/ready-action";
+import { readyActionExecutor, ReadyActionExecutorOptions } from "../../shared/action/ready-action";
 import { joinReinforcementsButtonCommand } from "./join-reinforcements-button-command";
 import { leaveReinforcementsButtonCommand } from "./leave-reinforcements-button-command";
 
-export const updateReinforcementInfo = (
-  client: Client,
-  options?: ReadyActionExecutorOptions
-) => readyActionExecutor(new UpdateReinforcementsInfoAction(client), options);
+export const updateReinforcementInfo = (client: Client, options?: ReadyActionExecutorOptions) =>
+  readyActionExecutor(new UpdateReinforcementsInfoAction(client), options);
 
 class UpdateReinforcementsInfoAction extends InstructionsReadyAction {
   public async execute(): Promise<void> {

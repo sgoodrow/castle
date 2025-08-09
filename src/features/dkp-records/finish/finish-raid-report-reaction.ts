@@ -1,25 +1,12 @@
-import {
-  MessageReaction,
-  PartialMessageReaction,
-  PartialUser,
-  User,
-} from "discord.js";
-import {
-  dkpDeputyRoleId,
-  dkpRecordsChannelId,
-  officerRoleId,
-} from "../../../config";
-import {
-  ReactionAction,
-  reactionActionExecutor,
-} from "../../../shared/action/reaction-action";
+import { MessageReaction, PartialMessageReaction, PartialUser, User } from "discord.js";
+import { dkpDeputyRoleId, dkpRecordsChannelId, officerRoleId } from "../../../config";
+import { ReactionAction, reactionActionExecutor } from "../../../shared/action/reaction-action";
 import { getRaidReport, isRaidInstructionsMessage } from "../raid-report";
 
 export const tryRaidReportFinishedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
   user: User | PartialUser
-) =>
-  reactionActionExecutor(new RaidReportFinishedReactionAction(reaction, user));
+) => reactionActionExecutor(new RaidReportFinishedReactionAction(reaction, user));
 
 class RaidReportFinishedReactionAction extends ReactionAction {
   public async execute() {
@@ -56,12 +43,7 @@ class RaidReportFinishedReactionAction extends ReactionAction {
 
     // authorize user
     const reactor = await this.members?.fetch(this.user.id);
-    if (
-      !(
-        reactor?.roles.cache.has(dkpDeputyRoleId) ||
-        reactor?.roles.cache.has(officerRoleId)
-      )
-    ) {
+    if (!(reactor?.roles.cache.has(dkpDeputyRoleId) || reactor?.roles.cache.has(officerRoleId))) {
       return;
     }
 

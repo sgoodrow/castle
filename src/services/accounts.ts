@@ -11,15 +11,12 @@ import {
 } from "../config";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../shared/time";
-import {
-  ApplicationCommandOptionChoiceData,
-  GuildMemberRoleManager,
-} from "discord.js";
-import { some, truncate } from "lodash";
+import { ApplicationCommandOptionChoiceData, GuildMemberRoleManager } from "discord.js";
+import { some } from "lodash";
 import { checkGoogleCredentials } from "./gdrive";
 import moment from "moment";
 import { getClassAbreviation } from "../shared/classes";
-import { log } from "../shared/logger"
+import { log } from "../shared/logger";
 
 enum SPREADSHEET_COLUMNS {
   Characters = "Characters",
@@ -118,14 +115,10 @@ const getAccounts = async () => {
 export const accounts = {
   getAccountsForRole: async (roleId: string): Promise<Account[]> => {
     const accounts = await getAccounts();
-    return [...accounts.values()].filter((c) =>
-      c.requiredRoles.map((r) => r.id).includes(roleId)
-    );
+    return [...accounts.values()].filter((c) => c.requiredRoles.map((r) => r.id).includes(roleId));
   },
 
-  getOptions: async (): Promise<
-    ApplicationCommandOptionChoiceData<string>[]
-  > => {
+  getOptions: async (): Promise<ApplicationCommandOptionChoiceData<string>[]> => {
     const accounts = await getAccounts();
     return [...accounts.values()].map((c) => ({
       name: `${c.characters} (${c.class})`,
@@ -143,10 +136,7 @@ export const accounts = {
     return d.requiredRoles;
   },
 
-  getAccount: async (
-    name: string,
-    roles: GuildMemberRoleManager
-  ): Promise<Account> => {
+  getAccount: async (name: string, roles: GuildMemberRoleManager): Promise<Account> => {
     const accounts = await getAccounts();
     let d = accounts.get(name.toLowerCase());
     const toSentenceCase = (str: string) => {
@@ -158,9 +148,7 @@ export const accounts = {
         throw new Error(`${name} is not a shared account`);
       }
     }
-    const hasRole = some(
-      d.requiredRoles.map((r) => r.id).map((id) => roles.cache.has(id))
-    );
+    const hasRole = some(d.requiredRoles.map((r) => r.id).map((id) => roles.cache.has(id)));
     if (!hasRole) {
       throw new Error(`You do not have the required role to access ${name}`);
     }

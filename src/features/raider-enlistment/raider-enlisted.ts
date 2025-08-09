@@ -1,10 +1,7 @@
 import { ChannelType, Client, GuildMember } from "discord.js";
 import { raiderEnlistedThreadId } from "../../config";
 
-export const recordRaiderEnlisted = async (
-  client: Client,
-  member: GuildMember
-) => {
+export const recordRaiderEnlisted = async (client: Client, member: GuildMember) => {
   const channel = await client.channels.fetch(raiderEnlistedThreadId);
   if (!channel) {
     throw new Error("Could not locate the raider enlisted dump channel");

@@ -1,9 +1,4 @@
-import {
-  CacheType,
-  CommandInteraction,
-  TimestampStyles,
-  time,
-} from "discord.js";
+import { CacheType, CommandInteraction, TimestampStyles, time } from "discord.js";
 import { castledkp } from "../../../services/castledkp";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { code } from "../../../shared/util";
@@ -19,10 +14,7 @@ export class PlayerDkpSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const characterName = this.getRequiredOptionValue<string>(
-      Option.Character,
-      interaction
-    );
+    const characterName = this.getRequiredOptionValue<string>(Option.Character, interaction);
     const spam = this.getOptionValue<boolean>(Option.Spam, interaction);
     const character = await castledkp.getCharacter(characterName);
     if (!character) {
@@ -31,11 +23,7 @@ export class PlayerDkpSubcommand extends Subcommand {
     const points = await castledkp.getPointsByCharacter(character.id);
     const net = points.currentDkp;
     const result =
-      net === 0
-        ? "0"
-        : net > 0
-        ? `+                     ${net}`
-        : `-                     ${net}`;
+      net === 0 ? "0" : net > 0 ? `+                     ${net}` : `-                     ${net}`;
     const content = `**${points.characterName}** DKP as of ${time(
       Date.now(),
       TimestampStyles.ShortDateTime
@@ -48,9 +36,8 @@ ${result}${code}`;
     if (spam) {
       await interaction.channel?.send({ content });
       await interaction.editReply({
-
         content: "Done.",
-     });
+      });
     } else {
       await interaction.editReply({
         content,
@@ -63,17 +50,13 @@ ${result}${code}`;
       .addStringOption((o) =>
         o
           .setName(Option.Character)
-          .setDescription(
-            "The name of the character whose points you want to review."
-          )
+          .setDescription("The name of the character whose points you want to review.")
           .setRequired(true)
       )
       .addBooleanOption((o) =>
         o
           .setName(Option.Spam)
-          .setDescription(
-            "Set to true if you want the response to be sent to the entire channel."
-          )
+          .setDescription("Set to true if you want the response to be sent to the entire channel.")
       );
   }
 

@@ -1,7 +1,7 @@
-// use Prisma to interface with postgres db. 
+// use Prisma to interface with postgres db.
 // see prisma/schema.prisma
 
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "@prisma/client";
 
 export interface InventoryItem {
   character: string;
@@ -18,24 +18,24 @@ export interface Inventory {
 }
 
 class BankData {
-  private static instance: BankData
+  private static instance: BankData;
 
   private prisma;
 
   private constructor() {
-    this.prisma = new PrismaClient()
+    this.prisma = new PrismaClient();
   }
 
   public static getInstance(): BankData {
-      if (!BankData.instance) {
-          BankData.instance = new BankData();
-      }
-      return BankData.instance;
+    if (!BankData.instance) {
+      BankData.instance = new BankData();
+    }
+    return BankData.instance;
   }
 
   public async setInventory(inventory: Inventory): Promise<void> {
     try {
-      const upsertChar = await this.prisma.char.upsert({
+      await this.prisma.char.upsert({
         where: {
           name: inventory.charName,
         },
@@ -45,171 +45,184 @@ class BankData {
         },
         update: {
           charType: inventory.charType,
-        }
-      })
+        },
+      });
     } catch (e) {
-      console.error('character not created', e)
+      console.error("character not created", e);
     }
-    
-    for (let item of inventory.items) {
+
+    for (const item of inventory.items) {
       try {
-        const upsertItem = await this.prisma.item.upsert({
+        await this.prisma.item.upsert({
           where: {
-            id: item.id
+            id: item.id,
           },
           create: {
             id: item.id,
-            name: item.name
+            name: item.name,
           },
           update: {
-            name: item.name
-          }
-        })
-      } catch(e) {
-        console.error(e)
+            name: item.name,
+          },
+        });
+      } catch (e) {
+        console.error(e);
       }
-      
+
       try {
-        const upsertSlot = await this.prisma.slot.upsert({
+        await this.prisma.slot.upsert({
           where: {
-            charSlot: String(inventory.charName + item.location)
+            charSlot: String(inventory.charName + item.location),
           },
           update: {
             itemId: item.id,
-            count: item.count
+            count: item.count,
           },
           create: {
             slot: item.location,
             charSlot: String(inventory.charName + item.location),
             charName: inventory.charName,
             itemId: item.id,
-            count: item.count
-          }
-        })
-      } catch(e) {
-        console.error(e)
+            count: item.count,
+          },
+        });
+      } catch (e) {
+        console.error(e);
       }
     }
   }
 
   public async getItemsByStem(itemStem: string) {
-    return await this.prisma.item.findMany({
-      where: {
-        name: {
-          startsWith: itemStem,
-          mode: 'insensitive'
-        }
-      },
-      include: {
-          _count: { 
+    return await this.prisma.item
+      .findMany({
+        where: {
+          name: {
+            startsWith: itemStem,
+            mode: "insensitive",
+          },
+        },
+        include: {
+          _count: {
             select: {
-              stock: true
-            }
-        }
-      }
-    }).catch((err: Error) => {
-      console.error(err);
-    });
+              stock: true,
+            },
+          },
+        },
+      })
+      .catch((err: Error) => {
+        console.error(err);
+      });
   }
 
   public async getItemsByName(itemName: string) {
-    return await this.prisma.item.findMany({
-      where: {
-        name: {
-          equals: itemName
-        }
-      },
-      include: {
-          _count: { 
+    return await this.prisma.item
+      .findMany({
+        where: {
+          name: {
+            equals: itemName,
+          },
+        },
+        include: {
+          _count: {
             select: {
-              stock: true
-            }
-        }
-      }
-    }).catch((err: Error) => {
-      console.error(err);
-    });
+              stock: true,
+            },
+          },
+        },
+      })
+      .catch((err: Error) => {
+        console.error(err);
+      });
   }
 
   public async getItemStockById(itemId: number) {
-    return await this.prisma.item.findFirst({
-      where: {
-        id: {
-          equals: itemId
-        }
-      },
-      include: {
-        stock: true
-      }
-    }).catch((err: Error) => {
-      console.error(err);
-    });
+    return await this.prisma.item
+      .findFirst({
+        where: {
+          id: {
+            equals: itemId,
+          },
+        },
+        include: {
+          stock: true,
+        },
+      })
+      .catch((err: Error) => {
+        console.error(err);
+      });
   }
 
   public async getInventory(charName: string) {
-    return await this.prisma.char.findFirst({
-      where: {
-        name: {
-          equals: charName
-        }
-      },
-      include: {
-        inventory: true
-      }
-    }).catch((err: Error) => {
-      console.error(err);
-    });
-  }
-
-  public async getUnmatchedChars(names: string[]){
-    return await this.prisma.char.findMany({
-      where: {
-        NOT: {
+    return await this.prisma.char
+      .findFirst({
+        where: {
           name: {
-            in: names
-          }
-        }
-      }
-    }).catch((err: Error) => {
-      console.error(err);
-    });
+            equals: charName,
+          },
+        },
+        include: {
+          inventory: true,
+        },
+      })
+      .catch((err: Error) => {
+        console.error(err);
+      });
   }
 
-  public async removeInventory(charName: string, removeChar: boolean = false) {
+  public async getUnmatchedChars(names: string[]) {
+    return await this.prisma.char
+      .findMany({
+        where: {
+          NOT: {
+            name: {
+              in: names,
+            },
+          },
+        },
+      })
+      .catch((err: Error) => {
+        console.error(err);
+      });
+  }
+
+  public async removeInventory(charName: string) {
     console.log("bank-db-remove:", charName);
     // remove char slots
-    const deleteSlots =  await this.prisma.slot.deleteMany({
-      where: {
-        charName: {
-          equals: charName
-        }
-      }
-    }).catch((err: Error) => {
-      console.error(err);
-    });
-    
+    await this.prisma.slot
+      .deleteMany({
+        where: {
+          charName: {
+            equals: charName,
+          },
+        },
+      })
+      .catch((err: Error) => {
+        console.error(err);
+      });
+
     // remove char
     // todo: make this step optional
-    const deleteCharslots = await this.prisma.char.delete({
-      where: {
-        name: charName
-      }
-    }).catch((err: Error) => {
-      console.error(err);
-    }); 
+    await this.prisma.char
+      .delete({
+        where: {
+          name: charName,
+        },
+      })
+      .catch((err: Error) => {
+        console.error(err);
+      });
   }
 
   public async setItemData(itemId: number, price: string | null) {
-    const setItem = await this.prisma.item.update({
+    await this.prisma.item.update({
       where: {
-        id: itemId
+        id: itemId,
       },
       data: {
-        price: price
-      }
-    })
+        price: price,
+      },
+    });
   }
-  
 }
 
 export const bankData = BankData.getInstance();

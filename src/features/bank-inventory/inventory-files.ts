@@ -1,11 +1,5 @@
 import { InventoryItem } from "./bank-data";
-import {
-  uploadFileToFolder,
-  DriveFile,
-  findFiles,
-  updateFile
-  
-} from "../../services/gdrive";
+import { uploadFileToFolder, DriveFile, findFiles, updateFile } from "../../services/gdrive";
 
 export const outputfilesFolderId = "1DBaLEyUFsxCcYwJzFYblILgPu5sK8uT5";
 export const defaultUploadsFolderId = "1hYIR3o94diHF1dtNs_-x7BSp33bq4lDp";
@@ -33,10 +27,10 @@ export const parseInventoryFile = async (fileName: string, data: string) => {
   // TODO: determine character type based on file parent in gdrive?
   return {
     charName: charName,
-    charType: 'banker',
+    charType: "banker",
     items: inventoryItems,
-  }
-}    
+  };
+};
 
 export const uploadToGDrive = async (filename: string, contents: string) => {
   const file: DriveFile = {
@@ -46,9 +40,7 @@ export const uploadToGDrive = async (filename: string, contents: string) => {
   };
   try {
     // note: limiting this to a folder doesn't seem to be working well, it will replace a file anywhere in the drive with the same name. careful.
-    const outputfiles = await findFiles(
-      `name='${filename}' and trashed=false`
-    );
+    const outputfiles = await findFiles(`name='${filename}' and trashed=false`);
     // const outputfiles = await findFileInFolders(filename, "outputfiles");
     // if found, update it
     outputfiles.forEach(async (val) => {
@@ -63,4 +55,4 @@ export const uploadToGDrive = async (filename: string, contents: string) => {
     // if not found, upload it to to be sorted folder
     await uploadFileToFolder(file, defaultUploadsFolderId);
   }
-}
+};

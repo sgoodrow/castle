@@ -10,28 +10,20 @@ import {
 import { jewelryChannelId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
-import {
-  readyActionExecutor,
-  ReadyActionExecutorOptions,
-} from "../../shared/action/ready-action";
+import { readyActionExecutor, ReadyActionExecutorOptions } from "../../shared/action/ready-action";
 import { services } from "./jewelry-services";
 import { jewelryCleanupButtonCommand } from "./jewelry-cleanup-button-command";
 import { craftingButtonCommand } from "./crafting-button-command";
 import { Icon } from "../bank-request-info/types";
 
-export const updateJewelryRequestInfo = (
-  client: Client,
-  options?: ReadyActionExecutorOptions
-) => readyActionExecutor(new UpdateJewelryRequestInfoAction(client), options);
+export const updateJewelryRequestInfo = (client: Client, options?: ReadyActionExecutorOptions) =>
+  readyActionExecutor(new UpdateJewelryRequestInfoAction(client), options);
 
 class UpdateJewelryRequestInfoAction extends InstructionsReadyAction {
   public async execute() {
     await this.createOrUpdateInstructions(
       {
-        embeds: [
-          await this.getInstructionsEmbed(),
-          ...(await this.getServicesEmbeds()),
-        ],
+        embeds: [await this.getInstructionsEmbed(), ...(await this.getServicesEmbeds())],
         components: [await this.getButtons()],
       },
       Name.JewelryRequestInstructions
@@ -67,9 +59,7 @@ class UpdateJewelryRequestInfoAction extends InstructionsReadyAction {
     return services.map(
       ({ title, icon, requestFormats, inventoryUrl, bullets }) =>
         new EmbedBuilder({
-          title: `${icon} ${inventoryUrl ? "__" : ""}${title}${
-            inventoryUrl ? "__" : ""
-          }`,
+          title: `${icon} ${inventoryUrl ? "__" : ""}${title}${inventoryUrl ? "__" : ""}`,
           url: inventoryUrl,
           footer: {
             text: requestFormats.map((r) => `${Icon.Request} ${r}`).join("\n"),

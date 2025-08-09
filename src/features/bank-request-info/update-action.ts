@@ -12,28 +12,20 @@ import { BankHour } from "../../db/bank-hour";
 import { dataSource } from "../../db/data-source";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
-import {
-  readyActionExecutor,
-  ReadyActionExecutorOptions,
-} from "../../shared/action/ready-action";
+import { readyActionExecutor, ReadyActionExecutorOptions } from "../../shared/action/ready-action";
 import { services } from "./bank-services";
 import { bankCleanupButtonCommand } from "./bank-cleanup-button-command";
 import { bankingButtonCommand } from "./banking-button-command";
 import { Icon } from "./types";
 
-export const updateBankRequestInfo = (
-  client: Client,
-  options?: ReadyActionExecutorOptions
-) => readyActionExecutor(new UpdateBankRequestInfoAction(client), options);
+export const updateBankRequestInfo = (client: Client, options?: ReadyActionExecutorOptions) =>
+  readyActionExecutor(new UpdateBankRequestInfoAction(client), options);
 
 class UpdateBankRequestInfoAction extends InstructionsReadyAction {
   public async execute() {
     await this.createOrUpdateInstructions(
       {
-        embeds: [
-          ...(await this.getServicesEmbeds()),
-          await this.getInstructionsEmbed(),
-        ],
+        embeds: [...(await this.getServicesEmbeds()), await this.getInstructionsEmbed()],
         components: [await this.getButtons()],
       },
       Name.BankRequestInstructions
@@ -57,9 +49,7 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
     return services.map(
       ({ title, icon, requestFormats, inventoryUrl, bullets }) =>
         new EmbedBuilder({
-          title: `${icon} ${inventoryUrl ? "__" : ""}${title}${
-            inventoryUrl ? "__" : ""
-          }`,
+          title: `${icon} ${inventoryUrl ? "__" : ""}${title}${inventoryUrl ? "__" : ""}`,
           url: inventoryUrl,
           footer: {
             text: requestFormats.map((r) => `${Icon.Request} ${r}`).join("\n"),

@@ -1,6 +1,5 @@
 import { GuildScheduledEvent } from "discord.js";
 import { HOURS } from "../../shared/time";
-import { compactDescription } from "../../shared/util";
 
 export class EventRenderer {
   public constructor(
@@ -15,9 +14,7 @@ ${this.date}${this.countdown}${this.description}`;
 
   private get countdown() {
     return this.within24Hours(this.data.scheduledStartTimestamp || 0)
-      ? ` (<t:${Math.floor(
-          (this.data.scheduledStartTimestamp || 0) / 1000
-        )}:R>)`
+      ? ` (<t:${Math.floor((this.data.scheduledStartTimestamp || 0) / 1000)}:R>)`
       : "";
   }
 
@@ -57,14 +54,5 @@ ${this.date}${this.countdown}${this.description}`;
       return "";
     }
     return `\n([more info](${this.data.url}))`;
-    // const compact = compactDescription(
-    //  this.data.description,
-    //  this.descriptionLength
-    //);
-    //let moreInfo = "";
-    //if (compact.length < this.data.description.length) {
-    //  moreInfo = ` ([more info](${this.data.url}))`;
-    //}
-    //return `\n${compact}${moreInfo}`;
   }
 }

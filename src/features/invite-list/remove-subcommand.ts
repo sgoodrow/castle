@@ -36,10 +36,7 @@ class Remove extends Subcommand {
 
   public get command() {
     return super.command.addUserOption((o) =>
-      o
-        .setName(Option.DiscordUser)
-        .setDescription("The Discord user to remove")
-        .setRequired(true)
+      o.setName(Option.DiscordUser).setDescription("The Discord user to remove").setRequired(true)
     );
   }
 
@@ -48,7 +45,4 @@ class Remove extends Subcommand {
   }
 }
 
-export const removeSubcommand = new Remove(
-  "remove",
-  "Remove someone from the invite list."
-);
+export const removeSubcommand = new Remove("remove", "Remove someone from the invite list.");

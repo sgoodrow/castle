@@ -1,9 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-} from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
 import { Members } from "../features/invite-list/update-invite-action";
 
 @Entity({})
@@ -30,7 +25,9 @@ export class InviteSimple {
 
   public getDiscordDisplayName(members: Members) {
     const member = members?.get(this.discordId);
-    return member ? `**${member.displayName}** (<@${member.id}>)` : `**Left the server** (<@${this.discordId}>)`;
+    return member
+      ? `**${member.displayName}** (<@${member.id}>)`
+      : `**Left the server** (<@${this.discordId}>)`;
   }
 
   public getRichLabel(members: Members) {

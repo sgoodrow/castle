@@ -1,10 +1,8 @@
 import { CacheType, Interaction } from "discord.js";
 import { getButton, getCommand } from "./register-commands";
-import { log } from "../shared/logger"
+import { log } from "../shared/logger";
 
-export const interactionCreateListener = async (
-  interaction: Interaction<CacheType>
-) => {
+export const interactionCreateListener = async (interaction: Interaction<CacheType>) => {
   if (interaction.isAutocomplete()) {
     getCommand(interaction)?.autocomplete(interaction).catch(console.error);
     return;

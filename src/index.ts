@@ -17,7 +17,7 @@ import { updateRaidReport } from "./features/dkp-records/update/update-raid-repo
 import { guildMemberUpdateListener } from "./listeners/guild-member-update-listener";
 import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
-import { log } from "./shared/logger"
+import { log } from "./shared/logger";
 
 // Global
 https.globalAgent.maxSockets = 5;

@@ -1,8 +1,5 @@
 import { Message } from "discord.js";
-import {
-  MessageAction,
-  messageActionExecutor,
-} from "../../../shared/action/message-action";
+import { MessageAction, messageActionExecutor } from "../../../shared/action/message-action";
 import { getAction, getBonusMessageContent } from "./util";
 
 export const tryRaidBonusMessageAction = (message: Message) =>
@@ -26,9 +23,7 @@ class RaidBonusMessageAction extends MessageAction {
       // warning emoji and dm
       await this.message.react("⚠️");
       if (!this.message.author.bot) {
-        this.message.author.send(
-          `Command to request raid bonus is invalid. \`${err}\``
-        );
+        this.message.author.send(`Command to request raid bonus is invalid. \`${err}\``);
       }
     }
   }
