@@ -25,6 +25,7 @@ import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
 import { log } from "./shared/logger";
 import { openDkpService } from "./services/openDkpService";
+import { existsSync } from "fs";
 
 // Global
 https.globalAgent.maxSockets = 5;
@@ -106,8 +107,11 @@ prismaClient.$connect();
 if (openDkpUsername && openDkpPassword && openDkpAuthClientId) {
   openDkpService
     .doUserPasswordAuth(openDkpUsername, openDkpPassword, openDkpAuthClientId)
-    .then(() => {
+    .then(async () => {
       console.log("Authenticated with OpenDKP");
+      if (existsSync("./players.csv")) {
+        await openDkpService.importData("./players.csv");
+      }
     })
     .catch((reason) => {
       console.log("Failed to authenticate with OpenDKP: " + reason);
