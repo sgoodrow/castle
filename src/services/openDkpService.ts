@@ -3,6 +3,13 @@ import { AdjustmentData, RaidTick } from "../features/dkp-records/raid-tick";
 import moment from "moment";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../shared/time";
+import {
+  convertClass,
+  convertRace,
+  processTsvFileWithHeaders,
+  RowObject,
+  toSentenceCase,
+} from "../shared/util";
 
 // Client for OpenDKP
 
@@ -78,6 +85,16 @@ interface ODKPCharacterData {
   Deleted: number;
   User: string;
   CreatedDate: string; // ISO date string
+}
+
+export interface ODKPCharacterImportData {
+  Active: number;
+  Name: string;
+  Rank?: string;
+  Class: string;
+  Level: number;
+  Race: string;
+  Gender: string;
 }
 
 const characterCache = new LRUCache<string, ODKPCharacterData>({
@@ -224,14 +241,18 @@ export const openDkpService = {
   doTickAdjustments: async (ticks: RaidTick[]) => {
     ticks.forEach((tick) => {
       tick.data.adjustments?.forEach(async (adj) => {
-        const adjustment: ODKPAdjustment = {
-          Character: { Name: adj.player },
-          Name: adj.reason,
-          Description: tick.name,
-          Value: adj.value,
-          Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
-        };
-        await openDkpService.addAdjustment(adjustment);
+        // const adjustment: ODKPAdjustment = {
+        //   Character: { Name: adj.player },
+        //   Name: adj.reason,
+        //   Description: tick.name,
+        //   Value: adj.value,
+        //   Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
+        // };
+        await openDkpService.addAdjustment({
+          player: adj.player,
+          reason: adj.reason,
+          value: adj.value,
+        });
       });
     });
   },
@@ -301,5 +322,69 @@ export const openDkpService = {
       .catch(function (error) {
         console.log(error);
       });
+  },
+  addPlayer: async (
+    name: string,
+    charClass: string,
+    race: string,
+    level: number,
+    gender: string,
+    active: number
+  ) => {
+    const odkpCharacter = {
+      Active: active,
+      Name: name,
+      Class: charClass,
+      Level: level,
+      Race: race,
+      Gender: gender,
+    } as ODKPCharacterImportData;
+    // const config = {
+    //   method: "put",
+    //   url: "https://api.opendkp.com/clients/castle/characters",
+    //   headers: {
+    //     Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+    //   },
+    //   data: JSON.stringify(odkpCharacter),
+    // };
+    console.log(odkpCharacter);
+
+    // axios(config)
+    //   .then(function (response) {
+    //     console.log(JSON.stringify(response.data));
+    //   })
+    //   .catch(function (error) {
+    //     console.log(error);
+    //   });
+  },
+  importData: async (file: string) => {
+    await processTsvFileWithHeaders(file, async (row: RowObject) => {
+      if (file.includes("players.csv")) {
+        await openDkpService.handleCharacterImportRow(row);
+      }
+    });
+  },
+  handleCharacterImportRow: async (row: RowObject) => {
+    if (isNaN(Number.parseInt(row["member_id"]))) return;
+    const unescaped = row["profiledata"]
+      .replace(/""/g, '"')
+      .replace(/^"|"$/g, "");
+    const characterDetails: {
+      race: string;
+      class: string;
+      guild: string;
+      gender: string;
+      level: string;
+    } = JSON.parse(unescaped);
+    //const status = row["member_status"] === "FALSE" ? 0 : 1;
+    // everyone is active for now? eqdkp data seems wrong
+    await openDkpService.addPlayer(
+      row["member_name"],
+      convertClass(characterDetails.class),
+      convertRace(characterDetails.race),
+      Number.parseInt(characterDetails.level),
+      toSentenceCase(characterDetails.gender),
+      1
+    );
   },
 };
