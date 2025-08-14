@@ -11,6 +11,7 @@ import { CreateRaidResponse, RaidEventData } from "../../services/castledkp";
 import { DAYS } from "../../shared/time";
 import { code } from "../../shared/util";
 import { AdjustmentData, EVERYONE, RaidTick, RaidTickData } from "./raid-tick";
+import { openDkpService } from "../../services/openDkpService";
 
 export interface LootData {
   item: string;
@@ -281,6 +282,8 @@ ${p}${code}`,
         failed.push(s.reason);
       }
     });
+
+    openDkpService.createRaid(this.ticks);
 
     return { created, failed };
   }
