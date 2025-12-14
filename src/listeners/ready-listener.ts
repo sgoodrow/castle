@@ -25,7 +25,7 @@ export const readyListener = async (client: Client) => {
     updateInviteListInfo(client, updateOptions),
     updateJewelryRequestInfo(client, updateOptions),
     updateRaiderInfo(client, updateOptions),
-    updateReinforcementInfo(client, updateOptions),
-    updateBotEmbed({ repeatDuration: 30000 }),
+    updateReinforcementInfo(client, updateOptions)
+    //updateBotEmbed({ repeatDuration: 30000 }),
   ];
 };
