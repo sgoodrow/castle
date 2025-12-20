@@ -38,14 +38,14 @@ export class WakeupService implements IWakeupService {
       const voiceConnection = joinVoiceChannel({
         channelId: this.wakeupChannel.id,
         guildId: this.wakeupChannel.guildId,
-        adapterCreator: this.wakeupChannel.guild.voiceAdapterCreator,
+        adapterCreator: this.wakeupChannel.guild.voiceAdapterCreator as any,
       });
 
       voiceConnection.on(
         VoiceConnectionStatus.Ready,
         async (oldState, newState) => {
           try {
-            // First TTS
+            // yirst TTS
             this.wakeupChannel?.send({
               content: textMessage,
               tts: true,
