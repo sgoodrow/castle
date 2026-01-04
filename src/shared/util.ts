@@ -21,11 +21,29 @@ export const capitalize = (text: string): string => {
   return text.toLowerCase().charAt(0).toUpperCase() + text.slice(1);
 };
 
+const htmlEntityMap: Record<string, string> = {
+  "&#39;": "'",
+  "&amp;": "&",
+  "&lt;": "<",
+  "&gt;": ">",
+  "&quot;": '"',
+  // Add more if needed
+};
+
+export const decodeHtmlEntities = (text: string) => {
+  return text.replace(/&#39;|&amp;|&lt;|&gt;|&quot;/g, (match) => {
+    return htmlEntityMap[match] || match;
+  });
+};
+
 export const processTsvFileWithHeaders = async (
   filePath: string,
-  onRow: (row: RowObject) => void
+  onRow: (row: RowObject) => void | Promise<void>,
+  jsonColumns: string[] = []
 ): Promise<void> => {
-  const fileStream: Readable = fs.createReadStream(filePath);
+  const fileStream: Readable = fs.createReadStream(filePath, {
+    encoding: "utf8",
+  });
 
   const rl = readline.createInterface({
     input: fileStream, // fs.ReadStream, not web ReadableStream
@@ -46,10 +64,43 @@ export const processTsvFileWithHeaders = async (
 
     const rowObj: RowObject = {};
     headers.forEach((header, i) => {
-      rowObj[header] = columns[i] ?? "";
+      let value = columns[i] ?? "";
+
+      // Trim whitespace
+      value = value.trim();
+
+      // If this column is supposed to be JSON, clean and parse it
+      if (jsonColumns.includes(header)) {
+        if (value) {
+          // Remove surrounding quotes if present
+          if (
+            (value.startsWith('"') && value.endsWith('"')) ||
+            (value.startsWith("'") && value.endsWith("'"))
+          ) {
+            value = value.slice(1, -1);
+          }
+
+          // Fix doubled quotes (common in Excel/TSV exports)
+          value = value.replace(/""/g, '"');
+
+          try {
+            rowObj[header] = JSON.parse(value);
+          } catch (err) {
+            console.warn(`Failed to parse JSON in column "${header}":`, value);
+            rowObj[header] = value; // fallback: keep as string
+          }
+        } else {
+          rowObj[header] = "";
+        }
+      } else {
+        // Regular string column
+        rowObj[header] = value || "";
+      }
     });
 
-    onRow(rowObj);
+    // Support async callbacks
+    const result = onRow(rowObj);
+    if (result instanceof Promise) await result;
   }
 };
 export const convertRace = (raceCode: string) => {

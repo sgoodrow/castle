@@ -1,15 +1,17 @@
-import axios from "axios";
-import { AdjustmentData, RaidTick } from "../features/dkp-records/raid-tick";
+import axios, { AxiosRequestConfig } from "axios";
+import { RaidTick } from "../features/dkp-records/raid-tick";
 import moment from "moment";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../shared/time";
 import {
   convertClass,
   convertRace,
+  decodeHtmlEntities,
   processTsvFileWithHeaders,
   RowObject,
   toSentenceCase,
 } from "../shared/util";
+import fs from "fs";
 
 // Client for OpenDKP
 
@@ -28,6 +30,10 @@ export interface ODKPRaidItem {
   ItemId: number;
   ItemName: string;
   Notes: string;
+}
+
+export interface ODKPItemSearchResponse {
+  items: ODKPItemResponse[];
 }
 
 export interface ODKPRaidTickCharacter {
@@ -102,6 +108,8 @@ const characterCache = new LRUCache<string, ODKPCharacterData>({
 });
 
 let accessTokens: IAccessTokenResult;
+
+//const itemCache: Map<string, ODKPItemResponse> = new Map();
 
 export const openDkpService = {
   doUserPasswordAuth: async (
@@ -249,9 +257,11 @@ export const openDkpService = {
         //   Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
         // };
         await openDkpService.addAdjustment({
-          player: adj.player,
-          reason: adj.reason,
-          value: adj.value,
+          Character: { Name: adj.player },
+          Description: adj.reason,
+          Name: adj.reason,
+          Value: adj.value,
+          Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
         });
       });
     });
@@ -292,36 +302,32 @@ export const openDkpService = {
         });
     }
   },
-  addAdjustment: async (adjustment: {
-    player: string;
-    value: number;
-    reason: string;
-  }) => {
-    const odkpAdjustment = {
-      Character: {
-        Name: adjustment.player,
-      },
-      Description: adjustment.reason,
-      Name: adjustment.reason,
-      Value: adjustment.value,
-      Timestamp: moment.utc().toISOString(),
-    };
-    const config = {
+  addAdjustment: async (adjustment: ODKPAdjustment) => {
+    const addAdjustment = {
       method: "put",
       url: "https://api.opendkp.com/clients/castle/adjustments",
       headers: {
         Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
       },
-      data: JSON.stringify(odkpAdjustment),
+      data: JSON.stringify(adjustment),
     };
 
-    axios(config)
-      .then(function (response) {
-        console.log(JSON.stringify(response.data));
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    try {
+      const resp = await axios(addAdjustment);
+      console.log(JSON.stringify(resp.data));
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    } catch (err: unknown) {
+      try {
+        console.log("Failed, waiting 10s and trying again");
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+        const resp = await axios(addAdjustment);
+        console.log(JSON.stringify(resp.data));
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      } catch (err: unknown) {
+        console.log(err);
+        throw err;
+      }
+    }
   },
   addPlayer: async (
     name: string,
@@ -339,52 +345,244 @@ export const openDkpService = {
       Race: race,
       Gender: gender,
     } as ODKPCharacterImportData;
-    // const config = {
-    //   method: "put",
-    //   url: "https://api.opendkp.com/clients/castle/characters",
-    //   headers: {
-    //     Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
-    //   },
-    //   data: JSON.stringify(odkpCharacter),
-    // };
+    const putCharacter = {
+      method: "put",
+      url: "https://api.opendkp.com/clients/castle/characters",
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+      data: JSON.stringify(odkpCharacter),
+    };
     console.log(odkpCharacter);
 
-    // axios(config)
-    //   .then(function (response) {
-    //     console.log(JSON.stringify(response.data));
-    //   })
-    //   .catch(function (error) {
-    //     console.log(error);
-    //   });
+    try {
+      const resp = await axios(putCharacter);
+      console.log(JSON.stringify(resp.data));
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    } catch (err: unknown) {
+      console.log(err);
+    }
   },
-  importData: async (file: string) => {
-    await processTsvFileWithHeaders(file, async (row: RowObject) => {
-      if (file.includes("players.csv")) {
-        await openDkpService.handleCharacterImportRow(row);
+  searchItem: async (itemName: string): Promise<ODKPItemResponse> => {
+    const cleanItemName = decodeHtmlEntities(itemName);
+    const getItem = {
+      method: "get",
+      url: "https://api.opendkp.com/items/autocomplete",
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+      params: {
+        item: cleanItemName,
+        game: 0,
+      },
+    } as AxiosRequestConfig;
+
+    try {
+      // if (itemCache.has(cleanItemName)) {
+      //   return itemCache.get(cleanItemName) as ODKPItemResponse;
+      // }
+      const resp = await axios(getItem);
+      const itemResp = resp.data as ODKPItemResponse[];
+      if (itemResp.length > 0) {
+        //itemCache.set(itemResp[0].ItemName, itemResp[0]);
+        console.log(JSON.stringify(itemResp));
+        return itemResp[0];
+      } else {
+        throw new Error("No item found");
       }
-    });
+    } catch (err: unknown) {
+      console.log(err);
+      throw err;
+    }
   },
+  addRaid: async (raid: ODKPRaidData) => {
+    console.log(raid);
+
+    const putRaid = {
+      method: "put",
+      url: "https://api.opendkp.com/clients/castle/raids",
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+      data: JSON.stringify(raid),
+    };
+
+    try {
+      const resp = await axios(putRaid);
+      console.log(JSON.stringify(resp.data));
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    } catch (err: unknown) {
+      console.log(err);
+      throw err;
+    }
+  },
+  importData: async () => {
+    if (fs.existsSync("./players.csv")) {
+      const charMap: Map<string, ODKPCharacterData> = new Map();
+      const getCharacters = {
+        method: "get",
+        url: "https://api.opendkp.com/clients/castle/characters",
+        headers: {
+          Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+        },
+        params: {
+          IncludeInactives: true,
+        },
+      } as AxiosRequestConfig;
+      try {
+        const resp = await axios(getCharacters);
+        console.log(resp.data);
+        (resp.data as ODKPCharacterData[]).forEach((char) =>
+          charMap.set(char.Name, char)
+        );
+        await processTsvFileWithHeaders(
+          "./players.csv",
+          async (row: RowObject) => {
+            if (fs.existsSync("./players.csv")) {
+              if (!charMap.has(row.member_name)) {
+                await openDkpService.handleCharacterImportRow(row);
+              }
+            }
+          },
+          ["profiledata"]
+        );
+      } catch (err: unknown) {
+        console.log(err);
+      }
+    }
+    if (fs.existsSync("./adjustments.csv")) {
+      const adjustments: RowObject[] = [];
+      await processTsvFileWithHeaders(
+        "./adjustments.csv",
+        async (row: RowObject) => {
+          if (row.member_name) {
+            adjustments.push(row);
+          }
+        }
+      );
+
+      for (const adjustment of adjustments) {
+        const odkpAdjustmentPayload: ODKPAdjustment = {
+          Character: { Name: adjustment.member_name },
+          Description: adjustment.adjustment_reason || "N/A",
+          Name: adjustment.adjustment_reason || "N/A",
+          Timestamp: new Date(
+            Number.parseInt(adjustment.adjustment_date) * 1000
+          ).toISOString(),
+          Value: Number.parseInt(adjustment.adjustment_value) || 0,
+        };
+
+        await openDkpService.addAdjustment(odkpAdjustmentPayload);
+      }
+    }
+    if (
+      fs.existsSync("./raids.csv") &&
+      fs.existsSync("./items.csv") &&
+      fs.existsSync("./attendees.csv")
+    ) {
+      const raids: Map<string, RowObject> = new Map();
+      const items: RowObject[] = [];
+      const attendees: RowObject[] = [];
+
+      await processTsvFileWithHeaders("./raids.csv", async (row: RowObject) => {
+        if (row.raid_id) {
+          raids.set(row.raid_id, row);
+        }
+      });
+
+      await processTsvFileWithHeaders("./items.csv", async (row: RowObject) => {
+        items.push(row);
+      });
+
+      await processTsvFileWithHeaders(
+        "./attendees.csv",
+        async (row: RowObject) => {
+          attendees.push(row);
+        }
+      );
+
+      for (const raid of raids.values()) {
+        const raidItems: ODKPRaidItem[] = await Promise.all(
+          items
+            .filter((i) => i.raid_id === raid.raid_id)
+            .map(async (i) => {
+              let item: ODKPItemResponse | undefined;
+              try {
+                item = await openDkpService.searchItem(i.item_name);
+              } catch (err: unknown) {
+                item = { ItemName: i.item_name, GameItemId: -1, ItemID: -1 };
+              }
+
+              return {
+                CharacterName: i.member_name,
+                Dkp: Number.parseInt(i.item_value),
+                GameItemId: item.GameItemId,
+                ItemId: item.ItemID,
+                ItemName: item.ItemName,
+                Notes: raid.raid_note,
+              } as ODKPRaidItem;
+            })
+        );
+        const raidCharacters = attendees
+          .filter((a) => a.raid_id === raid.raid_id)
+          .map((a) => {
+            return {
+              Name: a.member_name,
+            };
+          }) as ODKPRaidTickCharacter[];
+        const raidTicks: ODKPRaidTick[] = [];
+        if (
+          raidCharacters.length > 0 &&
+          raidCharacters[0].Name !== "Clockwork Steward"
+        ) {
+          raidTicks.push({
+            Description: raid.raid_note,
+            Value: Number.parseInt(raid.raid_value),
+            Characters: raidCharacters,
+          });
+        }
+        const raidPayload: ODKPRaidData = {
+          Attendance: raidCharacters.length > 0 ? 1 : 0,
+          Items: raidItems,
+          Name: raid.raid_note,
+          Pool: {
+            Description: "Scars of Velious",
+            Name: "SoV",
+            PoolId: 4,
+          },
+          Ticks: raidTicks,
+          Timestamp: new Date(
+            Number.parseInt(raid.raid_date) * 1000
+          ).toISOString(),
+        };
+
+        await openDkpService.addRaid(raidPayload);
+      }
+    }
+  },
+
   handleCharacterImportRow: async (row: RowObject) => {
-    if (isNaN(Number.parseInt(row["member_id"]))) return;
-    const unescaped = row["profiledata"]
-      .replace(/""/g, '"')
-      .replace(/^"|"$/g, "");
-    const characterDetails: {
-      race: string;
-      class: string;
-      guild: string;
-      gender: string;
-      level: string;
-    } = JSON.parse(unescaped);
-    //const status = row["member_status"] === "FALSE" ? 0 : 1;
-    // everyone is active for now? eqdkp data seems wrong
-    await openDkpService.addPlayer(
-      row["member_name"],
-      convertClass(characterDetails.class),
-      convertRace(characterDetails.race),
-      Number.parseInt(characterDetails.level),
-      toSentenceCase(characterDetails.gender),
-      1
-    );
+    if (isNaN(Number.parseInt(row.member_id)) || !row.profiledata) return;
+    try {
+      console.log(row.member_name);
+      console.log(row.profiledata);
+      const profiledata = row.profiledata as unknown as {
+        race: string;
+        class: string;
+        guild: string;
+        gender: string;
+        level: string;
+      };
+      await openDkpService.addPlayer(
+        row["member_name"],
+        convertClass(profiledata.class),
+        convertRace(profiledata.race),
+        Number.parseInt(profiledata.level) || 1,
+        toSentenceCase(profiledata.gender) || "Unknown",
+        1
+      );
+    } catch (error: unknown) {
+      console.log(error);
+    }
   },
 };

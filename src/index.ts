@@ -109,9 +109,8 @@ if (openDkpUsername && openDkpPassword && openDkpAuthClientId) {
     .doUserPasswordAuth(openDkpUsername, openDkpPassword, openDkpAuthClientId)
     .then(async () => {
       console.log("Authenticated with OpenDKP");
-      if (existsSync("./players.csv")) {
-        await openDkpService.importData("./players.csv");
-      }
+
+      await openDkpService.importData();
     })
     .catch((reason) => {
       console.log("Failed to authenticate with OpenDKP: " + reason);
