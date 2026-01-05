@@ -138,7 +138,7 @@ export const openDkpService = {
     try {
       const response = await axios(config);
       accessTokens = response.data?.AuthenticationResult;
-      openDkpService.loadCharacters();
+      await openDkpService.loadCharacters();
     } catch (error) {
       console.log(JSON.stringify(error, null, 2));
     }
@@ -249,13 +249,6 @@ export const openDkpService = {
   doTickAdjustments: async (ticks: RaidTick[]) => {
     ticks.forEach((tick) => {
       tick.data.adjustments?.forEach(async (adj) => {
-        // const adjustment: ODKPAdjustment = {
-        //   Character: { Name: adj.player },
-        //   Name: adj.reason,
-        //   Description: tick.name,
-        //   Value: adj.value,
-        //   Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
-        // };
         await openDkpService.addAdjustment({
           Character: { Name: adj.player },
           Description: adj.reason,
@@ -303,30 +296,21 @@ export const openDkpService = {
     }
   },
   addAdjustment: async (adjustment: ODKPAdjustment) => {
-    const addAdjustment = {
-      method: "put",
-      url: "https://api.opendkp.com/clients/castle/adjustments",
-      headers: {
-        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
-      },
-      data: JSON.stringify(adjustment),
-    };
-
     try {
+      console.log(`OpenDKP - adding adjustment: ${JSON.stringify(adjustment)}`);
+      const addAdjustment = {
+        method: "put",
+        url: "https://api.opendkp.com/clients/castle/adjustments",
+        headers: {
+          Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+        },
+        data: JSON.stringify(adjustment),
+      };
       const resp = await axios(addAdjustment);
-      console.log(JSON.stringify(resp.data));
       await new Promise((resolve) => setTimeout(resolve, 100));
+      console.log(`OpenDKP - added adjustment: ${JSON.stringify(resp.data)}`);
     } catch (err: unknown) {
-      try {
-        console.log("Failed, waiting 10s and trying again");
-        await new Promise((resolve) => setTimeout(resolve, 10000));
-        const resp = await axios(addAdjustment);
-        console.log(JSON.stringify(resp.data));
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      } catch (err: unknown) {
-        console.log(err);
-        throw err;
-      }
+      console.log(`OpenDKP - failed to add adjustment: ${err})}`);
     }
   },
   addPlayer: async (
@@ -396,24 +380,23 @@ export const openDkpService = {
     }
   },
   addRaid: async (raid: ODKPRaidData) => {
-    console.log(raid);
-
-    const putRaid = {
-      method: "put",
-      url: "https://api.opendkp.com/clients/castle/raids",
-      headers: {
-        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
-      },
-      data: JSON.stringify(raid),
-    };
-
     try {
+      console.log(`OpenDKP - adding raid: ${JSON.stringify(raid)}`);
+
+      const putRaid = {
+        method: "put",
+        url: "https://api.opendkp.com/clients/castle/raids",
+        headers: {
+          Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+        },
+        data: JSON.stringify(raid),
+      };
+
       const resp = await axios(putRaid);
-      console.log(JSON.stringify(resp.data));
       await new Promise((resolve) => setTimeout(resolve, 250));
+      console.log(`OpenDKP - added raid: ${JSON.stringify(resp.data)}`);
     } catch (err: unknown) {
-      console.log(err);
-      throw err;
+      console.log(`OpenDKP - failed to add raid: ${err}`);
     }
   },
   importData: async () => {
