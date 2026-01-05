@@ -9,6 +9,7 @@ export class AddAdjustmentBonus extends RaidBonusRequest {
   protected async execute(raidId: number) {
     const adjustment = await this.validateArgs();
     const now = moment().format(UPLOAD_DATE_FORMAT);
+    await castledkp.addAdjustment(raidId, adjustment);
     await openDkpService.addAdjustment({
       Character: { Name: adjustment.player },
       Description: adjustment.reason,
@@ -16,7 +17,6 @@ export class AddAdjustmentBonus extends RaidBonusRequest {
       Value: adjustment.value,
       Timestamp: now,
     });
-    await castledkp.addAdjustment(raidId, adjustment);
   }
 
   protected async validateArgs() {
