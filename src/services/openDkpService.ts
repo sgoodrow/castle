@@ -241,23 +241,7 @@ export const openDkpService = {
       Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
     } as ODKPRaidData;
 
-    const config = {
-      method: "put",
-      url: "https://api.opendkp.com/clients/castle/raids",
-      headers: {
-        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
-      },
-      data: JSON.stringify(raidTick),
-    };
-
-    axios(config)
-      .then(function (response) {
-        console.log(JSON.stringify(response.data));
-        openDkpService.doTickAdjustments(ticks);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    await openDkpService.addRaid(raidTick);
   },
   doTickAdjustments: async (ticks: RaidTick[]) => {
     ticks.forEach((tick) => {
@@ -293,9 +277,10 @@ export const openDkpService = {
       };
       const config = {
         method: "put",
-        url: `https://api.opendkp.com/clients/castle/raids/70551/items`,
+        url: `https://api.opendkp.com/clients/castle/raids/89646/items`,
         headers: {
           Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+          "Content-Type": "application/json",
         },
         data: JSON.stringify(item),
       };
@@ -324,6 +309,7 @@ export const openDkpService = {
       console.log(`OpenDKP - added adjustment: ${JSON.stringify(resp.data)}`);
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add adjustment: ${err})}`);
+      console.log(err);
     }
   },
   addPlayer: async (
@@ -396,11 +382,12 @@ export const openDkpService = {
     try {
       console.log(`OpenDKP - adding raid: ${JSON.stringify(raid)}`);
 
-      const putRaid = {
+      const putRaid: AxiosRequestConfig = {
         method: "put",
         url: "https://api.opendkp.com/clients/castle/raids",
         headers: {
           Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+          "Content-Type": "application/json",
         },
         data: JSON.stringify(raid),
       };
@@ -410,6 +397,7 @@ export const openDkpService = {
       console.log(`OpenDKP - added raid: ${JSON.stringify(resp.data)}`);
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add raid: ${err}`);
+      console.log(err);
     }
   },
   updateRaid: async (raidId: string, payload: ODKPUpdateRaidData) => {
@@ -421,6 +409,7 @@ export const openDkpService = {
         url: `https://api.opendkp.com/clients/castle/raids/${raidId}`,
         headers: {
           Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+          "Content-Type": "application/json",
         },
         data: JSON.stringify(payload),
       };
