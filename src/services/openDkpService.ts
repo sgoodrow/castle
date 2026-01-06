@@ -13,6 +13,7 @@ import {
 } from "../shared/util";
 import fs from "fs";
 import { env } from "process";
+import { openDkpUsername, openDkpPassword, openDkpAuthClientId } from "../config";
 
 // Client for OpenDKP
 
@@ -125,6 +126,23 @@ let accessTokens: IAccessTokenResult;
 //const itemCache: Map<string, ODKPItemResponse> = new Map();
 
 export const openDkpService = {
+  authenticate: async () => {
+    if (openDkpUsername && openDkpPassword && openDkpAuthClientId) {
+      openDkpService
+        .doUserPasswordAuth(
+          openDkpUsername,
+          openDkpPassword,
+          openDkpAuthClientId
+        )
+        .then(async () => {
+          console.log("Authenticated with OpenDKP");
+          await openDkpService.importData();
+        })
+        .catch((reason) => {
+          console.log("Failed to authenticate with OpenDKP: " + reason);
+        });
+    }
+  },
   doUserPasswordAuth: async (
     username: string,
     password: string,
@@ -307,6 +325,7 @@ export const openDkpService = {
       const resp = await axios(addAdjustment);
       await new Promise((resolve) => setTimeout(resolve, 100));
       console.log(`OpenDKP - added adjustment: ${JSON.stringify(resp.data)}`);
+      console.log(resp);
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add adjustment: ${err})}`);
       console.log(err);
