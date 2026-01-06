@@ -12,6 +12,7 @@ import {
   toSentenceCase,
 } from "../shared/util";
 import fs from "fs";
+import { env } from "process";
 
 // Client for OpenDKP
 
@@ -59,6 +60,18 @@ export interface ODKPRaidData {
   Pool: ODKPRaidPool;
   Ticks: ODKPRaidTick[];
   Timestamp: string;
+}
+
+export interface ODKPUpdateRaidData {
+  ClientId: string;
+  RaidId: string;
+  Attendance: number;
+  Items: ODKPRaidItem[];
+  Name: string;
+  Pool: ODKPRaidPool;
+  Ticks: ODKPRaidTick[];
+  Timestamp: string;
+  Version: number;
 }
 
 export interface ODKPItemResponse {
@@ -399,6 +412,27 @@ export const openDkpService = {
       console.log(`OpenDKP - failed to add raid: ${err}`);
     }
   },
+  updateRaid: async (raidId: string, payload: ODKPUpdateRaidData) => {
+    try {
+      console.log(`OpenDKP - updating raid: ${JSON.stringify(raidId)}`);
+
+      const postRaid = {
+        method: "post",
+        url: `https://api.opendkp.com/clients/castle/raids/${raidId}`,
+        headers: {
+          Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+        },
+        data: JSON.stringify(payload),
+      };
+
+      const resp = await axios(postRaid);
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      console.log(`OpenDKP - updated raid: ${JSON.stringify(resp.data)}`);
+    } catch (err: unknown) {
+      console.log(`OpenDKP - failed to update raid: ${err}`);
+      throw err;
+    }
+  },
   importData: async () => {
     if (fs.existsSync("./players.csv")) {
       const charMap: Map<string, ODKPCharacterData> = new Map();
@@ -446,13 +480,13 @@ export const openDkpService = {
 
       for (const adjustment of adjustments) {
         const odkpAdjustmentPayload: ODKPAdjustment = {
-          Character: { Name: adjustment.member_name },
+          Character: { Name: adjustment.member_name.split(" ")[0] },
           Description: adjustment.adjustment_reason || "N/A",
           Name: adjustment.adjustment_reason || "N/A",
           Timestamp: new Date(
             Number.parseInt(adjustment.adjustment_date) * 1000
           ).toISOString(),
-          Value: Number.parseInt(adjustment.adjustment_value) || 0,
+          Value: Number.parseFloat(adjustment.adjustment_value) || 0,
         };
 
         await openDkpService.addAdjustment(odkpAdjustmentPayload);
@@ -485,6 +519,7 @@ export const openDkpService = {
       );
 
       for (const raid of raids.values()) {
+        const raidValue = Number.parseFloat(raid.raid_value);
         const raidItems: ODKPRaidItem[] = await Promise.all(
           items
             .filter((i) => i.raid_id === raid.raid_id)
@@ -497,8 +532,8 @@ export const openDkpService = {
               }
 
               return {
-                CharacterName: i.member_name,
-                Dkp: Number.parseInt(i.item_value),
+                CharacterName: i.member_name.split(" ")[0],
+                Dkp: Number.parseFloat(i.item_value),
                 GameItemId: item.GameItemId,
                 ItemId: item.ItemID,
                 ItemName: item.ItemName,
@@ -510,7 +545,7 @@ export const openDkpService = {
           .filter((a) => a.raid_id === raid.raid_id)
           .map((a) => {
             return {
-              Name: a.member_name,
+              Name: a.member_name.split(" ")[0],
             };
           }) as ODKPRaidTickCharacter[];
         const raidTicks: ODKPRaidTick[] = [];
@@ -520,26 +555,65 @@ export const openDkpService = {
         ) {
           raidTicks.push({
             Description: raid.raid_note,
-            Value: Number.parseInt(raid.raid_value),
+            Value: raidValue,
             Characters: raidCharacters,
           });
         }
-        const raidPayload: ODKPRaidData = {
-          Attendance: raidCharacters.length > 0 ? 1 : 0,
-          Items: raidItems,
-          Name: raid.raid_note,
-          Pool: {
-            Description: "Scars of Velious",
-            Name: "SoV",
-            PoolId: 4,
-          },
-          Ticks: raidTicks,
-          Timestamp: new Date(
-            Number.parseInt(raid.raid_date) * 1000
-          ).toISOString(),
-        };
+        const isUpdate = fs.existsSync("./raids.json");
+        if (isUpdate) {
+          const jsonRaids = fs.readFileSync("./raids.json", {
+            encoding: "utf-8",
+          });
 
-        await openDkpService.addRaid(raidPayload);
+          const raidObj = Object.fromEntries(
+            JSON.parse(jsonRaids).map((r: { RaidId: string; Name: string }) => [
+              r.Name,
+              r,
+            ])
+          );
+          if (!raidObj[raid.raid_note]) {
+            throw new Error("Raid doesn't exist in export");
+          }
+          const raidUpdatePayload: ODKPUpdateRaidData = {
+            Attendance: raidCharacters.length > 0 ? 1 : 0,
+            ClientId: env.openDkpSiteClientId || "",
+            RaidId: raidObj[raid.raid_note]?.RaidId || "0",
+            Items: raidItems,
+            Name: raid.raid_note,
+            Pool: {
+              Description: "Scars of Velious",
+              Name: "SoV",
+              PoolId: 4,
+            },
+            Ticks: raidTicks,
+            Timestamp: new Date(
+              Number.parseInt(raid.raid_date) * 1000
+            ).toISOString(),
+            Version: Number.parseInt(raid.version),
+          };
+
+          await openDkpService.updateRaid(
+            raidUpdatePayload.RaidId,
+            raidUpdatePayload
+          );
+        } else {
+          const raidPayload: ODKPRaidData = {
+            Attendance: raidCharacters.length > 0 ? 1 : 0,
+            Items: raidItems,
+            Name: raid.raid_note,
+            Pool: {
+              Description: "Scars of Velious",
+              Name: "SoV",
+              PoolId: 4,
+            },
+            Ticks: raidTicks,
+            Timestamp: new Date(
+              Number.parseInt(raid.raid_date) * 1000
+            ).toISOString(),
+          };
+
+          await openDkpService.addRaid(raidPayload);
+        }
       }
     }
   },
