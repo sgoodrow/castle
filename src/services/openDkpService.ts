@@ -365,6 +365,7 @@ export const openDkpService = {
     try {
       const resp = await axios(putCharacter);
       console.log(JSON.stringify(resp.data));
+      openDkpService.logIfVerbose(resp);
       await new Promise((resolve) => setTimeout(resolve, 250));
     } catch (err: unknown) {
       console.log(err);
@@ -419,6 +420,7 @@ export const openDkpService = {
       const resp = await axios(putRaid);
       await new Promise((resolve) => setTimeout(resolve, 250));
       console.log(`OpenDKP - added raid: ${JSON.stringify(resp.data)}`);
+      openDkpService.logIfVerbose(resp);
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add raid: ${err}`);
       console.log(err);
@@ -441,6 +443,7 @@ export const openDkpService = {
       const resp = await axios(postRaid);
       await new Promise((resolve) => setTimeout(resolve, 250));
       console.log(`OpenDKP - updated raid: ${JSON.stringify(resp.data)}`);
+      openDkpService.logIfVerbose(resp);
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to update raid: ${err}`);
       throw err;
