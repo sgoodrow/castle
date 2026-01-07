@@ -4,6 +4,7 @@ import moment from "moment";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../shared/time";
 import {
+  capitalize,
   convertClass,
   convertRace,
   decodeHtmlEntities,
@@ -13,7 +14,11 @@ import {
 } from "../shared/util";
 import fs from "fs";
 import { env } from "process";
-import { openDkpUsername, openDkpPassword, openDkpAuthClientId } from "../config";
+import {
+  openDkpUsername,
+  openDkpPassword,
+  openDkpAuthClientId,
+} from "../config";
 
 // Client for OpenDKP
 
@@ -170,6 +175,7 @@ export const openDkpService = {
       const response = await axios(config);
       accessTokens = response.data?.AuthenticationResult;
       await openDkpService.loadCharacters();
+      openDkpService.logIfVerbose(response);
     } catch (error) {
       console.log(JSON.stringify(error, null, 2));
     }
@@ -266,7 +272,7 @@ export const openDkpService = {
       tick.data.adjustments?.forEach(async (adj) => {
         await openDkpService.addAdjustment({
           Character: { Name: adj.player },
-          Description: adj.reason,
+          Description: tick.note,
           Name: adj.reason,
           Value: adj.value,
           Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
@@ -325,7 +331,7 @@ export const openDkpService = {
       const resp = await axios(addAdjustment);
       await new Promise((resolve) => setTimeout(resolve, 100));
       console.log(`OpenDKP - added adjustment: ${JSON.stringify(resp.data)}`);
-      console.log(resp);
+      openDkpService.logIfVerbose(resp);
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add adjustment: ${err})}`);
       console.log(err);
@@ -360,6 +366,7 @@ export const openDkpService = {
     try {
       const resp = await axios(putCharacter);
       console.log(JSON.stringify(resp.data));
+      openDkpService.logIfVerbose(resp);
       await new Promise((resolve) => setTimeout(resolve, 250));
     } catch (err: unknown) {
       console.log(err);
@@ -414,6 +421,7 @@ export const openDkpService = {
       const resp = await axios(putRaid);
       await new Promise((resolve) => setTimeout(resolve, 250));
       console.log(`OpenDKP - added raid: ${JSON.stringify(resp.data)}`);
+      openDkpService.logIfVerbose(resp);
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add raid: ${err}`);
       console.log(err);
@@ -436,6 +444,7 @@ export const openDkpService = {
       const resp = await axios(postRaid);
       await new Promise((resolve) => setTimeout(resolve, 250));
       console.log(`OpenDKP - updated raid: ${JSON.stringify(resp.data)}`);
+      openDkpService.logIfVerbose(resp);
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to update raid: ${err}`);
       throw err;
@@ -443,30 +452,14 @@ export const openDkpService = {
   },
   importData: async () => {
     if (fs.existsSync("./players.csv")) {
-      const charMap: Map<string, ODKPCharacterData> = new Map();
-      const getCharacters = {
-        method: "get",
-        url: "https://api.opendkp.com/clients/castle/characters",
-        headers: {
-          Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
-        },
-        params: {
-          IncludeInactives: true,
-        },
-      } as AxiosRequestConfig;
       try {
-        const resp = await axios(getCharacters);
-        console.log(resp.data);
-        (resp.data as ODKPCharacterData[]).forEach((char) =>
-          charMap.set(char.Name, char)
-        );
         await processTsvFileWithHeaders(
           "./players.csv",
           async (row: RowObject) => {
-            if (fs.existsSync("./players.csv")) {
-              if (!charMap.has(row.member_name)) {
-                await openDkpService.handleCharacterImportRow(row);
-              }
+            if (
+              !characterCache.has(capitalize(row.member_name.split(" ")[0]))
+            ) {
+              await openDkpService.handleCharacterImportRow(row);
             }
           },
           ["profiledata"]
@@ -639,7 +632,7 @@ export const openDkpService = {
         level: string;
       };
       await openDkpService.addPlayer(
-        row["member_name"],
+        row["member_name"].split(" ")[0],
         convertClass(profiledata.class),
         convertRace(profiledata.race),
         Number.parseInt(profiledata.level) || 1,
@@ -648,6 +641,11 @@ export const openDkpService = {
       );
     } catch (error: unknown) {
       console.log(error);
+    }
+  },
+  logIfVerbose(log: unknown) {
+    if (env.openDkpVerboseLogging === "1") {
+      console.log(log);
     }
   },
 };
