@@ -123,6 +123,11 @@ export const {
    */
   openDkpAuthClientId?: string;
 
+  /*
+   * castle.opendkp.com verbose logging mode
+   */
+  openDkpVerboseLogging?: boolean;
+
   /**
    * CastleDKP.com Raid ID for DKP auctions.
    */
