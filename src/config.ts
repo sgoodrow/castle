@@ -17,6 +17,7 @@ export const {
   openDkpDomain,
   openDkpSiteClientId,
   openDkpAuthClientId,
+  openDkpVerboseLogging,
   sharedCharactersGoogleSheetId,
   publicCharactersGoogleSheetId,
   commandSuffix,
@@ -126,7 +127,7 @@ export const {
   /*
    * castle.opendkp.com verbose logging mode
    */
-  openDkpVerboseLogging?: boolean;
+  openDkpVerboseLogging?: string;
 
   /**
    * CastleDKP.com Raid ID for DKP auctions.

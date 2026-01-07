@@ -175,6 +175,7 @@ export const openDkpService = {
       const response = await axios(config);
       accessTokens = response.data?.AuthenticationResult;
       await openDkpService.loadCharacters();
+      openDkpService.logIfVerbose(response);
     } catch (error) {
       console.log(JSON.stringify(error, null, 2));
     }
@@ -643,7 +644,7 @@ export const openDkpService = {
     }
   },
   logIfVerbose(log: unknown) {
-    if (env.openDkpVerboseLogging) {
+    if (env.openDkpVerboseLogging === "1") {
       console.log(log);
     }
   },
