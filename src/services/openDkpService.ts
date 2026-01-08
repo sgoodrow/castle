@@ -266,19 +266,22 @@ export const openDkpService = {
     } as ODKPRaidData;
 
     await openDkpService.addRaid(raidTick);
+    await openDkpService.doTickAdjustments(ticks);
   },
   doTickAdjustments: async (ticks: RaidTick[]) => {
-    ticks.forEach((tick) => {
-      tick.data.adjustments?.forEach(async (adj) => {
-        await openDkpService.addAdjustment({
-          Character: { Name: adj.player },
-          Description: tick.note,
-          Name: adj.reason,
-          Value: adj.value,
-          Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
-        });
-      });
-    });
+    for (const tick of ticks) {
+      if (tick.data.adjustments) {
+        for (const adj of tick.data.adjustments) {
+          await openDkpService.addAdjustment({
+            Character: { Name: adj.player },
+            Description: tick.note,
+            Name: adj.reason,
+            Value: adj.value,
+            Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
+          });
+        }
+      }
+    }
   },
   addItem: async (
     buyer: string,
