@@ -17,6 +17,8 @@ export const {
   openDkpDomain,
   openDkpSiteClientId,
   openDkpAuthClientId,
+  openDkpClientName,
+  openDkpAuctionRaidId,
   openDkpVerboseLogging,
   sharedCharactersGoogleSheetId,
   publicCharactersGoogleSheetId,
@@ -102,30 +104,40 @@ export const {
    */
   castleDkp2TokenRW?: string;
   /*
-   * castle.opendkp.com username
+   * opendkp.com username
    */
   openDkpUsername?: string;
   /*
-   * castle.opendkp.com password
+   * opendkp.com password
    */
   openDkpPassword?: string;
   /*
-   * castle.opendkp.com subdomain
+   * opendkp.com subdomain
    */
   openDkpDomain?: string;
 
   /*
-   * castle.opendkp.com site client id
+   * opendkp.com site client id
    */
   openDkpSiteClientId?: string;
 
   /*
-   * castle.opendkp.com auth client id
+   * opendkp.com auth client id
    */
   openDkpAuthClientId?: string;
 
   /*
-   * castle.opendkp.com verbose logging mode
+   * opendkp.com client name (subdomain)
+   */
+  openDkpClientName?: string;
+
+  /*
+   * opendkp.com auction raid id
+   */
+  openDkpAuctionRaidId?: string;
+
+  /*
+   * opendkp.com verbose logging mode
    */
   openDkpVerboseLogging?: string;
 

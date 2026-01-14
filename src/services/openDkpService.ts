@@ -18,6 +18,8 @@ import {
   openDkpUsername,
   openDkpPassword,
   openDkpAuthClientId,
+  openDkpClientName,
+  openDkpAuctionRaidId,
 } from "../config";
 
 // Client for OpenDKP
@@ -66,6 +68,9 @@ export interface ODKPRaidData {
   Pool: ODKPRaidPool;
   Ticks: ODKPRaidTick[];
   Timestamp: string;
+  Version?: number;
+  ClientId?: string;
+  RaidId?: number;
 }
 
 export interface ODKPUpdateRaidData {
@@ -83,6 +88,12 @@ export interface ODKPUpdateRaidData {
 export interface ODKPItemResponse {
   ItemID: number;
   ItemName: string;
+  GameItemId: number;
+}
+
+export interface ODKPItemDbItem {
+  ItemId: number;
+  Name: string;
   GameItemId: number;
 }
 
@@ -127,8 +138,6 @@ const characterCache = new LRUCache<string, ODKPCharacterData>({
 });
 
 let accessTokens: IAccessTokenResult;
-
-//const itemCache: Map<string, ODKPItemResponse> = new Map();
 
 export const openDkpService = {
   authenticate: async () => {
@@ -183,7 +192,7 @@ export const openDkpService = {
   loadCharacters: async (): Promise<void> => {
     const config = {
       method: "get",
-      url: `https://api.opendkp.com/clients/castle/characters?IncludeInactives=true`,
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/characters?IncludeInactives=true`,
       headers: {
         Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
       },
@@ -216,11 +225,11 @@ export const openDkpService = {
       return response.data[0] || undefined;
     } catch (error) {
       console.log(error);
+      throw error;
     }
-    return { GameItemId: -1, ItemID: -1, ItemName: "" };
   },
 
-  createRaid: async (ticks: RaidTick[]) => {
+  createRaidFromTicks: async (ticks: RaidTick[]) => {
     const items = await Promise.all(
       ticks.flatMap((tick) =>
         tick.data.loot.map(async (item) => {
@@ -252,7 +261,7 @@ export const openDkpService = {
       } as ODKPRaidTick;
     });
 
-    const raidTick = {
+    const raidData = {
       Attendance: 1,
       Items: items,
       Pool: {
@@ -265,7 +274,7 @@ export const openDkpService = {
       Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
     } as ODKPRaidData;
 
-    await openDkpService.addRaid(raidTick);
+    await openDkpService.addRaid(raidData);
   },
   doTickAdjustments: async (ticks: RaidTick[]) => {
     ticks.forEach((tick) => {
@@ -301,7 +310,7 @@ export const openDkpService = {
       };
       const config = {
         method: "put",
-        url: `https://api.opendkp.com/clients/castle/raids/89646/items`,
+        url: `https://api.opendkp.com/clients/${openDkpClientName}/raids/${openDkpAuctionRaidId}/items`,
         headers: {
           Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
           "Content-Type": "application/json",
@@ -322,7 +331,7 @@ export const openDkpService = {
       console.log(`OpenDKP - adding adjustment: ${JSON.stringify(adjustment)}`);
       const addAdjustment = {
         method: "put",
-        url: "https://api.opendkp.com/clients/castle/adjustments",
+        url: `https://api.opendkp.com/clients/${openDkpClientName}/adjustments`,
         headers: {
           Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
         },
@@ -334,6 +343,25 @@ export const openDkpService = {
       openDkpService.logIfVerbose(resp);
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add adjustment: ${err})}`);
+      console.log(err);
+    }
+  },
+  delAdjustment: async (id: string) => {
+    try {
+      console.log(`OpenDKP - deleting adjustment: ${id}`);
+      const delAdjustment = {
+        method: "delete",
+        url: `https://api.opendkp.com/clients/${openDkpClientName}/adjustments/${id}`,
+        headers: {
+          Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+        },
+      };
+      const resp = await axios(delAdjustment);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      console.log(`OpenDKP - deleted adjustment: ${JSON.stringify(resp.data)}`);
+      openDkpService.logIfVerbose(resp);
+    } catch (err: unknown) {
+      console.log(`OpenDKP - failed to delete adjustment: ${err})}`);
       console.log(err);
     }
   },
@@ -355,7 +383,7 @@ export const openDkpService = {
     } as ODKPCharacterImportData;
     const putCharacter = {
       method: "put",
-      url: "https://api.opendkp.com/clients/castle/characters",
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/characters`,
       headers: {
         Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
       },
@@ -365,6 +393,25 @@ export const openDkpService = {
 
     try {
       const resp = await axios(putCharacter);
+      console.log(JSON.stringify(resp.data));
+      openDkpService.logIfVerbose(resp);
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    } catch (err: unknown) {
+      console.log(err);
+    }
+  },
+  updatePlayer: async (character: ODKPCharacterData) => {
+    const updateCharacter = {
+      method: "post",
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/characters/${character.CharacterId}`,
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+      data: JSON.stringify(character),
+    };
+
+    try {
+      const resp = await axios(updateCharacter);
       console.log(JSON.stringify(resp.data));
       openDkpService.logIfVerbose(resp);
       await new Promise((resolve) => setTimeout(resolve, 250));
@@ -387,18 +434,33 @@ export const openDkpService = {
     } as AxiosRequestConfig;
 
     try {
-      // if (itemCache.has(cleanItemName)) {
-      //   return itemCache.get(cleanItemName) as ODKPItemResponse;
-      // }
       const resp = await axios(getItem);
       const itemResp = resp.data as ODKPItemResponse[];
       if (itemResp.length > 0) {
-        //itemCache.set(itemResp[0].ItemName, itemResp[0]);
         console.log(JSON.stringify(itemResp));
         return itemResp[0];
       } else {
         throw new Error("No item found");
       }
+    } catch (err: unknown) {
+      console.log(err);
+      throw err;
+    }
+  },
+  getRaid: async (raidId: number): Promise<ODKPRaidData> => {
+    const getRaid = {
+      method: "get",
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/raids/${raidId}`,
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+    } as AxiosRequestConfig;
+
+    try {
+      const resp = await axios(getRaid);
+      const raidResp = resp.data as ODKPRaidData;
+      console.log(JSON.stringify(raidResp));
+      return raidResp;
     } catch (err: unknown) {
       console.log(err);
       throw err;
@@ -410,7 +472,7 @@ export const openDkpService = {
 
       const putRaid: AxiosRequestConfig = {
         method: "put",
-        url: "https://api.opendkp.com/clients/castle/raids",
+        url: `https://api.opendkp.com/clients/${openDkpClientName}/raids`,
         headers: {
           Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
           "Content-Type": "application/json",
@@ -433,7 +495,7 @@ export const openDkpService = {
 
       const postRaid = {
         method: "post",
-        url: `https://api.opendkp.com/clients/castle/raids/${raidId}`,
+        url: `https://api.opendkp.com/clients/${openDkpClientName}/raids/${raidId}`,
         headers: {
           Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
           "Content-Type": "application/json",
@@ -442,7 +504,7 @@ export const openDkpService = {
       };
 
       const resp = await axios(postRaid);
-      await new Promise((resolve) => setTimeout(resolve, 250));
+      await new Promise((resolve) => setTimeout(resolve, 200));
       console.log(`OpenDKP - updated raid: ${JSON.stringify(resp.data)}`);
       openDkpService.logIfVerbose(resp);
     } catch (err: unknown) {
@@ -464,6 +526,19 @@ export const openDkpService = {
           },
           ["profiledata"]
         );
+      } catch (err: unknown) {
+        console.log(err);
+      }
+    }
+    if (fs.existsSync("./characters.json")) {
+      try {
+        const characters = JSON.parse(
+          fs.readFileSync("./characters.json", { encoding: "utf-8" })
+        ) as ODKPCharacterData[];
+        for (const character of characters) {
+          // do updates here...
+          await openDkpService.updatePlayer(character);
+        }
       } catch (err: unknown) {
         console.log(err);
       }
@@ -493,6 +568,30 @@ export const openDkpService = {
         await openDkpService.addAdjustment(odkpAdjustmentPayload);
       }
     }
+    if (fs.existsSync("./items.json") && fs.existsSync("./items.csv")) {
+      // Can be used to output not-found items given the latest-items.json (https://cb-opendkp.s3.us-east-2.amazonaws.com/cache/latest-items.json)
+      // and an eqdkp item export
+      const items: RowObject[] = [];
+      await processTsvFileWithHeaders("./items.csv", async (row: RowObject) => {
+        items.push(row);
+      });
+      let itemCache: ODKPItemDbItem[];
+      if (fs.existsSync("./items.json")) {
+        itemCache = JSON.parse(
+          fs.readFileSync("./items.json", { encoding: "utf-8" })
+        );
+        const ws = fs.createWriteStream("./missing-items.csv");
+        ws.write(`Name\tValue\tItemId\tGameItemId\tMember\tRaidId\n`);
+        for (const item of items) {
+          const foundItems = itemCache.filter((i) => i.Name === item.item_name);
+          if (foundItems.length === 0) {
+            const row = `${item.item_name}\t${item.item_value}\t''\t''\t${item.member_name}\t${item.raid_id}\n`;
+            ws.write(row);
+          }
+        }
+        ws.close();
+      }
+    }
     if (
       fs.existsSync("./raids.csv") &&
       fs.existsSync("./items.csv") &&
@@ -518,26 +617,64 @@ export const openDkpService = {
           attendees.push(row);
         }
       );
+      // Export from raids tab of opendkp
+      const isUpdate = fs.existsSync("./raids.json");
+      let jsonRaids;
+      let raidObj;
+      if (isUpdate) {
+        jsonRaids = fs.readFileSync("./raids.json", {
+          encoding: "utf-8",
+        });
 
+        // this is not perfect, if you have raids with the exact same name
+        // you will not be able to update them cleanly. fix them in the source data first
+        raidObj = Object.fromEntries(
+          JSON.parse(jsonRaids).map((r: { RaidId: string; Name: string }) => [
+            r.Name,
+            r.RaidId,
+          ])
+        );
+      }
+      const missingItems: RowObject[] = [];
+      await processTsvFileWithHeaders(
+        "./missing-items.csv",
+        async (row: RowObject) => {
+          missingItems.push(row);
+        }
+      );
+
+      let itemCache: ODKPItemDbItem[];
+      if (fs.existsSync("./items.json")) {
+        itemCache = JSON.parse(
+          fs.readFileSync("./items.json", { encoding: "utf-8" })
+        );
+      }
       for (const raid of raids.values()) {
         const raidValue = Number.parseFloat(raid.raid_value);
         const raidItems: ODKPRaidItem[] = await Promise.all(
           items
             .filter((i) => i.raid_id === raid.raid_id)
             .map(async (i) => {
-              let item: ODKPItemResponse | undefined;
+              let item: ODKPItemDbItem | undefined;
               try {
-                item = await openDkpService.searchItem(i.item_name);
+                item = itemCache.filter(
+                  (item) => capitalize(i.item_name) === item.Name
+                )[0];
+                // Can search for items but a local db is faster
+                // if (!item) {
+                //   item = await openDkpService.searchItem(i.item_name);
+                //   itemCache[item.ItemName] = item;
+                // }
               } catch (err: unknown) {
-                item = { ItemName: i.item_name, GameItemId: -1, ItemID: -1 };
+                throw new Error("Item not found");
               }
 
               return {
                 CharacterName: i.member_name.split(" ")[0],
                 Dkp: Number.parseFloat(i.item_value),
                 GameItemId: item.GameItemId,
-                ItemId: item.ItemID,
-                ItemName: item.ItemName,
+                ItemId: item.ItemId,
+                ItemName: item.Name,
                 Notes: raid.raid_note,
               } as ODKPRaidItem;
             })
@@ -561,42 +698,38 @@ export const openDkpService = {
           });
         }
         const isUpdate = fs.existsSync("./raids.json");
+        const raidName = raid.raid_note;
         if (isUpdate) {
-          const jsonRaids = fs.readFileSync("./raids.json", {
-            encoding: "utf-8",
-          });
-
-          const raidObj = Object.fromEntries(
-            JSON.parse(jsonRaids).map((r: { RaidId: string; Name: string }) => [
-              r.Name,
-              r,
-            ])
-          );
-          if (!raidObj[raid.raid_note]) {
+          if (raidObj && !raidObj[raidName]) {
             throw new Error("Raid doesn't exist in export");
           }
-          const raidUpdatePayload: ODKPUpdateRaidData = {
-            Attendance: raidCharacters.length > 0 ? 1 : 0,
-            ClientId: env.openDkpSiteClientId || "",
-            RaidId: raidObj[raid.raid_note]?.RaidId || "0",
-            Items: raidItems,
-            Name: raid.raid_note,
-            Pool: {
-              Description: "Scars of Velious",
-              Name: "SoV",
-              PoolId: 4,
-            },
-            Ticks: raidTicks,
-            Timestamp: new Date(
-              Number.parseInt(raid.raid_date) * 1000
-            ).toISOString(),
-            Version: Number.parseInt(raid.version),
-          };
+          const odkpRaid = await openDkpService.getRaid(raidObj?.[raidName]);
+          if (!odkpRaid.Version || !odkpRaid.RaidId) {
+            throw new Error(
+              `Version not found, can't update - ${raidObj?.RaidId}`
+            );
+          } else {
+            const raidUpdatePayload: ODKPUpdateRaidData = {
+              Attendance: raidCharacters.length > 0 ? 1 : 0,
+              ClientId: env.openDkpSiteClientId || "",
+              RaidId: odkpRaid.RaidId.toString(),
+              Items: raidItems,
+              Name: raidName,
+              Pool: {
+                Description: "Scars of Velious",
+                Name: "SoV",
+                PoolId: 4,
+              },
+              Ticks: raidTicks,
+              Timestamp: odkpRaid.Timestamp,
+              Version: odkpRaid.Version,
+            };
 
-          await openDkpService.updateRaid(
-            raidUpdatePayload.RaidId,
-            raidUpdatePayload
-          );
+            await openDkpService.updateRaid(
+              raidUpdatePayload.RaidId,
+              raidUpdatePayload
+            );
+          }
         } else {
           const raidPayload: ODKPRaidData = {
             Attendance: raidCharacters.length > 0 ? 1 : 0,

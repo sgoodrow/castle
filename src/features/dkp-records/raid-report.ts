@@ -283,7 +283,7 @@ ${p}${code}`,
       }
     });
 
-    openDkpService.createRaid(this.ticks);
+    await openDkpService.createRaidFromTicks(this.ticks);
 
     return { created, failed };
   }
