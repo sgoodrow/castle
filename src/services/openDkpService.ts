@@ -250,13 +250,16 @@ export const openDkpService = {
       })
       .join(", ");
     const odkpTicks = ticks.flatMap((tick) => {
+      const cleanTickName = tick.data.event?.name
+        .replace(/^(✅|❕|❔)/, "")
+        .trim();
       return {
         Characters: tick.data.attendees.map((char) => {
           return {
             Name: char,
           };
         }),
-        Description: tick.data.event?.name,
+        Description: cleanTickName,
         Value: tick.data.value,
       } as ODKPRaidTick;
     });
