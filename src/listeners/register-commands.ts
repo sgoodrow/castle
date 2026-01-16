@@ -32,6 +32,7 @@ import { batphoneCommand } from "../features/bp/bp-command";
 import { wakeupCommand } from "../features/wakeup/wakeup-command";
 import { requestBotButtonCommand } from "../features/bp/request-bot-button-command";
 import { parkBotButtonCommand } from "../features/raid-bots/park-bot-button-command"
+import { odkpCommand } from "../features/odkp/odkp-command";
 
 const slashCommands = [
   bankHourCommand,
@@ -43,6 +44,7 @@ const slashCommands = [
   bankCommand,
   batphoneCommand,
   wakeupCommand,
+  odkpCommand,
 ];
 
 const buttonCommands = [
