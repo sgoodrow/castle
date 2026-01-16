@@ -121,6 +121,7 @@ interface ODKPCharacterData {
   Deleted: number;
   User: string;
   CreatedDate: string; // ISO date string
+  ParentId: number;
 }
 
 export interface ODKPCharacterImportData {
@@ -131,6 +132,18 @@ export interface ODKPCharacterImportData {
   Level: number;
   Race: string;
   Gender: string;
+}
+
+export interface ODKPCharacterLinkData {
+  ParentId: number;
+  ChildId: number;
+}
+
+export interface LinkInfo {
+  MemberName: string;
+  MemberId: number;
+  AccountId: number;
+  AccountName: string;
 }
 
 const characterCache = new LRUCache<string, ODKPCharacterData>({
@@ -183,13 +196,12 @@ export const openDkpService = {
     try {
       const response = await axios(config);
       accessTokens = response.data?.AuthenticationResult;
-      await openDkpService.loadCharacters();
       openDkpService.logIfVerbose(response);
     } catch (error) {
       console.log(JSON.stringify(error, null, 2));
     }
   },
-  loadCharacters: async (): Promise<void> => {
+  getCharacters: async (): Promise<ODKPCharacterData[]> => {
     const config = {
       method: "get",
       url: `https://api.opendkp.com/clients/${openDkpClientName}/characters?IncludeInactives=true`,
@@ -200,16 +212,14 @@ export const openDkpService = {
 
     try {
       const response = await axios(config);
-      if (response.status === 200) {
-        (response.data as ODKPCharacterData[]).forEach((char) => {
-          characterCache.set(char.Name, char);
-        });
-        console.log(`Loaded ${characterCache.size} characters`);
-      }
+      console.log(
+        `Loaded ${(response.data as ODKPCharacterData[]).length} characters`
+      );
+      return response.data;
     } catch (error) {
       console.log(error);
+      throw error;
     }
-    return;
   },
 
   getItemId: async (itemName: string): Promise<ODKPItemResponse> => {
@@ -230,6 +240,7 @@ export const openDkpService = {
   },
 
   createRaidFromTicks: async (ticks: RaidTick[]) => {
+    const characters = await openDkpService.getCharacters();
     const items = await Promise.all(
       ticks.flatMap((tick) =>
         tick.data.loot.map(async (item) => {
@@ -244,15 +255,22 @@ export const openDkpService = {
         })
       )
     );
-    const name = ticks
-      .flatMap((tick) => {
-        return tick.name;
-      })
-      .join(", ");
+    
     const odkpTicks = ticks.flatMap((tick) => {
-      const cleanTickName = tick.data.event?.name
-        .replace(/^(✅|❕|❔)/, "")
-        .trim();
+      const cleanTickName = tick.name.replace(/^(✅|❕|❔)/, "").trim();
+
+      const unregisteredCharacters = tick.data.attendees.filter((raider) => {
+        return !characters.find((odkpChar) => odkpChar.Name === raider);
+      });
+
+      if (unregisteredCharacters.length > 0) {
+        throw new Error(
+          `Character(s) not found on OpenDKP: ${unregisteredCharacters.join(
+            ", "
+          )}`
+        );
+      }
+
       return {
         Characters: tick.data.attendees.map((char) => {
           return {
@@ -263,6 +281,12 @@ export const openDkpService = {
         Value: tick.data.value,
       } as ODKPRaidTick;
     });
+
+    const name = odkpTicks
+      .flatMap((tick) => {
+        return tick.Description;
+      })
+      .join(", ");
 
     const raidData = {
       Attendance: 1,
@@ -406,6 +430,53 @@ export const openDkpService = {
       console.log(err);
     }
   },
+  processLinkedCharacters: async (
+    linkInfo: LinkInfo[],
+    mainChar: ODKPCharacterData | undefined,
+    odkpCharacterData: ODKPCharacterData[]
+  ) => {
+    if (!mainChar) {
+      mainChar = odkpCharacterData.find(
+        (c) => c.Name === linkInfo[0].MemberName
+      );
+    }
+    // If still no mainChar, exit early
+    if (!mainChar) {
+      console.error("Could not find main character");
+      return;
+    }
+    for (const link of linkInfo) {
+      const character = odkpCharacterData.find(
+        (c) => c.Name === link.MemberName
+      );
+      if (character && character.ParentId === 0 && character !== mainChar) {
+        console.log(`Linking ${character.Name} to ${mainChar.Name}`);
+        await openDkpService.linkCharacter({
+          ChildId: character.CharacterId,
+          ParentId: mainChar.CharacterId,
+        });
+      }
+    }
+  },
+  linkCharacter: async (linkData: ODKPCharacterLinkData) => {
+    const linkCharacter = {
+      method: "put",
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/characters/links`,
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+      data: JSON.stringify(linkData),
+    };
+
+    try {
+      const resp = await axios(linkCharacter);
+      console.log(JSON.stringify(resp.data));
+      openDkpService.logIfVerbose(resp);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    } catch (err: unknown) {
+      console.log(err);
+    }
+  },
   updatePlayer: async (character: ODKPCharacterData) => {
     const updateCharacter = {
       method: "post",
@@ -536,19 +607,64 @@ export const openDkpService = {
         console.log(err);
       }
     }
-    if (fs.existsSync("./characters.json")) {
+    // if (fs.existsSync("./characters.json")) {
+    //   try {
+    //     const characters = JSON.parse(
+    //       fs.readFileSync("./characters.json", { encoding: "utf-8" })
+    //     ) as ODKPCharacterData[];
+    //     for (const character of characters) {
+    //       // do updates here...
+    //       await openDkpService.updatePlayer(character);
+    //     }
+    //   } catch (err: unknown) {
+    //     console.log(err);
+    //   }
+    // }
+    if (fs.existsSync("./characters.json") && fs.existsSync("./links.csv")) {
       try {
-        const characters = JSON.parse(
-          fs.readFileSync("./characters.json", { encoding: "utf-8" })
-        ) as ODKPCharacterData[];
-        for (const character of characters) {
-          // do updates here...
-          await openDkpService.updatePlayer(character);
+        // const odkpCharacters = JSON.parse(
+        //   fs.readFileSync("./characters.json", { encoding: "utf-8" })
+        // ) as ODKPCharacterData[];
+        const odkpCharacters = await openDkpService.getCharacters();
+        const eqdkpChars: LinkInfo[] = [];
+        await processTsvFileWithHeaders(
+          "./links.csv",
+          async (row: RowObject) => {
+            eqdkpChars.push({
+              MemberName: row.member_name.split(" ")[0],
+              MemberId: Number.parseInt(row.member_id),
+              AccountId: Number.parseInt(row.user_id),
+              AccountName: row.username,
+            });
+          }
+        );
+
+        const groups = eqdkpChars.reduce((acc, item) => {
+          const key = item.AccountId;
+          if (!acc[key]) {
+            acc[key] = [];
+          }
+          acc[key].push(item);
+          return acc;
+        }, {} as Record<string, LinkInfo[]>);
+
+        for (const [userid, characters] of Object.entries(groups)) {
+          if (characters) {
+            await openDkpService.processLinkedCharacters(
+              characters,
+              undefined,
+              odkpCharacters
+            );
+          } else {
+            throw new Error("Failed to find link");
+          }
         }
       } catch (err: unknown) {
         console.log(err);
+        throw err;
       }
     }
+
     if (fs.existsSync("./adjustments.csv")) {
       const adjustments: RowObject[] = [];
       await processTsvFileWithHeaders(
