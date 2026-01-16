@@ -146,8 +146,8 @@ export interface LinkInfo {
   AccountName: string;
 }
 
-const characterCache = new LRUCache<string, ODKPCharacterData>({
-  ttl: 60 * MINUTES,
+export const odkpCharacterCache = new LRUCache<string, ODKPCharacterData>({
+  ttl: 10 * MINUTES,
 });
 
 let accessTokens: IAccessTokenResult;
@@ -163,6 +163,7 @@ export const openDkpService = {
         )
         .then(async () => {
           console.log("Authenticated with OpenDKP");
+          await openDkpService.getCharacters();
           await openDkpService.importData();
         })
         .catch((reason) => {
@@ -211,11 +212,20 @@ export const openDkpService = {
     };
 
     try {
+      const cachedChars: ODKPCharacterData[] = [];
+      for (const cacheChar of odkpCharacterCache.values()) {
+        cachedChars.push(cacheChar);
+      }
+      if (cachedChars.length > 0) {
+        return cachedChars;
+      }
       const response = await axios(config);
-      console.log(
-        `Loaded ${(response.data as ODKPCharacterData[]).length} characters`
-      );
-      return response.data;
+      const characters = response.data as ODKPCharacterData[];
+      characters.forEach((c) => {
+        odkpCharacterCache.set(c.Name, c, { ttl: 3000000 });
+      });
+      console.log(`Cached ${characters.length} characters`);
+      return characters;
     } catch (error) {
       console.log(error);
       throw error;
@@ -255,7 +265,7 @@ export const openDkpService = {
         })
       )
     );
-    
+
     const odkpTicks = ticks.flatMap((tick) => {
       const cleanTickName = tick.name.replace(/^(✅|❕|❔)/, "").trim();
 
@@ -325,7 +335,8 @@ export const openDkpService = {
     note: string,
     price: number
   ) => {
-    const character = characterCache.get(buyer);
+    await openDkpService.getCharacters();
+    const character = odkpCharacterCache.get(buyer);
     if (!character) {
       console.log(`Failed to find character ${buyer}`);
       return;
@@ -397,14 +408,13 @@ export const openDkpService = {
   },
   addPlayer: async (
     name: string,
-    charClass: string,
-    race: string,
-    level: number,
-    gender: string,
-    active: number
-  ) => {
+    charClass?: string,
+    race?: string,
+    level?: number,
+    gender?: string
+  ): Promise<ODKPCharacterData> => {
     const odkpCharacter = {
-      Active: active,
+      Active: 1,
       Name: name,
       Class: charClass,
       Level: level,
@@ -425,9 +435,10 @@ export const openDkpService = {
       const resp = await axios(putCharacter);
       console.log(JSON.stringify(resp.data));
       openDkpService.logIfVerbose(resp);
-      await new Promise((resolve) => setTimeout(resolve, 250));
+      return resp.data as ODKPCharacterData;
     } catch (err: unknown) {
       console.log(err);
+      throw err;
     }
   },
   processLinkedCharacters: async (
@@ -596,7 +607,7 @@ export const openDkpService = {
           "./players.csv",
           async (row: RowObject) => {
             if (
-              !characterCache.has(capitalize(row.member_name.split(" ")[0]))
+              !odkpCharacterCache.has(capitalize(row.member_name.split(" ")[0]))
             ) {
               await openDkpService.handleCharacterImportRow(row);
             }
@@ -891,8 +902,7 @@ export const openDkpService = {
         convertClass(profiledata.class),
         convertRace(profiledata.race),
         Number.parseInt(profiledata.level) || 1,
-        toSentenceCase(profiledata.gender) || "Unknown",
-        1
+        toSentenceCase(profiledata.gender) || "Unknown"
       );
     } catch (error: unknown) {
       console.log(error);
