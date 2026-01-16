@@ -420,6 +420,7 @@ export const openDkpService = {
       Level: level,
       Race: race,
       Gender: gender,
+      Rank: "Member",
     } as ODKPCharacterImportData;
     const putCharacter = {
       method: "put",
