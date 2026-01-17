@@ -4,23 +4,21 @@ import {
   GuildMemberRoleManager,
   spoiler,
 } from "discord.js";
-import { Subcommand } from "../../shared/command/subcommand";
 import { accounts } from "../../services/accounts";
 import { raidBotInstructions } from "./update-bots";
 import moment from "moment";
-import { Class } from "../../shared/classes";
-import { capitalize } from "../../shared/util";
 import { Mutex } from "async-mutex";
 import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
 import { log } from "../../shared/logger"
+import { BotSubcommand } from "./bot-subcommand";
 
 export enum Option {
   Location = "location",
 }
 
-export class RequestZoneSubcommand extends Subcommand {
+export class RequestZoneSubcommand extends BotSubcommand {
   private mutex: Mutex;
   public constructor(name: string, description: string) {
     super(name, description);
@@ -28,6 +26,7 @@ export class RequestZoneSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
+    await super.execute(interaction);
     const location = this.getOption(Option.Location, interaction)
       ?.value as string;
     const thread = await raidBotInstructions.getThread();

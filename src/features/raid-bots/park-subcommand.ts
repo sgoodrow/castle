@@ -5,13 +5,14 @@ import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
 import { log } from "../../shared/logger"
+import { BotSubcommand } from "./bot-subcommand";
 
 export enum Option {
   Name = "name",
   Location = "location",
 }
 
-export class ParkSubcommand extends Subcommand {
+export class ParkSubcommand extends BotSubcommand {
   publicAccountService: IPublicAccountService;
   public constructor(name: string, description: string) {
     super(name, description);
@@ -19,6 +20,7 @@ export class ParkSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
+    await super.execute(interaction);
     const name = this.getRequiredOptionValue(
       Option.Name,
       interaction

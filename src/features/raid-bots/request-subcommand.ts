@@ -11,12 +11,13 @@ import moment from "moment";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
 import { IPublicAccountService } from "../../services/bot/public-accounts.i";
+import { BotSubcommand } from "./bot-subcommand";
 
 export enum Option {
   Name = "name",
 }
 
-export class RequestSubcommand extends Subcommand {
+export class RequestSubcommand extends BotSubcommand {
   publicAccountService: IPublicAccountService;
   public constructor(name: string, description: string) {
     super(name, description);
@@ -24,8 +25,8 @@ export class RequestSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
+    await super.execute(interaction);
     const name = this.getOption(Option.Name, interaction)?.value as string;
-
     await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
   }
 

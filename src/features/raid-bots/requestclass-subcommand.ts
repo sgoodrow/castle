@@ -15,6 +15,7 @@ import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
 import { log } from "../../shared/logger"
+import { BotSubcommand } from "./bot-subcommand";
 
 
 export enum Option {
@@ -23,7 +24,7 @@ export enum Option {
   BindLocation = "bindlocation",
 }
 
-export class RequestClassSubcommand extends Subcommand {
+export class RequestClassSubcommand extends BotSubcommand {
   private mutex: Mutex;
   public constructor(name: string, description: string) {
     super(name, description);
@@ -31,6 +32,7 @@ export class RequestClassSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
+    await super.execute(interaction);
     const botClass = capitalize(
       this.getOption(Option.Class, interaction)?.value as string
     );

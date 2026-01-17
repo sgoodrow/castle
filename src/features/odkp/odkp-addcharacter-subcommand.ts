@@ -3,9 +3,11 @@ import {
   CacheType,
   ApplicationCommandOptionChoiceData,
   CommandInteraction,
+  GuildMemberRoleManager,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { openDkpService } from "../../services/openDkpService";
+import { botUserRoleId, raiderRoleId } from "../../config";
 
 export class OdkpAddCharacterSubcommand extends Subcommand {
   public async getOptionAutocomplete(
@@ -28,6 +30,14 @@ export class OdkpAddCharacterSubcommand extends Subcommand {
     try {
       const characters = await openDkpService.getCharacters();
       await interaction.editReply("Checking a few things...");
+
+      const roles = interaction.member?.roles as GuildMemberRoleManager;
+      if (!roles.cache.has(raiderRoleId)) {
+        throw new Error(
+          "You do not have permission to access OpenDKP commands."
+        );
+      }
+
       const newCharOption = this.getOption("new", interaction)?.value as string;
       const existingCharOption = this.getOption("existing", interaction)
         ?.value as string;

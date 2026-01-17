@@ -18,6 +18,7 @@ export class BindSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
+    await super.execute(interaction);
     const name = this.getRequiredOptionValue(
       Option.Name,
       interaction

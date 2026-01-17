@@ -9,12 +9,13 @@ import { Subcommand } from "../../shared/command/subcommand";
 import { IPublicAccountService } from "../../services/bot/public-accounts.i";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { raidBotInstructions } from "./update-bots";
+import { BotSubcommand } from "./bot-subcommand";
 
 export enum Option {
   Hours = "hours",
 }
 
-export class CleanupSubcommand extends Subcommand {
+export class CleanupSubcommand extends BotSubcommand {
   publicAccountService: IPublicAccountService;
   public constructor(name: string, description: string) {
     super(name, description);
@@ -22,6 +23,7 @@ export class CleanupSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
+    await super.execute(interaction);
     try {
       const thread = await raidBotInstructions.getThread();
       if (!thread) {
