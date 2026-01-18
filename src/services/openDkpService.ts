@@ -266,6 +266,8 @@ export const openDkpService = {
       )
     );
 
+    const failures: string[] = [];
+
     const odkpTicks = ticks.flatMap((tick) => {
       const cleanTickName = tick.name.replace(/^(✅|❕|❔)/, "").trim();
 
@@ -274,11 +276,11 @@ export const openDkpService = {
       });
 
       if (unregisteredCharacters.length > 0) {
-        throw new Error(
-          `Character(s) not found on OpenDKP: ${unregisteredCharacters.join(
-            ", "
-          )}`
-        );
+        const errorMsg = `Character(s) not found on OpenDKP: ${unregisteredCharacters.join(
+          ", "
+        )}`;
+        console.log(errorMsg);
+        failures.push(errorMsg);
       }
 
       return {
@@ -313,6 +315,7 @@ export const openDkpService = {
 
     await openDkpService.addRaid(raidData);
     await openDkpService.doTickAdjustments(ticks);
+    return failures;
   },
   doTickAdjustments: async (ticks: RaidTick[]) => {
     for (const tick of ticks) {
