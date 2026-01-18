@@ -187,7 +187,8 @@ export class RaidReport {
 
   public async tryDelete(threadId: string) {
     if (this.finished) {
-      await redisClient.del(threadId);
+      //await redisClient.del(threadId);
+      await redisClient.expire(threadId, 604800);
     }
   }
 
@@ -289,7 +290,8 @@ ${p}${code}`,
       }
     });
     try {
-      await openDkpService.createRaidFromTicks(this.ticks);
+      const failures = await openDkpService.createRaidFromTicks(this.ticks);
+      failed.push(...failures);
     } catch (err: unknown) {
       failed.push((err as Error).toString());
     }
