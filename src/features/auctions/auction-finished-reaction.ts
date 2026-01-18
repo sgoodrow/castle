@@ -98,14 +98,18 @@ class AuctionFinishedReactionAction extends ReactionAction {
     }
 
     // add item to raid
-    await openDkpService.addItem(
-      character.name,
-      item,
-      `Auction - ${
-        this.message.thread?.name || item
-      } - ${this.message.createdAt.toDateString()}`,
-      price
-    );
+    try {
+      await openDkpService.addItem(
+        character.name,
+        item,
+        `Auction - ${
+          this.message.thread?.name || item
+        } - ${this.message.createdAt.toDateString()}`,
+        price
+      );
+    } catch (err: unknown) {
+      console.log(err);
+    }
     await castledkp.addItem(Number(castleDkpAuctionRaidId), {
       item,
       buyer: character.name,

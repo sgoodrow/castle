@@ -273,6 +273,15 @@ ${p}${code}`,
   }
 
   public async uploadRemainingRaidTicks(threadUrl: string) {
+    const failed: string[] = [];
+
+    try {
+      const failures = await openDkpService.createRaidFromTicks(this.ticks);
+      failed.push(...failures);
+    } catch (err: unknown) {
+      failed.push((err as Error).toString());
+    }
+
     const settled = await Promise.allSettled(
       this.ticks
         .filter((t) => !t.data.finished)
@@ -280,7 +289,8 @@ ${p}${code}`,
     );
 
     const created: CreateRaidResponse[] = [];
-    const failed: string[] = [];
+
+    this.ticks.map((t) => t.uploadAsRaid(threadUrl));
 
     settled.forEach((s) => {
       if (s.status === "fulfilled") {
@@ -289,12 +299,6 @@ ${p}${code}`,
         failed.push(s.reason);
       }
     });
-    try {
-      const failures = await openDkpService.createRaidFromTicks(this.ticks);
-      failed.push(...failures);
-    } catch (err: unknown) {
-      failed.push((err as Error).toString());
-    }
 
     return { created, failed };
   }

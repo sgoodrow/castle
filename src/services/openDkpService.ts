@@ -341,34 +341,38 @@ export const openDkpService = {
     await openDkpService.getCharacters();
     const character = odkpCharacterCache.get(buyer);
     if (!character) {
-      console.log(`Failed to find character ${buyer}`);
-      return;
+      const error = `Failed to find character ${buyer}`;
+      console.log(error);
+      throw new Error(error);
     }
+    const item = {
+      CharacterId: character.CharacterId,
+      Dkp: price,
+      Notes: note,
+      ItemId: -1,
+    };
     const itemData = await openDkpService.getItemId(itemName);
-    if (itemData && itemData.ItemID !== -1) {
-      const item = {
-        CharacterId: character.CharacterId,
-        Dkp: price,
-        Notes: note,
-        ItemId: itemData.ItemID,
-      };
-      const config = {
-        method: "put",
-        url: `https://api.opendkp.com/clients/${openDkpClientName}/raids/${openDkpAuctionRaidId}/items`,
-        headers: {
-          Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
-          "Content-Type": "application/json",
-        },
-        data: JSON.stringify(item),
-      };
-      axios(config)
-        .then(function (response) {
-          console.log(JSON.stringify(response.data));
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+
+    if (itemData) {
+      item.ItemId = itemData.ItemID;
     }
+
+    const config = {
+      method: "put",
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/raids/${openDkpAuctionRaidId}/items`,
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify(item),
+    };
+    axios(config)
+      .then(function (response) {
+        console.log(JSON.stringify(response.data));
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
   },
   addAdjustment: async (adjustment: ODKPAdjustment) => {
     try {
