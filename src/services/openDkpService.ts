@@ -796,14 +796,14 @@ export const openDkpService = {
               try {
                 item = itemCache.filter(
                   (item) => capitalize(i.item_name) === item.Name
-                )[0];
+                )[0] || { GameItemId: -1, ItemId: -1, Name: i.item_name };
                 // Can search for items but a local db is faster
                 // if (!item) {
                 //   item = await openDkpService.searchItem(i.item_name);
                 //   itemCache[item.ItemName] = item;
                 // }
               } catch (err: unknown) {
-                throw new Error("Item not found");
+                item = { GameItemId: -1, ItemId: -1, Name: i.item_name };
               }
 
               return {
