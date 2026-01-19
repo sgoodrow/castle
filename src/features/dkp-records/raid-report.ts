@@ -230,13 +230,17 @@ Kill bonus values: https://castledkp.com/index.php/External/Boss-bonuses-11.html
     created: CreateRaidResponse[],
     failed: string[]
   ): EmbedBuilder[] {
-    const embeds = created.map(({ eventUrlSlug, id, invalidNames, tick }) =>
-      tick.getCreatedEmbed(eventUrlSlug, id, invalidNames)
+    const embeds = created.map(
+      ({ eventUrlSlug, id, invalidNames, tick }) =>
+        tick.getCreatedEmbed?.(eventUrlSlug, id, invalidNames) ||
+        new EmbedBuilder({})
     );
     if (failed.length > 0) {
       embeds.push(
         new EmbedBuilder({
-          title: `${failed.length} ticks failed to upload.`,
+          title: `${failed.length} problem${
+            failed.length > 1 ? "s" : ""
+          } with the upload.`,
           description: failed.join("\n"),
         })
       );
@@ -274,10 +278,19 @@ ${p}${code}`,
 
   public async uploadRemainingRaidTicks(threadUrl: string) {
     const failed: string[] = [];
+    const created: CreateRaidResponse[] = [];
 
     try {
-      const failures = await openDkpService.createRaidFromTicks(this.ticks);
-      failed.push(...failures);
+      const { errors, response } = await openDkpService.createRaidFromTicks(
+        this.ticks
+      );
+      created.push({
+        eventUrlSlug: `http://castle.opendkp.com/#/raids/${response.RaidId}`,
+        id: response.RaidId || -1,
+        tick: response,
+        invalidNames: [],
+      });
+      failed.push(...errors);
     } catch (err: unknown) {
       failed.push((err as Error).toString());
       throw err;
@@ -288,8 +301,6 @@ ${p}${code}`,
         .filter((t) => !t.data.finished)
         .map((t) => t.uploadAsRaid(threadUrl))
     );
-
-    const created: CreateRaidResponse[] = [];
 
     settled.forEach((s) => {
       if (s.status === "fulfilled") {
