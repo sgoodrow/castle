@@ -356,23 +356,23 @@ export const openDkpService = {
     if (itemData) {
       item.ItemId = itemData.ItemID;
     }
-
-    const config = {
-      method: "put",
-      url: `https://api.opendkp.com/clients/${openDkpClientName}/raids/${openDkpAuctionRaidId}/items`,
-      headers: {
-        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
-        "Content-Type": "application/json",
-      },
-      data: JSON.stringify(item),
-    };
-    axios(config)
-      .then(function (response) {
-        console.log(JSON.stringify(response.data));
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    try {
+      const config = {
+        method: "put",
+        url: `https://api.opendkp.com/clients/${openDkpClientName}/raids/${openDkpAuctionRaidId}/items`,
+        headers: {
+          Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+          "Content-Type": "application/json",
+        },
+        data: JSON.stringify(item),
+      };
+      const resp = await axios(config);
+      console.log(`OpenDKP - added item: ${JSON.stringify(resp.data)}`);
+    } catch (err: unknown) {
+      console.log(`OpenDKP - failed to add item: ${JSON.stringify(err)}`);
+      openDkpService.logIfVerbose(err);
+      throw err;
+    }
   },
   addAdjustment: async (adjustment: ODKPAdjustment) => {
     try {
@@ -391,7 +391,7 @@ export const openDkpService = {
       openDkpService.logIfVerbose(resp);
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add adjustment: ${err})}`);
-      console.log(err);
+      throw err;
     }
   },
   delAdjustment: async (id: string) => {
@@ -411,6 +411,7 @@ export const openDkpService = {
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to delete adjustment: ${err})}`);
       console.log(err);
+      throw err;
     }
   },
   addPlayer: async (
@@ -513,6 +514,7 @@ export const openDkpService = {
       await new Promise((resolve) => setTimeout(resolve, 250));
     } catch (err: unknown) {
       console.log(err);
+      throw err;
     }
   },
   searchItem: async (itemName: string): Promise<ODKPItemResponse> => {
@@ -583,6 +585,7 @@ export const openDkpService = {
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add raid: ${err}`);
       console.log(err);
+      throw err;
     }
   },
   updateRaid: async (raidId: string, payload: ODKPUpdateRaidData) => {

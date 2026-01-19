@@ -280,6 +280,7 @@ ${p}${code}`,
       failed.push(...failures);
     } catch (err: unknown) {
       failed.push((err as Error).toString());
+      throw err;
     }
 
     const settled = await Promise.allSettled(
@@ -289,8 +290,6 @@ ${p}${code}`,
     );
 
     const created: CreateRaidResponse[] = [];
-
-    this.ticks.map((t) => t.uploadAsRaid(threadUrl));
 
     settled.forEach((s) => {
       if (s.status === "fulfilled") {
