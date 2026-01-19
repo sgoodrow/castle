@@ -99,16 +99,17 @@ class AuctionFinishedReactionAction extends ReactionAction {
 
     // add item to raid
     await openDkpService.addItem(
-      character.name,
+      character.Name,
       item,
       `Auction - ${
         this.message.thread?.name || item
       } - ${this.message.createdAt.toDateString()}`,
       price
     );
+
     await castledkp.addItem(Number(castleDkpAuctionRaidId), {
       item,
-      buyer: character.name,
+      buyer: character.Name,
       price,
     });
 
@@ -118,10 +119,10 @@ class AuctionFinishedReactionAction extends ReactionAction {
         new EmbedBuilder({
           title: `Purchase Receipt`,
           description: `Auction complete, grats!${code}diff
-+ ${character.name} ${item}
-- ${character.name} ${price} DKP${code}`,
++ ${character.Name} ${item}
+- ${character.Name} ${price} DKP${code}`,
           url: castleDkpAuctionRaidId
-            ? `https://castledkp.com/index.php/Raids/[green]-discord-dkp-auctions-r${castleDkpAuctionRaidId}.html?s=`
+            ? `https://castle.opendkp.com/#/items`
             : undefined,
         }),
       ],
@@ -181,7 +182,7 @@ ${this.example}`
     }
 
     const name = unfixedName.charAt(0).toUpperCase() + unfixedName.slice(1);
-    return await castledkp.getCharacter(name);
+    return await openDkpService.getCharacter(name);
   }
 
   private get example() {

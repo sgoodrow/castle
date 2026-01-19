@@ -113,3 +113,7 @@ src/google/*.json
 
 #os files
 .DS_Store
+
+#import files
+*.csv
+items.json

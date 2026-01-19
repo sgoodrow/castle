@@ -231,6 +231,19 @@ export const openDkpService = {
       throw error;
     }
   },
+  getCharacter: async (charName: string): Promise<ODKPCharacterData> => {
+    try {
+      const char = odkpCharacterCache.get(charName);
+      if (char) {
+        return char;
+      } else {
+        throw new Error(`Character ${charName} not found`);
+      }
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
 
   getItemId: async (itemName: string): Promise<ODKPItemResponse> => {
     const config = {
@@ -271,10 +284,19 @@ export const openDkpService = {
     const odkpTicks = ticks.flatMap((tick) => {
       const cleanTickName = tick.name.replace(/^(✅|❕|❔)/, "").trim();
 
+      // Critical failures
+      if (tick.data.event === undefined) {
+        throw new Error(`Tick is missing an event type.`);
+      }
+      if (tick.data.value === undefined) {
+        throw new Error(`Tick is missing a value.`);
+      }
+
       const unregisteredCharacters = tick.data.attendees.filter((raider) => {
         return !characters.find((odkpChar) => odkpChar.Name === raider);
       });
 
+      // Non-critical failures
       if (unregisteredCharacters.length > 0) {
         const errorMsg = `Character(s) not found on OpenDKP: ${unregisteredCharacters.join(
           ", "
@@ -341,17 +363,22 @@ export const openDkpService = {
     await openDkpService.getCharacters();
     const character = odkpCharacterCache.get(buyer);
     if (!character) {
-      console.log(`Failed to find character ${buyer}`);
-      return;
+      const error = `Failed to find character ${buyer}`;
+      console.log(error);
+      throw new Error(error);
     }
+    const item = {
+      CharacterId: character.CharacterId,
+      Dkp: price,
+      Notes: note,
+      ItemId: -1,
+    };
     const itemData = await openDkpService.getItemId(itemName);
-    if (itemData && itemData.ItemID !== -1) {
-      const item = {
-        CharacterId: character.CharacterId,
-        Dkp: price,
-        Notes: note,
-        ItemId: itemData.ItemID,
-      };
+
+    if (itemData) {
+      item.ItemId = itemData.ItemID;
+    }
+    try {
       const config = {
         method: "put",
         url: `https://api.opendkp.com/clients/${openDkpClientName}/raids/${openDkpAuctionRaidId}/items`,
@@ -361,13 +388,12 @@ export const openDkpService = {
         },
         data: JSON.stringify(item),
       };
-      axios(config)
-        .then(function (response) {
-          console.log(JSON.stringify(response.data));
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+      const resp = await axios(config);
+      console.log(`OpenDKP - added item: ${JSON.stringify(resp.data)}`);
+    } catch (err: unknown) {
+      console.log(`OpenDKP - failed to add item: ${JSON.stringify(err)}`);
+      openDkpService.logIfVerbose(err);
+      throw err;
     }
   },
   addAdjustment: async (adjustment: ODKPAdjustment) => {
@@ -387,7 +413,7 @@ export const openDkpService = {
       openDkpService.logIfVerbose(resp);
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add adjustment: ${err})}`);
-      console.log(err);
+      throw err;
     }
   },
   delAdjustment: async (id: string) => {
@@ -407,6 +433,7 @@ export const openDkpService = {
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to delete adjustment: ${err})}`);
       console.log(err);
+      throw err;
     }
   },
   addPlayer: async (
@@ -509,6 +536,7 @@ export const openDkpService = {
       await new Promise((resolve) => setTimeout(resolve, 250));
     } catch (err: unknown) {
       console.log(err);
+      throw err;
     }
   },
   searchItem: async (itemName: string): Promise<ODKPItemResponse> => {
@@ -579,6 +607,7 @@ export const openDkpService = {
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add raid: ${err}`);
       console.log(err);
+      throw err;
     }
   },
   updateRaid: async (raidId: string, payload: ODKPUpdateRaidData) => {
@@ -796,14 +825,14 @@ export const openDkpService = {
               try {
                 item = itemCache.filter(
                   (item) => capitalize(i.item_name) === item.Name
-                )[0];
+                )[0] || { GameItemId: -1, ItemId: -1, Name: i.item_name };
                 // Can search for items but a local db is faster
                 // if (!item) {
                 //   item = await openDkpService.searchItem(i.item_name);
                 //   itemCache[item.ItemName] = item;
                 // }
               } catch (err: unknown) {
-                throw new Error("Item not found");
+                item = { GameItemId: -1, ItemId: -1, Name: i.item_name };
               }
 
               return {
