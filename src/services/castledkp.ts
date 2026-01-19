@@ -11,6 +11,7 @@ import {
 } from "../features/dkp-records/raid-tick";
 import { MINUTES, MONTHS } from "../shared/time";
 import { betaDkpService } from "./betaDkpService";
+import { ODKPRaidData } from "./openDkpService";
 
 const route = (f: string) => `api.php?function=${f}`;
 
@@ -92,7 +93,7 @@ const getEvents = async () => {
 export interface CreateRaidResponse {
   eventUrlSlug: string;
   id: number;
-  tick: RaidTick;
+  tick: RaidTick | ODKPRaidData;
   invalidNames: string[];
 }
 

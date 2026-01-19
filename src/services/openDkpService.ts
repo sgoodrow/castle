@@ -21,6 +21,7 @@ import {
   openDkpClientName,
   openDkpAuctionRaidId,
 } from "../config";
+import { EmbedBuilder } from "discord.js";
 
 // Client for OpenDKP
 
@@ -71,6 +72,11 @@ export interface ODKPRaidData {
   Version?: number;
   ClientId?: string;
   RaidId?: number;
+  getCreatedEmbed?: (
+    eventUrlSlug: string,
+    id: number,
+    invalidNames: string[]
+  ) => EmbedBuilder;
 }
 
 export interface ODKPUpdateRaidData {
@@ -83,6 +89,10 @@ export interface ODKPUpdateRaidData {
   Ticks: ODKPRaidTick[];
   Timestamp: string;
   Version: number;
+}
+
+export interface ODKPRaidResponse {
+  RaidId: number;
 }
 
 export interface ODKPItemResponse {
@@ -233,11 +243,18 @@ export const openDkpService = {
   },
   getCharacter: async (charName: string): Promise<ODKPCharacterData> => {
     try {
-      const char = odkpCharacterCache.get(charName);
+      let char = odkpCharacterCache.get(charName);
       if (char) {
         return char;
       } else {
-        throw new Error(`Character ${charName} not found`);
+        console.log(`${charName} not found, reloading cache`);
+        const chars = await openDkpService.getCharacters();
+        char = chars.find((c) => c.Name === charName);
+        if (char) {
+          return char;
+        } else {
+          throw new Error(`Character ${charName} not found`);
+        }
       }
     } catch (error) {
       console.log(error);
@@ -262,65 +279,76 @@ export const openDkpService = {
     }
   },
 
-  createRaidFromTicks: async (ticks: RaidTick[]) => {
+  createRaidFromTicks: async (
+    ticks: RaidTick[]
+  ): Promise<{
+    errors: string[];
+    response: ODKPRaidData;
+  }> => {
     const characters = await openDkpService.getCharacters();
-    const items = await Promise.all(
-      ticks.flatMap((tick) =>
-        tick.data.loot.map(async (item) => {
-          const odkpItem = await openDkpService.getItemId(item.item);
-          return {
-            CharacterName: item.buyer,
-            Dkp: item.price,
-            ItemName: odkpItem.ItemName,
-            GameItemId: odkpItem.GameItemId,
-            ItemId: odkpItem.ItemID,
-          } as ODKPRaidItem;
-        })
-      )
-    );
-
     const failures: string[] = [];
+    const items: ODKPRaidItem[] = [];
+    const odkpTicks: ODKPRaidTick[] = [];
+    const descriptions: string[] = [];
 
-    const odkpTicks = ticks.flatMap((tick) => {
+    // Single pass through ticks
+    for (const tick of ticks) {
       const cleanTickName = tick.name.replace(/^(✅|❕|❔)/, "").trim();
 
-      // Critical failures
-      if (tick.data.event === undefined) {
-        throw new Error(`Tick is missing an event type.`);
-      }
-      if (tick.data.value === undefined) {
-        throw new Error(`Tick is missing a value.`);
-      }
+      // Filter unregistered characters
+      const unregisteredCharacters = tick.data.attendees.filter(
+        (raider) => !characters.find((odkpChar) => odkpChar.Name === raider)
+      );
 
-      const unregisteredCharacters = tick.data.attendees.filter((raider) => {
-        return !characters.find((odkpChar) => odkpChar.Name === raider);
-      });
-
-      // Non-critical failures
       if (unregisteredCharacters.length > 0) {
-        const errorMsg = `Character(s) not found on OpenDKP: ${unregisteredCharacters.join(
-          ", "
-        )}`;
+        const errorMsg = `Character${
+          unregisteredCharacters.length > 1 ? "s" : ""
+        } not found on OpenDKP for tick ${
+          tick.name
+        }: ${unregisteredCharacters.join(", ")}`;
         console.log(errorMsg);
         failures.push(errorMsg);
       }
 
-      return {
-        Characters: tick.data.attendees.map((char) => {
-          return {
-            Name: char,
-          };
-        }),
+      // Critical failures
+      if (tick.data.event === undefined) {
+        throw new Error("Tick is missing an event type.");
+      }
+      if (tick.data.value === undefined) {
+        throw new Error("Tick is missing a value.");
+      }
+
+      // Collect items from this tick
+      for (const loot of tick.data.loot) {
+        const odkpItem = await openDkpService.getItemId(loot.item);
+        if (unregisteredCharacters.includes(loot.buyer)) {
+          const errorMsg = `${loot.buyer} won ${odkpItem.ItemName} on tick ${tick.name}, but is not a registered character. Item will not be uploaded`;
+          failures.push(errorMsg);
+          console.log(errorMsg);
+        } else {
+          items.push({
+            CharacterName: loot.buyer,
+            Dkp: loot.price,
+            ItemName: odkpItem.ItemName,
+            GameItemId: odkpItem.GameItemId,
+            ItemId: odkpItem.ItemID,
+            Notes: cleanTickName,
+          });
+        }
+      }
+
+      // Build tick data
+      const odkpTick: ODKPRaidTick = {
+        Characters: tick.data.attendees
+          .filter((a) => !unregisteredCharacters.includes(a))
+          .map((char) => ({ Name: char })),
         Description: cleanTickName,
         Value: tick.data.value,
-      } as ODKPRaidTick;
-    });
+      };
+      odkpTicks.push(odkpTick);
 
-    const name = odkpTicks
-      .flatMap((tick) => {
-        return tick.Description;
-      })
-      .join(", ");
+      descriptions.push(cleanTickName);
+    }
 
     const raidData = {
       Attendance: 1,
@@ -330,14 +358,40 @@ export const openDkpService = {
         Name: "SoV",
         PoolId: 4,
       },
-      Name: name,
+      Name: descriptions.join(", "),
       Ticks: odkpTicks,
       Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
     } as ODKPRaidData;
 
-    await openDkpService.addRaid(raidData);
+    const raidResponseStr = await openDkpService.addRaid(raidData);
+    const raidResponse = JSON.parse(raidResponseStr) as ODKPRaidData;
     await openDkpService.doTickAdjustments(ticks);
-    return failures;
+    raidResponse.getCreatedEmbed = (
+      eventUrlSlug: string,
+      id: number,
+      invalidNames: string[]
+    ) => {
+      const spend = raidResponse.Items.reduce(
+        (prev, cur) => (prev += cur.Dkp),
+        0
+      );
+      const earn = raidResponse.Ticks.reduce(
+        (prev, cur) => (prev += cur.Value * cur.Characters.length),
+        0
+      );
+      return new EmbedBuilder({
+        title: raidResponse.Name,
+        description: `DKP earned: ${earn}\nDKP spent: ${spend}\nDKP net change: ${
+          earn - spend
+        }`,
+        url: eventUrlSlug,
+      });
+    };
+
+    return {
+      errors: failures,
+      response: raidResponse,
+    };
   },
   doTickAdjustments: async (ticks: RaidTick[]) => {
     for (const tick of ticks) {
@@ -586,7 +640,7 @@ export const openDkpService = {
       throw err;
     }
   },
-  addRaid: async (raid: ODKPRaidData) => {
+  addRaid: async (raid: ODKPRaidData): Promise<string> => {
     try {
       console.log(`OpenDKP - adding raid: ${JSON.stringify(raid)}`);
 
@@ -602,15 +656,20 @@ export const openDkpService = {
 
       const resp = await axios(putRaid);
       await new Promise((resolve) => setTimeout(resolve, 250));
-      console.log(`OpenDKP - added raid: ${JSON.stringify(resp.data)}`);
+      const raidData = JSON.stringify(resp.data);
+      console.log(`OpenDKP - added raid: ${raidData}`);
       openDkpService.logIfVerbose(resp);
+      return raidData;
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add raid: ${err}`);
       console.log(err);
       throw err;
     }
   },
-  updateRaid: async (raidId: string, payload: ODKPUpdateRaidData) => {
+  updateRaid: async (
+    raidId: string,
+    payload: ODKPUpdateRaidData
+  ): Promise<string> => {
     try {
       console.log(`OpenDKP - updating raid: ${JSON.stringify(raidId)}`);
 
@@ -626,8 +685,10 @@ export const openDkpService = {
 
       const resp = await axios(postRaid);
       await new Promise((resolve) => setTimeout(resolve, 200));
-      console.log(`OpenDKP - updated raid: ${JSON.stringify(resp.data)}`);
+      const raidData = JSON.stringify(resp.data);
+      console.log(`OpenDKP - updated raid: ${raidData}`);
       openDkpService.logIfVerbose(resp);
+      return raidData;
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to update raid: ${err}`);
       throw err;
