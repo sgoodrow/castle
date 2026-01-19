@@ -231,6 +231,19 @@ export const openDkpService = {
       throw error;
     }
   },
+  getCharacter: async (charName: string): Promise<ODKPCharacterData> => {
+    try {
+      const char = odkpCharacterCache.get(charName);
+      if (char) {
+        return char;
+      } else {
+        throw new Error(`Character ${charName} not found`);
+      }
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
 
   getItemId: async (itemName: string): Promise<ODKPItemResponse> => {
     const config = {
@@ -271,10 +284,19 @@ export const openDkpService = {
     const odkpTicks = ticks.flatMap((tick) => {
       const cleanTickName = tick.name.replace(/^(✅|❕|❔)/, "").trim();
 
+      // Critical failures
+      if (tick.data.event === undefined) {
+        throw new Error(`Tick is missing an event type.`);
+      }
+      if (tick.data.value === undefined) {
+        throw new Error(`Tick is missing a value.`);
+      }
+
       const unregisteredCharacters = tick.data.attendees.filter((raider) => {
         return !characters.find((odkpChar) => odkpChar.Name === raider);
       });
 
+      // Non-critical failures
       if (unregisteredCharacters.length > 0) {
         const errorMsg = `Character(s) not found on OpenDKP: ${unregisteredCharacters.join(
           ", "
