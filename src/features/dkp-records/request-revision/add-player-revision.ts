@@ -1,7 +1,7 @@
 import { capitalize, some } from "lodash";
-import { castledkp } from "../../../services/castledkp";
 import { RaidReport } from "../raid-report";
 import { RaidReportRevision } from "./raid-report-revision";
+import { openDkpService } from "../../../services/openDkpService";
 
 export class AddPlayerRevision extends RaidReportRevision {
   protected async execute(raid: RaidReport) {
@@ -19,7 +19,7 @@ export class AddPlayerRevision extends RaidReportRevision {
       throw this.getFormatError("invalid tick numbers");
     }
     const player = capitalize(playerRaw);
-    await castledkp.getCharacter(playerRaw);
+    await openDkpService.getCharacter(playerRaw);
     return {
       player,
       tickNumbers,
