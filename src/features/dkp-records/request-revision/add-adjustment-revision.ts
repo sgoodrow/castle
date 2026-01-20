@@ -1,7 +1,7 @@
 import { capitalize } from "lodash";
-import { castledkp } from "../../../services/castledkp";
 import { RaidReport } from "../raid-report";
 import { RaidReportRevision } from "./raid-report-revision";
+import { openDkpService } from "../../../services/openDkpService";
 
 export class AddAdjustmentRevision extends RaidReportRevision {
   protected async execute(raid: RaidReport) {
@@ -23,7 +23,7 @@ export class AddAdjustmentRevision extends RaidReportRevision {
       throw this.getFormatError("missing reason");
     }
     const player = capitalize(playerRaw);
-    await castledkp.getCharacter(player);
+    await openDkpService.getCharacter(player);
     return {
       player,
       value,

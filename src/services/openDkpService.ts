@@ -241,24 +241,21 @@ export const openDkpService = {
       throw error;
     }
   },
-  getCharacter: async (charName: string): Promise<ODKPCharacterData> => {
-    try {
-      let char = odkpCharacterCache.get(charName);
-      if (char) {
-        return char;
-      } else {
-        console.log(`${charName} not found, reloading cache`);
-        const chars = await openDkpService.getCharacters();
-        char = chars.find((c) => c.Name === charName);
-        if (char) {
-          return char;
-        } else {
-          throw new Error(`Character ${charName} not found`);
-        }
+  getCharacter: async (
+    charName: string,
+    requireExist = true
+  ): Promise<ODKPCharacterData | undefined> => {
+    let char = odkpCharacterCache.get(charName);
+    if (char) {
+      return char;
+    } else {
+      console.log(`${charName} not found, reloading cache`);
+      const chars = await openDkpService.getCharacters();
+      char = chars.find((c) => c.Name === charName);
+      if (!char && requireExist) {
+        throw new Error(`Character ${charName} not found`);
       }
-    } catch (error) {
-      console.log(error);
-      throw error;
+      return char;
     }
   },
 
@@ -365,7 +362,8 @@ export const openDkpService = {
 
     const raidResponseStr = await openDkpService.addRaid(raidData);
     const raidResponse = JSON.parse(raidResponseStr) as ODKPRaidData;
-    await openDkpService.doTickAdjustments(ticks);
+    const adjustmentResponse = await openDkpService.doTickAdjustments(ticks);
+
     raidResponse.getCreatedEmbed = (
       eventUrlSlug: string,
       id: number,
@@ -379,11 +377,17 @@ export const openDkpService = {
         (prev, cur) => (prev += cur.Value * cur.Characters.length),
         0
       );
+
+      const adjustments = adjustmentResponse.reduce(
+        (prev, curr) => (prev += curr.Value),
+        0
+      );
+
       return new EmbedBuilder({
         title: raidResponse.Name,
-        description: `DKP earned: ${earn}\nDKP spent: ${spend}\nDKP net change: ${
-          earn - spend
-        }`,
+        description: `DKP earned: ${
+          earn + adjustments
+        }\nDKP spent: ${spend}\nDKP net change: ${earn + adjustments - spend}`,
         url: eventUrlSlug,
       });
     };
@@ -393,20 +397,23 @@ export const openDkpService = {
       response: raidResponse,
     };
   },
-  doTickAdjustments: async (ticks: RaidTick[]) => {
+  doTickAdjustments: async (ticks: RaidTick[]): Promise<ODKPAdjustment[]> => {
+    const odkpAdjustments: ODKPAdjustment[] = [];
     for (const tick of ticks) {
       if (tick.data.adjustments) {
         for (const adj of tick.data.adjustments) {
-          await openDkpService.addAdjustment({
+          const adjustmentResult = await openDkpService.addAdjustment({
             Character: { Name: adj.player },
             Description: tick.note,
             Name: adj.reason,
             Value: adj.value,
             Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
           });
+          odkpAdjustments.push(adjustmentResult);
         }
       }
     }
+    return odkpAdjustments;
   },
   addItem: async (
     buyer: string,
@@ -450,7 +457,9 @@ export const openDkpService = {
       throw err;
     }
   },
-  addAdjustment: async (adjustment: ODKPAdjustment) => {
+  addAdjustment: async (
+    adjustment: ODKPAdjustment
+  ): Promise<ODKPAdjustment> => {
     try {
       console.log(`OpenDKP - adding adjustment: ${JSON.stringify(adjustment)}`);
       const addAdjustment = {
@@ -463,8 +472,14 @@ export const openDkpService = {
       };
       const resp = await axios(addAdjustment);
       await new Promise((resolve) => setTimeout(resolve, 100));
-      console.log(`OpenDKP - added adjustment: ${JSON.stringify(resp.data)}`);
+      if (!resp.data?.[0]) {
+        throw new Error(`No data in adjustment response`);
+      }
+      console.log(
+        `OpenDKP - added adjustment: ${JSON.stringify(resp.data[0])}`
+      );
       openDkpService.logIfVerbose(resp);
+      return resp.data[0];
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add adjustment: ${err})}`);
       throw err;

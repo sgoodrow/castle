@@ -7,7 +7,6 @@ import moment from "moment";
 export class AddAdjustmentBonus extends RaidBonusRequest {
   protected async execute(raidId: number) {
     const adjustment = await this.validateArgs();
-    await castledkp.addAdjustment(raidId, adjustment);
     await openDkpService.addAdjustment({
       Character: { Name: adjustment.player },
       Description: adjustment.reason,
@@ -15,6 +14,8 @@ export class AddAdjustmentBonus extends RaidBonusRequest {
       Value: adjustment.value,
       Timestamp: moment().toISOString(),
     });
+
+    await castledkp.addAdjustment(raidId, adjustment);
   }
 
   protected async validateArgs() {
@@ -31,7 +32,7 @@ export class AddAdjustmentBonus extends RaidBonusRequest {
       throw this.getFormatError("missing reason");
     }
     const player = capitalize(playerRaw);
-    await castledkp.getCharacter(player);
+    await openDkpService.getCharacter(player);
     return {
       player,
       value,
