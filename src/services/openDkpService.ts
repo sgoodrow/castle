@@ -278,7 +278,8 @@ export const openDkpService = {
   },
 
   createRaidFromTicks: async (
-    ticks: RaidTick[]
+    ticks: RaidTick[],
+    threadUrl: string
   ): Promise<{
     errors: string[];
     response: ODKPRaidData;
@@ -356,7 +357,7 @@ export const openDkpService = {
         Name: "SoV",
         PoolId: 4,
       },
-      Name: descriptions.join(", "),
+      Name: `${descriptions.join(", ")} ${threadUrl}`,
       Ticks: odkpTicks,
       Timestamp: moment.utc(ticks[0].uploadDate).toISOString(),
     } as ODKPRaidData;
