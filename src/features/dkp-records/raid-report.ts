@@ -282,7 +282,8 @@ ${p}${code}`,
 
     try {
       const { errors, response } = await openDkpService.createRaidFromTicks(
-        this.ticks
+        this.ticks,
+        threadUrl
       );
       created.push({
         eventUrlSlug: `http://castle.opendkp.com/#/raids/${response.RaidId}`,
