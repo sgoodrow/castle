@@ -245,6 +245,7 @@ export const openDkpService = {
     charName: string,
     requireExist = true
   ): Promise<ODKPCharacterData | undefined> => {
+    charName = capitalize(charName);
     let char = odkpCharacterCache.get(charName);
     if (char) {
       return char;
@@ -318,7 +319,7 @@ export const openDkpService = {
       // Collect items from this tick
       for (const loot of tick.data.loot) {
         const odkpItem = await openDkpService.getItemId(loot.item);
-        if (unregisteredCharacters.includes(loot.buyer)) {
+        if (!characters.find((c) => c.Name === loot.buyer)) {
           const errorMsg = `${loot.buyer} won ${odkpItem.ItemName} on tick ${tick.name}, but is not a registered character. Item will not be uploaded`;
           failures.push(errorMsg);
           console.log(errorMsg);
