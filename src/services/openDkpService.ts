@@ -348,7 +348,7 @@ export const openDkpService = {
 
       descriptions.push(cleanTickName);
     }
-
+    const embedTitle = descriptions.join(", ");
     const raidData = {
       Attendance: 1,
       Items: items,
@@ -386,7 +386,7 @@ export const openDkpService = {
       );
 
       return new EmbedBuilder({
-        title: raidResponse.Name,
+        title: embedTitle,
         description: `DKP earned: ${
           earn + adjustments
         }\nDKP spent: ${spend}\nDKP net change: ${earn + adjustments - spend}`,
@@ -610,8 +610,7 @@ export const openDkpService = {
       throw err;
     }
   },
-  searchItem: async (itemName: string): Promise<ODKPItemResponse> => {
-    const cleanItemName = decodeHtmlEntities(itemName);
+  searchItem: async (itemName: string): Promise<ODKPItemResponse> => {    
     const getItem = {
       method: "get",
       url: "https://api.opendkp.com/items/autocomplete",
@@ -619,7 +618,7 @@ export const openDkpService = {
         Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
       },
       params: {
-        item: cleanItemName,
+        item: encodeURIComponent(itemName),
         game: 0,
       },
     } as AxiosRequestConfig;
