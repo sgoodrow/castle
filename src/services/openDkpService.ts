@@ -160,25 +160,33 @@ export const odkpCharacterCache = new LRUCache<string, ODKPCharacterData>({
   ttl: 10 * MINUTES,
 });
 
+export let odkpItemDb: ODKPItemDbItem[] = [];
+
 let accessTokens: IAccessTokenResult;
 
 export const openDkpService = {
   authenticate: async () => {
     if (openDkpUsername && openDkpPassword && openDkpAuthClientId) {
-      openDkpService
-        .doUserPasswordAuth(
+      try {
+        await openDkpService.doUserPasswordAuth(
           openDkpUsername,
           openDkpPassword,
           openDkpAuthClientId
-        )
-        .then(async () => {
-          console.log("Authenticated with OpenDKP");
-          await openDkpService.getCharacters();
-          await openDkpService.importData();
-        })
-        .catch((reason) => {
-          console.log("Failed to authenticate with OpenDKP: " + reason);
-        });
+        );
+        console.log("Authenticated with OpenDKP");
+      } catch (reason) {
+        console.log("Failed to authenticate OpenDKP: " + reason);
+      }
+    }
+    try {
+      console.log(`Loading OpenDKP data`);
+      await openDkpService.getCharacters();
+      await openDkpService.loadItemDb();
+      await openDkpService.importData();
+      console.log(`Done loading OpenDKP data`);
+    } catch (err: unknown) {
+      console.log(`Failed to load OpenDKP data`);
+      console.log(err);
     }
   },
   doUserPasswordAuth: async (
@@ -210,6 +218,21 @@ export const openDkpService = {
       openDkpService.logIfVerbose(response);
     } catch (error) {
       console.log(JSON.stringify(error, null, 2));
+    }
+  },
+  loadItemDb: async (): Promise<void> => {
+    console.log(`Reading OpenDKP item database`);
+    try {
+      if (fs.existsSync("./items.json")) {
+        const data = await fs.readFileSync("./items.json", "utf-8");
+        odkpItemDb = JSON.parse(data);
+        console.log(`Loaded ${odkpItemDb.length} items`);
+      } else {
+        console.log(`No item file present`);
+      }
+    } catch (err: unknown) {
+      console.log("Failed to load item database");
+      console.log(err);
     }
   },
   getCharacters: async (): Promise<ODKPCharacterData[]> => {
@@ -261,6 +284,15 @@ export const openDkpService = {
   },
 
   getItemId: async (itemName: string): Promise<ODKPItemResponse> => {
+    const item = odkpItemDb.find((i) => i.Name === itemName);
+    if (item) {
+      return {
+        GameItemId: item.GameItemId,
+        ItemID: item.ItemId,
+        ItemName: item.Name,
+      };
+    }
+    console.log(`Item not in database, searching for ${itemName}`);
     const config = {
       method: "get",
       url: `https://api.opendkp.com/items/autocomplete?item=${itemName}`,
@@ -610,33 +642,34 @@ export const openDkpService = {
       throw err;
     }
   },
-  searchItem: async (itemName: string): Promise<ODKPItemResponse> => {    
-    const getItem = {
-      method: "get",
-      url: "https://api.opendkp.com/items/autocomplete",
-      headers: {
-        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
-      },
-      params: {
-        item: encodeURIComponent(itemName),
-        game: 0,
-      },
-    } as AxiosRequestConfig;
+  // searchItem: async (itemName: string): Promise<ODKPItemResponse> => {
+  //   const cleanItemName = decodeHtmlEntities(itemName);
+  //   const getItem = {
+  //     method: "get",
+  //     url: "https://api.opendkp.com/items/autocomplete",
+  //     headers: {
+  //       Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+  //     },
+  //     params: {
+  //       item: cleanItemName,
+  //       game: 0,
+  //     },
+  //   } as AxiosRequestConfig;
 
-    try {
-      const resp = await axios(getItem);
-      const itemResp = resp.data as ODKPItemResponse[];
-      if (itemResp.length > 0) {
-        console.log(JSON.stringify(itemResp));
-        return itemResp[0];
-      } else {
-        throw new Error("No item found");
-      }
-    } catch (err: unknown) {
-      console.log(err);
-      throw err;
-    }
-  },
+  //   try {
+  //     const resp = await axios(getItem);
+  //     const itemResp = resp.data as ODKPItemResponse[];
+  //     if (itemResp.length > 0) {
+  //       console.log(JSON.stringify(itemResp));
+  //       return itemResp[0];
+  //     } else {
+  //       throw new Error("No item found");
+  //     }
+  //   } catch (err: unknown) {
+  //     console.log(err);
+  //     throw err;
+  //   }
+  // },
   getRaid: async (raidId: number): Promise<ODKPRaidData> => {
     const getRaid = {
       method: "get",
