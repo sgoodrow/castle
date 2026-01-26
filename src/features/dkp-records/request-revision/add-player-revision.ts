@@ -19,7 +19,7 @@ export class AddPlayerRevision extends RaidReportRevision {
       throw this.getFormatError("invalid tick numbers");
     }
     const player = capitalize(playerRaw);
-    await openDkpService.getCharacter(playerRaw);
+    await openDkpService.getCharacter(playerRaw, false);
     return {
       player,
       tickNumbers,
