@@ -22,7 +22,7 @@ export class RemovePlayerRevision extends RaidReportRevision {
       throw this.getFormatError("invalid tick numbers");
     }
     const player = capitalize(playerRaw);
-    await openDkpService.getCharacter(player);
+    await openDkpService.getCharacter(player, false);
     return { player, tickNumbers };
   }
 }
