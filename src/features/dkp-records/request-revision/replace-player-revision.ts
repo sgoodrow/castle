@@ -29,7 +29,7 @@ export class ReplacePlayerRevision extends RaidReportRevision {
     const replaced = capitalize(replacedRaw);
     await openDkpService.getCharacter(replaced, false);
     const replacer = capitalize(replacerRaw);
-    await openDkpService.getCharacter(replacer);
+    await openDkpService.getCharacter(replacer, false);
     return {
       replacer,
       replaced,
