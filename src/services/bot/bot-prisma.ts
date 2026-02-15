@@ -163,6 +163,7 @@ Password: ${spoiler(details.password)}
             await interaction.editReply(
                 `You do not have the correct permissions to access ${name}.`
             );
+            throw err;
         }
     }
 
