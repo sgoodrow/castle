@@ -27,6 +27,10 @@ import { RequestBotButtonCommand } from "./request-bot-button-command";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { LocationService } from "../../services/location";
 import { log } from "../../shared/logger"
+import { SECONDS } from "../../shared/time";
+
+const BOT_BUTTON_THROTTLE_MS = 30 * SECONDS;
+let lastBotButtonSendTime = 0;
 
 class sendBp extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -57,14 +61,23 @@ class sendBp extends Subcommand {
           `
 `
         );
+        const now = Date.now();
+        const shouldIncludeButtons =
+          !!savedBp?.location &&
+          now - lastBotButtonSendTime > BOT_BUTTON_THROTTLE_MS;
         const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
-          await getBotButtonComponents(savedBp?.location || "");
+          shouldIncludeButtons
+            ? await getBotButtonComponents(savedBp.location)
+            : [];
         await bpChannel.send({
           content:
-            `[${interaction.user}] <@&${raiderRoleId}> 
+            `[${interaction.user}] <@&${raiderRoleId}>
 ` + formattedMessage,
-          components: savedBp?.location ? components : undefined,
+          components: shouldIncludeButtons ? components : undefined,
         });
+        if (shouldIncludeButtons) {
+          lastBotButtonSendTime = now;
+        }
 
         interaction.editReply("Batphone posted: " + message);
 
