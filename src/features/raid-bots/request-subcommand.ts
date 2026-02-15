@@ -25,8 +25,11 @@ export class RequestSubcommand extends Subcommand {
 
   public async execute(interaction: CommandInteraction<CacheType>) {
     const name = this.getOption(Option.Name, interaction)?.value as string;
-
-    await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
+    try {
+      await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
+    } catch {
+      // doBotCheckout handles user-facing error responses internally
+    }
   }
 
   public get command() {
