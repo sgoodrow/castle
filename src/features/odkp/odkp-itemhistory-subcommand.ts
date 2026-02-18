@@ -11,6 +11,7 @@ import {
   odkpItemDb,
   ODKPItemHistoryEntry,
 } from "../../services/openDkpService";
+import moment from "moment";
 
 export class OdkpItemHistorySubcommand extends Subcommand {
   public async getOptionAutocomplete(
@@ -53,35 +54,32 @@ export class OdkpItemHistorySubcommand extends Subcommand {
       }
 
       const sorted = [...history].sort(
-        (a, b) => new Date(b.Date).getTime() - new Date(a.Date).getTime()
+        (a, b) =>
+          new Date(b.Timestamp).getTime() - new Date(a.Timestamp).getTime()
       );
 
       const min = history.reduce((prev, cur) =>
-        cur.DkpValue < prev.DkpValue ? cur : prev
+        cur.DKP < prev.DKP ? cur : prev
       );
       const max = history.reduce((prev, cur) =>
-        cur.DkpValue > prev.DkpValue ? cur : prev
+        cur.DKP > prev.DKP ? cur : prev
       );
       const avg =
-        history.reduce((sum, entry) => sum + entry.DkpValue, 0) /
-        history.length;
+        history.reduce((sum, entry) => sum + entry.DKP, 0) / history.length;
 
       const recentCount = 5;
       const recent = sorted.slice(0, recentCount);
 
-      const formatDate = (dateStr: string) => {
-        const d = new Date(dateStr);
-        return d.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        });
+      const toDate = (timestamp: string) => {
+        return moment(timestamp).format("MMM DD YYYY");
       };
 
       const recentLines = recent
         .map(
           (entry) =>
-            `${entry.DkpValue} DKP - ${entry.CharacterName} (${formatDate(entry.Date)})`
+            `${entry.DKP} DKP - ${entry.CharacterName} (${toDate(
+              entry.Timestamp
+            )})`
         )
         .join("\n");
 
@@ -91,8 +89,12 @@ export class OdkpItemHistorySubcommand extends Subcommand {
           {
             name: "All-Time Statistics",
             value: [
-              `**Min:** ${min.DkpValue} DKP (${formatDate(min.Date)}, ${min.CharacterName})`,
-              `**Max:** ${max.DkpValue} DKP (${formatDate(max.Date)}, ${max.CharacterName})`,
+              `**Min:** ${min.DKP} DKP (${toDate(min.Timestamp)}, ${
+                min.CharacterName
+              })`,
+              `**Max:** ${max.DKP} DKP (${toDate(max.Timestamp)}, ${
+                max.CharacterName
+              })`,
               `**Avg:** ${Math.round(avg)} DKP`,
               `**Total purchases:** ${history.length}`,
             ].join("\n"),
