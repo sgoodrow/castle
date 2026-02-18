@@ -461,10 +461,10 @@ export const openDkpService = {
       return new EmbedBuilder({
         title: `${embedTitle}`,
         description: `${code}diff
-      DKP Earned             ${earn + adjustments}
-      DKP Spent              ${spend}
-      -------------------------------
-      ${result}${code}${notIncluded}`,
+DKP Earned             ${earn + adjustments}
+DKP Spent              ${spend}
+-------------------------------
+${result}${code}${notIncluded}`,
         url: eventUrlSlug,
       });
     };
