@@ -5,6 +5,7 @@ import LRUCache from "lru-cache";
 import { MINUTES } from "../shared/time";
 import {
   capitalize,
+  code,
   convertClass,
   convertRace,
   decodeHtmlEntities,
@@ -105,6 +106,16 @@ export interface ODKPItemDbItem {
   ItemId: number;
   Name: string;
   GameItemId: number;
+}
+
+export interface ODKPItemHistoryEntry {
+  CharacterName: string;
+  ItemName: string;
+  ItemID: number;
+  Raid: string;
+  RaidId: number;
+  DKP: number;
+  Timestamp: string;
 }
 
 export interface ODKPAdjustment {
@@ -309,6 +320,24 @@ export const openDkpService = {
     }
   },
 
+  getItemHistory: async (itemId: number): Promise<ODKPItemHistoryEntry[]> => {
+    const config = {
+      method: "get",
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/items/${itemId}`,
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+    };
+
+    try {
+      const response = await axios(config);
+      return response.data as ODKPItemHistoryEntry[];
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
+
   createRaidFromTicks: async (
     ticks: RaidTick[],
     threadUrl: string
@@ -416,12 +445,26 @@ export const openDkpService = {
         (prev, curr) => (prev += curr.Value),
         0
       );
-
+      const net = earn + adjustments - spend;
+      const result =
+        net === 0
+          ? "No change to economy"
+          : net > 0
+          ? `+ Economy increase     ${net}`
+          : `- Economy decrease     ${net}`;
+      const notIncluded =
+        invalidNames.length > 0
+          ? `These characters were not included because they do not exist ${invalidNames.join(
+              ", "
+            )}`
+          : "";
       return new EmbedBuilder({
-        title: embedTitle,
-        description: `DKP earned: ${
-          earn + adjustments
-        }\nDKP spent: ${spend}\nDKP net change: ${earn + adjustments - spend}`,
+        title: `${embedTitle}`,
+        description: `${code}diff
+      DKP Earned             ${earn + adjustments}
+      DKP Spent              ${spend}
+      -------------------------------
+      ${result}${code}${notIncluded}`,
         url: eventUrlSlug,
       });
     };
