@@ -107,6 +107,16 @@ export interface ODKPItemDbItem {
   GameItemId: number;
 }
 
+export interface ODKPItemHistoryEntry {
+  CharacterName: string;
+  ItemName: string;
+  ItemID: number;
+  Raid: string;
+  RaidID: number;
+  Date: string;
+  DkpValue: number;
+}
+
 export interface ODKPAdjustment {
   Name: string;
   Description: string;
@@ -303,6 +313,24 @@ export const openDkpService = {
     try {
       const response = await axios(config);
       return response.data[0] || undefined;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
+
+  getItemHistory: async (itemId: number): Promise<ODKPItemHistoryEntry[]> => {
+    const config = {
+      method: "get",
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/items/${itemId}`,
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+    };
+
+    try {
+      const response = await axios(config);
+      return response.data as ODKPItemHistoryEntry[];
     } catch (error) {
       console.log(error);
       throw error;
