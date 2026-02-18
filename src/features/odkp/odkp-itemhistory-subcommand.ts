@@ -37,7 +37,9 @@ export class OdkpItemHistorySubcommand extends Subcommand {
   ): Promise<void> {
     try {
       const itemName = this.getRequiredOptionValue<string>("item", interaction);
-      await interaction.editReply(`Looking up history for ${itemName}...`);
+      await interaction.editReply({
+        content: `Looking up history for ${itemName}...`,
+      });
 
       const item = await openDkpService.getItemId(itemName);
       if (!item) {
@@ -125,5 +127,6 @@ export class OdkpItemHistorySubcommand extends Subcommand {
 
 export const odkpItemHistorySubcommand = new OdkpItemHistorySubcommand(
   "itemhistory",
-  "View DKP purchase history and statistics for an item"
+  "View DKP purchase history and statistics for an item",
+  false
 );

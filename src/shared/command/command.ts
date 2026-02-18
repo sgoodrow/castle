@@ -14,9 +14,10 @@ export class Command extends BaseCommand {
   public constructor(
     name: string,
     description: string,
-    private readonly _subcommands: Subcommand[]
+    private readonly _subcommands: Subcommand[],
+    ephemeral = true
   ) {
-    super(`${name}${commandSuffix || ""}`, description);
+    super(`${name}${commandSuffix || ""}`, description, ephemeral);
     this.command = new SlashCommandBuilder()
       .setName(this.name)
       .setDescription(this.description);
