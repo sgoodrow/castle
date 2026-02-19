@@ -10,7 +10,7 @@ import {
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import moment from "moment";
 import { getClassAbreviation } from "../../shared/classes";
-import { log } from "../../shared/logger"
+import { log } from "../../shared/logger";
 
 export const botEmbedInstructions = new InstructionsReadyAction(
   Name.BotStatusEmbed,
@@ -23,10 +23,10 @@ export const updateBotEmbed = (options: Options) => {
   }, options);
 };
 
- const truncate = (str: string, maxLength: number) => {
+const truncate = (str: string, maxLength: number) => {
   if (str.length <= maxLength) return str;
-  return str.slice(0, maxLength - 3) + '...';
-}
+  return str.slice(0, maxLength - 3) + "...";
+};
 export const refreshBotEmbed = async () => {
   const publicAccounts = PublicAccountsFactory.getService();
   let botString = "";
@@ -65,20 +65,23 @@ export const refreshBotEmbed = async () => {
   }
 
   botMessages.push(botString);
-
-  await botEmbedInstructions
-    .createOrUpdateInstructions({
-      embeds: botMessages.map((message: string, idx: number) => {
-        return new EmbedBuilder({
-          title:
-            idx === 0
-              ? `Castle bots - last updated ${moment().toLocaleString()}`
-              : "",
-          description: message,
-        });
-      }),
-    })
-    .catch((reason) => {
-      log(`Embed update failed: ${reason}`);
-    });
+  try {
+    await botEmbedInstructions
+      .createOrUpdateInstructions({
+        embeds: botMessages.map((message: string, idx: number) => {
+          return new EmbedBuilder({
+            title:
+              idx === 0
+                ? `Castle bots - last updated ${moment().toLocaleString()}`
+                : "",
+            description: message,
+          });
+        }),
+      })
+      .catch((reason) => {
+        log(`Embed update failed: ${reason}`);
+      });
+  } catch (err: unknown) {
+    log("Failed to update bot embed");
+  }
 };
