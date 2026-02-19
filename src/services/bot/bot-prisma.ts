@@ -384,12 +384,8 @@ Password: ${spoiler(details.password)}
     }
 
     async cleanupCheckouts(hours: number): Promise<number> {
-        const cleanupCount = 0;
         const cutoffTime = moment().subtract(hours, "hours");
         const botsToPark: Bot[] = [];
-        // Could probably use a DateTime lte comparison here but the schema
-        // is already a string for checkout time and I'm scared of breaking
-        // prisma again
         const staleBots = await prismaClient.bot.findMany({
             where: {
                 checkoutTime: {
@@ -401,7 +397,7 @@ Password: ${spoiler(details.password)}
         staleBots.forEach((bot: Bot) => {
             if (bot.checkoutTime) {
                 const checkoutTime = moment(bot.checkoutTime);
-                if (moment.isMoment(checkoutTime)) {
+                if (checkoutTime.isValid()) {
                     if (checkoutTime < cutoffTime) {
                         botsToPark.push(bot);
                     }
@@ -421,45 +417,58 @@ all checkouts older than ${hours} hour(s) are being cleaned up. Please remember 
 If you are still piloting ${botName}, sorry for the inconvenience and please use /bot request ${botName} to restore your checkout.`;
         };
         const members = await getMembers();
-        await Promise.all(
-            botsToPark.map(async (bot: Bot) => {
+        for (const bot of botsToPark) {
+            try {
+                // Try to notify the pilot, but don't let failure prevent parking
                 const pilot = members.find((member) => {
                     return member.user.username === bot.currentPilot;
                 });
                 if (pilot) {
-                    // notify offender
-                    await pilot.send({
-                        content: generateMessage(bot.name, bot.checkoutTime),
-                    });
-
-                    bot.checkoutTime = "";
-                    bot.currentPilot = "";
-
-                    // update db
-                    await prismaClient.bot.update({
-                        where: {
-                            name: bot.name,
-                        },
-                        data: bot,
-                    });
-
-                    // Update sheet
-                    await SheetPublicAccountService.getInstance().updateBotRowDetails(
-                        bot.name,
-                        {
-                            [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
-                            [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
-                        }
-                    );
-
+                    try {
+                        await pilot.send({
+                            content: generateMessage(bot.name, bot.checkoutTime),
+                        });
+                        log(
+                            `Auto-parked ${bot.name} and sent a DM to ${pilot.user.username}`
+                        );
+                    } catch (dmError) {
+                        log(
+                            `Auto-parked ${bot.name} but failed to DM ${pilot.user.username}: ${dmError}`
+                        );
+                    }
+                } else {
                     log(
-                        `Auto-parked ${bot.name} and sent a DM to ${pilot.user.username}`
+                        `Auto-parked ${bot.name} (pilot "${bot.currentPilot}" not found in server)`
                     );
-
-                    cleanupCount++;
                 }
-            })
-        );
+
+                bot.checkoutTime = "";
+                bot.currentPilot = "";
+
+                // update db
+                await prismaClient.bot.update({
+                    where: {
+                        name: bot.name,
+                    },
+                    data: bot,
+                });
+
+                // Update sheet
+                await SheetPublicAccountService.getInstance().updateBotRowDetails(
+                    bot.name,
+                    {
+                        [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: "",
+                        [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
+                    }
+                );
+
+                cleanupCount++;
+            } catch (error) {
+                log(
+                    `Failed to auto-park ${bot.name}: ${error}`
+                );
+            }
+        }
         return cleanupCount;
     }
 
