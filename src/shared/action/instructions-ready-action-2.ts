@@ -1,11 +1,11 @@
 import { DiscordAPIError, BaseMessageOptions } from "discord.js";
 import { dataSource } from "../../db/data-source";
-import { Instructions, Name } from "../../db/instructions";
+import { Instructions } from "../../db/instructions";
 import { getTextChannel } from "../..";
 
 export class InstructionsReadyAction {
   public constructor(
-    private readonly name: Name,
+    private readonly name: string,
     private readonly channelId: string,
     private readonly threadName?: string
   ) {}
@@ -36,6 +36,20 @@ export class InstructionsReadyAction {
       await message.startThread({
         name: this.threadName,
       });
+    }
+  }
+
+  public async deleteInstructionsMessage() {
+    const message = await this.getInstructionsMessage();
+    if (message) {
+      await message.delete();
+    }
+    const instructions = await dataSource
+      .getRepository(Instructions)
+      .findOneBy({ name: this.name, canceled: false });
+    if (instructions) {
+      instructions.canceled = true;
+      await dataSource.manager.save(instructions);
     }
   }
 
