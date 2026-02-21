@@ -103,13 +103,15 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       );
 
       const foundBot = details.characters;
-
+      const prismaBot = await this.getBotByName(foundBot);
       const currentPilot = await this.getCurrentBotPilot(foundBot);
 
-      let response = `${code}diff
+      const factionWarning = `${code}diff
 - FACTIONED CHARACTER WARNING
 - BY PLAYING THIS CHARACTER YOU AGREE TO NOT TAKE ANY FACTION HITS. RAID LEADERSHIP RESERVES THE RIGHT TO RECOUP THE COSTS OF REFACTIONING THE BOT OR DOCK DKP, BASED ON THE DIFFICULTY OF REFACTIONING
-${code}
+${code}`;
+
+      let response = `${prismaBot?.factioned ? factionWarning : ""}
 ${details.characters} (${details.purpose})
 Account: ${details.accountName}
 Password: ${spoiler(details.password)}
@@ -123,10 +125,7 @@ Password: ${spoiler(details.password)}
         components = await this.getBotParkButtonComponents(name);
       }
       response += `The credentials for ${foundBot} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
-      response += `${code}diff
-- FACTIONED CHARACTER WARNING
-- BY PLAYING THIS CHARACTER YOU AGREE TO NOT TAKE ANY FACTION HITS. RAID LEADERSHIP RESERVES THE RIGHT TO RECOUP THE COSTS OF REFACTIONING THE BOT OR DOCK DKP, BASED ON THE DIFFICULTY OF REFACTIONING
-${code}`;
+      response += `${prismaBot?.factioned ? factionWarning : ""}`;
 
       await interaction.editReply({
         content: response,
