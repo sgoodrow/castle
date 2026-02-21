@@ -25,6 +25,7 @@ import { getClassAbreviation } from "../../shared/classes";
 import { raidBotInstructions } from "../../features/raid-bots/update-bots";
 import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-command";
 import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
+import { code } from "../../shared/util";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private prisma!: PrismaClient;
@@ -59,6 +60,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
           checkoutTime: time.isValid() ? time.toString() : "",
           currentPilot: row[BOT_SPREADSHEET_COLUMNS.CurrentPilot],
           bindLocation: row[BOT_SPREADSHEET_COLUMNS.BindLocation],
+          factioned: row[BOT_SPREADSHEET_COLUMNS.Factioned] !== "",
           requiredRoles: roles.map((r) => r.id),
         },
       });
@@ -104,7 +106,11 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
       const currentPilot = await this.getCurrentBotPilot(foundBot);
 
-      let response = `${details.characters} (${details.purpose})
+      let response = `${code}diff
+- FACTIONED CHARACTER WARNING
+- BY PLAYING THIS CHARACTER YOU AGREE TO NOT TAKE ANY FACTION HITS. RAID LEADERSHIP RESERVES THE RIGHT TO RECOUP THE COSTS OF REFACTIONING THE BOT OR DOCK DKP, BASED ON THE DIFFICULTY OF REFACTIONING
+${code}
+${details.characters} (${details.purpose})
 Account: ${details.accountName}
 Password: ${spoiler(details.password)}
 
@@ -117,6 +123,10 @@ Password: ${spoiler(details.password)}
         components = await this.getBotParkButtonComponents(name);
       }
       response += `The credentials for ${foundBot} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
+      response += `${code}diff
+- FACTIONED CHARACTER WARNING
+- BY PLAYING THIS CHARACTER YOU AGREE TO NOT TAKE ANY FACTION HITS. RAID LEADERSHIP RESERVES THE RIGHT TO RECOUP THE COSTS OF REFACTIONING THE BOT OR DOCK DKP, BASED ON THE DIFFICULTY OF REFACTIONING
+${code}`;
 
       await interaction.editReply({
         content: response,
