@@ -16,6 +16,7 @@ export enum BOT_SPREADSHEET_COLUMNS {
   CurrentPilot = "Current Bot Pilot",
   CheckoutTime = "Date and Time (EST) of pilot login",
   BindLocation = "Bind Location",
+  Factioned = "Factioned",
 }
 
 export class PublicSheetService {
