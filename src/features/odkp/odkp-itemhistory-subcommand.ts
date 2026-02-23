@@ -41,7 +41,7 @@ export class OdkpItemHistorySubcommand extends Subcommand {
         content: `Looking up history for ${itemName}...`,
       });
 
-      const item = await openDkpService.getItemId(itemName);
+      const item = await openDkpService.getItem(itemName);
       if (!item) {
         await interaction.editReply(`Item "${itemName}" not found.`);
         return;

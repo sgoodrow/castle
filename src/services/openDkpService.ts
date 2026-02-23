@@ -294,7 +294,7 @@ export const openDkpService = {
     }
   },
 
-  getItemId: async (itemName: string): Promise<ODKPItemResponse> => {
+  getItem: async (itemName: string): Promise<ODKPItemResponse> => {
     const item = odkpItemDb.find((i) => i.Name === itemName);
     if (item) {
       return {
@@ -313,7 +313,13 @@ export const openDkpService = {
     };
     try {
       const response = await axios(config);
-      return response.data[0] || undefined;
+      return (
+        response.data[0] || {
+          GameItemId: -1,
+          ItemID: -1,
+          ItemName: itemName,
+        }
+      );
     } catch (error) {
       console.log(error);
       throw error;
@@ -380,12 +386,17 @@ export const openDkpService = {
 
       // Collect items from this tick
       for (const loot of tick.data.loot) {
-        const odkpItem = await openDkpService.getItemId(loot.item);
+        const odkpItem = await openDkpService.getItem(loot.item);
         if (!characters.find((c) => c.Name === loot.buyer)) {
           const errorMsg = `${loot.buyer} won ${odkpItem.ItemName} on tick ${tick.name}, but is not a registered character. Item will not be uploaded.`;
           failures.push(errorMsg);
           console.log(errorMsg);
         } else {
+          if (odkpItem.GameItemId === -1) {
+            failures.push(
+              `${odkpItem.ItemName} was not found in the item database but was included in the upload anyways.`
+            );
+          }
           items.push({
             CharacterName: loot.buyer,
             Dkp: loot.price,
@@ -511,7 +522,7 @@ ${result}${code}${notIncluded}`,
       Notes: note,
       ItemId: -1,
     };
-    const itemData = await openDkpService.getItemId(itemName);
+    const itemData = await openDkpService.getItem(itemName);
 
     if (itemData) {
       item.ItemId = itemData.ItemID;
