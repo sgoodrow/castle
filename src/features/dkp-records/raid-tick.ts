@@ -5,6 +5,7 @@ import { castledkp, RaidEventData } from "../../services/castledkp";
 import { code } from "../../shared/util";
 import { CreditData } from "./create/credit-parser";
 import { LootData } from "./raid-report";
+import { openDkpClientName } from "../../config";
 
 export const UPLOAD_DATE_FORMAT = "YYYY-MM-DD HH:mm";
 export const EVERYONE = "Everyone";
@@ -36,7 +37,7 @@ interface Change {
 }
 
 export const getRaidUrl = (eventUrlSlug: string, raidId: number) =>
-    `https://castledkp.com/index.php/Raids/[green]-${eventUrlSlug}-r${raidId}.html?s=`;
+    `https://${openDkpClientName}.opendkp.com/#/raids/${raidId}`;
 
 export class RaidTick {
     public constructor(public readonly data: RaidTickData) { }
