@@ -87,7 +87,7 @@ export class BonusesThreadSubcommand extends Subcommand {
       embeds: [
         new EmbedBuilder({
           title: `Raid: __${name}__`,
-          url: getRaidUrl(raid.eventUrlSlug, raid.id),
+          url: `https://castle.opendkp.com/#/adjustments`,
         }),
         new EmbedBuilder({
           title: "Instructions",
