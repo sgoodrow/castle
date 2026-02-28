@@ -297,9 +297,6 @@ Password: ${spoiler(details.password)}
       where: {
         location: location,
         currentPilot: "",
-        class: {
-          not: "Mage",
-        },
       },
       orderBy: [{ class: "asc" }, { name: "asc" }],
       take: 25,
