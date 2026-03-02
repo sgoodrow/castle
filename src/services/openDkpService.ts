@@ -23,6 +23,7 @@ import {
   openDkpAuctionRaidId,
 } from "../config";
 import { EmbedBuilder } from "discord.js";
+import { round } from "lodash";
 
 // Client for OpenDKP
 
@@ -291,6 +292,28 @@ export const openDkpService = {
         throw new Error(`Character ${charName} not found`);
       }
       return char;
+    }
+  },
+
+  getCharacterDkp: async (character: string): Promise<number> => {
+    const characterInfo = await openDkpService.getCharacter(character);
+    if (!characterInfo) throw new Error(`Character ${character} not found`);
+    const config = {
+      method: "get",
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/characters/${characterInfo.CharacterId}/dkp`,
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+    };
+    try {
+      const response = await axios(config);
+      if (response.data[0]) {
+        return round(response.data[0]?.Cumulative, 2);
+      }
+      return 0;
+    } catch (error) {
+      console.log(error);
+      throw error;
     }
   },
 
