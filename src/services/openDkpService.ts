@@ -308,13 +308,111 @@ export const openDkpService = {
     try {
       const response = await axios(config);
       if (response.data[0]) {
-        return round(response.data[0]?.Cumulative, 2);
+        return round(response.data[0]?.Cumulative, 1);
       }
       return 0;
     } catch (error) {
       console.log(error);
       throw error;
     }
+  },
+
+  getCharacterSummary: async (character: string): Promise<string> => {
+    const characterInfo = await openDkpService.getCharacter(character);
+    if (!characterInfo) throw new Error(`Character ${character} not found`);
+    const config = {
+      method: "get",
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/characters/${characterInfo.CharacterId}/dkp`,
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+    };
+    try {
+      const response = await axios(config);
+      if (response.data[0]) {
+        return openDkpService.formatForDiscord(response.data);
+      }
+      return "Error";
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
+
+  summarizeByCharacter: (data: any[]) => {
+    const totals = data.reduce((acc, { CharacterName, SourceType, Value }) => {
+      if (!acc[CharacterName]) {
+        acc[CharacterName] = {
+          CharacterName,
+          Raid: 0,
+          Adjustments: 0,
+          Items: 0,
+          Total: 0,
+        };
+      }
+
+      if (SourceType === "Raid") acc[CharacterName].Raid += Value;
+      else if (SourceType === "Adjustment")
+        acc[CharacterName].Adjustments += Value;
+      else if (SourceType === "Item") acc[CharacterName].Items += Value;
+
+      acc[CharacterName].Total += Value;
+
+      return acc;
+    }, {});
+
+    return Object.values(totals).sort((a: any, b: any) =>
+      a.CharacterName.localeCompare(b.CharacterName)
+    );
+  },
+
+  formatForDiscord: (data: any[]) => {
+    const summary = openDkpService.summarizeByCharacter(data);
+
+    const COL = { name: 20, raid: 8, adj: 8, items: 8, total: 8 };
+
+    const header = [
+      "Character".padEnd(COL.name),
+      "Raid".padStart(COL.raid),
+      "Adjust".padStart(COL.adj),
+      "Items".padStart(COL.items),
+      "Total".padStart(COL.total),
+    ].join(" ");
+
+    const divider = "─".repeat(header.length);
+
+    const rows = summary.map((c: any) =>
+      [
+        c.CharacterName.slice(0, COL.name).padEnd(COL.name),
+        c.Raid.toFixed(1).padStart(COL.raid),
+        c.Adjustments.toFixed(1).padStart(COL.adj),
+        c.Items.toFixed(1).padStart(COL.items),
+        c.Total.toFixed(1).padStart(COL.total),
+      ].join(" ")
+    );
+
+    const foot = summary.reduce(
+      (acc: any, c: any) => {
+        acc.Raid += c.Raid;
+        acc.Adjustments += c.Adjustments;
+        acc.Items += c.Items;
+        acc.Total += c.Total;
+        return acc;
+      },
+      { Raid: 0, Adjustments: 0, Items: 0, Total: 0 }
+    ) as any;
+
+    const footer = [
+      "TOTAL".padEnd(COL.name),
+      foot.Raid.toFixed(1).padStart(COL.raid),
+      foot.Adjustments.toFixed(1).padStart(COL.adj),
+      foot.Items.toFixed(1).padStart(COL.items),
+      foot.Total.toFixed(1).padStart(COL.total),
+    ].join(" ");
+
+    return (
+      "```\n" + [header, divider, ...rows, divider, footer].join("\n") + "\n```"
+    );
   },
 
   getItem: async (itemName: string): Promise<ODKPItemResponse> => {

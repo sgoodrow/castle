@@ -20,6 +20,7 @@ export const {
   openDkpClientName,
   openDkpAuctionRaidId,
   openDkpVerboseLogging,
+  enableEqDkpPlus,
   sharedCharactersGoogleSheetId,
   publicCharactersGoogleSheetId,
   commandSuffix,
@@ -140,6 +141,11 @@ export const {
    * opendkp.com verbose logging mode
    */
   openDkpVerboseLogging?: string;
+
+  /*
+   * Whether to enable EQ DKP Plus uploads
+   */
+  enableEqDkpPlus?: string;
 
   /**
    * CastleDKP.com Raid ID for DKP auctions.

@@ -17,6 +17,7 @@ import { castledkp } from "../../../services/castledkp";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { addRoleToThread } from "../../../shared/command/util";
 import { getRaidUrl } from "../raid-tick";
+import { isEqDkpPlusEnabled } from "../../../shared/util";
 
 enum Option {
   Name = "name",
@@ -72,16 +73,47 @@ export class BonusesThreadSubcommand extends Subcommand {
     });
 
     // create raid
-    const raid = await castledkp.createRaid(
-      name,
-      event,
-      castleDkpBonusesCharId,
-      `https://discord.com/channels/${thread.guildId}/${thread.id}`
-    );
+    if (isEqDkpPlusEnabled()) {
+      const raid = await castledkp.createRaid(
+        name,
+        event,
+        castleDkpBonusesCharId,
+        `https://discord.com/channels/${thread.guildId}/${thread.id}`
+      );
 
-    // save to redis
-    await redisClient.set(thread.id, raid.id);
+      // save to redis
+      await redisClient.set(thread.id, raid.id);
 
+      // link to raid with instructions
+      await thread.send({
+        embeds: [
+          new EmbedBuilder({
+            title: `Raid: __${name}__`,
+            url: getRaidUrl(raid.eventUrlSlug, raid.id),
+          }),
+          new EmbedBuilder({
+            title: "Instructions",
+            description: `• <@&${raiderRoleId}>s may use the \`!adj\` command to submit bonus requests.
+• The bot will react with ⚠️ if the request is invalid (wrong format).
+• Deputies will ✅ requests to add approve them.
+• Requests made by deputies are automatically approved.`,
+          }).addFields([
+            {
+              name: "Add a raid adjustment bonus. Context is optional.",
+              value: "`!adj Pumped 5 reason (context)`",
+            },
+          ]),
+        ],
+      });
+
+      // add deputies to thread
+      await addRoleToThread(dkpDeputyRoleId, thread);
+
+      // done!
+      await interaction.editReply(
+        `Created new DKP bonus thread ${thread} and raid ${raid.eventUrlSlug}".`
+      );
+    }
     // link to raid with instructions
     await thread.send({
       embeds: [
@@ -108,9 +140,7 @@ export class BonusesThreadSubcommand extends Subcommand {
     await addRoleToThread(dkpDeputyRoleId, thread);
 
     // done!
-    await interaction.editReply(
-      `Created new DKP bonus thread ${thread} and raid ${raid.eventUrlSlug}".`
-    );
+    await interaction.editReply(`Created new DKP bonus thread ${thread}.`);
   }
 
   public get command() {

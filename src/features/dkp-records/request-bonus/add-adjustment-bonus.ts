@@ -3,6 +3,7 @@ import { castledkp } from "../../../services/castledkp";
 import { RaidBonusRequest } from "./raid-bonus-request";
 import { openDkpService } from "../../../services/openDkpService";
 import moment from "moment";
+import { isEqDkpPlusEnabled } from "../../../shared/util";
 
 export class AddAdjustmentBonus extends RaidBonusRequest {
   protected async execute(raidId: number) {
@@ -14,8 +15,9 @@ export class AddAdjustmentBonus extends RaidBonusRequest {
       Value: adjustment.value,
       Timestamp: moment().toISOString(),
     });
-
-    await castledkp.addAdjustment(raidId, adjustment);
+    if (isEqDkpPlusEnabled()) {
+      await castledkp.addAdjustment(raidId, adjustment);
+    }
   }
 
   protected async validateArgs() {
