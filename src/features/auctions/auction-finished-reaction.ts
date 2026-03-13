@@ -19,6 +19,7 @@ import {
 import { castledkp } from "../../services/castledkp";
 import { some } from "lodash";
 import { openDkpService } from "../../services/openDkpService";
+import { isEqDkpPlusEnabled } from "../../shared/util";
 
 const code = "```";
 const emojis = ["✅", "🏦"];
@@ -107,11 +108,13 @@ class AuctionFinishedReactionAction extends ReactionAction {
       price
     );
 
-    await castledkp.addItem(Number(castleDkpAuctionRaidId), {
-      item,
-      buyer: character.Name,
-      price,
-    });
+    if (isEqDkpPlusEnabled()) {
+      await castledkp.addItem(Number(castleDkpAuctionRaidId), {
+        item,
+        buyer: character.Name,
+        price,
+      });
+    }
 
     // provide receipt
     await this.message.reply({

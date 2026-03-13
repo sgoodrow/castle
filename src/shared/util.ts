@@ -2,6 +2,7 @@ import { truncate } from "lodash";
 import * as fs from "fs";
 import * as readline from "readline";
 import { Readable } from "stream"; // Node's Readable
+import { enableEqDkpPlus } from "../config";
 
 export const code = "```";
 
@@ -148,3 +149,7 @@ export const classNames: Record<string, string> = {
   "14": "Wizard",
 };
 export type RowObject = Record<string, string>;
+
+export const isEqDkpPlusEnabled = () => {
+  return enableEqDkpPlus === "true";
+};

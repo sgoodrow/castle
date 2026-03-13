@@ -9,7 +9,7 @@ import { raiderRoleId } from "../../config";
 import { redisChannels, redisClient } from "../../redis/client";
 import { CreateRaidResponse, RaidEventData } from "../../services/castledkp";
 import { DAYS } from "../../shared/time";
-import { code } from "../../shared/util";
+import { code, isEqDkpPlusEnabled } from "../../shared/util";
 import { AdjustmentData, EVERYONE, RaidTick, RaidTickData } from "./raid-tick";
 import { openDkpService } from "../../services/openDkpService";
 
@@ -127,12 +127,11 @@ export class RaidReport {
     const emoji = this.finished ? "✅" : this.allTicksHaveEvent ? "❕" : "❔";
     const label = every(this.ticks, (t) => t.hasEvent)
       ? uniq(this.ticks.map(({ eventAbreviation }) => eventAbreviation)).join(
-          ", "
-        )
+        ", "
+      )
       : `${this.filename.replace(/[^a-zA-Z]+/g, "")}?`;
-    return `${emoji} ${this.ticks[0].shortDate} (${Math.round(this.netDkp)}) ${
-      label || "Unidentified"
-    }`;
+    return `${emoji} ${this.ticks[0].shortDate} (${Math.round(this.netDkp)}) ${label || "Unidentified"
+      }`;
   }
 
   public getCreditCommands(): string[] {
@@ -238,9 +237,8 @@ Kill bonus values: https://docs.google.com/spreadsheets/d/1cZdD1HOtDutOvxkEp0-up
     if (failed.length > 0) {
       embeds.push(
         new EmbedBuilder({
-          title: `${failed.length} problem${
-            failed.length > 1 ? "s" : ""
-          } with the upload.`,
+          title: `${failed.length} problem${failed.length > 1 ? "s" : ""
+            } with the upload.`,
           description: failed.join("\n"),
         })
       );
@@ -297,19 +295,21 @@ ${p}${code}`,
       throw err;
     }
 
-    const settled = await Promise.allSettled(
-      this.ticks
-        .filter((t) => !t.data.finished)
-        .map((t) => t.uploadAsRaid(threadUrl))
-    );
+    if (isEqDkpPlusEnabled()) {
+      const settled = await Promise.allSettled(
+        this.ticks
+          .filter((t) => !t.data.finished)
+          .map((t) => t.uploadAsRaid(threadUrl))
+      );
 
-    settled.forEach((s) => {
-      if (s.status === "fulfilled") {
-        created.push(s.value);
-      } else {
-        failed.push(s.reason);
-      }
-    });
+      settled.forEach((s) => {
+        if (s.status === "fulfilled") {
+          created.push(s.value);
+        } else {
+          failed.push(s.reason);
+        }
+      });
+    }
 
     return { created, failed };
   }
@@ -380,13 +380,13 @@ ${p}${code}`,
     const sorted = Object.keys(attendanceMap).sort();
     return `--- Attendance (${sorted.length}) ---
 ${sorted
-  .map((name) =>
-    this.renderAttendee(
-      name.padEnd(this.firstColumnLength + SECOND_COLUMN_LENGTH + 1),
-      attendanceMap[name]
-    )
-  )
-  .join("\n")}`;
+        .map((name) =>
+          this.renderAttendee(
+            name.padEnd(this.firstColumnLength + SECOND_COLUMN_LENGTH + 1),
+            attendanceMap[name]
+          )
+        )
+        .join("\n")}`;
   }
 
   private get allAttendees() {

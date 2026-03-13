@@ -229,22 +229,22 @@ export const castledkp = {
 
     // Temporarily create data using the beta service as well; this is not async and is fault tolerant.
     // Primarily, this is being used to test the beta service by ingesting real data.
-    betaDkpService
-      .createRaid({
-        raidTick: tick,
-        raidActivityType: {
-          name: tick.data.event.name,
-          defaultPayout: tick.data.event.value,
-        },
-      })
-      .catch((error) => {
-        console.error(`Failed to create raid in beta service:`, {
-          message: error.message,
-          statusCode: error.response ? error.response.status : "N/A",
-          data: error.response ? error.response.data : "N/A",
-          config: error.config,
-        });
-      });
+    // betaDkpService
+    //   .createRaid({
+    //     raidTick: tick,
+    //     raidActivityType: {
+    //       name: tick.data.event.name,
+    //       defaultPayout: tick.data.event.value,
+    //     },
+    //   })
+    //   .catch((error) => {
+    //     console.error(`Failed to create raid in beta service:`, {
+    //       message: error.message,
+    //       statusCode: error.response ? error.response.status : "N/A",
+    //       data: error.response ? error.response.data : "N/A",
+    //       config: error.config,
+    //     });
+    //   });
 
     return {
       eventUrlSlug: tick.data.event.name
