@@ -289,6 +289,7 @@ ${p}${code}`,
         tick: response,
         invalidNames: [],
       });
+      this.ticks.forEach((t) => (t.data.finished = true));
       failed.push(...errors);
     } catch (err: unknown) {
       failed.push((err as Error).toString());
