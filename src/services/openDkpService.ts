@@ -639,14 +639,19 @@ ${result}${code}${notIncluded}`,
     }
     const item = {
       CharacterId: character.CharacterId,
+      CharacterName: buyer,
       Dkp: price,
       Notes: note,
       ItemId: -1,
-    };
+      GameItemId: -1,
+      ItemName: itemName,
+    } as ODKPRaidItem;
     const itemData = await openDkpService.getItem(itemName);
 
     if (itemData) {
       item.ItemId = itemData.ItemID;
+      item.GameItemId = itemData.GameItemId;
+      item.ItemName = itemData.ItemName;
     }
     try {
       const config = {
@@ -663,7 +668,9 @@ ${result}${code}${notIncluded}`,
     } catch (err: unknown) {
       console.log(`OpenDKP - failed to add item: ${JSON.stringify(err)}`);
       openDkpService.logIfVerbose(err);
-      throw err;
+      throw new Error(
+        "Failed to add item, please contact your favorite bot maintainer"
+      );
     }
   },
   addAdjustment: async (
