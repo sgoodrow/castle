@@ -4,6 +4,7 @@ import {
   ButtonInteraction,
   ButtonStyle,
   CacheType,
+  ComponentType,
 } from "discord.js";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { bot } from "@prisma/client";
@@ -33,8 +34,7 @@ export class RequestBotButtonCommand extends ButtonCommand {
         interaction.user.id
       );
       log(
-        `${
-          guildUser?.nickname || guildUser?.user.username
+        `${guildUser?.nickname || guildUser?.user.username
         } clicked batphone button for ${name}`
       );
       await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
@@ -47,22 +47,27 @@ export class RequestBotButtonCommand extends ButtonCommand {
     interaction: ButtonInteraction<CacheType>,
     enabled: boolean
   ) {
-    const rowIdx = interaction.message.components.findIndex((row) =>
-      row.components.find((c) => c.customId === interaction.customId)
+    const rowIdx = interaction.message.components.findIndex((row) => {
+      if (row.type === ComponentType.ActionRow) {
+        row.components.find((c) => c.customId === interaction.customId)
+      }
+    }
     );
     if (rowIdx !== undefined) {
       const row = interaction.message.components[rowIdx];
-      (row.components as unknown) = row.components.map((button) =>
-        button.customId === interaction.customId
-          ? ButtonBuilder.from(button as ButtonComponent).setDisabled(!enabled)
-          : button
-      );
+      if (row.type === ComponentType.ActionRow) {
+        row.components.map((button) =>
+          button.customId === interaction.customId
+            ? ButtonBuilder.from(button as ButtonComponent).setDisabled(!enabled)
+            : button
+        );
 
-      interaction.message.components.splice(rowIdx, 1, row);
+        interaction.message.components.splice(rowIdx, 1, row);
 
-      await interaction.message.edit({
-        components: interaction.message.components,
-      });
+        await interaction.message.edit({
+          components: interaction.message.components,
+        });
+      }
     }
   }
 

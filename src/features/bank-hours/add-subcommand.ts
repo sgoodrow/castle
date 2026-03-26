@@ -19,8 +19,6 @@ enum Option {
 
 const EST_UTC_TIMEZONE_OFFSET = 4;
 
-const dayChoices: [name: string, value: string][] = Days.map((d) => [d, d]);
-
 class Add extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     requireInteractionMemberRole(bankerRoleId, interaction);
@@ -63,7 +61,7 @@ class Add extends Subcommand {
         o
           .setName(Option.Day)
           .setDescription("The day of the week")
-          .setChoices(dayChoices)
+          .setChoices(...Days.map(([name, value]) => ({ name, value })))
           .setRequired(true)
       )
       .addIntegerOption((o) =>

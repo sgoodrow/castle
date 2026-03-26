@@ -9,17 +9,19 @@ import { BaseCommand } from "./base-command";
 export const getOption = (
   subcommandName: string,
   option: string,
-  interaction:
-    | CommandInteraction<CacheType>
-    | AutocompleteInteraction<CacheType>
+  interaction: AutocompleteInteraction<CacheType> | CommandInteraction<CacheType>
 ) => {
-  const subcommand = interaction.options.data.find(
-    (d) => d.name === subcommandName
-  );
-  if (!subcommand || !subcommand.options) {
-    throw new Error("Subcommand has no options");
+  if (interaction.isAutocomplete()) {
+    const subcommand = interaction.options.data.find(
+      (d) => d.name === subcommandName
+    );
+    if (!subcommand || !subcommand.options) {
+      throw new Error("Subcommand has no options");
+    }
+    return subcommand.options.find((o: any) => o.name === option);
+  } else if (interaction.isChatInputCommand()) {
+    return interaction.options.get(option);
   }
-  return subcommand.options.find((o) => o.name === option);
 };
 
 export abstract class Subcommand extends BaseCommand {
@@ -32,7 +34,7 @@ export abstract class Subcommand extends BaseCommand {
   protected getOption(
     name: string,
     interaction:
-      | CommandInteraction<CacheType>
+      CommandInteraction<CacheType>
       | AutocompleteInteraction<CacheType>
   ) {
     return getOption(this.name, name, interaction);
