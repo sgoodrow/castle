@@ -9,7 +9,9 @@ import { BaseCommand } from "./base-command";
 export const getOption = (
   subcommandName: string,
   option: string,
-  interaction: AutocompleteInteraction<CacheType> | CommandInteraction<CacheType>
+  interaction:
+    | AutocompleteInteraction<CacheType>
+    | CommandInteraction<CacheType>
 ) => {
   if (interaction.isAutocomplete()) {
     const subcommand = interaction.options.data.find(
@@ -34,7 +36,7 @@ export abstract class Subcommand extends BaseCommand {
   protected getOption(
     name: string,
     interaction:
-      CommandInteraction<CacheType>
+      | CommandInteraction<CacheType>
       | AutocompleteInteraction<CacheType>
   ) {
     return getOption(this.name, name, interaction);

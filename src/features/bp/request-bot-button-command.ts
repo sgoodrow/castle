@@ -1,4 +1,5 @@
 import {
+  ActionRowBuilder,
   ButtonBuilder,
   ButtonComponent,
   ButtonInteraction,
@@ -11,7 +12,7 @@ import { bot } from "@prisma/client";
 import { knightRoleId, raiderRoleId } from "../../config";
 import { getClassAbreviation } from "../../shared/classes";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
-import { log } from "../../shared/logger"
+import { log } from "../../shared/logger";
 
 export class RequestBotButtonCommand extends ButtonCommand {
   constructor(name: string) {
@@ -21,7 +22,6 @@ export class RequestBotButtonCommand extends ButtonCommand {
   public async execute(
     interaction: ButtonInteraction<CacheType>
   ): Promise<void> {
-
     await this.setButtonState(interaction, false);
 
     interaction.editReply({
@@ -34,7 +34,8 @@ export class RequestBotButtonCommand extends ButtonCommand {
         interaction.user.id
       );
       log(
-        `${guildUser?.nickname || guildUser?.user.username
+        `${
+          guildUser?.nickname || guildUser?.user.username
         } clicked batphone button for ${name}`
       );
       await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
@@ -47,28 +48,36 @@ export class RequestBotButtonCommand extends ButtonCommand {
     interaction: ButtonInteraction<CacheType>,
     enabled: boolean
   ) {
-    const rowIdx = interaction.message.components.findIndex((row) => {
-      if (row.type === ComponentType.ActionRow) {
-        row.components.find((c) => c.customId === interaction.customId)
-      }
-    }
+    const components = interaction.message.components;
+
+    const rowIdx = components.findIndex(
+      (row) =>
+        row.type === ComponentType.ActionRow &&
+        row.components.some((c) => c.customId === interaction.customId)
     );
-    if (rowIdx !== undefined) {
-      const row = interaction.message.components[rowIdx];
-      if (row.type === ComponentType.ActionRow) {
-        row.components.map((button) =>
-          button.customId === interaction.customId
-            ? ButtonBuilder.from(button as ButtonComponent).setDisabled(!enabled)
-            : button
-        );
 
-        interaction.message.components.splice(rowIdx, 1, row);
+    if (rowIdx === -1) return;
 
-        await interaction.message.edit({
-          components: interaction.message.components,
-        });
-      }
-    }
+    const row = components[rowIdx];
+    if (row.type !== ComponentType.ActionRow) return;
+
+    const updatedButtons = row.components.map((button) =>
+      button.customId === interaction.customId
+        ? ButtonBuilder.from(button as ButtonComponent).setDisabled(!enabled)
+        : ButtonBuilder.from(button as ButtonComponent)
+    );
+
+    const updatedRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      updatedButtons
+    );
+
+    const updatedComponents = [
+      ...components.slice(0, rowIdx),
+      updatedRow,
+      ...components.slice(rowIdx + 1),
+    ];
+
+    await interaction.message.edit({ components: updatedComponents });
   }
 
   public getButtonBuilder(bot: bot): ButtonBuilder {

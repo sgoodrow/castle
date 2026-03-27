@@ -1,4 +1,4 @@
-import { GuildScheduledEvent, GuildScheduledEventStatus, PartialGuildScheduledEvent } from "discord.js";
+import { GuildScheduledEvent, GuildScheduledEventStatus } from "discord.js";
 import { client } from "..";
 import { recordRaidStarted } from "../features/raid-schedule-info/raid-started";
 import { updateRaidSchedule } from "../features/raid-schedule-info/update-action";
@@ -11,7 +11,7 @@ export const guildScheduledEventListener = async () => {
 };
 
 export const guildScheduledEventStartedListener = async (
-  before: GuildScheduledEvent | PartialGuildScheduledEvent | null,
+  before: GuildScheduledEvent | null,
   after: GuildScheduledEvent
 ) => {
   // run on status changes
