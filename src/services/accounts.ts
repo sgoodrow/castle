@@ -20,6 +20,7 @@ import { checkGoogleCredentials } from "./gdrive";
 import moment from "moment";
 import { getClassAbreviation } from "../shared/classes";
 import { log } from "../shared/logger"
+import { Mutex } from "async-mutex";
 
 enum SPREADSHEET_COLUMNS {
   Characters = "Characters",
@@ -74,7 +75,7 @@ interface Account {
 
 const cache = new LRUCache<string, Account>({
   max: 400,
-  ttl: 30 * MINUTES,
+  ttl: 9 * MINUTES,
 });
 
 const authorize = async (sheet: GoogleSpreadsheet) => {
@@ -85,37 +86,45 @@ const authorize = async (sheet: GoogleSpreadsheet) => {
   });
 };
 
+const accountMutex = new Mutex();
+
 const getAccounts = async () => {
-  cache.purgeStale();
-  if (cache.size) {
-    return cache;
-  }
-  log(`Loading bots - cache stale`);
-  const start = moment.now();
-  await authorize(sheet);
-  await sheet.loadInfo();
-  const rows = await sheet.sheetsByIndex[0].getRows();
-  rows.forEach((r) => {
-    const a: Account = {
-      characters: r[SPREADSHEET_COLUMNS.Characters],
-      class: getClassAbreviation(r[SPREADSHEET_COLUMNS.Class])
-        ? getClassAbreviation(r[SPREADSHEET_COLUMNS.Class])
-        : r[SPREADSHEET_COLUMNS.Class],
-      purpose: r[SPREADSHEET_COLUMNS.Purpose],
-      accountName: r[SPREADSHEET_COLUMNS.Account],
-      password: r[SPREADSHEET_COLUMNS.Password],
-      requiredRoles: getRequiredRoles(r),
-    };
-    if (a.characters && a.accountName && a.password) {
-      cache.set(a.characters.toLowerCase(), a);
+  return accountMutex.runExclusive(async () => {
+    cache.purgeStale();
+    if (cache.size) {
+      return cache;
     }
-  });
-  const end = moment.now();
-  log(`Took ${end - start}ms to load bot data`);
-  return cache;
+    await accounts.refreshAccountData();
+    return cache;
+  })
 };
 
 export const accounts = {
+  refreshAccountData: async () => {
+    log(`Reloading private bot data`);
+    const start = moment.now();
+    await authorize(sheet);
+    await sheet.loadInfo();
+    const rows = await sheet.sheetsByIndex[0].getRows();
+    rows.forEach((r) => {
+      const a: Account = {
+        characters: r[SPREADSHEET_COLUMNS.Characters],
+        class: getClassAbreviation(r[SPREADSHEET_COLUMNS.Class])
+          ? getClassAbreviation(r[SPREADSHEET_COLUMNS.Class])
+          : r[SPREADSHEET_COLUMNS.Class],
+        purpose: r[SPREADSHEET_COLUMNS.Purpose],
+        accountName: r[SPREADSHEET_COLUMNS.Account],
+        password: r[SPREADSHEET_COLUMNS.Password],
+        requiredRoles: getRequiredRoles(r),
+      };
+      if (a.characters && a.accountName && a.password) {
+        cache.set(a.characters.toLowerCase(), a);
+      }
+    });
+    const end = moment.now();
+    log(`Took ${end - start}ms to refresh bot data (${cache.size} bots)`);
+
+  },
   getAccountsForRole: async (roleId: string): Promise<Account[]> => {
     const accounts = await getAccounts();
     return [...accounts.values()].filter((c) =>
