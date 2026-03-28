@@ -1,4 +1,4 @@
-export const log = (message: string) => {
+export const log = (message: any) => {
     const now = new Date();
     const utcString = now.toUTCString();
     console.log(`[${utcString}] ${message}`);
