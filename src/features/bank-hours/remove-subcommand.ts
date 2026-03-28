@@ -9,6 +9,7 @@ import { updateBankRequestInfo } from "../bank-request-info/update-action";
 import { BankHour } from "../../db/bank-hour";
 import { Subcommand } from "../../shared/command/subcommand";
 import { requireInteractionMemberRole } from "../../shared/command/util";
+import { getMember } from "../..";
 
 enum Option {
   BankHourID = "hourid",
@@ -63,7 +64,7 @@ class Remove extends Subcommand {
     const weeklyBankAvailabilities = dataSource.getRepository(BankHour);
     const bankHour = await weeklyBankAvailabilities.findBy({});
     await Promise.all(
-      bankHour.map(async (h) => interaction.guild?.members.fetch(h.userId))
+      bankHour.map(async (h) => getMember(h.userId))
     );
     return bankHour?.map((h) => ({
       name: `${

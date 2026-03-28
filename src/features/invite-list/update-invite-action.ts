@@ -117,7 +117,7 @@ Please post your best availability in this channel (including time zone) and we 
     );
   }
 
-  private async getInviteEmbed(members: Members) {
+  private async getInviteEmbed(members: GuildMember[]) {
     const needInvite = await dataSource.getRepository(InviteSimple).findBy({});
     return new EmbedBuilder({
       title: `Need Invite (${needInvite.length})`,
