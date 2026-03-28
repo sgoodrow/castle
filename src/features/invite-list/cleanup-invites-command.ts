@@ -6,6 +6,7 @@ import { InviteSimple } from "../../db/invite-simple";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { requireInteractionMemberPermission } from "../../shared/command/util";
 import { updateInviteListInfo } from "./update-invite-action";
+import { getMembers } from "../..";
 
 const SECONDS = 1000;
 const MINUTES = 60 * SECONDS;
@@ -29,7 +30,7 @@ class CleanupInvitesCommand extends ButtonCommand {
 
     const [altInvites, mainInvites] = partition(oldInvites, (o) => o.alt);
 
-    await interaction.guild?.members.fetch();
+    await getMembers();
     await this.removeMains(mainInvites, interaction);
     await this.removeAlts(altInvites, interaction);
     const removed = await this.removeFromInviteList(oldInvites);
