@@ -24,7 +24,6 @@ import {
 } from "../config";
 import { EmbedBuilder } from "discord.js";
 import { round } from "lodash";
-import { log } from "../shared/logger";
 
 // Client for OpenDKP
 
@@ -186,20 +185,20 @@ export const openDkpService = {
           openDkpPassword,
           openDkpAuthClientId
         );
-        log("Authenticated with OpenDKP");
+        console.log("Authenticated with OpenDKP");
       } catch (reason) {
-        log("Failed to authenticate OpenDKP: " + reason);
+        console.log("Failed to authenticate OpenDKP: " + reason);
       }
     }
     try {
-      log(`Loading OpenDKP data`);
+      console.log(`Loading OpenDKP data`);
       await openDkpService.getCharacters();
       await openDkpService.loadItemDb();
       await openDkpService.importData();
-      log(`Done loading OpenDKP data`);
+      console.log(`Done loading OpenDKP data`);
     } catch (err: unknown) {
-      log(`Failed to load OpenDKP data`);
-      log(err as string);
+      console.log(`Failed to load OpenDKP data`);
+      console.log(err);
     }
   },
   doUserPasswordAuth: async (
@@ -230,22 +229,22 @@ export const openDkpService = {
       accessTokens = response.data?.AuthenticationResult;
       openDkpService.logIfVerbose(response);
     } catch (error) {
-      log(JSON.stringify(error, null, 2));
+      console.log(JSON.stringify(error, null, 2));
     }
   },
   loadItemDb: async (): Promise<void> => {
-    log(`Reading OpenDKP item database`);
+    console.log(`Reading OpenDKP item database`);
     try {
       if (fs.existsSync("./items.json")) {
         const data = await fs.readFileSync("./items.json", "utf-8");
         odkpItemDb = JSON.parse(data);
-        log(`Loaded ${odkpItemDb.length} items`);
+        console.log(`Loaded ${odkpItemDb.length} items`);
       } else {
-        log(`No item file present`);
+        console.log(`No item file present`);
       }
     } catch (err: unknown) {
-      log("Failed to load item database");
-      log(err);
+      console.log("Failed to load item database");
+      console.log(err);
     }
   },
   getCharacters: async (): Promise<ODKPCharacterData[]> => {
@@ -270,10 +269,10 @@ export const openDkpService = {
       characters.forEach((c) => {
         odkpCharacterCache.set(c.Name, c, { ttl: 3000000 });
       });
-      log(`Cached ${characters.length} characters`);
+      console.log(`Cached ${characters.length} characters`);
       return characters;
     } catch (error) {
-      log(error);
+      console.log(error);
       throw error;
     }
   },
@@ -286,7 +285,7 @@ export const openDkpService = {
     if (char) {
       return char;
     } else {
-      log(`${charName} not found, reloading cache`);
+      console.log(`${charName} not found, reloading cache`);
       const chars = await openDkpService.getCharacters();
       char = chars.find((c) => c.Name === charName);
       if (!char && requireExist) {
@@ -313,7 +312,7 @@ export const openDkpService = {
       }
       return 0;
     } catch (error) {
-      log(error);
+      console.log(error);
       throw error;
     }
   },
@@ -335,7 +334,7 @@ export const openDkpService = {
       }
       return "Error";
     } catch (error) {
-      log(error);
+      console.log(error);
       throw error;
     }
   },
@@ -425,7 +424,7 @@ export const openDkpService = {
         ItemName: item.Name,
       };
     }
-    log(`Item not in database, searching for ${itemName}`);
+    console.log(`Item not in database, searching for ${itemName}`);
     const config = {
       method: "get",
       url: `https://api.opendkp.com/items/autocomplete?item=${itemName}`,
@@ -443,7 +442,7 @@ export const openDkpService = {
         }
       );
     } catch (error) {
-      log(error);
+      console.log(error);
       throw error;
     }
   },
@@ -461,7 +460,7 @@ export const openDkpService = {
       const response = await axios(config);
       return response.data as ODKPItemHistoryEntry[];
     } catch (error) {
-      log(error);
+      console.log(error);
       throw error;
     }
   },
@@ -494,7 +493,7 @@ export const openDkpService = {
         } not found on OpenDKP for tick ${
           tick.name
         }: ${unregisteredCharacters.join(", ")}`;
-        log(errorMsg);
+        console.log(errorMsg);
         failures.push(errorMsg);
       }
 
@@ -512,7 +511,7 @@ export const openDkpService = {
         if (!characters.find((c) => c.Name === loot.buyer)) {
           const errorMsg = `${loot.buyer} won ${odkpItem.ItemName} on tick ${tick.name}, but is not a registered character. Item will not be uploaded.`;
           failures.push(errorMsg);
-          log(errorMsg);
+          console.log(errorMsg);
         } else {
           if (odkpItem.GameItemId === -1) {
             failures.push(
@@ -635,7 +634,7 @@ ${result}${code}${notIncluded}`,
     const character = odkpCharacterCache.get(buyer);
     if (!character) {
       const error = `Failed to find character ${buyer}`;
-      log(error);
+      console.log(error);
       throw new Error(error);
     }
     const item = {
@@ -665,9 +664,9 @@ ${result}${code}${notIncluded}`,
         data: JSON.stringify(item),
       };
       const resp = await axios(config);
-      log(`OpenDKP - added item: ${JSON.stringify(resp.data)}`);
+      console.log(`OpenDKP - added item: ${JSON.stringify(resp.data)}`);
     } catch (err: unknown) {
-      log(`OpenDKP - failed to add item: ${JSON.stringify(err)}`);
+      console.log(`OpenDKP - failed to add item: ${JSON.stringify(err)}`);
       openDkpService.logIfVerbose(err);
       throw new Error(
         "Failed to add item, please contact your favorite bot maintainer"
@@ -678,7 +677,7 @@ ${result}${code}${notIncluded}`,
     adjustment: ODKPAdjustment
   ): Promise<ODKPAdjustment> => {
     try {
-      log(`OpenDKP - adding adjustment: ${JSON.stringify(adjustment)}`);
+      console.log(`OpenDKP - adding adjustment: ${JSON.stringify(adjustment)}`);
       const addAdjustment = {
         method: "put",
         url: `https://api.opendkp.com/clients/${openDkpClientName}/adjustments`,
@@ -692,19 +691,19 @@ ${result}${code}${notIncluded}`,
       if (!resp.data?.[0]) {
         throw new Error(`No data in adjustment response`);
       }
-      log(
+      console.log(
         `OpenDKP - added adjustment: ${JSON.stringify(resp.data[0])}`
       );
       openDkpService.logIfVerbose(resp);
       return resp.data[0];
     } catch (err: unknown) {
-      log(`OpenDKP - failed to add adjustment: ${err})}`);
+      console.log(`OpenDKP - failed to add adjustment: ${err})}`);
       throw err;
     }
   },
   delAdjustment: async (id: string) => {
     try {
-      log(`OpenDKP - deleting adjustment: ${id}`);
+      console.log(`OpenDKP - deleting adjustment: ${id}`);
       const delAdjustment = {
         method: "delete",
         url: `https://api.opendkp.com/clients/${openDkpClientName}/adjustments/${id}`,
@@ -714,11 +713,11 @@ ${result}${code}${notIncluded}`,
       };
       const resp = await axios(delAdjustment);
       await new Promise((resolve) => setTimeout(resolve, 100));
-      log(`OpenDKP - deleted adjustment: ${JSON.stringify(resp.data)}`);
+      console.log(`OpenDKP - deleted adjustment: ${JSON.stringify(resp.data)}`);
       openDkpService.logIfVerbose(resp);
     } catch (err: unknown) {
-      log(`OpenDKP - failed to delete adjustment: ${err})}`);
-      log(err);
+      console.log(`OpenDKP - failed to delete adjustment: ${err})}`);
+      console.log(err);
       throw err;
     }
   },
@@ -746,15 +745,15 @@ ${result}${code}${notIncluded}`,
       },
       data: JSON.stringify(odkpCharacter),
     };
-    log(odkpCharacter);
+    console.log(odkpCharacter);
 
     try {
       const resp = await axios(putCharacter);
-      log(JSON.stringify(resp.data));
+      console.log(JSON.stringify(resp.data));
       openDkpService.logIfVerbose(resp);
       return resp.data as ODKPCharacterData;
     } catch (err: unknown) {
-      log(err);
+      console.log(err);
       throw err;
     }
   },
@@ -778,7 +777,7 @@ ${result}${code}${notIncluded}`,
         (c) => c.Name === link.MemberName
       );
       if (character && character.ParentId === 0 && character !== mainChar) {
-        log(`Linking ${character.Name} to ${mainChar.Name}`);
+        console.log(`Linking ${character.Name} to ${mainChar.Name}`);
         await openDkpService.linkCharacter({
           ChildId: character.CharacterId,
           ParentId: mainChar.CharacterId,
@@ -798,11 +797,11 @@ ${result}${code}${notIncluded}`,
 
     try {
       const resp = await axios(linkCharacter);
-      log(JSON.stringify(resp.data));
+      console.log(JSON.stringify(resp.data));
       openDkpService.logIfVerbose(resp);
       await new Promise((resolve) => setTimeout(resolve, 100));
     } catch (err: unknown) {
-      log(err);
+      console.log(err);
     }
   },
   updatePlayer: async (character: ODKPCharacterData) => {
@@ -817,11 +816,11 @@ ${result}${code}${notIncluded}`,
 
     try {
       const resp = await axios(updateCharacter);
-      log(JSON.stringify(resp.data));
+      console.log(JSON.stringify(resp.data));
       openDkpService.logIfVerbose(resp);
       await new Promise((resolve) => setTimeout(resolve, 250));
     } catch (err: unknown) {
-      log(err);
+      console.log(err);
       throw err;
     }
   },
@@ -843,13 +842,13 @@ ${result}${code}${notIncluded}`,
   //     const resp = await axios(getItem);
   //     const itemResp = resp.data as ODKPItemResponse[];
   //     if (itemResp.length > 0) {
-  //       log(JSON.stringify(itemResp));
+  //       console.log(JSON.stringify(itemResp));
   //       return itemResp[0];
   //     } else {
   //       throw new Error("No item found");
   //     }
   //   } catch (err: unknown) {
-  //     log(err);
+  //     console.log(err);
   //     throw err;
   //   }
   // },
@@ -865,16 +864,16 @@ ${result}${code}${notIncluded}`,
     try {
       const resp = await axios(getRaid);
       const raidResp = resp.data as ODKPRaidData;
-      log(JSON.stringify(raidResp));
+      console.log(JSON.stringify(raidResp));
       return raidResp;
     } catch (err: unknown) {
-      log(err);
+      console.log(err);
       throw err;
     }
   },
   addRaid: async (raid: ODKPRaidData): Promise<string> => {
     try {
-      log(`OpenDKP - adding raid: ${JSON.stringify(raid)}`);
+      console.log(`OpenDKP - adding raid: ${JSON.stringify(raid)}`);
 
       const putRaid: AxiosRequestConfig = {
         method: "put",
@@ -889,12 +888,12 @@ ${result}${code}${notIncluded}`,
       const resp = await axios(putRaid);
       await new Promise((resolve) => setTimeout(resolve, 250));
       const raidData = JSON.stringify(resp.data);
-      log(`OpenDKP - added raid: ${raidData}`);
+      console.log(`OpenDKP - added raid: ${raidData}`);
       openDkpService.logIfVerbose(resp);
       return raidData;
     } catch (err: unknown) {
-      log(`OpenDKP - failed to add raid: ${err}`);
-      log(err);
+      console.log(`OpenDKP - failed to add raid: ${err}`);
+      console.log(err);
       throw err;
     }
   },
@@ -903,7 +902,7 @@ ${result}${code}${notIncluded}`,
     payload: ODKPUpdateRaidData
   ): Promise<string> => {
     try {
-      log(`OpenDKP - updating raid: ${JSON.stringify(raidId)}`);
+      console.log(`OpenDKP - updating raid: ${JSON.stringify(raidId)}`);
 
       const postRaid = {
         method: "post",
@@ -918,11 +917,11 @@ ${result}${code}${notIncluded}`,
       const resp = await axios(postRaid);
       await new Promise((resolve) => setTimeout(resolve, 200));
       const raidData = JSON.stringify(resp.data);
-      log(`OpenDKP - updated raid: ${raidData}`);
+      console.log(`OpenDKP - updated raid: ${raidData}`);
       openDkpService.logIfVerbose(resp);
       return raidData;
     } catch (err: unknown) {
-      log(`OpenDKP - failed to update raid: ${err}`);
+      console.log(`OpenDKP - failed to update raid: ${err}`);
       throw err;
     }
   },
@@ -941,7 +940,7 @@ ${result}${code}${notIncluded}`,
           ["profiledata"]
         );
       } catch (err: unknown) {
-        log(err);
+        console.log(err);
       }
     }
     // if (fs.existsSync("./characters.json")) {
@@ -954,7 +953,7 @@ ${result}${code}${notIncluded}`,
     //       await openDkpService.updatePlayer(character);
     //     }
     //   } catch (err: unknown) {
-    //     log(err);
+    //     console.log(err);
     //   }
     // }
     if (fs.existsSync("./characters.json") && fs.existsSync("./links.csv")) {
@@ -997,7 +996,7 @@ ${result}${code}${notIncluded}`,
           }
         }
       } catch (err: unknown) {
-        log(err);
+        console.log(err);
         throw err;
       }
     }
@@ -1214,8 +1213,8 @@ ${result}${code}${notIncluded}`,
   handleCharacterImportRow: async (row: RowObject) => {
     if (isNaN(Number.parseInt(row.member_id)) || !row.profiledata) return;
     try {
-      log(row.member_name);
-      log(row.profiledata);
+      console.log(row.member_name);
+      console.log(row.profiledata);
       const profiledata = row.profiledata as unknown as {
         race: string;
         class: string;
@@ -1231,12 +1230,12 @@ ${result}${code}${notIncluded}`,
         toSentenceCase(profiledata.gender) || "Unknown"
       );
     } catch (error: unknown) {
-      log(error);
+      console.log(error);
     }
   },
-  logIfVerbose(logData: unknown) {
+  logIfVerbose(log: unknown) {
     if (env.openDkpVerboseLogging === "1") {
-      log(logData);
+      console.log(log);
     }
   },
 };
