@@ -71,7 +71,7 @@ class GatehouseReactionAction extends ReactionAction {
 
     author.roles.add(this.roleIds);
 
-    if (this.roleIds.includes(competitorRoleId)) {
+    if (this.roleIds.includes(competitorRoleId) && this.message.channel.isTextBased() && !this.message.channel.isDMBased()) {
       return this.message.channel.send(
         `Thanks for introducing yourself, ${author}! Unfortunately, we do not grant access to our private Discord channels to players who are not in Castle or an allied guild. You're welcome to chat with us in our public channels, though -- don't be a stranger!`
       );
@@ -103,7 +103,8 @@ class GatehouseReactionAction extends ReactionAction {
     }
     welcome += `\n• Visit <#${rolesChannelId}> (set your class)`;
     welcome += `\n• Visit <#${raiderEnlistmentChannelId}> (join the raid force)`;
-    this.message.channel.send(welcome);
+    if (this.message.channel.isTextBased() && !this.message.channel.isDMBased())
+      await this.message.channel.send(welcome);
   }
 
   private async interview() {

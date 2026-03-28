@@ -8,6 +8,7 @@ export abstract class ThreadBuilder {
   ) {}
 
   protected getOption(name: string) {
+    if (!this.interaction.isAutocomplete()) return;
     return getOption(this.subcommandName, name, this.interaction);
   }
 }

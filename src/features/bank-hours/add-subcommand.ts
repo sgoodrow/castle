@@ -1,4 +1,4 @@
-import { CacheType, CommandInteraction } from "discord.js";
+import { ApplicationCommandOptionChoiceData, CacheType, CommandInteraction } from "discord.js";
 import { bankerRoleId } from "../../config";
 import { dataSource } from "../../db/data-source";
 import { updateBankRequestInfo } from "../bank-request-info/update-action";
@@ -18,8 +18,6 @@ enum Option {
 }
 
 const EST_UTC_TIMEZONE_OFFSET = 4;
-
-const dayChoices: [name: string, value: string][] = Days.map((d) => [d, d]);
 
 class Add extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -63,7 +61,7 @@ class Add extends Subcommand {
         o
           .setName(Option.Day)
           .setDescription("The day of the week")
-          .setChoices(dayChoices)
+          .setAutocomplete(true)
           .setRequired(true)
       )
       .addIntegerOption((o) =>
@@ -82,8 +80,18 @@ class Add extends Subcommand {
       );
   }
 
-  public async getOptionAutocomplete() {
-    return [];
+  public async getOptionAutocomplete(
+    option: string
+  ): Promise<ApplicationCommandOptionChoiceData[]> {
+    switch (option) {
+      case Option.Day:
+        return Days.map((d) => {
+          return { name: d, value: d };
+        });
+        break;
+      default:
+        return [];
+    }
   }
 }
 

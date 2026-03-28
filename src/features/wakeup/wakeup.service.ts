@@ -5,6 +5,7 @@ import {
   VoiceConnectionStatus,
   createAudioPlayer,
   createAudioResource,
+  entersState,
   joinVoiceChannel,
 } from "@discordjs/voice";
 import { IWakeupService } from "./wakeup.service.i";
@@ -40,6 +41,32 @@ export class WakeupService implements IWakeupService {
         guildId: this.wakeupChannel.guildId,
         adapterCreator: this.wakeupChannel.guild.voiceAdapterCreator as any,
       });
+
+      voiceConnection.on(VoiceConnectionStatus.Connecting, () =>
+        console.log("Wakeup connecting...")
+      );
+      voiceConnection.on(VoiceConnectionStatus.Disconnected, async () => {
+        try {
+          await Promise.race([
+            entersState(
+              voiceConnection,
+              VoiceConnectionStatus.Signalling,
+              5_000
+            ),
+            entersState(
+              voiceConnection,
+              VoiceConnectionStatus.Connecting,
+              5_000
+            ),
+          ]);
+          // seems to be reconnecting
+        } catch {
+          voiceConnection.destroy();
+        }
+      });
+      voiceConnection.on("error", (error) =>
+        console.log(`Wakeup error: ${error}`)
+      );
 
       voiceConnection.on(
         VoiceConnectionStatus.Ready,

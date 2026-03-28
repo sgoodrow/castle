@@ -1,6 +1,7 @@
 import {
   CacheType,
   CommandInteraction,
+  TextChannel,
   TimestampStyles,
   time,
 } from "discord.js";
@@ -46,11 +47,13 @@ export class PlayerDkpSubcommand extends Subcommand {
 ${result}${code}`;
 
     if (spam) {
-      await interaction.channel?.send({ content });
+      if (interaction.channel?.isTextBased() && !interaction.channel.isDMBased()) {
+      await interaction.channel.send({ content });
       await interaction.editReply({
 
         content: "Done.",
      });
+    }
     } else {
       await interaction.editReply({
         content,

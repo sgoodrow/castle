@@ -74,7 +74,7 @@ class PingInviteListCommand extends ButtonCommand {
     const alert = `**${interaction.member?.user} is available to send invites!**
 
 ${attention}`;
-
+    if (interaction.channel?.isTextBased() && !interaction.channel.isDMBased())
     await interaction.channel
       ?.send(alert)
       .then((m) => setTimeout(() => m.delete(), 1 * HOURS));

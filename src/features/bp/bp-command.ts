@@ -333,7 +333,7 @@ To change this message, use \`/bp update\` to set a new message.
           : log(`No key found for ${val}`);
         const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
           await getBotButtonComponents(savedMsg?.location || "");
-        if (interaction.channel) {
+        if (interaction.channel && interaction.channel.isTextBased() && !interaction.channel.isDMBased()) {
           interaction.channel.send({
             content: replyMsg,
             components: savedMsg?.location ? components : undefined,

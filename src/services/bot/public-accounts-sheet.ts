@@ -18,7 +18,8 @@ import moment from "moment";
 import { IPublicAccountService } from "./public-accounts.i";
 import { BOT_SPREADSHEET_COLUMNS } from "../sheet-updater/public-sheet";
 import { bot } from "@prisma/client";
-import { log } from "../../shared/logger"
+import { log } from "../../shared/logger";
+import { debug } from "console";
 
 export const SHEET_TITLE = "Bot Info";
 
@@ -39,13 +40,19 @@ export class SheetPublicAccountService implements IPublicAccountService {
     }
     this.sheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
   }
-  doBotCheckout(name: string, interaction: MessageComponentInteraction | CommandInteraction): Promise<void> {
+  doBotCheckout(
+    name: string,
+    interaction: MessageComponentInteraction | CommandInteraction
+  ): Promise<void> {
     throw new Error("Method not implemented.");
   }
   getBotsForBatphone(location: string): Promise<bot[]> {
     throw new Error("Method not implemented.");
   }
-  getFirstAvailableBotByLocation(location: string, roles: GuildMemberRoleManager): Promise<string> {
+  getFirstAvailableBotByLocation(
+    location: string,
+    roles: GuildMemberRoleManager
+  ): Promise<string> {
     throw new Error("Method not implemented.");
   }
 
@@ -121,10 +128,14 @@ export class SheetPublicAccountService implements IPublicAccountService {
     botName: string,
     rowDataMap: { [id: string]: moment.Moment | string | undefined }
   ) {
-    let currentPilot = rowDataMap[BOT_SPREADSHEET_COLUMNS.CurrentPilot] || "";
-    log(`public-accounts-sheet updateBotRowDetails - loading bots - ${botName} - pilot ${currentPilot}`);
+    const currentPilot = rowDataMap[BOT_SPREADSHEET_COLUMNS.CurrentPilot] || "";
+    debug(
+      `public-accounts-sheet updateBotRowDetails - loading bots - ${botName} - pilot ${currentPilot}`
+    );
     await this.loadBots();
-    log(`public-accounts-sheet updateBotRowDetails - bots loaded - ${botName} - pilot ${currentPilot}`);
+    debug(
+      `public-accounts-sheet updateBotRowDetails - bots loaded - ${botName} - pilot ${currentPilot}`
+    );
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
       const botRowIndex = rows.findIndex(
@@ -141,9 +152,13 @@ export class SheetPublicAccountService implements IPublicAccountService {
               row[cellData[0]] = cellData[1];
             }
           });
-          log(`public-accounts-sheet updateBotRowDetails - save started for - ${botName} - pilot ${currentPilot}`);
+          debug(
+            `public-accounts-sheet updateBotRowDetails - save started for - ${botName} - pilot ${currentPilot}`
+          );
           await row.save();
-          log(`public-accounts-sheet updateBotRowDetails - row saved for - ${botName} - pilot ${currentPilot}`);
+          debug(
+            `public-accounts-sheet updateBotRowDetails - row saved for - ${botName} - pilot ${currentPilot}`
+          );
         }
       } else {
         throw Error(`Bot ${botName} not found.`);
@@ -167,15 +182,11 @@ export class SheetPublicAccountService implements IPublicAccountService {
       if (!classRows.length) {
         throw Error(`Could not find any classes matching ${botClass}.`);
       }
-      log(
-        `Looking for ${botClass} and found ${classRows.length} options.`
-      );
+      log(`Looking for ${botClass} and found ${classRows.length} options.`);
       const availableClassRows = classRows.filter(
         (r) => !r[BOT_SPREADSHEET_COLUMNS.CurrentPilot]
       );
-      log(
-        `Looking for ${botClass} and found ${classRows.length} available.`
-      );
+      log(`Looking for ${botClass} and found ${classRows.length} available.`);
       const matches = location
         ? availableClassRows.filter((r) =>
             (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)

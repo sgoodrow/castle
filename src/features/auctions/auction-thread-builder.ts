@@ -1,11 +1,10 @@
 import { ThreadAutoArchiveDuration } from "discord-api-types/v9";
 import moment from "moment";
-import { Embed } from "@discordjs/builders";
 import { ThreadBuilder } from "../../shared/thread/thread-builder";
 import { Item } from "../../shared/items";
 import { Option } from "./auction-subcommand";
 import { replaceAll } from "../../shared/string-util";
-import { CacheType, CommandInteraction } from "discord.js";
+import { CacheType, CommandInteraction, EmbedBuilder } from "discord.js";
 
 export class AuctionThreadBuilder extends ThreadBuilder {
   public constructor(
@@ -51,7 +50,7 @@ export class AuctionThreadBuilder extends ThreadBuilder {
   }
 
   private getEmbed() {
-    return new Embed({
+    return new EmbedBuilder({
       title: `__${this.item.name}__ (view on P99 Wiki)`,
       url: this.item.url,
       description: `${this.location}.
