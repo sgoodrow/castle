@@ -19,8 +19,6 @@ import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
 import { log } from "./shared/logger";
 import { openDkpService } from "./services/openDkpService";
-import { accounts } from "./services/accounts";
-import { MINUTES } from "./shared/time";
 
 // Global
 https.globalAgent.maxSockets = 5;
@@ -101,13 +99,8 @@ prismaClient.$connect();
 
 openDkpService.authenticate();
 setInterval(() => {
-  log("Reauthenticating with OpenDKP (token refresh)");
+  console.log("Reauthenticating with OpenDKP (token refresh)");
   openDkpService.authenticate();
 }, 1500000);
-
-setInterval(() => {
-  log("Refreshing bot login details on timer");
-  accounts.refreshAccountData();
-}, 1 * MINUTES);
 
 log("Listening...");
