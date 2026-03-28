@@ -5,7 +5,6 @@ import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
 import { log } from "../../shared/logger"
-import { getMember } from "../..";
 
 export enum Option {
   Name = "name",
@@ -46,7 +45,7 @@ export class ParkSubcommand extends Subcommand {
           `${name} was released in its previous location`
         );
       }
-      const guildUser = await getMember(
+      const guildUser = await interaction.guild?.members.fetch(
         interaction.user.id
       );
       log(

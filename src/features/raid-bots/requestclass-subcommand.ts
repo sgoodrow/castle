@@ -15,7 +15,6 @@ import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
 import { log } from "../../shared/logger";
-import { getMember } from "../..";
 
 
 export enum Option {
@@ -49,7 +48,7 @@ export class RequestClassSubcommand extends Subcommand {
     const release = await this.mutex.acquire();
     const publicAccounts = PublicAccountsFactory.getService();
 
-    const guildUser = await getMember(
+    const guildUser = await interaction.guild?.members.fetch(
       interaction.user.id
     );
 

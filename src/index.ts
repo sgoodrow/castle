@@ -1,4 +1,4 @@
-import { ChannelType, Client, Events, FetchMemberOptions, GatewayIntentBits, Partials } from "discord.js";
+import { ChannelType, Client, GatewayIntentBits, Partials } from "discord.js";
 import { interactionCreateListener } from "./listeners/interaction-create-listener";
 import { guildId, token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
@@ -67,16 +67,7 @@ export const getTextChannel = async (channelId: string) => {
 
 export const getMembers = async () => {
   const guild = await getGuild();
-  return [...guild.members.cache.values()];
-};
-
-export const getMember = async (userId: string, presence?: boolean) => {
-  const guild = await getGuild();
-  if (presence) {
-    await guild.members.fetch({user: userId, withPresences: presence})
-  }
-  return guild.members.cache.get(userId) 
-     ?? await guild.members.fetch({user: userId, withPresences: presence});
+  return await guild.members.fetch();
 };
 
 export const getRoles = async () => {
@@ -92,6 +83,7 @@ client.login(token);
 client.on("interactionCreate", interactionCreateListener);
 client.on("messageReactionAdd", messageReactionAddListener);
 client.on("messageCreate", messageCreateListener);
+client.on("ready", readyListener);
 client.on("guildMemberAdd", guildMemberAddListener);
 client.on("guildMemberRemove", guildMemberLeaveListener);
 client.on("guildMemberUpdate", guildMemberUpdateListener);
@@ -99,7 +91,6 @@ client.on("guildScheduledEventCreate", guildScheduledEventListener);
 client.on("guildScheduledEventDelete", guildScheduledEventListener);
 client.on("guildScheduledEventUpdate", guildScheduledEventListener);
 client.on("guildScheduledEventUpdate", guildScheduledEventStartedListener);
-client.on(Events.ClientReady, readyListener);
 
 registerSlashCommands();
 
@@ -117,6 +108,6 @@ setInterval(() => {
 setInterval(() => {
   log("Refreshing bot login details on timer");
   accounts.refreshAccountData();
-}, 10 * MINUTES);
+}, 1 * MINUTES);
 
 log("Listening...");
