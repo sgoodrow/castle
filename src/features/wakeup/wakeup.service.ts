@@ -42,14 +42,6 @@ export class WakeupService implements IWakeupService {
         adapterCreator: this.wakeupChannel.guild.voiceAdapterCreator as any,
       });
 
-      voiceConnection.on("stateChange", (oldState, newState) => {
-        console.log(`Voice state: ${oldState.status} -> ${newState.status}`);
-        if (newState.status === VoiceConnectionStatus.Connecting) {
-          // dig into the networking state
-          console.log(newState.networking?.state);
-        }
-      });
-
       voiceConnection.on(VoiceConnectionStatus.Connecting, () =>
         console.log("Wakeup connecting...")
       );
