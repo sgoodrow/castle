@@ -20,7 +20,7 @@ import { truncate } from "lodash";
 import { log } from "../../shared/logger";
 import { accounts } from "../accounts";
 import { Bot, SheetPublicAccountService } from "./public-accounts-sheet";
-import { getMembers, prismaClient } from "../..";
+import { getMember, getMembers, prismaClient } from "../..";
 import { getClassAbreviation } from "../../shared/classes";
 import { raidBotInstructions } from "../../features/raid-bots/update-bots";
 import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-command";
@@ -136,7 +136,7 @@ Password: ${spoiler(details.password)}
 
       if (await this.isBotPublic(foundBot)) {
         try {
-          const guildUser = await interaction.guild?.members.fetch(
+          const guildUser = await getMember(
             interaction.user.id
           );
 

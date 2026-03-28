@@ -106,7 +106,7 @@ export const listThreadMembers = async (
   const membersManager = interaction.channel.members;
   await membersManager.fetch();
 
-  const everyone = await interaction.guild?.members.fetch();
+  const everyone = await getMembers();
   const usersToList = everyone?.filter((m) => membersManager.cache.has(m.id));
 
   if (!usersToList) {
