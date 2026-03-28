@@ -5,7 +5,6 @@ import {
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Members } from "../features/invite-list/update-invite-action";
-import { GuildMember } from "discord.js";
 
 @Entity({})
 export class InviteSimple {
@@ -29,12 +28,12 @@ export class InviteSimple {
     return score;
   }
 
-  public getDiscordDisplayName(members: GuildMember[]) {
-    const member = members?.find(m => m.id === this.discordId);
+  public getDiscordDisplayName(members: Members) {
+    const member = members?.get(this.discordId);
     return member ? `**${member.displayName}** (<@${member.id}>)` : `**Left the server** (<@${this.discordId}>)`;
   }
 
-  public getRichLabel(members: GuildMember[]) {
+  public getRichLabel(members: Members) {
     const displayName = this.getDiscordDisplayName(members);
     return `${this.altNote}${displayName} <t:${this.time}:R>`;
   }

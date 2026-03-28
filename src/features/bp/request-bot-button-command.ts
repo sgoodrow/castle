@@ -13,7 +13,6 @@ import { knightRoleId, raiderRoleId } from "../../config";
 import { getClassAbreviation } from "../../shared/classes";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { log } from "../../shared/logger";
-import { getMember } from "../..";
 
 export class RequestBotButtonCommand extends ButtonCommand {
   constructor(name: string) {
@@ -31,7 +30,7 @@ export class RequestBotButtonCommand extends ButtonCommand {
 
     const name = interaction.customId.split("_")[1];
     try {
-      const guildUser = await getMember(
+      const guildUser = await interaction.guild?.members.fetch(
         interaction.user.id
       );
       log(
