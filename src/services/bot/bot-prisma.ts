@@ -20,20 +20,55 @@ import { truncate } from "lodash";
 import { log } from "../../shared/logger";
 import { accounts } from "../accounts";
 import { Bot, SheetPublicAccountService } from "./public-accounts-sheet";
-import { getMembers, prismaClient } from "../..";
+import { getMember, getMembers, prismaClient } from "../..";
 import { getClassAbreviation } from "../../shared/classes";
 import { raidBotInstructions } from "../../features/raid-bots/update-bots";
 import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-command";
 import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
 import { code } from "../../shared/util";
+import { MINUTES } from "../../shared/time";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
-  private prisma!: PrismaClient;
+  private refreshing: boolean = false;
+  private isReady: boolean = false;
+
+  
+
   constructor() {
-    setInterval(() => {
-      this.init();
-    }, 900000);
-    this.init();
+
+    this.startRefreshLoop();
+  }
+
+  private async startRefreshLoop() {
+    await this.refresh();
+    this.isReady = true;
+    setInterval(async () => {
+      // Refreshing private and public bot sheet on timer
+      if (this.refreshing) {
+        log("SKIP - Refresh already in progress");
+        return;
+      }
+      await this.refresh();
+    }, 15 * MINUTES);
+  }
+
+  private async refresh() {
+    this.refreshing = true;
+    log("START - Refreshing bot data");
+    try {
+      await accounts.refreshAccountData();
+      await this.init();
+      log("END - Refreshing bot data");
+    } finally {
+      this.refreshing = false;
+    }
+  }
+
+  public async guardReady() {
+    const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+    while (!this.isReady || this.refreshing) {
+      await sleep(100);
+    }
   }
 
   public async init() {
@@ -136,15 +171,13 @@ Password: ${spoiler(details.password)}
 
       if (await this.isBotPublic(foundBot)) {
         try {
-          const guildUser = await interaction.guild?.members.fetch(
+          const guildUser = await getMember(
             interaction.user.id
           );
 
           log(
-            `${
-              guildUser?.nickname || guildUser?.user.username
-            } requested ${name} and got ${details.characters} ${
-              currentPilot ? `who is checked out by ${currentPilot}` : ""
+            `${guildUser?.nickname || guildUser?.user.username
+            } requested ${name} and got ${details.characters} ${currentPilot ? `who is checked out by ${currentPilot}` : ""
             }`
           );
 
@@ -171,13 +204,14 @@ Password: ${spoiler(details.password)}
       logMsg.edit(`${status} ${interaction.user} access to ${name}.`);
 
       await interaction.editReply(
-        `You do not have the correct permissions to access ${name}.`
+        `You do not have the correct permissions to access ${name} - ${err}`
       );
       throw err;
     }
   }
 
   async getBotByName(botName: string): Promise<bot | null> {
+    await this.guardReady();
     const bot = await prismaClient.bot.findFirst({
       where: {
         name: {
@@ -191,6 +225,7 @@ Password: ${spoiler(details.password)}
   }
 
   async getCurrentBotPilot(botName: string): Promise<string | undefined> {
+    await this.guardReady();
     const bot = await this.getBotByName(botName);
 
     if (bot) {
@@ -205,6 +240,7 @@ Password: ${spoiler(details.password)}
     location?: string | undefined,
     bindLocation?: string | undefined
   ): Promise<string> {
+    await this.guardReady();
     const bot = await prismaClient.bot.findFirst({
       where: {
         class: botClass,
@@ -250,6 +286,7 @@ Password: ${spoiler(details.password)}
     location: string,
     roles: GuildMemberRoleManager
   ): Promise<string> {
+    await this.guardReady();
     const bot = await prismaClient.bot.findFirst({
       where: {
         location: location,
@@ -293,6 +330,7 @@ Password: ${spoiler(details.password)}
   }
 
   async getBotsForBatphone(location: string): Promise<bot[]> {
+    await this.guardReady();
     return await prismaClient.bot.findMany({
       where: {
         location: location,
@@ -304,6 +342,7 @@ Password: ${spoiler(details.password)}
   }
 
   async isBotPublic(botName: string): Promise<boolean | undefined> {
+    await this.guardReady();
     return (
       (await prismaClient.bot.findFirst({
         where: {
@@ -317,6 +356,7 @@ Password: ${spoiler(details.password)}
   }
 
   async getBots(): Promise<Bot[]> {
+    await this.guardReady();
     return await prismaClient.bot.findMany({
       orderBy: [
         {
@@ -339,6 +379,7 @@ Password: ${spoiler(details.password)}
     botName: string,
     botRowData: { [id: string]: string | undefined }
   ): Promise<void> {
+    await this.guardReady();
     const bot = await prismaClient.bot.findFirst({
       where: {
         name: {
@@ -417,6 +458,7 @@ Password: ${spoiler(details.password)}
     return await this.doCleanup(botsToPark, hours);
   }
   async doCleanup(botsToPark: Bot[], hours: number): Promise<number> {
+    await this.guardReady();
     let cleanupCount = 0;
     const generateMessage = (botName: string, checkoutTime: string): string => {
       return `**Bot park notification**
@@ -487,6 +529,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
   // Legacy
 
   async updateBotCheckoutTime(botName: string, dateTime: Moment | null) {
+    await this.guardReady();
     const bot = await prismaClient.bot.findFirst({
       where: {
         name: botName,
@@ -510,6 +553,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
   }
 
   async updateBotLocation(name: string, location: string) {
+    await this.guardReady();
     const bot = await prismaClient.bot.findFirst({
       where: {
         name: name,
@@ -537,6 +581,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
   }
 
   async updateBotPilot(name: string, pilotName: string) {
+    await this.guardReady();
     const bot = await prismaClient.bot.findFirst({
       where: {
         name: name,

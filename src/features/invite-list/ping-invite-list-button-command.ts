@@ -5,7 +5,7 @@ import {
   PermissionFlagsBits,
   Permissions,
 } from "discord.js";
-import { getGuild } from "../..";
+import { getGuild, getMember } from "../..";
 import { inviteListChannelId } from "../../config";
 import { dataSource } from "../../db/data-source";
 import { InviteSimple } from "../../db/invite-simple";
@@ -37,10 +37,10 @@ export const getAttentionMessage = async (users: string[]) => {
   const guild = await getGuild();
   const statuses = await Promise.all(
     users.map(async (user) => {
-      const { presence } = await guild.members.fetch({
+      const { presence } = await getMember(
         user,
-        withPresences: true,
-      });
+        true
+      );
       return {
         user,
         status: getPresenceIcon(presence?.status),
