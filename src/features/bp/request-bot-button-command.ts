@@ -35,8 +35,7 @@ export class RequestBotButtonCommand extends ButtonCommand {
         interaction.user.id
       );
       log(
-        `${
-          guildUser?.nickname || guildUser?.user.username
+        `${guildUser?.nickname || guildUser?.user.username
         } clicked batphone button for ${name}`
       );
       await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
@@ -51,32 +50,19 @@ export class RequestBotButtonCommand extends ButtonCommand {
   ) {
     const components = interaction.message.components;
 
-    const rowIdx = components.findIndex(
-      (row) =>
-        row.type === ComponentType.ActionRow &&
-        row.components.some((c) => c.customId === interaction.customId)
-    );
+    const updatedComponents = components
+      .filter((row) => row.type === ComponentType.ActionRow)
+      .map((row) => {
+        const updatedButtons = row.components.map((button) => {
+          const builder = ButtonBuilder.from(button as ButtonComponent);
+          if (button.customId === interaction.customId) {
+            builder.setDisabled(!enabled);
+          }
+          return builder;
+        });
 
-    if (rowIdx === -1) return;
-
-    const row = components[rowIdx];
-    if (row.type !== ComponentType.ActionRow) return;
-
-    const updatedButtons = row.components.map((button) =>
-      button.customId === interaction.customId
-        ? ButtonBuilder.from(button as ButtonComponent).setDisabled(!enabled)
-        : ButtonBuilder.from(button as ButtonComponent)
-    );
-
-    const updatedRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      updatedButtons
-    );
-
-    const updatedComponents = [
-      ...components.slice(0, rowIdx),
-      updatedRow,
-      ...components.slice(rowIdx + 1),
-    ];
+        return new ActionRowBuilder<ButtonBuilder>().addComponents(updatedButtons);
+      });
 
     await interaction.message.edit({ components: updatedComponents });
   }
