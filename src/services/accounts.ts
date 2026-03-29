@@ -164,7 +164,7 @@ export const accounts = {
     if (!d) {
       d = accounts.find((a) => a.characters.includes(toSentenceCase(name)));
       if (!d) {
-        throw new Error(`${name} is not a shared account`);
+        throw new Error(`${name} was not found in the private bot sheet (account details).`);
       }
     }
     const hasRole = some(
