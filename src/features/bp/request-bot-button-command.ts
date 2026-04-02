@@ -5,7 +5,7 @@ import {
   ButtonInteraction,
   ButtonStyle,
   CacheType,
-  ComponentType,
+  ComponentType
 } from "discord.js";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { bot } from "@prisma/client";
@@ -48,23 +48,23 @@ export class RequestBotButtonCommand extends ButtonCommand {
     interaction: ButtonInteraction<CacheType>,
     enabled: boolean
   ) {
-    const components = interaction.message.components;
+      const components = interaction.message.components;
 
-    const updatedComponents = components
-      .filter((row) => row.type === ComponentType.ActionRow)
-      .map((row) => {
-        const updatedButtons = row.components.map((button) => {
-          const builder = ButtonBuilder.from(button as ButtonComponent);
-          if (button.customId === interaction.customId) {
-            builder.setDisabled(!enabled);
-          }
-          return builder;
+      const updatedComponents = components
+        .filter((row) => row.type === ComponentType.ActionRow)
+        .map((row) => {
+          const updatedButtons = row.components.map((button) => {
+            const builder = ButtonBuilder.from(button as ButtonComponent);
+            if (button.customId === interaction.customId) {
+              builder.setDisabled(!enabled);
+            }
+            return builder;
+          });
+
+          return new ActionRowBuilder<ButtonBuilder>().addComponents(updatedButtons);
         });
 
-        return new ActionRowBuilder<ButtonBuilder>().addComponents(updatedButtons);
-      });
-
-    await interaction.message.edit({ components: updatedComponents });
+      await interaction.message.edit({ components: updatedComponents });
   }
 
   public getButtonBuilder(bot: bot): ButtonBuilder {

@@ -140,8 +140,8 @@ export class SheetPublicAccountService implements IPublicAccountService {
       const rows = await this.botInfoSheet.getRows();
       const botRowIndex = rows.findIndex(
         (r) =>
-          r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
-          botName.toLowerCase()
+          (r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() as string).includes(
+          botName.toLowerCase())
       );
       if (botRowIndex !== -1) {
         // do update
