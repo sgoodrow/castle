@@ -157,7 +157,6 @@ export const accounts = {
     roles: GuildMemberRoleManager
   ): Promise<Account> => {
     const accounts = await getAccounts();
-    
     let d = accounts.get(name.toLowerCase());
     const toSentenceCase = (str: string) => {
       return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();

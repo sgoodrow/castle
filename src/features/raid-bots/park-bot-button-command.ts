@@ -50,10 +50,10 @@ import { getMember } from "../..";
       
     }
   
-    public getButtonBuilder(name: string, location: string): ButtonBuilder {
+    public getButtonBuilder(bot: bot): ButtonBuilder {
       return new ButtonBuilder()
         .setLabel(
-          `Park ${name} at ${location}`
+          `Park ${bot.name} at ${bot.location}`
         )
         .setCustomId(this.customId)
         .setStyle(ButtonStyle.Success);

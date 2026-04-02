@@ -102,25 +102,29 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     }
   }
 
-async getBotParkButtonComponents(name: string) {
-  const row = new ActionRowBuilder<MessageActionRowComponentBuilder>();
-  try {
-    const bot = await this.getBotByName(name);
-    if (bot) {
-      const button = new ParkBotButtonCommand(`parkbot_${name}`).getButtonBuilder(name, bot.location);
-      row.addComponents(button);
-    }
-  } catch (err) {
-    console.error('getBotParkButtonComponents error:', err);
+  async getBotParkButtonComponents(name: string) {
+    const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
+    const row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
+      type: ComponentType.ActionRow,
+      components: [],
+    });
+    components.push(row);
+
+    try {
+      const bot = await this.getBotByName(name);
+      if (bot) {
+        row.addComponents(
+          new ParkBotButtonCommand(`parkbot_${name}`).getButtonBuilder(bot)
+        );
+      }
+    } catch { }
+    return components;
   }
-  return [row];
-}
 
   async doBotCheckout(
     name: string,
     interaction: MessageComponentInteraction | CommandInteraction
   ): Promise<void> {
-    const botName = name.split(" ")[0];
     const thread = await raidBotInstructions.getThread();
     if (!thread) {
       throw new Error(`Could not locate bot request thread.`);
@@ -129,7 +133,7 @@ async getBotParkButtonComponents(name: string) {
     let status = "✅ Granted";
     try {
       const details = await accounts.getAccount(
-        botName,
+        name,
         interaction.member?.roles as GuildMemberRoleManager
       );
 
@@ -153,7 +157,7 @@ Password: ${spoiler(details.password)}
       if (currentPilot) {
         response += `**Please note that ${currentPilot} is marked as the pilot of ${foundBot} and you may not be able to log in. Your name will not be added as the botpilot in the public bot sheet! **\n\n`;
       } else {
-        components = await this.getBotParkButtonComponents(foundBot);
+        components = await this.getBotParkButtonComponents(name);
       }
       response += `The credentials for ${foundBot} have been DM'd to you. Please remember to use \`/bot park\` when you are done!`;
       response += `${prismaBot?.factioned ? factionWarning : ""}`;
