@@ -23,7 +23,7 @@ import {
   openDkpAuctionRaidId,
 } from "../config";
 import { EmbedBuilder } from "discord.js";
-import { round } from "lodash";
+import { round, truncate } from "lodash";
 import { log } from "../shared/logger";
 
 // Client for OpenDKP
@@ -542,7 +542,7 @@ export const openDkpService = {
 
       descriptions.push(cleanTickName);
     }
-    const embedTitle = descriptions.join(", ");
+    const embedTitle = truncate(descriptions.join(", "), {length: 255});
     const raidData = {
       Attendance: 1,
       Items: items,

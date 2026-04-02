@@ -13,6 +13,7 @@ import {
   import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
   import { log } from "../../shared/logger";
 import { getMember } from "../..";
+import { truncate } from "lodash";
   
   export class ParkBotButtonCommand extends ButtonCommand {
     constructor(name: string) {
@@ -53,7 +54,7 @@ import { getMember } from "../..";
     public getButtonBuilder(bot: bot): ButtonBuilder {
       return new ButtonBuilder()
         .setLabel(
-          `Park ${bot.name} at ${bot.location}`
+          truncate(`Park ${bot.name} at ${bot.location}`, {length: 80})
         )
         .setCustomId(this.customId)
         .setStyle(ButtonStyle.Success);
