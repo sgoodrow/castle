@@ -204,7 +204,7 @@ export const castledkp = {
       raid_date: tick.uploadDate,
       raid_attendees: { member: characterIds },
       raid_value: tick.data.value,
-      raid_event_id: tick.data.event.id,
+      raid_event_id: tick.data.eqdkpEvent?.id,
       raid_note: `${tick.uploadNote} ${threadUrl}`,
     };
     console.log("Creating raid tick", payload);
@@ -247,7 +247,7 @@ export const castledkp = {
     //   });
 
     return {
-      eventUrlSlug: tick.data.event.name
+      eventUrlSlug: tick.data.eqdkpEvent?.name || "Unknown"
         .toLowerCase()
         .replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
       id: data.raid_id,

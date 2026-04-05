@@ -1,11 +1,12 @@
 import { EmbedBuilder } from "discord.js";
-import { sumBy } from "lodash";
+import { eq, sumBy } from "lodash";
 import moment, { Moment } from "moment";
 import { castledkp, RaidEventData } from "../../services/castledkp";
 import { code } from "../../shared/util";
 import { CreditData } from "./create/credit-parser";
 import { LootData } from "./raid-report";
 import { openDkpClientName } from "../../config";
+import { RaidValue } from "../../services/raidValuesService";
 
 export const UPLOAD_DATE_FORMAT = "YYYY-MM-DD HH:mm";
 export const EVERYONE = "Everyone";
@@ -21,7 +22,8 @@ export interface RaidTickData {
     tickNumber: number;
     sheetName: string;
     value?: number;
-    event?: RaidEventData;
+    event?: RaidValue;
+    eqdkpEvent?: RaidEventData;
     note?: string;
     loot: LootData[];
     attendees: string[];
@@ -57,7 +59,10 @@ export class RaidTick {
         return this.date.format("M-D");
     }
     public get eventAbreviation(): string {
-        return this.data.event?.abreviation || "";
+        return this.data.event?.target || "";
+    }
+    public get eqDkpEventAbreviation(): string {
+        return this.data.eqdkpEvent?.abreviation || "";
     }
 
     // todo maybe truncate this with ellipses based on param (for raid reports, since note can be long)
@@ -127,8 +132,9 @@ export class RaidTick {
         this.data.attendees[index] = replacer;
     }
 
-    public update(event: RaidEventData, value: number, note?: string) {
+    public update(event: RaidValue, value: number, note?: string, eqDkpEvent?: RaidEventData) {
         this.data.event = event;
+        this.data.eqdkpEvent = eqDkpEvent;
         this.data.value = value;
         this.data.note = note;
     }

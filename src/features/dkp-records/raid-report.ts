@@ -12,6 +12,7 @@ import { DAYS } from "../../shared/time";
 import { code, isEqDkpPlusEnabled } from "../../shared/util";
 import { AdjustmentData, EVERYONE, RaidTick, RaidTickData } from "./raid-tick";
 import { openDkpService } from "../../services/openDkpService";
+import { RaidValue } from "../../services/raidValuesService";
 
 export interface LootData {
   item: string;
@@ -344,13 +345,14 @@ ${p}${code}`,
   }
 
   public updateRaidTick(
-    event: RaidEventData,
+    event: RaidValue,
     value: number,
     tick?: number,
-    note?: string
+    note?: string,
+    eqDkpEvent?: RaidEventData
   ) {
     const tickNumbers = tick ? [tick] : this.allTickNumbers;
-    tickNumbers.forEach((t) => this.getRaidTick(t).update(event, value, note));
+    tickNumbers.forEach((t) => this.getRaidTick(t).update(event, value, note, eqDkpEvent));
     return tickNumbers;
   }
 

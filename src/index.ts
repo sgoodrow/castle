@@ -21,6 +21,7 @@ import { log } from "./shared/logger";
 import { openDkpService } from "./services/openDkpService";
 import { accounts } from "./services/accounts";
 import { MINUTES } from "./shared/time";
+import { PublicSheetService } from "./services/sheet-updater/public-sheet";
 
 // Global
 https.globalAgent.maxSockets = 5;
@@ -115,10 +116,14 @@ redisListener.pSubscribe(redisChannels.raidReportChange(), updateRaidReport);
 export const prismaClient = new PrismaClient();
 prismaClient.$connect();
 
-openDkpService.authenticate();
+openDkpService.generateToken().then(() => {
+  openDkpService.initializeData();
+});
 setInterval(() => {
   log("Reauthenticating with OpenDKP (token refresh)");
-  openDkpService.authenticate();
+  openDkpService.generateToken();
 }, 1500000);
+
+export const publicSheetService = new PublicSheetService();
 
 log("Listening...");

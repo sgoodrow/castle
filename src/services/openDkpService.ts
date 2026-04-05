@@ -178,7 +178,7 @@ export let odkpItemDb: ODKPItemDbItem[] = [];
 let accessTokens: IAccessTokenResult;
 
 export const openDkpService = {
-  authenticate: async () => {
+  generateToken: async () => {
     if (openDkpUsername && openDkpPassword && openDkpAuthClientId) {
       try {
         await openDkpService.doUserPasswordAuth(
@@ -191,6 +191,8 @@ export const openDkpService = {
         log("Failed to authenticate OpenDKP: " + reason);
       }
     }
+  },
+  initializeData: async () => {
     try {
       log(`Loading OpenDKP data`);
       await openDkpService.getCharacters();
@@ -237,7 +239,7 @@ export const openDkpService = {
     log(`Reading OpenDKP item database`);
     try {
       if (fs.existsSync("./items.json")) {
-        const data = await fs.readFileSync("./items.json", "utf-8");
+        const data = fs.readFileSync("./items.json", "utf-8");
         odkpItemDb = JSON.parse(data);
         log(`Loaded ${odkpItemDb.length} items`);
       } else {
