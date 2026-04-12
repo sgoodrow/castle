@@ -15,6 +15,7 @@ import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../shared/action/reaction-action";
+import { getMember } from "../..";
 
 export const tryRaiderEnlistedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -34,7 +35,7 @@ class RaiderEnlistedReactionAction extends ReactionAction {
     }
 
     // authorize user
-    const reactor = await this.members?.fetch(this.user.id);
+    const reactor = await getMember(this.user.id);
     if (
       !(
         reactor?.roles.cache.has(knightRoleId) ||

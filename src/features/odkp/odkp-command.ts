@@ -12,6 +12,5 @@ export const odkpCommand = new Command(
     odkpItemHistorySubcommand,
     odkpGetSubcommand,
     odkpSummarySubcommand,
-  ],
-  false
+  ]
 );

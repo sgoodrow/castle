@@ -9,6 +9,7 @@ import {
   reactionActionExecutor,
 } from "../../../shared/action/reaction-action";
 import { getAction, getRaidRevisionMessageContent } from "./util";
+import { getMember } from "../../..";
 
 export const tryApproveRaidReportRevisionReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -29,7 +30,7 @@ class ApproveRaidReportRevisionReactionAction extends ReactionAction {
       return;
     }
 
-    const actor = await this.members?.fetch(this.user.id);
+    const actor = await getMember(this.user.id);
 
     await getAction(content).tryExecute(this.message, actor);
   }

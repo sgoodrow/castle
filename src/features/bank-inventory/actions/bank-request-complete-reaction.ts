@@ -16,7 +16,7 @@ import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../../shared/action/reaction-action";
-import { getTextChannel } from "../../..";
+import { getMember, getTextChannel } from "../../..";
 
 export const tryBankRequestComplete = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -41,7 +41,7 @@ class BankRequestFinishedReactionAction extends ReactionAction {
       }
       bankTransactionsChannel?.send(transactionContent);
           // authorize user
-      const reactor = await this.members?.fetch(this.user.id);
+      const reactor = await getMember(this.user.id);
       if (
         !(
           reactor?.roles.cache.has(bankerRoleId) ||
@@ -56,7 +56,7 @@ class BankRequestFinishedReactionAction extends ReactionAction {
 
     // delete
     if (this.reaction.emoji.name === "❌") {
-      const reactor = await this.members?.fetch(this.user.id);
+      const reactor = await getMember(this.user.id);
       if (
         !(
           reactor?.roles.cache.has(bankerRoleId) ||

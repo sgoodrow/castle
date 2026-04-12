@@ -26,9 +26,11 @@ export class PublicSheetService {
   private botSheetRows!: GoogleSpreadsheetRow[];
   private locationSheetRows!: GoogleSpreadsheetRow[];
   private raidValueRows!: GoogleSpreadsheetRow[];
+  private raidRolesRows!: GoogleSpreadsheetRow[];
 
   private LOCATION_SHEET_NAME = "Bot Locations";
   private RAID_VALUES_SHEET = "Data";
+  private RAID_ROLES_SHEET = "Roles";
 
   constructor() {
     this.publicBotSheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
@@ -49,6 +51,11 @@ export class PublicSheetService {
   public async getRaidValueRows() {
     await this.loadRaidValues();
     return this.raidValueRows;
+  }
+
+  public async getRaidRolesRows() {
+    await this.loadRaidValues();
+    return this.raidRolesRows;
   }
 
   private async authorize() {
@@ -115,6 +122,22 @@ export class PublicSheetService {
     } catch (err) {
       log(
         "Failed to load raid values sheet data. Does it exist in the raid values sheet with name 'Data'?"
+      );
+      return;
+    }
+  }
+
+  private async loadRaidRoles(): Promise<void> {
+    await this.authorize();
+    await this.raidValuesSheet.loadInfo();
+    try {
+      const raidRolesSheet = this.raidValuesSheet.sheetsByTitle[this.RAID_ROLES_SHEET];
+      if (raidRolesSheet) {
+        this.raidRolesRows = await raidRolesSheet.getRows();
+      }
+    } catch (err) {
+      log(
+        "Failed to load raid roles sheet data. Does it exist in the raid values sheet with name 'Roles'?"
       );
       return;
     }

@@ -23,6 +23,11 @@ enum RAID_VALUES_SPREADSHEET_COLUMNS {
     TrackingHourly = "Tracking Hourly"
 }
 
+enum RAID_ROLES_SPREADSHEET_COLUMNS {
+    Description = "Description",
+    Value = "Value"
+}
+
 export interface RaidValue {
     target: string;
     description: string;
@@ -37,10 +42,20 @@ export interface RaidValue {
     trackingHourly: number;
 }
 
+export interface RaidRole {
+    description: string;
+    value: number;
+}
+
 export class RaidValuesService implements IRaidValuesService {
     private static _instance: RaidValuesService;
 
     private raidValueCache = new LRUCache<string, RaidValue>({
+        max: 200,
+        ttl: 5 * MINUTES,
+    });
+
+    private raidRoleCache = new LRUCache<string, RaidRole>({
         max: 200,
         ttl: 5 * MINUTES,
     });
@@ -90,11 +105,47 @@ export class RaidValuesService implements IRaidValuesService {
 
     }
 
+    async getRaidRoles(): Promise<RaidValue[]> {
+        try {
+            this.raidValueCache.purgeStale();
+            if (!this.raidValueCache.size) {
+                // Reload data
+                const rows = await publicSheetService.getRaidValueRows();
+                let foundHeader = false;
+                for (const row of rows) {
+                    if (row[RAID_VALUES_SPREADSHEET_COLUMNS.Description] !== undefined) {
+                        const raidRole = {
+                            description: row[RAID_VALUES_SPREADSHEET_COLUMNS.Description],
+                            value: Number.parseFloat(row[RAID_ROLES_SPREADSHEET_COLUMNS.Value])
+
+                        } as RaidRole;
+                        this.raidRoleCache.set(raidRole.description, raidRole);
+                    }
+                }
+            }
+            return Array.from(this.raidValueCache.values());
+        } catch (err: unknown) {
+            throw new Error("Failed to load raid values: " + err)
+        }
+
+    }
+
     async getRaidValue(target: string): Promise<RaidValue | undefined> {
         return this.raidValueCache.get(target);
     }
 
     async getRaidValueOptions(): Promise<
+        ApplicationCommandOptionChoiceData<string>[]
+    > {
+        const raidValues = await this.getRaidValues();
+
+        return raidValues.map((b) => ({
+            name: truncate(`${b.target} (${b.description})`, { length: 100 }),
+            value: b.target,
+        })).sort((a, b) => a.value.localeCompare(b.value));
+    }
+
+    async getRaidRoleOptions(): Promise<
         ApplicationCommandOptionChoiceData<string>[]
     > {
         const raidValues = await this.getRaidValues();

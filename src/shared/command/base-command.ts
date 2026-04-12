@@ -9,7 +9,7 @@ export abstract class BaseCommand {
   public constructor(
     private readonly _name: string,
     public readonly description: string,
-    public readonly ephemeral = true
+    public readonly ephemeral: boolean = true
   ) {}
 
   public get name() {

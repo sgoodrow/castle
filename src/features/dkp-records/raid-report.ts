@@ -338,6 +338,13 @@ ${p}${code}`,
     );
   }
 
+  public getEventForTick(tickNumber: number) {
+    const tick = this.getRaidTick(tickNumber);
+    if (tick && tick.data.event) {
+      return tick.data.event;
+    }
+  }
+
   private getRaidTicks(tickNumbers: number[]): RaidTick[] {
     return (tickNumbers.length === 0 ? this.allTickNumbers : tickNumbers).map(
       (t) => this.getRaidTick(t)

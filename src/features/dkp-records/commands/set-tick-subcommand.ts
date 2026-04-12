@@ -8,7 +8,6 @@ import {
   dkpRecordsChannelId,
   officerRoleId,
 } from "../../../config";
-import { castledkp } from "../../../services/castledkp";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { getRaidReport } from "../raid-report";
 import { RaidValuesService } from "../../../services/raidValuesService";
@@ -23,7 +22,7 @@ enum Option {
 
 export class SetTickSubcommand extends Subcommand {
   public constructor(name: string, description: string) {
-    super(name, description);
+    super(name, description, true);
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -40,7 +39,7 @@ export class SetTickSubcommand extends Subcommand {
     // authorize user
     const roles = interaction.member?.roles as GuildMemberRoleManager;
     if (!(roles.cache.has(dkpDeputyRoleId) || roles.cache.has(officerRoleId))) {
-      throw new Error("Must be a DKP Deputy or Offier to use this command");
+      throw new Error("Must be a DKP Deputy or Officer to use this command");
     }
 
     // get raid report
@@ -85,7 +84,7 @@ export class SetTickSubcommand extends Subcommand {
       .addStringOption((o) =>
         o
           .setName(Option.Event)
-          .setDescription("The type of raid event to create.")
+          .setDescription("The raid event name.")
           .setAutocomplete(true)
           .setRequired(true)
       )
