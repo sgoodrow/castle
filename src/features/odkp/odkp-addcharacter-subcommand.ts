@@ -8,6 +8,10 @@ import { Subcommand } from "../../shared/command/subcommand";
 import { openDkpService } from "../../services/openDkpService";
 
 export class OdkpAddCharacterSubcommand extends Subcommand {
+  constructor(name: string, description: string) {
+    super(name, description, true);
+  }
+  
   public async getOptionAutocomplete(
     option: string,
     interaction: AutocompleteInteraction<CacheType>

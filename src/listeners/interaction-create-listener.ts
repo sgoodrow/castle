@@ -1,4 +1,4 @@
-import { CacheType, Interaction } from "discord.js";
+import { CacheType, Interaction, MessageFlags } from "discord.js";
 import { getButton, getCommand } from "./register-commands";
 import { log } from "../shared/logger"
 
@@ -25,7 +25,15 @@ export const interactionCreateListener = async (
   if (interaction.isChatInputCommand()) {
     try {
       const command = getCommand(interaction);
-      await interaction.deferReply({ ephemeral: command.ephemeral });
+      const subcommandName = interaction.options.getSubcommand(false);
+
+      const ephemeral = subcommandName
+      ? (command.subcommands[subcommandName]?.ephemeral ?? command.ephemeral)
+      : command.ephemeral;
+
+      const flags = ephemeral ? MessageFlags.Ephemeral : undefined;
+
+      await interaction.deferReply({ flags });
       await getCommand(interaction).execute(interaction);
       log(`/${interaction.commandName} succeeded`);
     } catch (error) {

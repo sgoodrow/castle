@@ -20,6 +20,7 @@ import { castledkp } from "../../services/castledkp";
 import { some } from "lodash";
 import { openDkpService } from "../../services/openDkpService";
 import { isEqDkpPlusEnabled } from "../../shared/util";
+import { getMember } from "../..";
 
 const code = "```";
 const emojis = ["✅", "🏦"];
@@ -53,7 +54,7 @@ class AuctionFinishedReactionAction extends ReactionAction {
     }
 
     // authorize user
-    const reactor = await this.members?.fetch(this.user.id);
+    const reactor = await getMember(this.user.id);
     if (
       !(
         reactor?.roles.cache.has(dkpDeputyRoleId) ||

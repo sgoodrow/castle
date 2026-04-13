@@ -10,8 +10,7 @@ import {
 } from "discord.js";
 import { Moment } from "moment";
 import {
-  BOT_SPREADSHEET_COLUMNS,
-  PublicSheetService,
+  BOT_SPREADSHEET_COLUMNS
 } from "../sheet-updater/public-sheet";
 import { IPublicAccountService } from "./public-accounts.i";
 import { bot, PrismaClient } from "@prisma/client";
@@ -20,7 +19,7 @@ import { truncate } from "lodash";
 import { log } from "../../shared/logger";
 import { accounts } from "../accounts";
 import { Bot, SheetPublicAccountService } from "./public-accounts-sheet";
-import { getMember, getMembers, prismaClient } from "../..";
+import { getMember, getMembers, prismaClient, publicSheetService } from "../..";
 import { getClassAbreviation } from "../../shared/classes";
 import { raidBotInstructions } from "../../features/raid-bots/update-bots";
 import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-command";
@@ -74,7 +73,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   public async init() {
     // read sheet on startup
     log("PublicAccountsPrisma - reading sheet");
-    const sheetService = new PublicSheetService();
+    const sheetService = publicSheetService;
     const rows = await sheetService.getBotSheetRows();
 
     // Clear data since we read initial from sheet

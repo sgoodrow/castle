@@ -23,6 +23,7 @@ export const {
   enableEqDkpPlus,
   sharedCharactersGoogleSheetId,
   publicCharactersGoogleSheetId,
+  raidValuesGoogleSheetId,
   commandSuffix,
   guildId,
   guardRoleId,
@@ -168,6 +169,11 @@ export const {
    * Publically accessible bot info sheet
    */
   publicCharactersGoogleSheetId?: string;
+
+  /*
+   * Raid values sheet id
+   */
+  raidValuesGoogleSheetId?: string;
 
   /**
    * [Optional] Custom suffix for all Discord commands. Useful for running multiple instances of the bot in the same server simultaneously.

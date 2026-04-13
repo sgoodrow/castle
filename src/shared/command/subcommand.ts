@@ -27,6 +27,9 @@ export const getOption = (
 };
 
 export abstract class Subcommand extends BaseCommand {
+  constructor(name: string, description: string, ephemeral: boolean = true) {
+    super(name, description, ephemeral);
+  }
   public get command() {
     return new SlashCommandSubcommandBuilder()
       .setName(this.name)

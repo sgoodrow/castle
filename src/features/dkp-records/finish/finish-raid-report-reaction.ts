@@ -14,6 +14,7 @@ import {
   reactionActionExecutor,
 } from "../../../shared/action/reaction-action";
 import { getRaidReport, isRaidInstructionsMessage } from "../raid-report";
+import { getMember } from "../../..";
 
 export const tryRaidReportFinishedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -55,7 +56,7 @@ class RaidReportFinishedReactionAction extends ReactionAction {
     }
 
     // authorize user
-    const reactor = await this.members?.fetch(this.user.id);
+    const reactor = await getMember(this.user.id);
     if (
       !(
         reactor?.roles.cache.has(dkpDeputyRoleId) ||

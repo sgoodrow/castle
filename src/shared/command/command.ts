@@ -14,17 +14,16 @@ export class Command extends BaseCommand {
   public constructor(
     name: string,
     description: string,
-    private readonly _subcommands: Subcommand[],
-    ephemeral = true
+    private readonly _subcommands: Subcommand[]
   ) {
-    super(`${name}${commandSuffix || ""}`, description, ephemeral);
+    super(`${name}${commandSuffix || ""}`, description);
     this.command = new SlashCommandBuilder()
       .setName(this.name)
       .setDescription(this.description);
     this._subcommands.forEach((s) => this.command.addSubcommand(s.command));
   }
 
-  protected get subcommands() {
+  public get subcommands() {
     return this._subcommands.reduce((m, s) => {
       m[s.name] = s;
       return m;

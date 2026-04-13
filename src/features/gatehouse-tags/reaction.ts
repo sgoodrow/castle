@@ -21,6 +21,7 @@ import {
 } from "../../shared/action/reaction-action";
 import { greetingActivity } from "../gatehouse/guild-member-add-listener";
 import { actionConfigByReaction, Emoji, ActionType } from "./config";
+import { getMember } from "../..";
 
 export const tryGatehouseReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -35,7 +36,7 @@ class GatehouseReactionAction extends ReactionAction {
     }
 
     // authorize user
-    const reactor = await this.members?.fetch(this.user.id);
+    const reactor = await getMember(this.user.id);
     if (
       !(
         reactor?.roles.cache.has(guardRoleId) ||
@@ -64,7 +65,7 @@ class GatehouseReactionAction extends ReactionAction {
     if (!this.roleIds) {
       return;
     }
-    const author = await this.members?.fetch(this.authorId);
+    const author = await getMember(this.authorId);
     if (!author) {
       throw new Error("Something went wrong retrieving the message author.");
     }

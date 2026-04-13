@@ -10,6 +10,7 @@ import {
   reactionActionExecutor,
 } from "../../shared/action/reaction-action";
 import { removePlayer } from "./remove-subcommand";
+import { getMember } from "../..";
 
 export const tryInviteRequestFinishedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -32,7 +33,7 @@ class InviteRequestFinishedReactionAction extends ReactionAction {
     }
 
     // authorize user
-    const reactor = await this.members?.fetch(this.user.id);
+    const reactor = await getMember(this.user.id);
     if (
       !(
         reactor?.roles.cache.has(guardRoleId) ||

@@ -3,6 +3,7 @@ import { PublicSheetService } from "./sheet-updater/public-sheet";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../shared/time";
 import { truncate } from "lodash";
+import { publicSheetService } from "..";
 
 export interface ILocationService {
   getLocations(): Promise<GameLocation[]>;
@@ -21,7 +22,6 @@ export interface GameLocation {
 
 export class LocationService implements ILocationService {
   private static _instance: LocationService;
-  private sheetService: PublicSheetService;
 
   private locationCache = new LRUCache<string, GameLocation>({
     max: 200,
@@ -29,7 +29,6 @@ export class LocationService implements ILocationService {
   });
 
   private constructor() {
-    this.sheetService = new PublicSheetService();
   }
 
   public static getInstance() {
@@ -43,7 +42,7 @@ export class LocationService implements ILocationService {
     this.locationCache.purgeStale();
     if (!this.locationCache.size) {
       // Reload data
-      const rows = await this.sheetService.getLocationRows();
+      const rows = await publicSheetService.getLocationRows();
       for (const row of rows) {
         const location = {
           name: row[LOCATION_SPREADSHEET_COLUMNS.Name],

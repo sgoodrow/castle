@@ -8,20 +8,21 @@ import {
   dkpRecordsChannelId,
   officerRoleId,
 } from "../../../config";
-import { castledkp } from "../../../services/castledkp";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { getRaidReport } from "../raid-report";
+import { RaidValuesService } from "../../../services/raidValuesService";
 
 enum Option {
   Tick = "tick",
   Value = "value",
   Event = "event",
   Note = "note",
+  KillBonus = "killbonus"
 }
 
 export class SetTickSubcommand extends Subcommand {
   public constructor(name: string, description: string) {
-    super(name, description);
+    super(name, description, true);
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
@@ -38,7 +39,7 @@ export class SetTickSubcommand extends Subcommand {
     // authorize user
     const roles = interaction.member?.roles as GuildMemberRoleManager;
     if (!(roles.cache.has(dkpDeputyRoleId) || roles.cache.has(officerRoleId))) {
-      throw new Error("Must be a DKP Deputy or Offier to use this command");
+      throw new Error("Must be a DKP Deputy or Officer to use this command");
     }
 
     // get raid report
@@ -48,20 +49,22 @@ export class SetTickSubcommand extends Subcommand {
       Option.Event,
       interaction
     );
+    const dkpEvent = await RaidValuesService.getInstance().getRaidValue(eventName);
+    if (!dkpEvent) {
+      throw new Error(`${dkpEvent} not found`);
+    }
     const note = this.getOptionValue<string>(Option.Note, interaction);
     const tick = this.getOptionValue<number>(Option.Tick, interaction);
     let value = this.getOptionValue<number>(Option.Value, interaction);
-    if (value === undefined) {
-      const dkpEvent = await castledkp.getEvent(eventName);
-      value = dkpEvent?.value || 0;
+    if (value === undefined) {      
+      value = dkpEvent?.baseDkp || 0;
+    }
+    let killBonus = this.getOptionValue<boolean>(Option.KillBonus, interaction);
+    if (killBonus === true) {
+      value += dkpEvent.killDkp;
     }
 
-    const event = await castledkp.getEvent(eventName);
-    if (!event) {
-      throw new Error(`The event type "${eventName}" could not be found.`);
-    }
-
-    const ticksUpdated = report.updateRaidTick(event, value, tick, note);
+    const ticksUpdated = report.updateRaidTick(dkpEvent, value, tick, note);
 
     await report.save(interaction.channelId);
 
@@ -69,7 +72,7 @@ export class SetTickSubcommand extends Subcommand {
 
     const message = `${interaction.user} identified ${ticksUpdated.join(
       ", "
-    )} as "${event.shortName} (${value})".`;
+    )} as "${dkpEvent.target} (${value})".`;
 
     await interaction.channel.send(message);
 
@@ -81,9 +84,14 @@ export class SetTickSubcommand extends Subcommand {
       .addStringOption((o) =>
         o
           .setName(Option.Event)
-          .setDescription("The type of raid event to create.")
+          .setDescription("The raid event name.")
           .setAutocomplete(true)
           .setRequired(true)
+      )
+      .addBooleanOption((o) => 
+        o.setName(Option.KillBonus)
+        .setDescription("True if a kill bonus should be applied")
+        .setRequired(true)
       )
       .addNumberOption((o) =>
         o
@@ -109,10 +117,7 @@ export class SetTickSubcommand extends Subcommand {
   public async getOptionAutocomplete(option: string) {
     switch (option) {
       case Option.Event:
-        return (await castledkp.getEvents()).map((e) => ({
-          name: e.shortName,
-          value: e.name,
-        }));
+        return await RaidValuesService.getInstance().getRaidValueOptions();
       default:
         return;
     }

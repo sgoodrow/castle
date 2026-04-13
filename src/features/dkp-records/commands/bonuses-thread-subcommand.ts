@@ -174,6 +174,6 @@ export class BonusesThreadSubcommand extends Subcommand {
 }
 
 export const bonusesThreadSubcommand = new BonusesThreadSubcommand(
-  "bonuses",
+  "threadbonuses",
   "Creates a raid bonuses thread."
 );

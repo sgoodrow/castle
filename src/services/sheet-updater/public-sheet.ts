@@ -3,6 +3,7 @@ import {
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
   publicCharactersGoogleSheetId,
+  raidValuesGoogleSheetId,
 } from "../../config";
 import { checkGoogleCredentials } from "../gdrive";
 import { SHEET_TITLE } from "../bot/public-accounts-sheet";
@@ -20,14 +21,21 @@ export enum BOT_SPREADSHEET_COLUMNS {
 }
 
 export class PublicSheetService {
-  private sheet!: GoogleSpreadsheet;
+  private publicBotSheet!: GoogleSpreadsheet;
+  private raidValuesSheet!: GoogleSpreadsheet;
   private botSheetRows!: GoogleSpreadsheetRow[];
   private locationSheetRows!: GoogleSpreadsheetRow[];
+  private raidValueRows!: GoogleSpreadsheetRow[];
+  private raidRolesRows!: GoogleSpreadsheetRow[];
 
   private LOCATION_SHEET_NAME = "Bot Locations";
+  private RAID_VALUES_SHEET = "Data";
+  private RAID_ROLES_SHEET = "Roles";
 
   constructor() {
-    this.sheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
+    this.publicBotSheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
+    this.raidValuesSheet = new GoogleSpreadsheet(raidValuesGoogleSheetId);
+    this.authorize();
   }
 
   public async getBotSheetRows() {
@@ -40,10 +48,28 @@ export class PublicSheetService {
     return this.locationSheetRows;
   }
 
+  public async getRaidValueRows() {
+    await this.loadRaidValues();
+    return this.raidValueRows;
+  }
+
+  public async getRaidRolesRows() {
+    await this.loadRaidValues();
+    return this.raidRolesRows;
+  }
+
   private async authorize() {
     checkGoogleCredentials();
-    if (this.sheet) {
-      return this.sheet.useServiceAccountAuth({
+    if (this.publicBotSheet) {
+      this.publicBotSheet.useServiceAccountAuth({
+        client_email: GOOGLE_CLIENT_EMAIL,
+        private_key: (GOOGLE_PRIVATE_KEY || "")
+          .split(String.raw`\n`)
+          .join("\n"),
+      });
+    }
+    if (this.raidValuesSheet) {
+      this.raidValuesSheet.useServiceAccountAuth({
         client_email: GOOGLE_CLIENT_EMAIL,
         private_key: (GOOGLE_PRIVATE_KEY || "")
           .split(String.raw`\n`)
@@ -54,10 +80,10 @@ export class PublicSheetService {
 
   private async loadBotData(): Promise<void> {
     await this.authorize();
-    await this.sheet.loadInfo();
+    await this.publicBotSheet.loadInfo();
 
     try {
-      const botInfoSheet = this.sheet.sheetsByTitle[SHEET_TITLE];
+      const botInfoSheet = this.publicBotSheet.sheetsByTitle[SHEET_TITLE];
       if (botInfoSheet) {
         this.botSheetRows = await botInfoSheet.getRows();
       }
@@ -71,15 +97,47 @@ export class PublicSheetService {
 
   private async loadLocations(): Promise<void> {
     await this.authorize();
-    await this.sheet.loadInfo();
+    await this.publicBotSheet.loadInfo();
     try {
-      const locationSheet = this.sheet.sheetsByTitle[this.LOCATION_SHEET_NAME];
+      const locationSheet = this.publicBotSheet.sheetsByTitle[this.LOCATION_SHEET_NAME];
       if (locationSheet) {
         this.locationSheetRows = await locationSheet.getRows();
       }
     } catch (err) {
       log(
         "Failed to load location sheet data. Does it exist in the public sheet with name 'Bot Locations'?"
+      );
+      return;
+    }
+  }
+
+  private async loadRaidValues(): Promise<void> {
+    await this.authorize();
+    await this.raidValuesSheet.loadInfo();
+    try {
+      const raidValuesSheet = this.raidValuesSheet.sheetsByTitle[this.RAID_VALUES_SHEET];
+      if (raidValuesSheet) {
+        this.raidValueRows = await raidValuesSheet.getRows();
+      }
+    } catch (err) {
+      log(
+        "Failed to load raid values sheet data. Does it exist in the raid values sheet with name 'Data'?"
+      );
+      return;
+    }
+  }
+
+  private async loadRaidRoles(): Promise<void> {
+    await this.authorize();
+    await this.raidValuesSheet.loadInfo();
+    try {
+      const raidRolesSheet = this.raidValuesSheet.sheetsByTitle[this.RAID_ROLES_SHEET];
+      if (raidRolesSheet) {
+        this.raidRolesRows = await raidRolesSheet.getRows();
+      }
+    } catch (err) {
+      log(
+        "Failed to load raid roles sheet data. Does it exist in the raid values sheet with name 'Roles'?"
       );
       return;
     }

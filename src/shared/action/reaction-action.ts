@@ -4,6 +4,7 @@ import {
   PartialUser,
   User,
 } from "discord.js";
+import { getMembers } from "../..";
 
 export const reactionActionExecutor = async (action: ReactionAction) => {
   await action.initialize();
@@ -53,9 +54,5 @@ export abstract class ReactionAction {
 
   protected get guild() {
     return this.message.guild;
-  }
-
-  protected get members() {
-    return this.guild?.members;
   }
 }

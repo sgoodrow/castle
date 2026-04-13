@@ -128,42 +128,37 @@ export class SheetPublicAccountService implements IPublicAccountService {
     botName: string,
     rowDataMap: { [id: string]: moment.Moment | string | undefined }
   ) {
-    const currentPilot = rowDataMap[BOT_SPREADSHEET_COLUMNS.CurrentPilot] || "";
-    debug(
-      `public-accounts-sheet updateBotRowDetails - loading bots - ${botName} - pilot ${currentPilot}`
-    );
-    await this.loadBots();
-    debug(
-      `public-accounts-sheet updateBotRowDetails - bots loaded - ${botName} - pilot ${currentPilot}`
-    );
-    if (this.sheet) {
-      const rows = await this.botInfoSheet.getRows();
-      const botRowIndex = rows.findIndex(
-        (r) =>
-          r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
-          botName.toLowerCase()
-      );
-      if (botRowIndex !== -1) {
-        // do update
-        const row = rows.at(botRowIndex);
-        if (row) {
-          Object.entries(rowDataMap).forEach((cellData) => {
-            if (cellData[1] !== undefined) {
-              row[cellData[0]] = cellData[1];
-            }
-          });
-          debug(
-            `public-accounts-sheet updateBotRowDetails - save started for - ${botName} - pilot ${currentPilot}`
-          );
-          await row.save();
-          debug(
-            `public-accounts-sheet updateBotRowDetails - row saved for - ${botName} - pilot ${currentPilot}`
-          );
+    try {
+      log(`START - update public bot sheet data for ${botName}`);
+      const currentPilot = rowDataMap[BOT_SPREADSHEET_COLUMNS.CurrentPilot] || "";
+      await this.loadBots();
+      if (this.sheet) {
+        const rows = await this.botInfoSheet.getRows();
+        const botRowIndex = rows.findIndex(
+          (r) =>
+            r[BOT_SPREADSHEET_COLUMNS.Name].toLowerCase() ===
+            botName.toLowerCase()
+        );
+        if (botRowIndex !== -1) {
+          // do update
+          const row = rows.at(botRowIndex);
+          if (row) {
+            Object.entries(rowDataMap).forEach((cellData) => {
+              if (cellData[1] !== undefined) {
+                row[cellData[0]] = cellData[1];
+              }
+            });
+            await row.save();
+            log(`END - update public bot sheet data for ${botName}`);
+          }
+        } else {
+          throw Error(`Bot ${botName} not found.`);
         }
-      } else {
-        throw Error(`Bot ${botName} not found.`);
       }
+    } catch (err: unknown) {
+        log(`ERROR - Failed to update public bot sheet data for ${botName}`);
     }
+
   }
 
   public async getFirstAvailableBotByClass(
@@ -189,10 +184,10 @@ export class SheetPublicAccountService implements IPublicAccountService {
       log(`Looking for ${botClass} and found ${classRows.length} available.`);
       const matches = location
         ? availableClassRows.filter((r) =>
-            (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
-              ?.toUpperCase()
-              .includes(location.toUpperCase())
-          )
+          (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
+            ?.toUpperCase()
+            .includes(location.toUpperCase())
+        )
         : availableClassRows;
       // todo: get a random match instead of first to reduce race condition assigning same bot to multiple people
       const first = matches[0];
