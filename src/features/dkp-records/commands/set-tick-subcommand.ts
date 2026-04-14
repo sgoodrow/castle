@@ -10,14 +10,14 @@ import {
 } from "../../../config";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { getRaidReport } from "../raid-report";
-import { RaidValuesService } from "../../../services/raidValuesService";
+import { RaidValue, RaidValuesService } from "../../../services/raidValuesService";
 
 enum Option {
   Tick = "tick",
   Value = "value",
   Event = "event",
   Note = "note",
-  KillBonus = "killbonus"
+  KillBonus = "killbonus",
 }
 
 export class SetTickSubcommand extends Subcommand {
@@ -49,19 +49,28 @@ export class SetTickSubcommand extends Subcommand {
       Option.Event,
       interaction
     );
-    const dkpEvent = await RaidValuesService.getInstance().getRaidValue(eventName);
+    let dkpEvent = await RaidValuesService.getInstance().getRaidValue(
+      eventName
+    );
     if (!dkpEvent) {
-      throw new Error(`${dkpEvent} not found`);
+      console.log("Using manual event " + eventName);
+      dkpEvent = {
+        target: eventName,
+        description: eventName,
+      } as RaidValue;
     }
     const note = this.getOptionValue<string>(Option.Note, interaction);
     const tick = this.getOptionValue<number>(Option.Tick, interaction);
     let value = this.getOptionValue<number>(Option.Value, interaction);
-    if (value === undefined) {      
+    if (value === undefined) {
       value = dkpEvent?.baseDkp || 0;
     }
-    let killBonus = this.getOptionValue<boolean>(Option.KillBonus, interaction);
+    const killBonus = this.getOptionValue<boolean>(
+      Option.KillBonus,
+      interaction
+    );
     if (killBonus === true) {
-      value += dkpEvent.killDkp;
+      value += dkpEvent?.killDkp || 0;
     }
 
     const ticksUpdated = report.updateRaidTick(dkpEvent, value, tick, note);
@@ -88,10 +97,11 @@ export class SetTickSubcommand extends Subcommand {
           .setAutocomplete(true)
           .setRequired(true)
       )
-      .addBooleanOption((o) => 
-        o.setName(Option.KillBonus)
-        .setDescription("True if a kill bonus should be applied")
-        .setRequired(true)
+      .addBooleanOption((o) =>
+        o
+          .setName(Option.KillBonus)
+          .setDescription("True if a kill bonus should be applied")
+          .setRequired(true)
       )
       .addNumberOption((o) =>
         o

@@ -359,7 +359,9 @@ ${p}${code}`,
     eqDkpEvent?: RaidEventData
   ) {
     const tickNumbers = tick ? [tick] : this.allTickNumbers;
-    tickNumbers.forEach((t) => this.getRaidTick(t).update(event, value, note, eqDkpEvent));
+    tickNumbers.forEach((t) =>
+      this.getRaidTick(t).update(event, value, note, eqDkpEvent)
+    );
     return tickNumbers;
   }
 
