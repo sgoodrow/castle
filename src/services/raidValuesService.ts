@@ -31,15 +31,15 @@ enum RAID_ROLES_SPREADSHEET_COLUMNS {
 export interface RaidValue {
     target: string;
     description: string;
-    tier: string;
-    killDkp: number;
-    baseDkp: number;
-    raceFteBonus: number;
-    campFteBonus: number;
-    dirtyCleanTagBonus: number;
-    racingHourly: number;
-    rteHourly: number;
-    trackingHourly: number;
+    tier?: string;
+    killDkp?: number;
+    baseDkp?: number;
+    raceFteBonus?: number;
+    campFteBonus?: number;
+    dirtyCleanTagBonus?: number;
+    racingHourly?: number;
+    rteHourly?: number;
+    trackingHourly?: number;
 }
 
 export interface RaidRole {
