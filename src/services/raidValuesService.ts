@@ -89,7 +89,7 @@ export class RaidValuesService implements IRaidValuesService {
                             raceFteBonus: Number.parseFloat(row[RAID_VALUES_SPREADSHEET_COLUMNS.RaceFTEBonus]) || 0,
                             campFteBonus: Number.parseFloat(row[RAID_VALUES_SPREADSHEET_COLUMNS.CampFTEPickup]) || 0,
                             dirtyCleanTagBonus: Number.parseFloat(row[RAID_VALUES_SPREADSHEET_COLUMNS.DirtyCleanTags]) || 0,
-                            racingHourly: Number.parseFloat(row[RAID_VALUES_SPREADSHEET_COLUMNS.RaceFTEBonus]) || 0,
+                            racingHourly: Number.parseFloat(row[RAID_VALUES_SPREADSHEET_COLUMNS.RacingHourly]) || 0,
                             rteHourly: Number.parseFloat(row[RAID_VALUES_SPREADSHEET_COLUMNS.RTEHourly]) || 0,
                             trackingHourly: Number.parseFloat(row[RAID_VALUES_SPREADSHEET_COLUMNS.TrackingHourly]) || 0,
 
