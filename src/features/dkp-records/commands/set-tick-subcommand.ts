@@ -1,4 +1,5 @@
 import {
+  AutocompleteInteraction,
   CacheType,
   CommandInteraction,
   GuildMemberRoleManager,
@@ -52,6 +53,7 @@ export class SetTickSubcommand extends Subcommand {
     let dkpEvent = await RaidValuesService.getInstance().getRaidValue(
       eventName
     );
+    await RaidValuesService.getInstance().recordRecentEvent(interaction.user.id, eventName);
     if (!dkpEvent) {
       console.log("Using manual event " + eventName);
       dkpEvent = {
@@ -101,7 +103,7 @@ export class SetTickSubcommand extends Subcommand {
         o
           .setName(Option.KillBonus)
           .setDescription("True if a kill bonus should be applied")
-          .setRequired(true)
+          .setRequired(false)
       )
       .addNumberOption((o) =>
         o
@@ -124,10 +126,10 @@ export class SetTickSubcommand extends Subcommand {
       );
   }
 
-  public async getOptionAutocomplete(option: string) {
+  public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction<CacheType>) {
     switch (option) {
       case Option.Event:
-        return await RaidValuesService.getInstance().getRaidValueOptions();
+        return await RaidValuesService.getInstance().getRaidValueOptions(interaction.user.id);
       default:
         return;
     }
