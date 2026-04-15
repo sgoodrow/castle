@@ -48,6 +48,13 @@ export interface RaidRole {
 }
 
 export class RaidValuesService implements IRaidValuesService {
+    private recentEvents: Map<string, string[]> = new Map(); // userId -> event values
+
+    recordRecentEvent(userId: string, value: string) {
+        const recent = this.recentEvents.get(userId) ?? [];
+        const updated = [value, ...recent.filter(v => v !== value)].slice(0, 5);
+        this.recentEvents.set(userId, updated);
+    }
     private static _instance: RaidValuesService;
 
     private raidValueCache = new LRUCache<string, RaidValue>({
@@ -134,15 +141,23 @@ export class RaidValuesService implements IRaidValuesService {
         return this.raidValueCache.get(target);
     }
 
-    async getRaidValueOptions(): Promise<
-        ApplicationCommandOptionChoiceData<string>[]
-    > {
+    async getRaidValueOptions(userId?: string): Promise<ApplicationCommandOptionChoiceData<string>[]> {
         const raidValues = await this.getRaidValues();
+        const recent = userId ? (this.recentEvents.get(userId) ?? []) : [];
 
-        return raidValues.map((b) => ({
-            name: truncate(`${b.target} (${b.description})`, { length: 100 }),
-            value: b.target,
-        })).sort((a, b) => a.value.localeCompare(b.value));
+        return raidValues
+            .map((b) => ({
+                name: truncate(`${b.target} (${b.description})`, { length: 100 }),
+                value: b.target,
+            }))
+            .sort((a, b) => {
+                const aIdx = recent.indexOf(a.value);
+                const bIdx = recent.indexOf(b.value);
+                if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx; // both recent, preserve order
+                if (aIdx !== -1) return -1; // a is recent, sort first
+                if (bIdx !== -1) return 1;  // b is recent, sort first
+                return a.value.localeCompare(b.value); // neither recent, alphabetical
+            });
     }
 
     async getRaidRoleOptions(): Promise<

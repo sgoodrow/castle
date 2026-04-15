@@ -127,7 +127,7 @@ export class RaidReport {
   public getThreadName(): string {
     const emoji = this.finished ? "✅" : this.allTicksHaveEvent ? "❕" : "❔";
     const label = every(this.ticks, (t) => t.hasEvent)
-      ? uniq(this.ticks.map(({ eventAbreviation }) => eventAbreviation)).join(
+      ? uniq(this.ticks.map(({ eventAbreviation, note }) => `${eventAbreviation} ${note}`)).join(
         ", "
       )
       : `${this.filename.replace(/[^a-zA-Z]+/g, "")}?`;
