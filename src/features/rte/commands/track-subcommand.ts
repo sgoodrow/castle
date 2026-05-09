@@ -43,7 +43,7 @@ export class TrackSubcommand extends Subcommand {
         o
           .setName(Option.Character)
           .setDescription("The game character performing the task.")
-          .setAutocomplete(true)
+          .setAutocomplete(false)
           .setRequired(true)
       )
       .addStringOption((o) =>
