@@ -10,8 +10,9 @@ import {
   updateGuardBotInfo,
   updateRaidBotsInfo,
 } from "../features/raid-bots/update-bots";
-import { HOURS } from "../shared/time";
+import { HOURS, MINUTES } from "../shared/time";
 import { updateBotEmbed } from "../features/raid-bots/bot-embed";
+import { updateRteStatusEmbed } from "../features/rte/status-embed";
 import { getGuild } from "..";
 import { readyActionExecutor } from "../shared/action/ready-action-2";
 
@@ -29,6 +30,7 @@ export const readyListener = async (client: Client) => {
     updateRaiderInfo(client, updateOptions),
     updateReinforcementInfo(client, updateOptions),
     updateBotEmbed({ repeatDuration: 30000 }),
+    updateRteStatusEmbed({ repeatDuration: 1 * MINUTES }),
     readyActionExecutor(async () => {
         const guild = await getGuild();
         await guild.members.fetch(); // warm the cache once

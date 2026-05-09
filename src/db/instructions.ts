@@ -13,6 +13,7 @@ export enum Name {
   ReinforcementsInstructions = "reinforcementsInstructions",
   InviteListInstructions = "inviteListInstructions",
   BotStatusEmbed = "botStatusEmbed",
+  RteStatusEmbed = "rteStatusEmbed",
 }
 
 @Entity()

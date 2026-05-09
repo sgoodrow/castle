@@ -92,6 +92,14 @@ export const getRoles = async () => {
   return await guild.roles.fetch();
 };
 
+openDkpService.generateToken().then(() => {
+  openDkpService.initializeData();
+});
+setInterval(() => {
+  log("Reauthenticating with OpenDKP (token refresh)");
+  openDkpService.generateToken();
+}, 1500000);
+
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
@@ -115,14 +123,6 @@ redisListener.pSubscribe(redisChannels.raidReportChange(), updateRaidReport);
 
 export const prismaClient = new PrismaClient();
 prismaClient.$connect();
-
-openDkpService.generateToken().then(() => {
-  openDkpService.initializeData();
-});
-setInterval(() => {
-  log("Reauthenticating with OpenDKP (token refresh)");
-  openDkpService.generateToken();
-}, 1500000);
 
 export const publicSheetService = new PublicSheetService();
 

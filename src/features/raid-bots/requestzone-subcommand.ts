@@ -109,7 +109,7 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
       }
       const message = await thread.send("OK");
       const response = `${status} ${interaction.user} access to a bot at ${location}: ${firstBot}.`;
-      message.edit(response);
+      await message.edit(response);
     } finally {
       release();
     }

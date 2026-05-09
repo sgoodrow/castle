@@ -63,6 +63,11 @@ export const refreshBotEmbed = async () => {
       botString = "";
     }
     botString += botRow;
+    // Safety: if a single row somehow exceeds the limit, flush immediately
+    if (botString.length > MAX_EMBED_DESCRIPTION) {
+      botMessages.push(botString);
+      botString = "";
+    }
   });
 
   if (botString) {
@@ -70,20 +75,20 @@ export const refreshBotEmbed = async () => {
   }
 
   // Send the first message using the primary instruction action
-  if (botMessages.length > 0) {
-    await botEmbedInstructions
-      .createOrUpdateInstructions({
-        embeds: [
-          new EmbedBuilder({
-            title: `Castle bots - last updated ${moment().toLocaleString()}`,
-            description: botMessages[0],
-          }),
-        ],
-      })
-      .catch((reason) => {
-        log(`Embed update failed: ${reason}`);
-      });
-  }
+  // Always update (even when empty) so stale data is cleared
+  const primaryDescription = botMessages[0] ?? "*No bots available.*";
+  await botEmbedInstructions
+    .createOrUpdateInstructions({
+      embeds: [
+        new EmbedBuilder({
+          title: `Castle bots - last updated ${moment().format("LLLL")}`,
+          description: primaryDescription,
+        }),
+      ],
+    })
+    .catch((reason) => {
+      log(`Embed update failed: ${reason}`);
+    });
 
   // Send overflow messages or clean up ones that are no longer needed
   for (let i = 1; i <= MAX_OVERFLOW_MESSAGES; i++) {
