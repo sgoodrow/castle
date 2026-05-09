@@ -99,17 +99,19 @@ export const rteService = {
     const endTime = new Date();
     const summary = await calculateDkp(session, endTime);
 
+    // Send the summary DM before marking the session inactive.
+    // If this fails, the session remains active so the user can retry.
+    const user = await client.users.fetch(session.discordId);
+    await user.send({
+      content: `Your **${formatType(session.type)}** session for **${session.target}** has ended.\n\n**Summary:**\n- Character: ${session.characterName}\n- Duration: ${formatDuration(summary.elapsedMinutes)}\n- Rounded Duration: ${formatDuration(summary.roundedMinutes)}\n- Hourly Rate: ${summary.hourlyRate} DKP\n- **DKP Earned: ${summary.dkpEarned.toFixed(2)}**`,
+    });
+
     await prismaClient.rte.update({
       where: { id: sessionId },
       data: {
         endTime,
         active: false,
       },
-    });
-
-    const user = await client.users.fetch(session.discordId);
-    await user.send({
-      content: `Your **${formatType(session.type)}** session for **${session.target}** has ended.\n\n**Summary:**\n- Character: ${session.characterName}\n- Duration: ${formatDuration(summary.elapsedMinutes)}\n- Rounded Duration: ${formatDuration(summary.roundedMinutes)}\n- Hourly Rate: ${summary.hourlyRate} DKP\n- **DKP Earned: ${summary.dkpEarned.toFixed(2)}**`,
     });
 
     return summary;
@@ -174,6 +176,13 @@ export const rteService = {
   getOpenTargets: async () => {
     return prismaClient.rte_target.findMany({
       where: { open: true },
+    });
+  },
+
+  getActiveSessionsForUser: async (discordId: string) => {
+    return prismaClient.rte.findMany({
+      where: { discordId, active: true },
+      orderBy: { startTime: "asc" },
     });
   },
 

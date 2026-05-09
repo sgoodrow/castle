@@ -4,6 +4,7 @@ import { rteSubcommand } from "./commands/rte-subcommand";
 import { raceSubcommand } from "./commands/race-subcommand";
 import { openSubcommand } from "./commands/open-subcommand";
 import { closeSubcommand } from "./commands/close-subcommand";
+import { stopSubcommand } from "./commands/stop-subcommand";
 
 export const rteCommand = new Command(
   "rte",
@@ -14,5 +15,6 @@ export const rteCommand = new Command(
     raceSubcommand,
     openSubcommand,
     closeSubcommand,
+    stopSubcommand,
   ]
 );

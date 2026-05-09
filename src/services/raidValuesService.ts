@@ -138,7 +138,16 @@ export class RaidValuesService implements IRaidValuesService {
     }
 
     async getRaidValue(target: string): Promise<RaidValue | undefined> {
-        return this.raidValueCache.get(target);
+        await this.getRaidValues();
+        let value = this.raidValueCache.get(target);
+        // If the specific target is missing but the cache has other entries,
+        // force a full reload to handle partial expiration edge cases.
+        if (!value && this.raidValueCache.size > 0) {
+            this.raidValueCache.clear();
+            await this.getRaidValues();
+            value = this.raidValueCache.get(target);
+        }
+        return value;
     }
 
     async getRaidValueOptions(userId?: string): Promise<ApplicationCommandOptionChoiceData<string>[]> {
