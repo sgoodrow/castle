@@ -1,0 +1,46 @@
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
+  CacheType,
+  ComponentType,
+} from "discord.js";
+import { ButtonCommand } from "../../shared/command/button-command";
+import { rteService } from "../../services/rteService";
+import { refreshRteStatusEmbed } from "./status-embed";
+import { log } from "../../shared/logger";
+
+export class EndRteButtonCommand extends ButtonCommand {
+  constructor(name: string) {
+    super(name);
+  }
+
+  public async execute(interaction: ButtonInteraction<CacheType>): Promise<void> {
+    const sessionIdStr = interaction.customId.split("_")[2];
+    const sessionId = Number.parseInt(sessionIdStr, 10);
+
+    if (Number.isNaN(sessionId)) {
+      await interaction.editReply({ content: "Invalid session ID." });
+      return;
+    }
+
+    try {
+      await rteService.endSessionById(sessionId, interaction.user.id);
+      await refreshRteStatusEmbed();
+      await interaction.editReply({ content: "Your session has been ended. Check your DMs for a summary." });
+    } catch (err: unknown) {
+      log(`Failed to end RTE session ${sessionId}: ${err}`);
+      await interaction.editReply({ content: `Failed to end session: ${err}` });
+    }
+  }
+
+  public getButtonBuilder(sessionId: number): ButtonBuilder {
+    return new ButtonBuilder()
+      .setCustomId(`rte_end_${sessionId}`)
+      .setLabel("End Session")
+      .setStyle(ButtonStyle.Danger);
+  }
+}
+
+export const endRteButtonCommand = new EndRteButtonCommand("rte_end");

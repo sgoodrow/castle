@@ -106,3 +106,30 @@ enum bank_item_types {
   raid_reagent
   not_available
 }
+
+enum RteType {
+  TRACK
+  RTE
+  RACE
+}
+
+model rte {
+  id              Int      @id @default(autoincrement())
+  discordId       String   @db.VarChar
+  discordUsername String   @db.VarChar
+  characterName   String   @db.VarChar
+  target          String   @db.VarChar
+  type            RteType
+  class           String?  @db.VarChar
+  startTime       DateTime @default(now()) @db.Timestamp(6)
+  endTime         DateTime? @db.Timestamp(6)
+  active          Boolean  @default(true)
+  dmMessageId     String?  @db.VarChar
+}
+
+model rte_target {
+  target   String   @id @db.VarChar
+  open     Boolean  @default(true)
+  openedBy String   @db.VarChar
+  openedAt DateTime @default(now()) @db.Timestamp(6)
+}

@@ -33,6 +33,8 @@ import { wakeupCommand } from "../features/wakeup/wakeup-command";
 import { requestBotButtonCommand } from "../features/bp/request-bot-button-command";
 import { parkBotButtonCommand } from "../features/raid-bots/park-bot-button-command"
 import { odkpCommand } from "../features/odkp/odkp-command";
+import { rteCommand } from "../features/rte/command";
+import { endRteButtonCommand } from "../features/rte/end-session-button-command";
 
 const slashCommands = [
   bankHourCommand,
@@ -45,6 +47,7 @@ const slashCommands = [
   batphoneCommand,
   wakeupCommand,
   odkpCommand,
+  rteCommand,
 ];
 
 const buttonCommands = [
@@ -61,7 +64,8 @@ const buttonCommands = [
   removePlayerInviteButtonCommand,
   applicationCommandButton,
   requestBotButtonCommand,
-  parkBotButtonCommand
+  parkBotButtonCommand,
+  endRteButtonCommand,
 ];
 
 export const getCommand = (

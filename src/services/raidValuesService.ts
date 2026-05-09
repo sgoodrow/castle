@@ -170,4 +170,23 @@ export class RaidValuesService implements IRaidValuesService {
             value: b.target,
         })).sort((a, b) => a.value.localeCompare(b.value));
     }
+
+    async getTargetOptions(userId?: string): Promise<ApplicationCommandOptionChoiceData<string>[]> {
+        const raidValues = await this.getRaidValues();
+        const recent = userId ? (this.recentEvents.get(userId) ?? []) : [];
+
+        return raidValues
+            .map((b) => ({
+                name: truncate(`${b.target} (${b.description})`, { length: 100 }),
+                value: b.target,
+            }))
+            .sort((a, b) => {
+                const aIdx = recent.indexOf(a.value);
+                const bIdx = recent.indexOf(b.value);
+                if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+                if (aIdx !== -1) return -1;
+                if (bIdx !== -1) return 1;
+                return a.value.localeCompare(b.value);
+            });
+    }
 }
