@@ -128,6 +128,14 @@ export interface ODKPAdjustment {
   Timestamp: string;
 }
 
+export interface ODKPDkpSummaryEntry {
+  CurrentDKP: number;
+  CharacterId: number;
+  CharacterName: string;
+  CharacterClass: string;
+  CharacterRank: string;
+}
+
 interface ODKPCharacterData {
   ClientId: string;
   CharacterId: number;
@@ -416,6 +424,23 @@ export const openDkpService = {
     return (
       "```\n" + [header, divider, ...rows, divider, footer].join("\n") + "\n```"
     );
+  },
+  getDkpSummary: async (): Promise<ODKPDkpSummaryEntry[]> => {
+    const config = {
+      method: "get",
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/dkp`,
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+    };
+    try {
+      const response = await axios(config);
+      const data = response.data?.Models ?? response.data;
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      log(error);
+      throw error;
+    }
   },
 
   getItem: async (itemName: string): Promise<ODKPItemResponse> => {
