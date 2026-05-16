@@ -35,6 +35,28 @@ import { parkBotButtonCommand } from "../features/raid-bots/park-bot-button-comm
 import { odkpCommand } from "../features/odkp/odkp-command";
 import { rteCommand } from "../features/rte/command";
 import { endRteButtonCommand } from "../features/rte/end-session-button-command";
+import {
+  aliasCommand,
+  autotodCommand,
+  earthquakeCommand,
+  helpCommand,
+  leaderboardCommand,
+  registerClearCommand,
+  registerCommand,
+  registerLinkCommand,
+  renameCommand,
+  scheduleCommand,
+  setWarnTimeCommand,
+  showCommand,
+  skipCommand,
+  timersCommand,
+  todCommand,
+  todHistoryCommand,
+  todRemoveCommand,
+  unlinkCommand,
+  unregisterCommand,
+  unskipCommand,
+} from "../features/spawn-timers/commands/index";
 
 const slashCommands = [
   bankHourCommand,
@@ -48,6 +70,26 @@ const slashCommands = [
   wakeupCommand,
   odkpCommand,
   rteCommand,
+  aliasCommand,
+  autotodCommand,
+  earthquakeCommand,
+  helpCommand,
+  leaderboardCommand,
+  registerClearCommand,
+  registerCommand,
+  registerLinkCommand,
+  renameCommand,
+  scheduleCommand,
+  setWarnTimeCommand,
+  showCommand,
+  skipCommand,
+  timersCommand,
+  todCommand,
+  todHistoryCommand,
+  todRemoveCommand,
+  unlinkCommand,
+  unregisterCommand,
+  unskipCommand,
 ];
 
 const buttonCommands = [
