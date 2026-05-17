@@ -196,7 +196,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   embeds.splice(MAX_EMBEDS_PER_MESSAGE);
 
   // Send or update the timer message
-  const timerMessageId = await NgetSettingByKey("timer_message_id");
+  const timerMessageId = await getSettingByKey("timer_message_id");
 
   try {
     if (!timerMessageId) {

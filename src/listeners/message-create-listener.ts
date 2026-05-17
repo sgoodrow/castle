@@ -11,7 +11,6 @@ const messageActions = [
   tryRaidReportRevisionMessageAction,
   tryRaidBonusMessageAction,
   tryParseInventoryAction,
-  tryParseTimerCommand,
 ];
 
 export const messageCreateListener = async (message: Message) => {
