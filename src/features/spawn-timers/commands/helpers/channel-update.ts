@@ -14,7 +14,7 @@ import {
 import { formatTimeDistance } from "./duration";
 import { getSettingByKey, saveSettingByKey } from "./settings";
 import { TIMER_CHANNEL_ID, USE_DISCORD_TIMESTAMPS, CONDENSE_FUTURE_WINDOW, SHOW_FUTURE_WINDOW } from "../../../../config";
-import { prismaClient } from "../../../../index";
+import { timerPrismaClient } from "../../../../db/timer-client";
 
 const MAX_FIELDS_PER_EMBED = 25;
 const MAX_DESCRIPTION_LENGTH = 4096;
@@ -50,7 +50,7 @@ function chunkDescription(items: string[], separator: string): string[] {
 export async function updateTimersChannel(client: Client): Promise<void> {
   if (!TIMER_CHANNEL_ID) return;
 
-  const timers = await prismaClient.timer.findMany();
+  const timers = await timerPrismaClient.timer.findMany();
 
   const channel = await client.channels.fetch(TIMER_CHANNEL_ID) as TextChannel | null;
   if (!channel) return;

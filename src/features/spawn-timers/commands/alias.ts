@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 import { findTimerByMob } from "./helpers/timer";
 
 class AliasCommand extends SimpleCommand {
@@ -42,17 +42,17 @@ class AliasCommand extends SimpleCommand {
     }
 
     // Check if alias already exists - toggle it
-    const existingAlias = await prismaClient.alias.findFirst({
+    const existingAlias = await timerPrismaClient.alias.findFirst({
       where: { timerId: timer.id, name: aliasValue },
     });
 
     if (existingAlias) {
-      await prismaClient.alias.delete({ where: { id: existingAlias.id } });
+      await timerPrismaClient.alias.delete({ where: { id: existingAlias.id } });
       await interaction.editReply({
         content: `Alias of **${aliasValue}** removed from timer **${timer.name}**!`,
       });
     } else {
-      await prismaClient.alias.create({
+      await timerPrismaClient.alias.create({
         data: { timerId: timer.id, name: aliasValue },
       });
       await interaction.editReply({
@@ -62,4 +62,4 @@ class AliasCommand extends SimpleCommand {
   }
 }
 
-export const aliasCommand = new AliasCommand("alias", "Add or remove an alias on a timer");
+export const aliasCommand = new AliasCommand("alias", "Add or remove an alias on a timer", false);

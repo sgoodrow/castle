@@ -1,5 +1,5 @@
-jest.mock("../../../../index", () => ({
-  prismaClient: {},
+jest.mock("../../../../db/timer-client", () => ({
+  timerPrismaClient: {},
 }));
 
 import type { Timer } from "@prisma/client";

@@ -11,7 +11,7 @@ import {
 } from "./timer";
 import { formatTimeDistance, formatTimeAgo } from "./duration";
 import { formatDateFull } from "./format";
-import { prismaClient } from "../../../../index";
+import { timerPrismaClient } from "../../../../db/timer-client";
 
 /**
  * Build a show message displaying a timer's configuration.
@@ -53,7 +53,7 @@ export async function buildShowMessage(timer: Timer): Promise<string> {
   lines.push(`Warn Time: ${timer.warnTime ?? "60 minutes"}`);
   lines.push(`Autotod: ${timer.autoTod ? "Enabled" : "Disabled"}`);
 
-  const aliases = await prismaClient.alias.findMany({
+  const aliases = await timerPrismaClient.alias.findMany({
     where: { timerId: timer.id },
   });
   if (aliases.length > 0) {
@@ -61,7 +61,7 @@ export async function buildShowMessage(timer: Timer): Promise<string> {
   }
 
   if (timer.linkedTimerId) {
-    const linkedTimer = await prismaClient.timer.findUnique({
+    const linkedTimer = await timerPrismaClient.timer.findUnique({
       where: { id: timer.linkedTimerId },
     });
     if (linkedTimer) {
@@ -69,14 +69,14 @@ export async function buildShowMessage(timer: Timer): Promise<string> {
     }
   }
 
-  const linkedTimers = await prismaClient.timer.findMany({
+  const linkedTimers = await timerPrismaClient.timer.findMany({
     where: { linkedTimerId: timer.id },
   });
   if (linkedTimers.length > 0) {
     lines.push(`Linked Timers: ${linkedTimers.map((t) => t.name).join(", ")}`);
   }
 
-  const clearTimers = await prismaClient.timer.findMany({
+  const clearTimers = await timerPrismaClient.timer.findMany({
     where: { clearParentTimerId: timer.id },
   });
   if (clearTimers.length > 0) {

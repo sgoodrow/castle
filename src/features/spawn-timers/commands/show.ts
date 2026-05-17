@@ -38,4 +38,4 @@ class ShowCommand extends SimpleCommand {
   }
 }
 
-export const showCommand = new ShowCommand("show", "Display configuration about a timer");
+export const showCommand = new ShowCommand("show", "Display configuration about a timer", false);

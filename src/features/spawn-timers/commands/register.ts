@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 import { parseDuration } from "./helpers/duration";
 import { buildShowMessage } from "./helpers/message";
 
@@ -62,12 +62,12 @@ class RegisterCommand extends SimpleCommand {
     }
 
     // Upsert the timer
-    let timer = await prismaClient.timer.findFirst({
+    let timer = await timerPrismaClient.timer.findFirst({
       where: { name: { equals: mob, mode: "insensitive" } },
     });
 
     if (timer) {
-      timer = await prismaClient.timer.update({
+      timer = await timerPrismaClient.timer.update({
         where: { id: timer.id },
         data: {
           name: mob,
@@ -78,7 +78,7 @@ class RegisterCommand extends SimpleCommand {
         },
       });
     } else {
-      timer = await prismaClient.timer.create({
+      timer = await timerPrismaClient.timer.create({
         data: {
           name: mob,
           windowStart,
@@ -104,4 +104,4 @@ class RegisterCommand extends SimpleCommand {
   }
 }
 
-export const registerCommand = new RegisterCommand("register", "Register a new spawn timer to track");
+export const registerCommand = new RegisterCommand("register", "Register a new spawn timer to track", false);

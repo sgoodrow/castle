@@ -1,11 +1,11 @@
 import { ChatInputCommandInteraction, CacheType, TextChannel } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 import { EARTHQUAKE_ALERT_CHANNEL_ID, EARTHQUAKE_ALERT_MESSAGE, TIMER_ALERT_CHANNEL_ID } from "../../../config";
 
 class EarthquakeCommand extends SimpleCommand {
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
-    await prismaClient.timer.updateMany({
+    await timerPrismaClient.timer.updateMany({
       data: {
         lastTod: null,
         alerted: false,
@@ -48,4 +48,4 @@ class EarthquakeCommand extends SimpleCommand {
   }
 }
 
-export const earthquakeCommand = new EarthquakeCommand("earthquake", "Reset the TOD for ALL timers. Warning: this clears everything!");
+export const earthquakeCommand = new EarthquakeCommand("earthquake", "Reset the TOD for ALL timers. Warning: this clears everything!", false);

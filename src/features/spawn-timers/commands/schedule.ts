@@ -1,12 +1,12 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 import { formatScheduleDay, formatScheduleTime } from "./helpers/format";
 import { nextSpawnTimeStart } from "./helpers/timer";
 
 class ScheduleCommand extends SimpleCommand {
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
-    const timers = await prismaClient.timer.findMany();
+    const timers = await timerPrismaClient.timer.findMany();
 
     const days = new Map<
       string,
@@ -53,4 +53,4 @@ class ScheduleCommand extends SimpleCommand {
   }
 }
 
-export const scheduleCommand = new ScheduleCommand("schedule", "Show a human-readable schedule for the next 7 days");
+export const scheduleCommand = new ScheduleCommand("schedule", "Show a human-readable schedule for the next 7 days", false);

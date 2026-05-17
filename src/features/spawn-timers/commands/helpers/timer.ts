@@ -1,5 +1,5 @@
 import type { Timer } from "@prisma/client";
-import { prismaClient } from "../../../../index";
+import { timerPrismaClient } from "../../../../db/timer-client";
 import { parseDuration, formatDuration } from "./duration";
 
 /**
@@ -14,7 +14,7 @@ export async function findTimerByMob(
     return [[providedTimer], providedTimer];
   }
 
-  const timers = await prismaClient.timer.findMany({
+  const timers = await timerPrismaClient.timer.findMany({
     where: {
       name: { contains: mob, mode: "insensitive" },
     },
@@ -29,7 +29,7 @@ export async function findTimerByMob(
 
   // If we can't find by name, search aliases
   if (!foundTimer) {
-    const aliases = await prismaClient.alias.findMany({
+    const aliases = await timerPrismaClient.alias.findMany({
       where: {
         name: { contains: mob, mode: "insensitive" },
       },

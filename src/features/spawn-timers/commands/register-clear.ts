@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
 import { findTimerByMob } from "./helpers/timer";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 
 class RegisterClearCommand extends SimpleCommand {
   public get command() {
@@ -39,7 +39,7 @@ class RegisterClearCommand extends SimpleCommand {
     }
 
     if (foundTimer.clearParentTimerId === null) {
-      await prismaClient.timer.update({
+      await timerPrismaClient.timer.update({
         where: { id: foundTimer.id },
         data: { clearParentTimerId: parentTimer.id },
       });
@@ -47,7 +47,7 @@ class RegisterClearCommand extends SimpleCommand {
         content: `**${foundTimer.name}** will be cleared on tod of **${parentTimer.name}**.`,
       });
     } else {
-      await prismaClient.timer.update({
+      await timerPrismaClient.timer.update({
         where: { id: foundTimer.id },
         data: { clearParentTimerId: null },
       });

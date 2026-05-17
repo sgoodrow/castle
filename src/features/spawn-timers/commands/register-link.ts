@@ -1,7 +1,7 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
 import { findTimerByMob } from "./helpers/timer";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 
 class RegisterLinkCommand extends SimpleCommand {
   public get command() {
@@ -35,7 +35,7 @@ class RegisterLinkCommand extends SimpleCommand {
     }
 
     if (foundLinkedTimer.linkedTimerId === null) {
-      await prismaClient.timer.update({
+      await timerPrismaClient.timer.update({
         where: { id: foundLinkedTimer.id },
         data: { linkedTimerId: foundTimer.id },
       });
@@ -43,7 +43,7 @@ class RegisterLinkCommand extends SimpleCommand {
         content: `**${foundLinkedTimer.name}** has been linked to **${foundTimer.name}**.`,
       });
     } else {
-      await prismaClient.timer.update({
+      await timerPrismaClient.timer.update({
         where: { id: foundLinkedTimer.id },
         data: { linkedTimerId: null },
       });

@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 import { findTimerByMob } from "./helpers/timer";
 
 class TodRemoveCommand extends SimpleCommand {
@@ -33,7 +33,7 @@ class TodRemoveCommand extends SimpleCommand {
       return;
     }
 
-    await prismaClient.timer.update({
+    await timerPrismaClient.timer.update({
       where: { id: timer.id },
       data: {
         lastTod: null,
@@ -49,4 +49,4 @@ class TodRemoveCommand extends SimpleCommand {
   }
 }
 
-export const todRemoveCommand = new TodRemoveCommand("todremove", "Remove the current time of death for a registered timer");
+export const todRemoveCommand = new TodRemoveCommand("todremove", "Remove the current time of death for a registered timer", false);

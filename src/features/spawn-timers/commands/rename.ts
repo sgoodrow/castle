@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 
 class RenameCommand extends SimpleCommand {
   public get command() {
@@ -23,7 +23,7 @@ class RenameCommand extends SimpleCommand {
     const mob = interaction.options.getString("mob", true);
     const newName = interaction.options.getString("new_name", true).replace(/`/g, "'");
 
-    const timer = await prismaClient.timer.findFirst({
+    const timer = await timerPrismaClient.timer.findFirst({
       where: { name: { equals: mob, mode: "insensitive" } },
     });
 
@@ -34,7 +34,7 @@ class RenameCommand extends SimpleCommand {
       return;
     }
 
-    await prismaClient.timer.update({
+    await timerPrismaClient.timer.update({
       where: { id: timer.id },
       data: { name: newName },
     });
@@ -45,4 +45,4 @@ class RenameCommand extends SimpleCommand {
   }
 }
 
-export const renameCommand = new RenameCommand("rename", "Rename an existing timer");
+export const renameCommand = new RenameCommand("rename", "Rename an existing timer", false);

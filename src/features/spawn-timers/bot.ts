@@ -13,7 +13,7 @@ import {
 import { formatTimeDistance } from "./commands/helpers/duration";
 import { updateTimersChannel } from "./commands/helpers/channel-update";
 import { TIMER_ALERT_CHANNEL_ID, TIMER_ALERT_CHANNEL_REFRESH_RATE, TIMER_CHANNEL_REFRESH_RATE, USE_EVERYONE_ALERT } from "../../config";
-import { prismaClient } from "../../index";
+import { timerPrismaClient } from "../../db/timer-client";
 
 // Timer tracking state
 let lastTimerUpdate: Date | null = null;
@@ -46,7 +46,7 @@ export async function spawnTimerLoop(): Promise<void> {
     lastAlertUpdate = now;
 
     try {
-      const timers = await prismaClient.timer.findMany();
+      const timers = await timerPrismaClient.timer.findMany();
       const everyoneAlert = USE_EVERYONE_ALERT ? "@everyone " : "";
 
       for (const timer of timers) {
@@ -141,7 +141,7 @@ export async function spawnTimerLoop(): Promise<void> {
             updates.alertingSoon = false;
             updates.skipCount = 0;
 
-            await prismaClient.tod.create({
+            await timerPrismaClient.tod.create({
               data: {
                 timerId: timer.id,
                 tod: todEpoch,
@@ -149,7 +149,7 @@ export async function spawnTimerLoop(): Promise<void> {
             });
           }
 
-          await prismaClient.timer.update({
+          await timerPrismaClient.timer.update({
             where: { id: timer.id },
             data: updates,
           });

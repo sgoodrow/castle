@@ -1,10 +1,10 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 
 class TimersCommand extends SimpleCommand {
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
-    const timers = await prismaClient.timer.findMany({
+    const timers = await timerPrismaClient.timer.findMany({
       where: { name: { not: "" } },
       orderBy: { name: "asc" },
     });
@@ -30,4 +30,4 @@ class TimersCommand extends SimpleCommand {
   }
 }
 
-export const timersCommand = new TimersCommand("timers", "List all registered timers");
+export const timersCommand = new TimersCommand("timers", "List all registered timers", false);
