@@ -10,7 +10,7 @@ import {
   nextSpawnTimeStart,
   nextSpawnTimeEnd,
 } from "./commands/helpers/timer";
-import { formatTimeDistance } from "./commands/helpers/duration";
+import { formatHammertime } from "./commands/helpers/duration";
 import { updateTimersChannel } from "./commands/helpers/channel-update";
 import { TIMER_ALERT_CHANNEL_ID, TIMER_ALERT_CHANNEL_REFRESH_RATE, TIMER_CHANNEL_REFRESH_RATE, USE_EVERYONE_ALERT } from "../../config";
 import { timerPrismaClient } from "../../db/timer-client";
@@ -67,7 +67,7 @@ export async function spawnTimerLoop(): Promise<void> {
                   )) as TextChannel;
                   if (channel && nextSpawnEnd) {
                     await channel.send(
-                      `${everyoneAlert}**${timer.name}** is in window for ${formatTimeDistance(nextSpawnEnd, now)}!`
+                      `${everyoneAlert}**${timer.name}** is in window, ending ${formatHammertime(nextSpawnEnd)}!`
                     );
                   }
                 } catch {
@@ -108,11 +108,11 @@ export async function spawnTimerLoop(): Promise<void> {
                   if (channel) {
                     if (hasWindow(timer)) {
                       await channel.send(
-                        `${everyoneAlert}**${timer.name}** will be in window in ${formatTimeDistance(nextSpawnStart, now)}!`
+                        `${everyoneAlert}**${timer.name}** will be in window ${formatHammertime(nextSpawnStart)}!`
                       );
                     } else {
                       await channel.send(
-                        `${everyoneAlert}**${timer.name}** is up in ${formatTimeDistance(nextSpawnStart, now)}!`
+                        `${everyoneAlert}**${timer.name}** is up ${formatHammertime(nextSpawnStart)}!`
                       );
                     }
                   }

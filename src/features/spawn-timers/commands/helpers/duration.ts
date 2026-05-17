@@ -123,3 +123,15 @@ export function formatTimeDistance(
 export function formatTimeAgo(time: Date, now: Date = new Date()): string {
   return formatTimeDistance(time, now) + " ago";
 }
+
+/**
+ * Format a Date as a Discord Hammertime timestamp.
+ * Default style is relative (R), which renders dynamically in Discord
+ * e.g., "in 59 minutes" or "59 minutes ago".
+ *
+ * @see https://hammertime.cyou/en
+ */
+export function formatHammertime(date: Date, style: string = "R"): string {
+  const timestamp = Math.floor(date.getTime() / 1000);
+  return `<t:${timestamp}:${style}>`;
+}
