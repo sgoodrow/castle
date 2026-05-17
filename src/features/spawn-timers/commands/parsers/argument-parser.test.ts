@@ -1,4 +1,3 @@
-import { describe, it, expect } from "vitest";
 import { parseArguments } from "./argument-parser";
 
 describe("ArgumentParser", () => {
