@@ -84,7 +84,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
         const num = Math.round(numberOfBlocks * perc);
 
         let out: string;
-        if (USE_DISCORD_TIMESTAMPS) {
+        if (USE_DISCORD_TIMESTAMPS?.toLowerCase() === "true") {
           out = `Window ends <t:${Math.floor(endsAt.getTime() / 1000)}:R>\n`;
         } else {
           out = `Remaining: ${formatTimeDistance(endsAt, now)}\n`;
@@ -107,7 +107,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
       const dw = displayWindow(timer, "long");
       const nameStr = `${timer.name}${hasWindow(timer) && dw ? ` (*${dw}*)` : ""}`;
 
-      if (USE_DISCORD_TIMESTAMPS) {
+      if (USE_DISCORD_TIMESTAMPS?.toLowerCase() === "true") {
         upcomingWindow.push({
           name: nameStr,
           value: `Opens <t:${Math.floor(startsAt.getTime() / 1000)}:R>`,
@@ -123,7 +123,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
         futureWindow.push(
           `**${timer.name}** (<t:${Math.floor(startsAt.getTime() / 1000)}:R>)`
         );
-      } else if (USE_DISCORD_TIMESTAMPS) {
+      } else if (USE_DISCORD_TIMESTAMPS?.toLowerCase() === "true") {
         const dw = displayWindow(timer, "long");
         futureWindow.push(
           `**${timer.name}** ${hasWindow(timer) && dw ? `(*${dw}*)` : ""} - <t:${Math.floor(startsAt.getTime() / 1000)}:R>`
