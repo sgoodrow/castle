@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 import { formatDateFull } from "./helpers/format";
 import { findTimerByMob, lastSpawnTimeStart, nextSpawnTimeStart, nextSpawnTimeEnd, hasWindow } from "./helpers/timer";
 import { parseTime } from "./parsers/time-parser";
@@ -63,7 +63,7 @@ class TodCommand extends SimpleCommand {
 
     // Handle skip count
     if (skipCountArg && skipCountArg > 0) {
-      await prismaClient.timer.update({
+      await timerPrismaClient.timer.update({
         where: { id: timer.id },
         data: { skipCount: skipCountArg },
       });
@@ -107,7 +107,7 @@ class TodCommand extends SimpleCommand {
     }
 
     // Record the TOD
-    await prismaClient.timer.update({
+    await timerPrismaClient.timer.update({
       where: { id: timer.id },
       data: {
         lastTod: todEpoch,
@@ -117,7 +117,7 @@ class TodCommand extends SimpleCommand {
       },
     });
 
-    await prismaClient.tod.create({
+    await timerPrismaClient.tod.create({
       data: {
         timerId: timer.id,
         userId: interaction.user.id,
@@ -130,14 +130,14 @@ class TodCommand extends SimpleCommand {
     const todTimerNames = [timer.name];
 
     // Handle linked timers
-    const linkedTimers = await prismaClient.timer.findMany({
+    const linkedTimers = await timerPrismaClient.timer.findMany({
       where: { linkedTimerId: timer.id },
     });
 
     for (const linkedTimer of linkedTimers) {
       todTimerNames.push(linkedTimer.name);
 
-      await prismaClient.timer.update({
+      await timerPrismaClient.timer.update({
         where: { id: linkedTimer.id },
         data: {
           lastTod: todEpoch,
@@ -146,7 +146,7 @@ class TodCommand extends SimpleCommand {
         },
       });
 
-      await prismaClient.tod.create({
+      await timerPrismaClient.tod.create({
         data: {
           timerId: linkedTimer.id,
           userId: interaction.user.id,
@@ -158,12 +158,12 @@ class TodCommand extends SimpleCommand {
     }
 
     // Handle clear timers
-    const clearTimers = await prismaClient.timer.findMany({
+    const clearTimers = await timerPrismaClient.timer.findMany({
       where: { clearParentTimerId: timer.id },
     });
 
     for (const clearTimer of clearTimers) {
-      await prismaClient.timer.update({
+      await timerPrismaClient.timer.update({
         where: { id: clearTimer.id },
         data: {
           lastTod: null,

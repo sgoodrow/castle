@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 import { findTimerByMob } from "./helpers/timer";
 
 class UnregisterCommand extends SimpleCommand {
@@ -26,9 +26,9 @@ class UnregisterCommand extends SimpleCommand {
     }
 
     if (foundTimer) {
-      await prismaClient.tod.deleteMany({ where: { timerId: foundTimer.id } });
-      await prismaClient.alias.deleteMany({ where: { timerId: foundTimer.id } });
-      await prismaClient.timer.delete({ where: { id: foundTimer.id } });
+      await timerPrismaClient.tod.deleteMany({ where: { timerId: foundTimer.id } });
+      await timerPrismaClient.alias.deleteMany({ where: { timerId: foundTimer.id } });
+      await timerPrismaClient.timer.delete({ where: { id: foundTimer.id } });
       await interaction.editReply({
         content: `Registered timer for [${foundTimer.name}] removed.`,
       });

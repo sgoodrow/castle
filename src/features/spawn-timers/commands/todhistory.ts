@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 import { formatDateShort } from "./helpers/format";
 import { findTimerByMob } from "./helpers/timer";
 
@@ -34,7 +34,7 @@ class TodHistoryCommand extends SimpleCommand {
       return;
     }
 
-    const tods = await prismaClient.tod.findMany({
+    const tods = await timerPrismaClient.tod.findMany({
       where: { timerId: timer.id },
       orderBy: { tod: "desc" },
       take: 10,

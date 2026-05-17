@@ -2,7 +2,7 @@ import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
 import { formatDateShort } from "./helpers/format";
 import { parseTime } from "./parsers/time-parser";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 
 class LeaderboardCommand extends SimpleCommand {
   public get command() {
@@ -77,7 +77,7 @@ class LeaderboardCommand extends SimpleCommand {
     }
 
     // Group by userId and count
-    const tods = await prismaClient.tod.groupBy({
+    const tods = await timerPrismaClient.tod.groupBy({
       by: ["userId"],
       _count: { userId: true },
       where: whereClause,
@@ -94,7 +94,7 @@ class LeaderboardCommand extends SimpleCommand {
       const userNames = new Map<string, string>();
       for (const tod of tods) {
         if (tod.userId) {
-          const latestTod = await prismaClient.tod.findFirst({
+          const latestTod = await timerPrismaClient.tod.findFirst({
             where: { userId: tod.userId },
             orderBy: { createdAt: "desc" },
             select: { displayName: true },

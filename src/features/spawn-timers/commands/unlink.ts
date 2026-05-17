@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 
 class UnlinkCommand extends SimpleCommand {
   public get command() {
@@ -16,7 +16,7 @@ class UnlinkCommand extends SimpleCommand {
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
     const mob = interaction.options.getString("mob", true).replace(/`/g, "'");
 
-    const timer = await prismaClient.timer.findFirst({
+    const timer = await timerPrismaClient.timer.findFirst({
       where: { name: { equals: mob, mode: "insensitive" } },
     });
 
@@ -34,11 +34,11 @@ class UnlinkCommand extends SimpleCommand {
       return;
     }
 
-    const linkedTimer = await prismaClient.timer.findUnique({
+    const linkedTimer = await timerPrismaClient.timer.findUnique({
       where: { id: timer.linkedTimerId },
     });
 
-    await prismaClient.timer.update({
+    await timerPrismaClient.timer.update({
       where: { id: timer.id },
       data: { linkedTimerId: null },
     });

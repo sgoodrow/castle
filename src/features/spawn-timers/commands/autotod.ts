@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
-import { prismaClient } from "../../../index";
+import { timerPrismaClient } from "../../../db/timer-client";
 import { findTimerByMob, hasWindow } from "./helpers/timer";
 
 class AutotodCommand extends SimpleCommand {
@@ -42,7 +42,7 @@ class AutotodCommand extends SimpleCommand {
     }
 
     const newAutoTod = !timer.autoTod;
-    await prismaClient.timer.update({
+    await timerPrismaClient.timer.update({
       where: { id: timer.id },
       data: { autoTod: newAutoTod },
     });
