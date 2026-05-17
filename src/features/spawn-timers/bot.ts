@@ -47,7 +47,7 @@ export async function spawnTimerLoop(): Promise<void> {
 
     try {
       const timers = await timerPrismaClient.timer.findMany();
-      const everyoneAlert = USE_EVERYONE_ALERT ? "@everyone " : "";
+      const everyoneAlert = USE_EVERYONE_ALERT?.toLowerCase() === "true" ? "@everyone " : "";
 
       for (const timer of timers) {
         let canAutoTod = false;
