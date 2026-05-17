@@ -1,3 +1,7 @@
+jest.mock("../../../../index", () => ({
+  prismaClient: {},
+}));
+
 import type { Timer } from "@prisma/client";
 import {
   displayWindow,
