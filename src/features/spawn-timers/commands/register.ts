@@ -104,4 +104,4 @@ class RegisterCommand extends SimpleCommand {
   }
 }
 
-export const registerCommand = new RegisterCommand("register", "Register a new spawn timer to track");
+export const registerCommand = new RegisterCommand("register", "Register a new spawn timer to track", false);

@@ -62,4 +62,4 @@ class AliasCommand extends SimpleCommand {
   }
 }
 
-export const aliasCommand = new AliasCommand("alias", "Add or remove an alias on a timer");
+export const aliasCommand = new AliasCommand("alias", "Add or remove an alias on a timer", false);

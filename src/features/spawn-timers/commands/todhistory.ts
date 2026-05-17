@@ -56,4 +56,4 @@ class TodHistoryCommand extends SimpleCommand {
   }
 }
 
-export const todHistoryCommand = new TodHistoryCommand("todhistory", "Show last 10 TODs recorded for a registered timer");
+export const todHistoryCommand = new TodHistoryCommand("todhistory", "Show last 10 TODs recorded for a registered timer", false);

@@ -40,4 +40,4 @@ class UnregisterCommand extends SimpleCommand {
   }
 }
 
-export const unregisterCommand = new UnregisterCommand("unregister", "Remove a previously registered timer");
+export const unregisterCommand = new UnregisterCommand("unregister", "Remove a previously registered timer", false);

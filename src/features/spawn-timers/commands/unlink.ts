@@ -49,4 +49,4 @@ class UnlinkCommand extends SimpleCommand {
   }
 }
 
-export const unlinkCommand = new UnlinkCommand("unlink", "Remove a link from a timer");
+export const unlinkCommand = new UnlinkCommand("unlink", "Remove a link from a timer", false);

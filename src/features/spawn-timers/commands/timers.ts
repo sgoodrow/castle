@@ -30,4 +30,4 @@ class TimersCommand extends SimpleCommand {
   }
 }
 
-export const timersCommand = new TimersCommand("timers", "List all registered timers");
+export const timersCommand = new TimersCommand("timers", "List all registered timers", false);

@@ -53,4 +53,4 @@ class ScheduleCommand extends SimpleCommand {
   }
 }
 
-export const scheduleCommand = new ScheduleCommand("schedule", "Show a human-readable schedule for the next 7 days");
+export const scheduleCommand = new ScheduleCommand("schedule", "Show a human-readable schedule for the next 7 days", false);

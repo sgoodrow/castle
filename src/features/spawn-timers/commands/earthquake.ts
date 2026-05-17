@@ -48,4 +48,4 @@ class EarthquakeCommand extends SimpleCommand {
   }
 }
 
-export const earthquakeCommand = new EarthquakeCommand("earthquake", "Reset the TOD for ALL timers. Warning: this clears everything!");
+export const earthquakeCommand = new EarthquakeCommand("earthquake", "Reset the TOD for ALL timers. Warning: this clears everything!", false);

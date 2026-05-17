@@ -45,4 +45,4 @@ class RenameCommand extends SimpleCommand {
   }
 }
 
-export const renameCommand = new RenameCommand("rename", "Rename an existing timer");
+export const renameCommand = new RenameCommand("rename", "Rename an existing timer", false);

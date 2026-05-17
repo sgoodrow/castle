@@ -58,4 +58,4 @@ class UnskipCommand extends SimpleCommand {
   }
 }
 
-export const unskipCommand = new UnskipCommand("unskip", "Remove the last skip for a registered timer");
+export const unskipCommand = new UnskipCommand("unskip", "Remove the last skip for a registered timer", false);

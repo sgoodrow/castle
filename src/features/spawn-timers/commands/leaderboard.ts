@@ -121,4 +121,4 @@ class LeaderboardCommand extends SimpleCommand {
   }
 }
 
-export const leaderboardCommand = new LeaderboardCommand("leaderboard", "Display leaderboard of TOD recordings by user");
+export const leaderboardCommand = new LeaderboardCommand("leaderboard", "Display leaderboard of TOD recordings by user", false);

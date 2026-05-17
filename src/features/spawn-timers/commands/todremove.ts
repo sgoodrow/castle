@@ -49,4 +49,4 @@ class TodRemoveCommand extends SimpleCommand {
   }
 }
 
-export const todRemoveCommand = new TodRemoveCommand("todremove", "Remove the current time of death for a registered timer");
+export const todRemoveCommand = new TodRemoveCommand("todremove", "Remove the current time of death for a registered timer", false);
