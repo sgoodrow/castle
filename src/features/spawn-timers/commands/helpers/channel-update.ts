@@ -154,6 +154,28 @@ export async function updateTimersChannel(client: Client): Promise<void> {
     ? `These are currently in window! Be prepared! \u2022 Today at ${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })}`
     : `There is currently nothing in window! \u2022 Today at ${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })}`;
 
+    
+  // Future window embed(s) — split description if >4096 chars
+  if (SHOW_FUTURE_WINDOW?.toLowerCase() === "true" && futureWindow.length > 0) {
+    const separator = CONDENSE_FUTURE_WINDOW?.toLowerCase() === "true" ? ", " : "\n";
+    const descChunks = chunkDescription(futureWindow, separator);
+    for (let i = 0; i < descChunks.length; i++) {
+      const embed = new EmbedBuilder().setDescription(descChunks[i]);
+      if (i === 0) embed.setTitle("Future Windows");
+      embeds.push(embed);
+    }
+  }
+
+  // Upcoming embed(s) — split across multiple embeds if >25 fields
+  if (upcomingWindow.length > 0) {
+    const upcomingChunks = chunkArray(upcomingWindow, MAX_FIELDS_PER_EMBED);
+    for (let i = 0; i < upcomingChunks.length; i++) {
+      const embed = new EmbedBuilder().setColor(0x3498db).addFields(upcomingChunks[i]);
+      if (i === 0) embed.setTitle("Mobs Entering Window In The Next 24 Hours");
+      embeds.push(embed);
+    }
+  }
+
   if (anyInWindow) {
     const fieldChunks = chunkArray(inWindowFields, MAX_FIELDS_PER_EMBED);
     for (let i = 0; i < fieldChunks.length; i++) {
@@ -169,27 +191,6 @@ export async function updateTimersChannel(client: Client): Promise<void> {
         .setTitle("Nothing Currently in Window")
         .setFooter({ text: inWindowFooter })
     );
-  }
-
-  // Upcoming embed(s) — split across multiple embeds if >25 fields
-  if (upcomingWindow.length > 0) {
-    const upcomingChunks = chunkArray(upcomingWindow, MAX_FIELDS_PER_EMBED);
-    for (let i = 0; i < upcomingChunks.length; i++) {
-      const embed = new EmbedBuilder().setColor(0x3498db).addFields(upcomingChunks[i]);
-      if (i === 0) embed.setTitle("Mobs Entering Window In The Next 24 Hours");
-      embeds.push(embed);
-    }
-  }
-
-  // Future window embed(s) — split description if >4096 chars
-  if (SHOW_FUTURE_WINDOW?.toLowerCase() === "true" && futureWindow.length > 0) {
-    const separator = CONDENSE_FUTURE_WINDOW?.toLowerCase() === "true" ? ", " : "\n";
-    const descChunks = chunkDescription(futureWindow, separator);
-    for (let i = 0; i < descChunks.length; i++) {
-      const embed = new EmbedBuilder().setDescription(descChunks[i]);
-      if (i === 0) embed.setTitle("Future Windows");
-      embeds.push(embed);
-    }
   }
 
   // Discord allows at most 10 embeds per message
