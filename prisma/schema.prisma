@@ -142,7 +142,7 @@ model Timer {
   variance            String?
   alerted             Boolean?
   lastTod             Float?    @map("last_tod")
-  alertingSoon        Boolean   @default(false) @map("alerting_soon")
+  alertingSoon        Boolean?  @default(false) @map("alerting_soon")
   skipCount           Int       @default(0) @map("skip_count")
   autoTod             Boolean   @default(false) @map("auto_tod")
   linkedTimerId       Int?      @map("linked_timer_id")
