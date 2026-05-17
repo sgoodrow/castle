@@ -133,3 +133,61 @@ model rte_target {
   openedBy String   @db.VarChar
   openedAt DateTime @default(now()) @db.Timestamp(6)
 }
+
+model Timer {
+  id                  Int       @id @default(autoincrement())
+  name                String
+  windowStart         String?   @map("window_start")
+  windowEnd           String?   @map("window_end")
+  variance            String?
+  alerted             Boolean?
+  lastTod             Float?    @map("last_tod")
+  alertingSoon        Boolean   @default(false) @map("alerting_soon")
+  skipCount           Int       @default(0) @map("skip_count")
+  autoTod             Boolean   @default(false) @map("auto_tod")
+  linkedTimerId       Int?      @map("linked_timer_id")
+  clearParentTimerId  Int?      @map("clear_parent_timer_id")
+  warnTime            String?   @map("warn_time")
+
+  tods                Tod[]
+  aliases             Alias[]
+  linkedTimer         Timer?    @relation("LinkedTimer", fields: [linkedTimerId], references: [id])
+  linkedBy            Timer[]   @relation("LinkedTimer")
+  clearParentTimer    Timer?    @relation("ClearParent", fields: [clearParentTimerId], references: [id])
+  clearedBy           Timer[]   @relation("ClearParent")
+
+  @@map("timers")
+}
+
+model Tod {
+  id          Int       @id @default(autoincrement())
+  timerId     Int       @map("timer_id")
+  userId      String?   @map("user_id")
+  username    String?
+  displayName String?   @map("display_name")
+  tod         Float
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  timer       Timer     @relation(fields: [timerId], references: [id], onDelete: Cascade)
+
+  @@map("tods")
+}
+
+model Setting {
+  id    Int     @id @default(autoincrement())
+  key   String  @unique
+  value String?
+
+  @@map("settings")
+}
+
+model Alias {
+  id        Int       @id @default(autoincrement())
+  timerId   Int       @map("timer_id")
+  name      String
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  timer     Timer     @relation(fields: [timerId], references: [id], onDelete: Cascade)
+
+  @@map("aliases")
+}
