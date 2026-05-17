@@ -119,7 +119,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
         });
       }
     } else {
-      if (CONDENSE_FUTURE_WINDOW) {
+      if (CONDENSE_FUTURE_WINDOW.toLowerCase() === "true") {
         futureWindow.push(
           `**${timer.name}** (<t:${Math.floor(startsAt.getTime() / 1000)}:R>)`
         );
@@ -182,8 +182,8 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   }
 
   // Future window embed(s) — split description if >4096 chars
-  if (SHOW_FUTURE_WINDOW && futureWindow.length > 0) {
-    const separator = CONDENSE_FUTURE_WINDOW ? ", " : "\n";
+  if (SHOW_FUTURE_WINDOW?.toLowerCase() === "true" && futureWindow.length > 0) {
+    const separator = CONDENSE_FUTURE_WINDOW?.toLowerCase() === "true" ? ", " : "\n";
     const descChunks = chunkDescription(futureWindow, separator);
     for (let i = 0; i < descChunks.length; i++) {
       const embed = new EmbedBuilder().setDescription(descChunks[i]);
