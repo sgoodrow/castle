@@ -8,39 +8,80 @@ import {
   nextSpawnTimeStart,
   nextSpawnTimeEnd,
   inWindow,
-  hasWindow,
   displayWindow,
 } from "./timer";
 import { formatTimeDistance } from "./duration";
 import { getSettingByKey, saveSettingByKey } from "./settings";
-import { TIMER_CHANNEL_ID, USE_DISCORD_TIMESTAMPS, CONDENSE_FUTURE_WINDOW, SHOW_FUTURE_WINDOW } from "../../../../config";
+import { TIMER_CHANNEL_ID, SHOW_FUTURE_WINDOW } from "../../../../config";
 import { timerPrismaClient } from "../../../../db/timer-client";
 
-const MAX_FIELDS_PER_EMBED = 25;
 const MAX_DESCRIPTION_LENGTH = 4096;
 const MAX_EMBEDS_PER_MESSAGE = 10;
 
-function chunkArray<T>(arr: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) {
-    chunks.push(arr.slice(i, i + size));
-  }
-  return chunks;
+interface TableRow {
+  name: string;
+  time: string;
+  window: string;
+  remainingMs: number;
 }
 
-function chunkDescription(items: string[], separator: string): string[] {
+function pad(str: string, len: number): string {
+  if (str.length > len) return str.slice(0, len);
+  return str.padEnd(len, " ");
+}
+
+function getColumnWidths(rows: TableRow[]): { nameWidth: number; timeWidth: number; windowWidth: number } {
+  return {
+    nameWidth: Math.max(4, ...rows.map((r) => r.name.length)),
+    timeWidth: Math.max(14, ...rows.map((r) => r.time.length)),
+    windowWidth: Math.max(6, ...rows.map((r) => r.window.length)),
+  };
+}
+
+function renderTable(
+  rows: TableRow[],
+  widths: { nameWidth: number; timeWidth: number; windowWidth: number }
+): string {
+  const { nameWidth, timeWidth, windowWidth } = widths;
+  const sep = " | ";
+  const header = `${pad("Name", nameWidth)}${sep}${pad("Time Remaining", timeWidth)}${sep}${pad("Window", windowWidth)}`;
+  const divider = "-".repeat(header.length);
+
+  const lines = [
+    header,
+    divider,
+    ...rows.map(
+      (r) =>
+        `${pad(r.name, nameWidth)}${sep}${pad(r.time, timeWidth)}${sep}${pad(r.window, windowWidth)}`
+    ),
+  ];
+
+  return "```\n" + lines.join("\n") + "\n```";
+}
+
+function chunkTable(
+  rows: TableRow[],
+  maxLen: number,
+  widths: { nameWidth: number; timeWidth: number; windowWidth: number }
+): string[] {
   const chunks: string[] = [];
-  let current = "";
-  for (const item of items) {
-    const candidate = current ? current + separator + item : item;
-    if (candidate.length > MAX_DESCRIPTION_LENGTH && current) {
-      chunks.push(current);
-      current = item;
+  let currentRows: TableRow[] = [];
+
+  for (const row of rows) {
+    const testRows = [...currentRows, row];
+    const rendered = renderTable(testRows, widths);
+    if (rendered.length > maxLen && currentRows.length > 0) {
+      chunks.push(renderTable(currentRows, widths));
+      currentRows = [row];
     } else {
-      current = candidate;
+      currentRows = testRows;
     }
   }
-  if (current) chunks.push(current);
+
+  if (currentRows.length > 0) {
+    chunks.push(renderTable(currentRows, widths));
+  }
+
   return chunks;
 }
 
@@ -65,9 +106,9 @@ export async function updateTimersChannel(client: Client): Promise<void> {
     return aStart.getTime() - bStart.getTime();
   });
 
-  const mobsInWindow: Array<{ field: { name: string; value: string }; percent: number }> = [];
-  const upcomingWindow: Array<{ name: string; value: string }> = [];
-  const futureWindow: string[] = [];
+  const futureRows: TableRow[] = [];
+  const upcomingRows: TableRow[] = [];
+  const inWindowRows: TableRow[] = [];
 
   for (const timer of sortedTimers) {
     if (!timer.lastTod) continue;
@@ -77,88 +118,54 @@ export async function updateTimersChannel(client: Client): Promise<void> {
 
     if (!startsAt || !endsAt) continue;
 
+    const dw = displayWindow(timer, "short") ?? "";
+
     if (inWindow(timer, now)) {
       if (endsAt > now) {
-        const perc = (now.getTime() - startsAt.getTime()) / (endsAt.getTime() - startsAt.getTime());
-        const numberOfBlocks = 14;
-        const num = Math.round(numberOfBlocks * perc);
-
-        let out: string;
-        if (USE_DISCORD_TIMESTAMPS?.toLowerCase() === "true") {
-          out = `Window ends <t:${Math.floor(endsAt.getTime() / 1000)}:R>\n`;
-        } else {
-          out = `Remaining: ${formatTimeDistance(endsAt, now)}\n`;
-        }
-
-        for (let i = 0; i < numberOfBlocks; i++) {
-          out += i >= num ? "\u2b1c" : "\ud83d\udfe9";
-        }
-
-        const dw = displayWindow(timer, "long");
-        mobsInWindow.push({
-          field: {
-            name: `${timer.name}${dw ? ` (*${dw}*)` : ""}`,
-            value: out,
-          },
-          percent: perc,
+        const remainingMs = endsAt.getTime() - now.getTime();
+        inWindowRows.push({
+          name: timer.name,
+          time: formatTimeDistance(endsAt, now, true),
+          window: dw,
+          remainingMs,
         });
       }
     } else if (startsAt.getTime() <= now.getTime() + 24 * 60 * 60 * 1000) {
-      const dw = displayWindow(timer, "long");
-      const nameStr = `${timer.name}${hasWindow(timer) && dw ? ` (*${dw}*)` : ""}`;
-
-      if (USE_DISCORD_TIMESTAMPS?.toLowerCase() === "true") {
-        upcomingWindow.push({
-          name: nameStr,
-          value: `Opens <t:${Math.floor(startsAt.getTime() / 1000)}:R>`,
-        });
-      } else {
-        upcomingWindow.push({
-          name: nameStr,
-          value: `Opens in: ${formatTimeDistance(startsAt, now)}`,
-        });
-      }
+      const remainingMs = startsAt.getTime() - now.getTime();
+      upcomingRows.push({
+        name: timer.name,
+        time: formatTimeDistance(startsAt, now, true),
+        window: dw,
+        remainingMs,
+      });
     } else {
-      if (CONDENSE_FUTURE_WINDOW.toLowerCase() === "true") {
-        futureWindow.push(
-          `**${timer.name}** (<t:${Math.floor(startsAt.getTime() / 1000)}:R>)`
-        );
-      } else if (USE_DISCORD_TIMESTAMPS?.toLowerCase() === "true") {
-        const dw = displayWindow(timer, "long");
-        futureWindow.push(
-          `**${timer.name}** ${hasWindow(timer) && dw ? `(*${dw}*)` : ""} - <t:${Math.floor(startsAt.getTime() / 1000)}:R>`
-        );
-      } else {
-        const dw = displayWindow(timer, "long");
-        futureWindow.push(
-          `**${timer.name}** ${hasWindow(timer) && dw ? `(*${dw}*)` : ""} - ${formatTimeDistance(startsAt, now)}`
-        );
-      }
+      const remainingMs = startsAt.getTime() - now.getTime();
+      futureRows.push({
+        name: timer.name,
+        time: formatTimeDistance(startsAt, now, true),
+        window: dw,
+        remainingMs,
+      });
     }
   }
 
-  // Sort mobs in window by percent descending
-  mobsInWindow.sort((a, b) => -(a.percent - b.percent));
+  // Sort all sections by remaining time descending (least time at the bottom)
+  futureRows.sort((a, b) => b.remainingMs - a.remainingMs);
+  upcomingRows.sort((a, b) => b.remainingMs - a.remainingMs);
+  inWindowRows.sort((a, b) => b.remainingMs - a.remainingMs);
 
   const embeds: EmbedBuilder[] = [];
 
-  const anyInWindow = mobsInWindow.length > 0;
+  const anyInWindow = inWindowRows.length > 0;
 
-  // In-window embed(s) — split across multiple embeds if >25 fields
-  const inWindowFields = mobsInWindow.map((m) => ({
-    name: m.field.name,
-    value: m.field.value,
-  }));
-  const inWindowColor = anyInWindow ? 0xe67e22 : 0x2ecc71;
   const inWindowFooter = anyInWindow
     ? `These are currently in window! Be prepared! \u2022 Today at ${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })}`
     : `There is currently nothing in window! \u2022 Today at ${now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })}`;
 
-    
-  // Future window embed(s) — split description if >4096 chars
-  if (SHOW_FUTURE_WINDOW?.toLowerCase() === "true" && futureWindow.length > 0) {
-    const separator = CONDENSE_FUTURE_WINDOW?.toLowerCase() === "true" ? ", " : "\n";
-    const descChunks = chunkDescription(futureWindow, separator);
+  // Future window embed(s)
+  if (SHOW_FUTURE_WINDOW?.toLowerCase() === "true" && futureRows.length > 0) {
+    const widths = getColumnWidths(futureRows);
+    const descChunks = chunkTable(futureRows, MAX_DESCRIPTION_LENGTH, widths);
     for (let i = 0; i < descChunks.length; i++) {
       const embed = new EmbedBuilder().setDescription(descChunks[i]);
       if (i === 0) embed.setTitle("Future Windows");
@@ -166,28 +173,31 @@ export async function updateTimersChannel(client: Client): Promise<void> {
     }
   }
 
-  // Upcoming embed(s) — split across multiple embeds if >25 fields
-  if (upcomingWindow.length > 0) {
-    const upcomingChunks = chunkArray(upcomingWindow, MAX_FIELDS_PER_EMBED);
-    for (let i = 0; i < upcomingChunks.length; i++) {
-      const embed = new EmbedBuilder().setColor(0x3498db).addFields(upcomingChunks[i]);
+  // Upcoming embed(s)
+  if (upcomingRows.length > 0) {
+    const widths = getColumnWidths(upcomingRows);
+    const descChunks = chunkTable(upcomingRows, MAX_DESCRIPTION_LENGTH, widths);
+    for (let i = 0; i < descChunks.length; i++) {
+      const embed = new EmbedBuilder().setDescription(descChunks[i]);
       if (i === 0) embed.setTitle("Mobs Entering Window In The Next 24 Hours");
       embeds.push(embed);
     }
   }
 
+  // In-window embed(s)
   if (anyInWindow) {
-    const fieldChunks = chunkArray(inWindowFields, MAX_FIELDS_PER_EMBED);
-    for (let i = 0; i < fieldChunks.length; i++) {
-      const embed = new EmbedBuilder().setColor(inWindowColor).addFields(fieldChunks[i]);
+    const widths = getColumnWidths(inWindowRows);
+    const descChunks = chunkTable(inWindowRows, MAX_DESCRIPTION_LENGTH, widths);
+    for (let i = 0; i < descChunks.length; i++) {
+      const embed = new EmbedBuilder().setColor(0xe67e22).setDescription(descChunks[i]);
       if (i === 0) embed.setTitle("Mobs In Window");
-      if (i === fieldChunks.length - 1) embed.setFooter({ text: inWindowFooter });
+      if (i === descChunks.length - 1) embed.setFooter({ text: inWindowFooter });
       embeds.push(embed);
     }
   } else {
     embeds.push(
       new EmbedBuilder()
-        .setColor(inWindowColor)
+        .setColor(0x2ecc71)
         .setTitle("Nothing Currently in Window")
         .setFooter({ text: inWindowFooter })
     );

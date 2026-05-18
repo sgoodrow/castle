@@ -44,6 +44,15 @@ describe("formatDuration", () => {
     expect(formatDuration(3600, "long")).toBe("1 hour");
     expect(formatDuration(93600, "long")).toBe("1 day 2 hours");
   });
+
+  it("should show seconds below 1 day when requested", () => {
+    expect(formatDuration(3600, "short", true)).toBe("1h");
+    expect(formatDuration(3661, "short", true)).toBe("1h 1m 1s");
+    expect(formatDuration(7200, "short", true)).toBe("2h");
+    expect(formatDuration(7325, "short", true)).toBe("2h 2m 5s");
+    expect(formatDuration(61, "short", true)).toBe("1m 1s");
+    expect(formatDuration(1, "short", true)).toBe("1s");
+  });
 });
 
 describe("formatTimeDistance", () => {

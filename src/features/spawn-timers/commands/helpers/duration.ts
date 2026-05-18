@@ -75,7 +75,8 @@ export function parseDuration(input: string): number | null {
  */
 export function formatDuration(
   seconds: number,
-  format: "short" | "long" = "short"
+  format: "short" | "long" = "short",
+  showSecondsBelowDay = false
 ): string {
   if (seconds < 0) seconds = Math.abs(seconds);
 
@@ -90,7 +91,11 @@ export function formatDuration(
     if (days > 0) parts.push(`${days}d`);
     if (hours > 0) parts.push(`${hours}h`);
     if (minutes > 0 && days === 0) parts.push(`${minutes}m`);
-    if (secs > 0 && days === 0 && hours === 0) parts.push(`${secs}s`);
+    if (secs > 0 && days === 0) {
+      if (showSecondsBelowDay || hours === 0) {
+        parts.push(`${secs}s`);
+      }
+    }
   } else {
     if (days > 0) parts.push(`${days} ${days === 1 ? "day" : "days"}`);
     if (hours > 0) parts.push(`${hours} ${hours === 1 ? "hour" : "hours"}`);
@@ -110,11 +115,11 @@ export function formatDuration(
 export function formatTimeDistance(
   target: Date,
   now: Date = new Date(),
-  compact = false
+  showSecondsBelowDay = false
 ): string {
   const diffMs = Math.abs(target.getTime() - now.getTime());
   const diffSeconds = Math.floor(diffMs / 1000);
-  return formatDuration(diffSeconds, compact ? "short" : "short");
+  return formatDuration(diffSeconds, "short", showSecondsBelowDay);
 }
 
 /**
