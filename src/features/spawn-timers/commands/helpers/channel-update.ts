@@ -22,6 +22,7 @@ interface TableRow {
   name: string;
   time: string;
   window: string;
+  remainingMs: number;
 }
 
 function pad(str: string, len: number): string {
@@ -107,7 +108,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
 
   const futureRows: TableRow[] = [];
   const upcomingRows: TableRow[] = [];
-  const inWindowRows: Array<TableRow & { percent: number }> = [];
+  const inWindowRows: TableRow[] = [];
 
   for (const timer of sortedTimers) {
     if (!timer.lastTod) continue;
@@ -121,31 +122,37 @@ export async function updateTimersChannel(client: Client): Promise<void> {
 
     if (inWindow(timer, now)) {
       if (endsAt > now) {
-        const perc = (now.getTime() - startsAt.getTime()) / (endsAt.getTime() - startsAt.getTime());
-        const remaining = formatTimeDistance(endsAt, now);
-        inWindowRows.push({ name: timer.name, time: remaining, window: dw, percent: perc });
+        const remainingMs = endsAt.getTime() - now.getTime();
+        inWindowRows.push({
+          name: timer.name,
+          time: formatTimeDistance(endsAt, now, true),
+          window: dw,
+          remainingMs,
+        });
       }
     } else if (startsAt.getTime() <= now.getTime() + 24 * 60 * 60 * 1000) {
+      const remainingMs = startsAt.getTime() - now.getTime();
       upcomingRows.push({
         name: timer.name,
-        time: formatTimeDistance(startsAt, now),
+        time: formatTimeDistance(startsAt, now, true),
         window: dw,
+        remainingMs,
       });
     } else {
+      const remainingMs = startsAt.getTime() - now.getTime();
       futureRows.push({
         name: timer.name,
-        time: formatTimeDistance(startsAt, now),
+        time: formatTimeDistance(startsAt, now, true),
         window: dw,
+        remainingMs,
       });
     }
   }
 
-  // Order: descending time to spawn within each section
-  futureRows.reverse();
-  upcomingRows.reverse();
-
-  // Sort mobs in window by percent ascending (closest to end of window at bottom)
-  inWindowRows.sort((a, b) => a.percent - b.percent);
+  // Sort all sections by remaining time descending (least time at the bottom)
+  futureRows.sort((a, b) => b.remainingMs - a.remainingMs);
+  upcomingRows.sort((a, b) => b.remainingMs - a.remainingMs);
+  inWindowRows.sort((a, b) => b.remainingMs - a.remainingMs);
 
   const embeds: EmbedBuilder[] = [];
 
