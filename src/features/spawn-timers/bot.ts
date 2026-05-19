@@ -19,13 +19,20 @@ import { timerPrismaClient } from "../../db/timer-client";
 let lastTimerUpdate: Date | null = null;
 let lastAlertUpdate: Date | null = null;
 let sendTimerChannelUpdate = true;
+let isRunning = false;
 
 /**
  * Main timer monitoring loop.
  * Checks timer windows, sends alerts, and updates the timer channel.
  */
 export async function spawnTimerLoop(): Promise<void> {
-  const now = new Date();
+  if (isRunning) {
+    return;
+  }
+  isRunning = true;
+
+  try {
+    const now = new Date();
 
   // Check if we should update alerts
   const shouldCheckAlerts =
@@ -162,12 +169,17 @@ export async function spawnTimerLoop(): Promise<void> {
     }
   }
 
-  if (sendTimerChannelUpdate) {
-    try {
-      await updateTimersChannel(client);
-    } catch (err) {
-      console.error("Error updating timers channel:", err);
+    if (sendTimerChannelUpdate) {
+      try {
+        await updateTimersChannel(client);
+      } catch (err) {
+        console.error("Error updating timers channel:", err);
+      }
+      sendTimerChannelUpdate = false;
     }
-    sendTimerChannelUpdate = false;
+  } catch (err) {
+    console.error("Error in spawn timer loop:", err);
+  } finally {
+    isRunning = false;
   }
 }
