@@ -35,7 +35,16 @@ class TodCommand extends SimpleCommand {
 
     const now = new Date();
 
-    const tod = timeStr ? parseTime(timeStr, now) : now;
+    let tod = timeStr ? parseTime(timeStr, now) : now;
+
+    // If a bare time (no date component) parses to the future, assume the previous day
+    if (tod && tod > now && timeStr) {
+      const hasDateComponent =
+        /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*|yesterday|today|tomorrow|ago|last\s+\w+|next\s+\w+|\d{1,2}[\/\-.]\d{1,2}([\/\-.]\d{2,4})?/i.test(timeStr);
+      if (!hasDateComponent) {
+        tod = new Date(tod.getTime() - 24 * 60 * 60 * 1000);
+      }
+    }
 
     if (!tod) {
       await interaction.editReply({
