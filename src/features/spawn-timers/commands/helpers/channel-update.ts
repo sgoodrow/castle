@@ -40,11 +40,12 @@ function getColumnWidths(rows: TableRow[]): { nameWidth: number; timeWidth: numb
 
 function renderTable(
   rows: TableRow[],
-  widths: { nameWidth: number; timeWidth: number; windowWidth: number }
+  widths: { nameWidth: number; timeWidth: number; windowWidth: number },
+  thirdColumnLabel = "Window"
 ): string {
   const { nameWidth, timeWidth, windowWidth } = widths;
   const sep = " | ";
-  const header = `${pad("Name", nameWidth)}${sep}${pad("In", timeWidth)}${sep}${pad("Window", windowWidth)}`;
+  const header = `${pad("Name", nameWidth)}${sep}${pad("In", timeWidth)}${sep}${pad(thirdColumnLabel, windowWidth)}`;
   const divider = "-".repeat(header.length);
 
   const lines = [
@@ -62,16 +63,17 @@ function renderTable(
 function chunkTable(
   rows: TableRow[],
   maxLen: number,
-  widths: { nameWidth: number; timeWidth: number; windowWidth: number }
+  widths: { nameWidth: number; timeWidth: number; windowWidth: number },
+  thirdColumnLabel?: string
 ): string[] {
   const chunks: string[] = [];
   let currentRows: TableRow[] = [];
 
   for (const row of rows) {
     const testRows = [...currentRows, row];
-    const rendered = renderTable(testRows, widths);
+    const rendered = renderTable(testRows, widths, thirdColumnLabel);
     if (rendered.length > maxLen && currentRows.length > 0) {
-      chunks.push(renderTable(currentRows, widths));
+      chunks.push(renderTable(currentRows, widths, thirdColumnLabel));
       currentRows = [row];
     } else {
       currentRows = testRows;
@@ -79,7 +81,7 @@ function chunkTable(
   }
 
   if (currentRows.length > 0) {
-    chunks.push(renderTable(currentRows, widths));
+    chunks.push(renderTable(currentRows, widths, thirdColumnLabel));
   }
 
   return chunks;
@@ -123,10 +125,15 @@ export async function updateTimersChannel(client: Client): Promise<void> {
     if (inWindow(timer, now)) {
       if (endsAt > now) {
         const remainingMs = endsAt.getTime() - now.getTime();
+        const windowDurationMs = endsAt.getTime() - startsAt.getTime();
+        const elapsedMs = now.getTime() - startsAt.getTime();
+        const pct = windowDurationMs > 0
+          ? Math.min(100, Math.max(0, Math.round((elapsedMs / windowDurationMs) * 100)))
+          : 0;
         inWindowRows.push({
           name: timer.name,
           time: formatTimeDistance(endsAt, now, true),
-          window: dw,
+          window: `${pct}%`,
           remainingMs,
         });
       }
@@ -187,7 +194,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   // In-window embed(s)
   if (anyInWindow) {
     const widths = getColumnWidths(inWindowRows);
-    const descChunks = chunkTable(inWindowRows, MAX_DESCRIPTION_LENGTH, widths);
+    const descChunks = chunkTable(inWindowRows, MAX_DESCRIPTION_LENGTH, widths, "%");
     for (let i = 0; i < descChunks.length; i++) {
       const embed = new EmbedBuilder().setColor(0xe67e22).setDescription(descChunks[i]);
       if (i === 0) embed.setTitle("Mobs In Window");
