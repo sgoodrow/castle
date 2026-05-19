@@ -14,6 +14,7 @@ export { skipCommand } from "./skip";
 export { timersCommand } from "./timers";
 export { todCommand } from "./tod";
 export { todHistoryCommand } from "./todhistory";
+export { todMissingCommand } from "./todmissing";
 export { todRemoveCommand } from "./todremove";
 export { unlinkCommand } from "./unlink";
 export { unregisterCommand } from "./unregister";
