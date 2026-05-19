@@ -35,5 +35,5 @@ export const readyListener = async (client: Client) => {
     const guild = await getGuild();
     await guild.members.fetch(); // warm the cache once
   }, { repeatDuration: 0 });
-  setInterval(spawnTimerLoop, 1000);
+  setInterval(spawnTimerLoop, 2500);
 };
