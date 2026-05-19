@@ -33,7 +33,7 @@ function pad(str: string, len: number): string {
 function getColumnWidths(rows: TableRow[]): { nameWidth: number; timeWidth: number; windowWidth: number } {
   return {
     nameWidth: Math.max(4, ...rows.map((r) => r.name.length)),
-    timeWidth: Math.max(14, ...rows.map((r) => r.time.length)),
+    timeWidth: Math.max(3, ...rows.map((r) => r.time.length)),
     windowWidth: Math.max(6, ...rows.map((r) => r.window.length)),
   };
 }
@@ -44,7 +44,7 @@ function renderTable(
 ): string {
   const { nameWidth, timeWidth, windowWidth } = widths;
   const sep = " | ";
-  const header = `${pad("Name", nameWidth)}${sep}${pad("Time Remaining", timeWidth)}${sep}${pad("Window", windowWidth)}`;
+  const header = `${pad("Name", nameWidth)}${sep}${pad("In", timeWidth)}${sep}${pad("Window", windowWidth)}`;
   const divider = "-".repeat(header.length);
 
   const lines = [
