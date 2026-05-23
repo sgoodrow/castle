@@ -32,26 +32,24 @@ export interface SessionSummary {
 
 export const rteService = {
   startSession: async (input: StartSessionInput) => {
-    if (rteRequireOpenTarget) {
-      const openTarget = await prismaClient.rte_target.findUnique({
-        where: { target: input.target },
+    let openTarget = await prismaClient.rte_target.findUnique({
+      where: { target: input.target },
+    });
+
+    if (!openTarget) {
+      // Auto-create the target as open so the embed can display it.
+      openTarget = await prismaClient.rte_target.create({
+        data: {
+          target: input.target,
+          open: true,
+          openedBy: input.discordId,
+        },
       });
-      if (!openTarget || !openTarget.open) {
-        throw new Error(`Target ${input.target} is not currently open for RTE.`);
-      }
     }
 
-    // const existing = await prismaClient.rte.findFirst({
-    //   where: {
-    //     discordId: input.discordId,
-    //     active: true,
-    //   },
-    // });
-    // if (existing) {
-    //   throw new Error(
-    //     `You already have an active session for ${existing.target} (${existing.type}). Please end it before starting a new one.`
-    //   );
-    // }
+    if (rteRequireOpenTarget && !openTarget.open) {
+      throw new Error(`Target ${input.target} is not currently open for RTE.`);
+    }
 
     const startTime = input.startTime ?? new Date();
     if (input.startTime && startTime.getTime() > Date.now()) {
