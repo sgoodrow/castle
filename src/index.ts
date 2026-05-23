@@ -12,7 +12,7 @@ import {
   guildScheduledEventListener,
   guildScheduledEventStartedListener,
 } from "./listeners/guild-scheduled-event-listener";
-import { redisChannels, redisListener } from "./redis/client";
+import { redisChannels, redisClient, redisListener } from "./redis/client";
 import { updateRaidReport } from "./features/dkp-records/update/update-raid-report";
 import { guildMemberUpdateListener } from "./listeners/guild-member-update-listener";
 import "reflect-metadata";
@@ -103,6 +103,38 @@ setInterval(() => {
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
 });
+
+const shutdown = async (signal: string) => {
+  log(`Received ${signal}, shutting down gracefully...`);
+
+  try {
+    client.destroy();
+    log("Discord client destroyed.");
+  } catch (err) {
+    console.error("Error destroying Discord client:", err);
+  }
+
+  try {
+    await redisListener.quit();
+    await redisClient.quit();
+    log("Redis connections closed.");
+  } catch (err) {
+    console.error("Error closing Redis connections:", err);
+  }
+
+  try {
+    await prismaClient.$disconnect();
+    log("Prisma disconnected.");
+  } catch (err) {
+    console.error("Error disconnecting Prisma:", err);
+  }
+
+  log("Shutdown complete.");
+  process.exit(0);
+};
+
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
 
 client.login(token);
 client.on("interactionCreate", interactionCreateListener);

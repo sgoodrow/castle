@@ -86,7 +86,8 @@ export const {
   USE_EVERYONE_ALERT,
   USE_DISCORD_TIMESTAMPS,
   SHOW_FUTURE_WINDOW,
-  CONDENSE_FUTURE_WINDOW
+  CONDENSE_FUTURE_WINDOW,
+  RTE_REQUIRE_OPEN_TARGET,
 
 } = process.env as {
   /**
@@ -275,4 +276,12 @@ export const {
   CONDENSE_FUTURE_WINDOW: string;
   EARTHQUAKE_ALERT_CHANNEL_ID: string;
   EARTHQUAKE_ALERT_MESSAGE: string;
+
+  /**
+   * [Optional] When set to "false", users can start RTE sessions on any target
+   * without it needing to be opened first. Defaults to requiring an open target.
+   */
+  RTE_REQUIRE_OPEN_TARGET?: string;
 };
+
+export const rteRequireOpenTarget = RTE_REQUIRE_OPEN_TARGET !== "false";
