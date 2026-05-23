@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import moment from "moment";
 import { client, prismaClient } from "..";
-import { knightRoleId, officerRoleId } from "../config";
+import { knightRoleId, officerRoleId, rteRequireOpenTarget } from "../config";
 import { RaidValuesService } from "./raidValuesService";
 import { RteType } from "@prisma/client";
 import { log } from "../shared/logger";
@@ -20,6 +20,7 @@ export interface StartSessionInput {
   target: string;
   type: RteType;
   charClass?: string;
+  startTime?: Date;
 }
 
 export interface SessionSummary {
@@ -31,11 +32,13 @@ export interface SessionSummary {
 
 export const rteService = {
   startSession: async (input: StartSessionInput) => {
-    const openTarget = await prismaClient.rte_target.findUnique({
-      where: { target: input.target },
-    });
-    if (!openTarget || !openTarget.open) {
-      throw new Error(`Target ${input.target} is not currently open for RTE.`);
+    if (rteRequireOpenTarget) {
+      const openTarget = await prismaClient.rte_target.findUnique({
+        where: { target: input.target },
+      });
+      if (!openTarget || !openTarget.open) {
+        throw new Error(`Target ${input.target} is not currently open for RTE.`);
+      }
     }
 
     // const existing = await prismaClient.rte.findFirst({
@@ -50,6 +53,11 @@ export const rteService = {
     //   );
     // }
 
+    const startTime = input.startTime ?? new Date();
+    if (input.startTime && startTime.getTime() > Date.now()) {
+      throw new Error("Start time must be in the past.");
+    }
+
     const session = await prismaClient.rte.create({
       data: {
         discordId: input.discordId,
@@ -58,6 +66,7 @@ export const rteService = {
         target: input.target,
         type: input.type,
         class: input.charClass ?? null,
+        startTime,
         active: true,
       },
     });
@@ -85,7 +94,7 @@ export const rteService = {
     return session;
   },
 
-  endSessionById: async (sessionId: number, endedByDiscordId: string) => {
+  endSessionById: async (sessionId: number, endedByDiscordId: string, endTime?: Date) => {
     const session = await prismaClient.rte.findUnique({
       where: { id: sessionId },
     });
@@ -96,8 +105,12 @@ export const rteService = {
       throw new Error("You can only end your own session.");
     }
 
-    const endTime = new Date();
-    const summary = await calculateDkp(session, endTime);
+    const actualEndTime = endTime ?? new Date();
+    if (actualEndTime.getTime() < session.startTime.getTime()) {
+      throw new Error("End time must be after the session start time.");
+    }
+
+    const summary = await calculateDkp(session, actualEndTime);
 
     // Send the summary DM before marking the session inactive.
     // If this fails, the session remains active so the user can retry.
@@ -109,7 +122,7 @@ export const rteService = {
     await prismaClient.rte.update({
       where: { id: sessionId },
       data: {
-        endTime,
+        endTime: actualEndTime,
         active: false,
       },
     });

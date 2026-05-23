@@ -9,10 +9,12 @@ import { RaidValuesService } from "../../../services/raidValuesService";
 import { rteService } from "../../../services/rteService";
 import { refreshRteStatusEmbed } from "../status-embed";
 import { RteType } from "@prisma/client";
+import { parseTime } from "../../../features/spawn-timers/commands/parsers/time-parser";
 
 export enum Option {
   Character = "character",
   Target = "target",
+  StartTime = "start_time",
 }
 
 export class TrackSubcommand extends Subcommand {
@@ -23,6 +25,20 @@ export class TrackSubcommand extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     const characterName = this.getRequiredOptionValue<string>(Option.Character, interaction);
     const target = this.getRequiredOptionValue<string>(Option.Target, interaction);
+    const startTimeStr = this.getOptionValue<string>(Option.StartTime, interaction);
+
+    let startTime: Date | null = null;
+    if (startTimeStr) {
+      startTime = parseTime(startTimeStr);
+      if (!startTime) {
+        await interaction.editReply("I couldn't understand that start time. Try something like `30 minutes ago` or `3:30 PM`.");
+        return;
+      }
+      if (startTime.getTime() > Date.now()) {
+        await interaction.editReply("Start time must be in the past.");
+        return;
+      }
+    }
 
     await rteService.startSession({
       discordId: interaction.user.id,
@@ -30,11 +46,13 @@ export class TrackSubcommand extends Subcommand {
       characterName,
       target,
       type: RteType.TRACK,
+      startTime: startTime ?? undefined,
     });
 
     await refreshRteStatusEmbed();
 
-    await interaction.editReply(`You are now tracking **${target}** on **${characterName}**. Check your DMs for the session controls.`);
+    const backdateMsg = startTime ? ` (started at ${startTime.toLocaleTimeString()})` : "";
+    await interaction.editReply(`You are now tracking **${target}** on **${characterName}**${backdateMsg}. Check your DMs for the session controls.`);
   }
 
   public get command() {
@@ -52,6 +70,12 @@ export class TrackSubcommand extends Subcommand {
           .setDescription("The raid target.")
           .setAutocomplete(true)
           .setRequired(true)
+      )
+      .addStringOption((o) =>
+        o
+          .setName(Option.StartTime)
+          .setDescription("When the session started (e.g., '30 minutes ago'). Defaults to now.")
+          .setRequired(false)
       );
   }
 
