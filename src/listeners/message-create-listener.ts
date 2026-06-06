@@ -18,7 +18,8 @@ export const messageCreateListener = async (message: Message) => {
     return;
   }
 
-  if (message.content.toLowerCase().startsWith("!tod")) {
+  const lowerContent = message.content.toLowerCase();
+  if (lowerContent === "!tod" || lowerContent.startsWith("!tod ")) {
     try {
       const adapter = buildTodAdapter(message);
       await todCommand.execute(adapter as any);

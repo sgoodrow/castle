@@ -44,6 +44,33 @@ describe("TimeParser", () => {
     });
   });
 
+  describe("timezone parsing", () => {
+    it("should parse 16:29 MST 5/23 correctly", () => {
+      const now = new Date("2026-06-06T12:00:00Z");
+      const result = parseTime("16:29 MST 5/23", now);
+      expect(result).not.toBeNull();
+      // MST is UTC-7, so 16:29 MST = 23:29 UTC
+      expect(result!.toISOString()).toBe("2026-05-23T23:29:00.000Z");
+    });
+
+    it("should ignore timezone abbreviations in parentheses", () => {
+      const now = new Date("2026-06-06T12:00:00Z");
+      const result = parseTime("16:29 MST 5/23 (est 1hr after quake)", now);
+      expect(result).not.toBeNull();
+      // MST is UTC-7, so 16:29 MST = 23:29 UTC
+      // The "est" in parentheses should not affect the result
+      expect(result!.toISOString()).toBe("2026-05-23T23:29:00.000Z");
+    });
+
+    it("should parse 10:58 pm EST correctly", () => {
+      const now = new Date("2021-05-27T05:57:00Z");
+      const result = parseTime("10:58 pm EST", now);
+      expect(result).not.toBeNull();
+      // EST is UTC-5, so 10:58 pm EST = 03:58 UTC next day
+      expect(result!.toISOString()).toBe("2021-05-28T03:58:00.000Z");
+    });
+  });
+
   describe("null handling", () => {
     it("should return null for empty input", () => {
       expect(parseTime("")).toBeNull();
