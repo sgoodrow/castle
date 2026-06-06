@@ -30,6 +30,11 @@ function pad(str: string, len: number): string {
   return str.padEnd(len, " ");
 }
 
+function getDisplayName(name: string, skipCount: number | null): string {
+  const stars = skipCount && skipCount > 0 ? "*".repeat(skipCount) : "";
+  return `${name}${stars}`;
+}
+
 function getColumnWidths(rows: TableRow[]): { nameWidth: number; timeWidth: number; windowWidth: number } {
   return {
     nameWidth: Math.max(4, ...rows.map((r) => r.name.length)),
@@ -131,7 +136,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
           ? Math.min(100, Math.max(0, Math.round((elapsedMs / windowDurationMs) * 100)))
           : 0;
         inWindowRows.push({
-          name: timer.name,
+          name: getDisplayName(timer.name, timer.skipCount),
           time: formatTimeDistance(endsAt, now, true),
           window: `${pct}%`,
           remainingMs,
@@ -140,7 +145,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
     } else if (startsAt.getTime() <= now.getTime() + 24 * 60 * 60 * 1000) {
       const remainingMs = startsAt.getTime() - now.getTime();
       upcomingRows.push({
-        name: timer.name,
+        name: getDisplayName(timer.name, timer.skipCount),
         time: formatTimeDistance(startsAt, now, true),
         window: dw,
         remainingMs,
@@ -148,7 +153,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
     } else {
       const remainingMs = startsAt.getTime() - now.getTime();
       futureRows.push({
-        name: timer.name,
+        name: getDisplayName(timer.name, timer.skipCount),
         time: formatTimeDistance(startsAt, now, true),
         window: dw,
         remainingMs,

@@ -15,6 +15,8 @@ const TIMEZONE_OFFSETS: Record<string, number> = {
 
 const TZ_REGEX =
   /\b(PST|PDT|MST|MDT|CST|CDT|EST|EDT|GMT|UTC)\b/i;
+const TZ_REGEX_GLOBAL =
+  /\b(PST|PDT|MST|MDT|CST|CDT|EST|EDT|GMT|UTC)\b/gi;
 
 /**
  * Parse a time string into a Date object.
@@ -51,8 +53,9 @@ export function parseTime(
   if (tzMatch) {
     detectedTz = tzMatch[1].toUpperCase();
     tzOffset = TIMEZONE_OFFSETS[detectedTz] ?? null;
-    // Remove the timezone abbreviation so chrono doesn't get confused
-    str = str.replace(TZ_REGEX, "").trim();
+    // Remove all timezone abbreviations so chrono doesn't get confused
+    // (e.g. notes in parentheses like "(est 1hr after quake)")
+    str = str.replace(TZ_REGEX_GLOBAL, "").replace(/\s+/g, " ").trim();
   }
 
   // Use chrono to parse the time string
@@ -67,44 +70,9 @@ export function parseTime(
 
   // If no AM/PM was specified and chrono inferred one, check if we need to adjust
   // based on "past" context (chrono's forwardDate: false should handle this)
-  let parsedDate = result.date();
-
-  // If a timezone was specified, the offset is already handled by chrono
-  // For DST handling: the Ruby code subtracts 1 hour during DST for timezone-specified times
-  // This is because the Ruby code treats timezone abbreviations as standard time
-  if (detectedTz && tzOffset !== null) {
-    // Check if the reference date is in DST for the target timezone
-    // For US timezones: PST/PDT, MST/MDT, CST/CDT, EST/EDT
-    // If the user said "PST" but it's actually PDT time, we need to adjust
-    const isDaylightTz = ["PDT", "MDT", "CDT", "EDT"].includes(detectedTz);
-    const isStandardTz = ["PST", "MST", "CST", "EST"].includes(detectedTz);
-
-    // The Ruby code does: parsed_time = parsed_time - 1.hour if parsed_time.dst?
-    // This means if the parsed time falls in DST, subtract 1 hour
-    // This effectively treats all US timezone abbreviations as standard time offset
-    if (isStandardTz) {
-      // Check if the result date is in DST
-      const isDST = isInDST(parsedDate);
-      if (isDST) {
-        parsedDate = new Date(parsedDate.getTime() - 3600 * 1000);
-      }
-    } else if (isDaylightTz) {
-      const isDST = isInDST(parsedDate);
-      if (isDST) {
-        parsedDate = new Date(parsedDate.getTime() - 3600 * 1000);
-      }
-    }
-  }
+  const parsedDate = result.date();
 
   return parsedDate;
 }
 
-/**
- * Check if a date falls within US daylight saving time.
- */
-function isInDST(date: Date): boolean {
-  const jan = new Date(date.getFullYear(), 0, 1);
-  const jul = new Date(date.getFullYear(), 6, 1);
-  const stdOffset = Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-  return date.getTimezoneOffset() < stdOffset;
-}
+
