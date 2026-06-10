@@ -35,6 +35,7 @@ import { parkBotButtonCommand } from "../features/raid-bots/park-bot-button-comm
 import { odkpCommand } from "../features/odkp/odkp-command";
 import { rteCommand } from "../features/rte/command";
 import { endRteButtonCommand } from "../features/rte/end-session-button-command";
+import { endRtePopButtonCommand } from "../features/rte/end-session-pop-button-command";
 import {
   aliasCommand,
   autotodCommand,
@@ -110,6 +111,7 @@ const buttonCommands = [
   requestBotButtonCommand,
   parkBotButtonCommand,
   endRteButtonCommand,
+  endRtePopButtonCommand,
 ];
 
 export const getCommand = (

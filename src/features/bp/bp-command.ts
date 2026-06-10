@@ -65,16 +65,24 @@ class sendBp extends Subcommand {
         const shouldIncludeButtons =
           !!savedBp?.location &&
           now - lastBotButtonSendTime > BOT_BUTTON_THROTTLE_MS;
-        const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
+        const buttonMessages: ActionRowBuilder<MessageActionRowComponentBuilder>[][] =
           shouldIncludeButtons
             ? await getBotButtonComponents(savedBp.location)
             : [];
+        const firstComponents = buttonMessages.length > 0 ? buttonMessages[0] : undefined;
         await bpChannel.send({
           content:
             `[${interaction.user}] <@&${raiderRoleId}>
 ` + formattedMessage,
-          components: shouldIncludeButtons ? components : undefined,
+          components: firstComponents,
         });
+        // Send follow-up messages for remaining bot buttons
+        for (let i = 1; i < buttonMessages.length; i++) {
+          await bpChannel.send({
+            content: "(continued)",
+            components: buttonMessages[i],
+          });
+        }
         if (shouldIncludeButtons) {
           lastBotButtonSendTime = now;
         }
@@ -129,15 +137,17 @@ export const getBotButtonComponents = async (location: string) => {
       .map((b) => b.name)
       .join(",")}`
   );
-  const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
+  const messages: ActionRowBuilder<MessageActionRowComponentBuilder>[][] = [];
+  let currentMessage: ActionRowBuilder<MessageActionRowComponentBuilder>[] = [];
   let row;
   for (let i = 0; i < bots.length; i++) {
     if (i % 5 === 0) {
+      // Start a new row
       row = new ActionRowBuilder<MessageActionRowComponentBuilder>({
         type: ComponentType.ActionRow,
         components: [],
       });
-      components.push(row);
+      currentMessage.push(row);
     }
     log(`adding button for ${bots[i].name}`);
     row?.addComponents(
@@ -145,8 +155,16 @@ export const getBotButtonComponents = async (location: string) => {
         `requestbot_${bots[i].name}`
       ).getButtonBuilder(bots[i])
     );
+    // Each message can have at most 5 rows (25 buttons)
+    if (currentMessage.length === 5 && i < bots.length - 1) {
+      messages.push(currentMessage);
+      currentMessage = [];
+    }
   }
-  return components;
+  if (currentMessage.length > 0) {
+    messages.push(currentMessage);
+  }
+  return messages;
 };
 
 class setBp extends Subcommand {
@@ -331,13 +349,22 @@ To change this message, use \`/bp update\` to set a new message.
               `Found saved batphone ${savedMsg.key} for ${savedMsg.location}`
             )
           : log(`No key found for ${val}`);
-        const components: ActionRowBuilder<MessageActionRowComponentBuilder>[] =
+        const buttonMessages: ActionRowBuilder<MessageActionRowComponentBuilder>[][] =
           await getBotButtonComponents(savedMsg?.location || "");
+        const firstComponents = buttonMessages.length > 0 ? buttonMessages[0] : undefined;
         if (interaction.channel && interaction.channel.isTextBased() && !interaction.channel.isDMBased()) {
-          interaction.channel.send({
+          const channel = interaction.channel;
+          await channel.send({
             content: replyMsg,
-            components: savedMsg?.location ? components : undefined,
-          }); // todo: send message in channel
+            components: savedMsg?.location ? firstComponents : undefined,
+          });
+          // Send follow-up messages for remaining bot buttons
+          for (let i = 1; i < buttonMessages.length; i++) {
+            await channel.send({
+              content: "(continued)",
+              components: buttonMessages[i],
+            });
+          }
           interaction.deleteReply();
         }
       }
