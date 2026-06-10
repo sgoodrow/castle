@@ -37,6 +37,9 @@ export const rteService = {
     });
 
     if (!openTarget) {
+      if (rteRequireOpenTarget) {
+        throw new Error(`Target ${input.target} is not currently open for RTE.`);
+      }
       // Auto-create the target as open so the embed can display it.
       openTarget = await prismaClient.rte_target.create({
         data: {
@@ -70,12 +73,17 @@ export const rteService = {
     });
 
     const user = await client.users.fetch(input.discordId);
-    const button = new ButtonBuilder()
+    const endButton = new ButtonBuilder()
       .setCustomId(`rte_end_${session.id}`)
       .setLabel("End Session")
       .setStyle(ButtonStyle.Danger);
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(button);
+    const popButton = new ButtonBuilder()
+      .setCustomId(`rte_end_pop_${session.id}`)
+      .setLabel("End Session (pop)")
+      .setStyle(ButtonStyle.Danger);
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(endButton, popButton);
 
     const dm = await user.send({
       content: `You have started a **${formatType(input.type)}** session for **${input.target}** on **${input.characterName}**.\n\nClick the button below to end your session when you are done.`,
@@ -92,7 +100,7 @@ export const rteService = {
     return session;
   },
 
-  endSessionById: async (sessionId: number, endedByDiscordId: string, endTime?: Date) => {
+  endSessionById: async (sessionId: number, endedByDiscordId: string, endTime?: Date, roundUp = false) => {
     const session = await prismaClient.rte.findUnique({
       where: { id: sessionId },
     });
@@ -108,7 +116,7 @@ export const rteService = {
       throw new Error("End time must be after the session start time.");
     }
 
-    const summary = await calculateDkp(session, actualEndTime);
+    const summary = await calculateDkp(session, actualEndTime, roundUp);
 
     // Send the summary DM before marking the session inactive.
     // If this fails, the session remains active so the user can retry.
@@ -211,10 +219,12 @@ export const rteService = {
   },
 };
 
-async function calculateDkp(session: { type: RteType; startTime: Date; target: string }, endTime: Date): Promise<SessionSummary> {
+async function calculateDkp(session: { type: RteType; startTime: Date; target: string }, endTime: Date, roundUp = false): Promise<SessionSummary> {
   const elapsedMs = endTime.getTime() - session.startTime.getTime();
   const elapsedMinutes = elapsedMs / 1000 / 60;
-  const roundedMinutes = Math.floor(elapsedMinutes / 20) * 20;
+  const roundedMinutes = roundUp
+    ? Math.ceil(elapsedMinutes / 20) * 20
+    : Math.floor(elapsedMinutes / 20) * 20;
 
   const raidValue = await raidValuesService.getRaidValue(session.target);
   let hourlyRate = 0;
