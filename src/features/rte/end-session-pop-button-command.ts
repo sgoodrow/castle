@@ -37,10 +37,10 @@ export class EndRtePopButtonCommand extends ButtonCommand {
 
   public getButtonBuilder(sessionId: number): ButtonBuilder {
     return new ButtonBuilder()
-      .setCustomId(`pop_rte_end_${sessionId}`)
+      .setCustomId(`rte_pop_end_${sessionId}`)
       .setLabel("End Session (pop)")
       .setStyle(ButtonStyle.Danger);
   }
 }
 
-export const endRtePopButtonCommand = new EndRtePopButtonCommand("pop_rte_end");
+export const endRtePopButtonCommand = new EndRtePopButtonCommand("rte_pop_end");

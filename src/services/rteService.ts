@@ -79,7 +79,7 @@ export const rteService = {
       .setStyle(ButtonStyle.Danger);
 
     const popButton = new ButtonBuilder()
-      .setCustomId(`pop_rte_end_${session.id}`)
+      .setCustomId(`rte_pop_end_${session.id}`)
       .setLabel("End Session (pop)")
       .setStyle(ButtonStyle.Danger);
 
