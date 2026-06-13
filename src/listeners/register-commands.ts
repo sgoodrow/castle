@@ -130,7 +130,7 @@ export const getCommand = (
 
 export const getButton = (interaction: ButtonInteraction<CacheType>) => {
   const command = buttonCommands.find((c) =>
-    interaction.customId.includes(c.customId)
+    interaction.customId.startsWith(c.customId)
   );
   if (!command) {
     throw new Error(

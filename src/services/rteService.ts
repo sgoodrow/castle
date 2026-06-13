@@ -79,7 +79,7 @@ export const rteService = {
       .setStyle(ButtonStyle.Danger);
 
     const popButton = new ButtonBuilder()
-      .setCustomId(`rte_end_pop_${session.id}`)
+      .setCustomId(`pop_rte_end_${session.id}`)
       .setLabel("End Session (pop)")
       .setStyle(ButtonStyle.Danger);
 
@@ -122,7 +122,7 @@ export const rteService = {
     // If this fails, the session remains active so the user can retry.
     const user = await client.users.fetch(session.discordId);
     await user.send({
-      content: `Your **${formatType(session.type)}** session for **${session.target}** has ended.\n\n**Summary:**\n- Character: ${session.characterName}\n- Duration: ${formatDuration(summary.elapsedMinutes)}\n- Rounded Duration: ${formatDuration(summary.roundedMinutes)}\n- Hourly Rate: ${summary.hourlyRate} DKP\n- **DKP Earned: ${summary.dkpEarned.toFixed(2)}**`,
+      content: `Your **${formatType(session.type)}** session for **${session.target}** has ended${roundUp ? " (rounded up due to pop)" : ""}.\n\n**Summary:**\n- Character: ${session.characterName}\n- Duration: ${formatDuration(summary.elapsedMinutes)}\n- Rounded Duration: ${formatDuration(summary.roundedMinutes)}\n- Hourly Rate: ${summary.hourlyRate} DKP\n- **DKP Earned: ${summary.dkpEarned.toFixed(2)}**`,
     });
 
     await prismaClient.rte.update({
