@@ -1,5 +1,6 @@
 import { Command } from "../../shared/command/command";
 import { itemSubcommand, spellSubcommand } from "./auction-subcommand";
+import { auctionSetRaidSubcommand } from "./auction-setraid-subcommand";
 
 // Why are these commands split up? Because the available JSON data was split
 // along these dimensions and it's a useful conceptual boundary even if the
@@ -7,4 +8,5 @@ import { itemSubcommand, spellSubcommand } from "./auction-subcommand";
 export const auctionCommand = new Command("auction", "Start a new auction.", [
   spellSubcommand,
   itemSubcommand,
+  auctionSetRaidSubcommand,
 ]);

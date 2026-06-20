@@ -21,9 +21,10 @@ import { some } from "lodash";
 import { openDkpService } from "../../services/openDkpService";
 import { isEqDkpPlusEnabled } from "../../shared/util";
 import { getMember } from "../..";
+import { redisClient } from "../../redis/client";
 
 const code = "```";
-const emojis = ["✅", "🏦"];
+const finishedEmojis = ["✅", "🏦"];
 
 export const tryAuctionFinishedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -43,13 +44,13 @@ class AuctionFinishedReactionAction extends ReactionAction {
     }
 
     // filter non-finish emoji reactions
-    if (!emojis.includes(this.reaction.emoji.name || "")) {
+    if (!finishedEmojis.includes(this.reaction.emoji.name || "") && this.reaction.emoji.name !== "🔒") {
       return;
     }
 
     // skip already completed
     const name = this.message.channel.name;
-    if (some(emojis, (e) => name.startsWith(e))) {
+    if (some(finishedEmojis, (e) => name.startsWith(e))) {
       return;
     }
 
@@ -81,6 +82,28 @@ class AuctionFinishedReactionAction extends ReactionAction {
       return;
     }
 
+    // handle lock
+    if (this.reaction.emoji.name === "🔒") {
+      if (!this.message.content) {
+        await this.message.reply({
+          content: "Cannot lock auction: the reacted message has no content.",
+        });
+        return;
+      }
+      try {
+        const { price, character } = await this.parseBid(this.message.content);
+        await this.message.reply({
+          content: `Auction closed. The auction was won by **${character.Name}** for ${price} DKP. The auction will be uploaded once the raid is available on OpenDKP.`,
+        });
+        await this.message.channel.setName(`🔒 ${name}`);
+      } catch (err: unknown) {
+        await this.message.reply({
+          content: `Cannot lock auction: ${err}`,
+        });
+      }
+      return;
+    }
+
     // parse message
     if (!this.message.content) {
       throw new Error(
@@ -99,6 +122,17 @@ class AuctionFinishedReactionAction extends ReactionAction {
       throw new Error("The CastleDKP Auction Raid ID is not set");
     }
 
+    const openDkpRaidIdStr = await redisClient.get(
+      `auction:raid:${this.message.channel.id}`
+    );
+    if (!openDkpRaidIdStr) {
+      await this.message.reply(
+        "This auction cannot be closed because no raid has been set. Please use `/auction setraid` to select a raid."
+      );
+      return;
+    }
+    const openDkpRaidId = Number.parseInt(openDkpRaidIdStr, 10);
+
     // add item to raid
     await openDkpService.addItem(
       character.Name,
@@ -106,7 +140,8 @@ class AuctionFinishedReactionAction extends ReactionAction {
       `Auction - ${
         this.message.thread?.name || item
       } - ${this.message.createdAt.toDateString()}`,
-      price
+      price,
+      openDkpRaidId
     );
 
     if (isEqDkpPlusEnabled()) {
@@ -125,15 +160,15 @@ class AuctionFinishedReactionAction extends ReactionAction {
           description: `Auction complete, grats!${code}diff
 + ${character.Name} ${item}
 - ${character.Name} ${price} DKP${code}`,
-          url: castleDkpAuctionRaidId
-            ? `https://castle.opendkp.com/#/items`
-            : undefined,
+          url: openDkpRaidId
+            ? `https://castle.opendkp.com/#/raids/${openDkpRaidId}`
+            : `https://castle.opendkp.com/#/items`,
         }),
       ],
     });
 
     // edit thread title
-    await this.message.channel.setName(`✅ ${name}`);
+    await this.message.channel.setName(`✅ ${name.replace("🔒", "")}`);
 
     await this.message.channel.setAutoArchiveDuration(4320);
     await this.message.channel.setArchived(true);
