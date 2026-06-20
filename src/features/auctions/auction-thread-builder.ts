@@ -68,7 +68,9 @@ export class AuctionThreadBuilder extends ThreadBuilder {
 **How are auctions completed?**
 - Bankers will put a ✅ on the winning bid to close a DKP auction.
 - The bid does not need to be from the winner, just to include their name in the post in the correct format.
-- Bankers will put a 🏦 on the OP if there are no bidders or a DKP auction ends.`,
+- Bankers will put a 🏦 on the OP if there are no bidders or a DKP auction ends.
+- Bankers may put a 🔒 on the current winning bid to lock the auction and declare no new bids are valid without closing it.
+- Bankers must use /auction setraid to set the raid ID that the item will be attached to. Player Auctions can be used for player auctions, and DKP Auctions can be used for miscellaneous items that have no better home.`,
     });
   }
 

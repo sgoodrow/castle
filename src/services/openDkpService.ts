@@ -656,7 +656,8 @@ ${result}${code}${notIncluded}`,
     buyer: string,
     itemName: string,
     note: string,
-    price: number
+    price: number,
+    raidId: number
   ) => {
     await openDkpService.getCharacters();
     const character = odkpCharacterCache.get(buyer);
@@ -684,7 +685,7 @@ ${result}${code}${notIncluded}`,
     try {
       const config = {
         method: "put",
-        url: `https://api.opendkp.com/clients/${openDkpClientName}/raids/${openDkpAuctionRaidId}/items`,
+        url: `https://api.opendkp.com/clients/${openDkpClientName}/raids/${raidId}/items`,
         headers: {
           Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
           "Content-Type": "application/json",
@@ -899,6 +900,26 @@ ${result}${code}${notIncluded}`,
       throw err;
     }
   },
+
+  getRaids: async (): Promise<ODKPRaidData[]> => {
+    const getRaid = {
+      method: "get",
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/raids`,
+      headers: {
+        Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
+      },
+    } as AxiosRequestConfig;
+
+    try {
+      const resp = await axios(getRaid);
+      const raidResp = resp.data as ODKPRaidData[];
+      return raidResp;
+    } catch (err: unknown) {
+      log(err);
+      throw err;
+    }
+  },
+
   addRaid: async (raid: ODKPRaidData): Promise<string> => {
     try {
       log(`OpenDKP - adding raid: ${JSON.stringify(raid)}`);
