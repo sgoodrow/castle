@@ -471,7 +471,26 @@ export const openDkpService = {
       );
     } catch (error) {
       log(error);
-      throw error;
+      const safeItemName = itemName.replaceAll('`', "'");
+      log(`Item search was invalid, probably backticks. Replacing ${itemName} with ${safeItemName} and trying again.`);
+      try {
+        config.url = `https://api.opendkp.com/items/autocomplete?item=${safeItemName}`;
+        const response = await axios(config);
+        return (
+          response.data[0] || {
+            GameItemId: -1,
+            ItemID: -1,
+            ItemName: safeItemName,
+          }
+        );
+      } catch (error) {
+        log(`Returning ${safeItemName}, couldn't find item in OpenDKP database`);
+        return {
+          GameItemId: -1,
+          ItemID: -1,
+          ItemName: safeItemName,
+        };
+      }
     }
   },
 
@@ -516,11 +535,9 @@ export const openDkpService = {
       );
 
       if (unregisteredCharacters.length > 0) {
-        const errorMsg = `Character${
-          unregisteredCharacters.length > 1 ? "s" : ""
-        } not found on OpenDKP for tick ${
-          tick.name
-        }: ${unregisteredCharacters.join(", ")}`;
+        const errorMsg = `Character${unregisteredCharacters.length > 1 ? "s" : ""
+          } not found on OpenDKP for tick ${tick.name
+          }: ${unregisteredCharacters.join(", ")}`;
         log(errorMsg);
         failures.push(errorMsg);
       }
@@ -569,7 +586,7 @@ export const openDkpService = {
 
       descriptions.push(cleanTickName);
     }
-    const embedTitle = truncate(descriptions.join(", "), {length: 255});
+    const embedTitle = truncate(descriptions.join(", "), { length: 255 });
     const raidData = {
       Attendance: 1,
       Items: items,
@@ -610,13 +627,13 @@ export const openDkpService = {
         net === 0
           ? "No change to economy"
           : net > 0
-          ? `+ Economy increase     ${net}`
-          : `- Economy decrease     ${net}`;
+            ? `+ Economy increase     ${net}`
+            : `- Economy decrease     ${net}`;
       const notIncluded =
         invalidNames.length > 0
           ? `These characters were not included because they do not exist ${invalidNames.join(
-              ", "
-            )}`
+            ", "
+          )}`
           : "";
       return new EmbedBuilder({
         title: `${embedTitle}`,
