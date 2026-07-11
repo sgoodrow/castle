@@ -25,6 +25,7 @@ import { redisClient } from "../../redis/client";
 
 const code = "```";
 const finishedEmojis = ["✅", "🏦"];
+const allEmojis = [...finishedEmojis, "🔒"];
 
 export const tryAuctionFinishedReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -133,12 +134,13 @@ class AuctionFinishedReactionAction extends ReactionAction {
     }
     const openDkpRaidId = Number.parseInt(openDkpRaidIdStr, 10);
 
+
+
     // add item to raid
     await openDkpService.addItem(
       character.Name,
       item,
-      `Auction - ${
-        this.message.thread?.name || item
+      `Auction - ${item || this.getCleanThreadName(this.message.thread?.name || "")
       } - ${this.message.createdAt.toDateString()}`,
       price,
       openDkpRaidId
@@ -198,7 +200,7 @@ ${this.example}`);
     const lastHyphenIndex = threadName.lastIndexOf(" - ");
     return lastHyphenIndex !== -1
       ? threadName.substring(lastHyphenIndex + 3) // +3 to skip the " - " itself
-      : threadName;
+      : this.getCleanThreadName(threadName);
   }
 
   private getPrice(unparsedPrice: string) {
@@ -226,5 +228,14 @@ ${this.example}`
 
   private get example() {
     return `${code}Example: "3 Potatus"${code}`;
+  }
+
+  getCleanThreadName(threadName: string): string {
+    function escapeRegExp(str: string): string {
+      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+    const emojiPattern = new RegExp(allEmojis.map(escapeRegExp).join('|'), 'gu');
+    const cleanedName = threadName.replace(emojiPattern, '').trim();
+    return cleanedName;
   }
 }
