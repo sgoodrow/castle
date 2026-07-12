@@ -4,9 +4,11 @@ import {
   ApplicationCommandOptionChoiceData,
   CommandInteraction,
   EmbedBuilder,
+  GuildMemberRoleManager,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { openDkpService } from "../../services/openDkpService";
+import { raiderRoleId } from "../../config";
 
 export class OdkpTopSubcommand extends Subcommand {
   public async getOptionAutocomplete(
@@ -19,6 +21,10 @@ export class OdkpTopSubcommand extends Subcommand {
   public async execute(
     interaction: CommandInteraction<CacheType>
   ): Promise<void> {
+    const roles = interaction.member?.roles as GuildMemberRoleManager;
+    if (!(roles.cache.has(raiderRoleId))) {
+      throw new Error("Must be a raider to use this command");
+    }
     try {
       const count = this.getOptionValue<number>("count", interaction) ?? 15;
       const summary = await openDkpService.getDkpSummary();

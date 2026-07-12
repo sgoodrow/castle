@@ -4,6 +4,7 @@ import {
   ApplicationCommandOptionChoiceData,
   CommandInteraction,
   EmbedBuilder,
+  GuildMemberRoleManager,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import {
@@ -12,6 +13,7 @@ import {
   ODKPItemHistoryEntry,
 } from "../../services/openDkpService";
 import moment from "moment";
+import { raiderRoleId } from "../../config";
 
 export class OdkpItemHistorySubcommand extends Subcommand {
   public async getOptionAutocomplete(
@@ -35,6 +37,10 @@ export class OdkpItemHistorySubcommand extends Subcommand {
   public async execute(
     interaction: CommandInteraction<CacheType>
   ): Promise<void> {
+    const roles = interaction.member?.roles as GuildMemberRoleManager;
+    if (!(roles.cache.has(raiderRoleId))) {
+      throw new Error("Must be a raider to use this command");
+    }
     try {
       const itemName = this.getRequiredOptionValue<string>("item", interaction);
       await interaction.editReply({
@@ -128,5 +134,5 @@ export class OdkpItemHistorySubcommand extends Subcommand {
 export const odkpItemHistorySubcommand = new OdkpItemHistorySubcommand(
   "itemhistory",
   "View DKP purchase history and statistics for an item",
-  false
+  true
 );

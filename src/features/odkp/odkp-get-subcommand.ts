@@ -3,6 +3,7 @@ import {
   CacheType,
   ApplicationCommandOptionChoiceData,
   CommandInteraction,
+  GuildMemberRoleManager,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import {
@@ -10,6 +11,7 @@ import {
   odkpCharacterCache,
 } from "../../services/openDkpService";
 import { capitalize } from "../../shared/util";
+import { raiderRoleId } from "../../config";
 
 export class OdkpGetSubcommand extends Subcommand {
   public async getOptionAutocomplete(
@@ -37,6 +39,10 @@ export class OdkpGetSubcommand extends Subcommand {
   public async execute(
     interaction: CommandInteraction<CacheType>
   ): Promise<void> {
+    const roles = interaction.member?.roles as GuildMemberRoleManager;
+    if (!(roles.cache.has(raiderRoleId))) {
+      throw new Error("Must be a raider to use this command");
+    }
     try {
       const character = this.getRequiredOptionValue<string>(
         "character",
