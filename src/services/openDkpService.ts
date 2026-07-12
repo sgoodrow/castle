@@ -136,6 +136,28 @@ export interface ODKPDkpSummaryEntry {
   CharacterRank: string;
 }
 
+export interface ODKPCharacterDkpSummary {
+  CurrentDKP: number;
+  CharacterId: number;
+  CharacterName: string;
+  CharacterClass: string;
+  CharacterRank: string;
+  CharacterLevel: number;
+  CharacterStatus: string;
+  AttendedTicks_30: number;
+  TotalTicks_30: number;
+  Calculated_30: number;
+  AttendedTicks_60: number;
+  TotalTicks_60: number;
+  Calculated_60: number;
+  AttendedTicks_90: number;
+  TotalTicks_90: number;
+  Calculated_90: number;
+  AttendedTicks_Life: number;
+  TotalTicks_Life: number;
+  Calculated_Life: number;
+}
+
 interface ODKPCharacterData {
   ClientId: string;
   CharacterId: number;
@@ -331,6 +353,10 @@ export const openDkpService = {
   getCharacterSummary: async (character: string): Promise<string> => {
     const characterInfo = await openDkpService.getCharacter(character);
     if (!characterInfo) throw new Error(`Character ${character} not found`);
+    const allCharactersSummary = await openDkpService.getDkpSummary();
+    const characterDkpSummary = allCharactersSummary.find(
+      (c) => c.CharacterId === characterInfo.CharacterId
+    );
     const config = {
       method: "get",
       url: `https://api.opendkp.com/clients/${openDkpClientName}/characters/${characterInfo.CharacterId}/dkp`,
@@ -341,7 +367,10 @@ export const openDkpService = {
     try {
       const response = await axios(config);
       if (response.data[0]) {
-        return openDkpService.formatForDiscord(response.data);
+        return openDkpService.formatSummaryForDiscord(
+          response.data,
+          characterDkpSummary
+        );
       }
       return "Error";
     } catch (error) {
@@ -377,7 +406,10 @@ export const openDkpService = {
     );
   },
 
-  formatForDiscord: (data: any[]) => {
+  formatSummaryForDiscord: (
+    data: any[],
+    characterDkpSummary?: ODKPCharacterDkpSummary
+  ) => {
     const summary = openDkpService.summarizeByCharacter(data);
 
     const COL = { name: 20, raid: 8, adj: 8, items: 8, total: 8 };
@@ -421,11 +453,48 @@ export const openDkpService = {
       foot.Total.toFixed(1).padStart(COL.total),
     ].join(" ");
 
+    let overview = "";
+    if (characterDkpSummary) {
+      const ATT_COL = { label: 12, col: 12 };
+
+      const attHeader = [
+        "".padEnd(ATT_COL.label),
+        "30d".padStart(ATT_COL.col),
+        "60d".padStart(ATT_COL.col),
+        "90d".padStart(ATT_COL.col),
+        "Lifetime".padStart(ATT_COL.col),
+      ].join(" ");
+
+      const attDivider = "─".repeat(attHeader.length);
+
+      const attendanceRow = [
+        "Attendance".padEnd(ATT_COL.label),
+        `${(characterDkpSummary.Calculated_30 * 100).toFixed(1)}%`.padStart(ATT_COL.col),
+        `${(characterDkpSummary.Calculated_60 * 100).toFixed(1)}%`.padStart(ATT_COL.col),
+        `${(characterDkpSummary.Calculated_90 * 100).toFixed(1)}%`.padStart(ATT_COL.col),
+        `${(characterDkpSummary.Calculated_Life * 100).toFixed(1)}%`.padStart(ATT_COL.col),
+      ].join(" ");
+
+      const ticksRow = [
+        "Ticks".padEnd(ATT_COL.label),
+        `${characterDkpSummary.AttendedTicks_30}/${characterDkpSummary.TotalTicks_30}`.padStart(ATT_COL.col),
+        `${characterDkpSummary.AttendedTicks_60}/${characterDkpSummary.TotalTicks_60}`.padStart(ATT_COL.col),
+        `${characterDkpSummary.AttendedTicks_90}/${characterDkpSummary.TotalTicks_90}`.padStart(ATT_COL.col),
+        `${characterDkpSummary.AttendedTicks_Life}/${characterDkpSummary.TotalTicks_Life}`.padStart(ATT_COL.col),
+      ].join(" ");
+
+      overview =
+        "```\n" +
+        [attHeader, attDivider, attendanceRow, ticksRow].join("\n") +
+        "\n```\n";
+    }
+
     return (
-      "```\n" + [header, divider, ...rows, divider, footer].join("\n") + "\n```"
+      "```\n" + [header, divider, ...rows, divider, footer].join("\n") + "\n```" +
+      overview
     );
   },
-  getDkpSummary: async (): Promise<ODKPDkpSummaryEntry[]> => {
+  getDkpSummary: async (): Promise<ODKPCharacterDkpSummary[]> => {
     const config = {
       method: "get",
       url: `https://api.opendkp.com/clients/${openDkpClientName}/dkp`,
