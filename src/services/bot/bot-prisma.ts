@@ -26,6 +26,7 @@ import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-c
 import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
 import { code } from "../../shared/util";
 import { MINUTES } from "../../shared/time";
+import { noBotsRoleId } from "../../config";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private refreshing: boolean = false;
@@ -131,6 +132,11 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
     let status = "✅ Granted";
     try {
+      const roles = interaction.member?.roles as GuildMemberRoleManager;
+      if (roles.cache.has(noBotsRoleId)) {
+        throw new Error("You do not have permission to request bots");
+      }
+
       const details = await accounts.getAccount(
         name,
         interaction.member?.roles as GuildMemberRoleManager

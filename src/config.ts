@@ -33,6 +33,7 @@ export const {
   bankerRoleId,
   raiderRoleId,
   inactiveRaiderRoleId,
+  noBotsRoleId,
   knightRoleId,
   trackerRoleId,
   reinforcementsRoleId,
@@ -216,6 +217,7 @@ export const {
   raiderRoleId: string;
   inactiveRaiderRoleId: string;
   reinforcementsRoleId: string;
+  noBotsRoleId: string;
 
   // Guild role IDs
   membersAndAlliesRoleId: string;
