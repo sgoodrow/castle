@@ -26,7 +26,8 @@ import { ParkBotButtonCommand } from "../../features/raid-bots/park-bot-button-c
 import { refreshBotEmbed } from "../../features/raid-bots/bot-embed";
 import { code } from "../../shared/util";
 import { MINUTES } from "../../shared/time";
-import { noBotsRoleId } from "../../config";
+import { noBotsRoleId, noBotWizardsRoleId } from "../../config";
+import { Class } from "../../shared/classes";
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private refreshing: boolean = false;
@@ -144,6 +145,9 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
       const foundBot = details.characters;
       const prismaBot = await this.getBotByName(foundBot);
+      if (prismaBot?.class === Class.Wizard && roles.cache.has(noBotWizardsRoleId)) {
+        throw new Error("You do not have permission to request Wizard bots");
+      }
       const currentPilot = await this.getCurrentBotPilot(foundBot);
 
       const factionWarning = `${code}diff
@@ -246,6 +250,9 @@ Password: ${spoiler(details.password)}
     bindLocation?: string | undefined
   ): Promise<string> {
     await this.guardReady();
+    if (botClass === Class.Wizard && roles.cache.has(noBotWizardsRoleId)) {
+      throw new Error(`You do not have permission to request a ${botClass}`);
+    }
     const bot = await prismaClient.bot.findFirst({
       where: {
         class: botClass,

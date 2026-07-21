@@ -2,8 +2,10 @@ import { GoogleSpreadsheet } from "google-spreadsheet";
 import {
   GOOGLE_CLIENT_EMAIL,
   GOOGLE_PRIVATE_KEY,
+  noBotWizardsRoleId,
   publicCharactersGoogleSheetId,
 } from "../../config";
+import { Class } from "../../shared/classes";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../../shared/time";
 import {
@@ -166,6 +168,9 @@ export class SheetPublicAccountService implements IPublicAccountService {
     roles: GuildMemberRoleManager,
     location?: string
   ) {
+    if (botClass === Class.Wizard && roles.cache.has(noBotWizardsRoleId)) {
+      throw new Error(`You do not have permission to request a ${botClass}`);
+    }
     await this.loadBots();
     if (this.sheet) {
       const rows = await this.botInfoSheet.getRows();
