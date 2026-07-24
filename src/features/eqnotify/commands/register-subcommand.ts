@@ -41,12 +41,16 @@ class RegisterSubcommand extends Subcommand {
     });
 
     const channel = type === eqnotify_type.telegram ? "Telegram" : "WirePusher";
+    const telegramTip =
+      type === eqnotify_type.telegram
+        ? "\n**Important:** open the EQNotify bot in Telegram and send it a message (e.g. `/start`) first — Telegram won't let the bot message you until you do."
+        : "";
     await interaction.editReply(
       existing
-        ? `Updated your EQNotify delivery to **${channel}**. Your notification tags are unchanged.`
+        ? `Updated your EQNotify delivery to **${channel}**. Your notification tags are unchanged.${telegramTip}`
         : `You're enrolled in EQNotify via **${channel}**! You'll be notified for: ${DEFAULT_TAGS.join(
             ", "
-          )}.\nUse \`/eqnotify add-tag\` / \`/eqnotify remove-tag\` to customize, and \`/eqnotify test\` to verify delivery.\n_Note: alerts are only sent while you actively hold the Raider role._`
+          )}.\nUse \`/eqnotify add-tag\` / \`/eqnotify remove-tag\` to customize, and \`/eqnotify test\` to verify delivery.\n_Note: alerts are only sent while you actively hold the Raider role._${telegramTip}`
     );
   }
 

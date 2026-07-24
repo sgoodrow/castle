@@ -8,6 +8,7 @@ import { clearTagsSubcommand } from "./commands/clear-tags-subcommand";
 import { testSubcommand } from "./commands/test-subcommand";
 import { addUserSubcommand } from "./commands/add-user-subcommand";
 import { removeUserSubcommand } from "./commands/remove-user-subcommand";
+import { listUsersSubcommand } from "./commands/list-users-subcommand";
 
 export const eqnotifyCommand = new Command(
   "eqnotify",
@@ -22,5 +23,6 @@ export const eqnotifyCommand = new Command(
     testSubcommand,
     addUserSubcommand,
     removeUserSubcommand,
+    listUsersSubcommand,
   ]
 );
