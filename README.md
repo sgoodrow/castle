@@ -67,6 +67,7 @@ Some features required secrets, such as to connect to CastleDKP.com or the Castl
   - `/eqnotify add-tag <tag>` / `remove-tag <tag>` / `list-tags` / `clear-tags` — manage your keywords (use `all` to be notified for every batphone).
   - `/eqnotify test` — send yourself a test alert to verify delivery.
   - `/eqnotify add-user <member> <type> <id>` / `remove-user <member>` — Officer/Mod/Knight tools to enroll or remove others.
+  - `/eqnotify list-users` — Officer/Knight tool listing everyone registered, their delivery channel, current Raider status, and tag count.
 
 ### ⏺️ Local
 

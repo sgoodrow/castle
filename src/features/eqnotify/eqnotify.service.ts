@@ -53,6 +53,11 @@ export const eqnotifyService = {
   getSubscriber: (discordId: string) =>
     prismaClient.eqnotify_subscriber.findUnique({ where: { discordId } }),
 
+  listSubscribers: () =>
+    prismaClient.eqnotify_subscriber.findMany({
+      orderBy: { discordUsername: "asc" },
+    }),
+
   requireSubscriber,
 
   /**
