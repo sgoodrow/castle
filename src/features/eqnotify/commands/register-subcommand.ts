@@ -46,7 +46,7 @@ class RegisterSubcommand extends Subcommand {
         ? `Updated your EQNotify delivery to **${channel}**. Your notification tags are unchanged.`
         : `You're enrolled in EQNotify via **${channel}**! You'll be notified for: ${DEFAULT_TAGS.join(
             ", "
-          )}.\nUse \`/eqnotify add-tag\` / \`/eqnotify remove-tag\` to customize, and \`/eqnotify test\` to verify delivery.`
+          )}.\nUse \`/eqnotify add-tag\` / \`/eqnotify remove-tag\` to customize, and \`/eqnotify test\` to verify delivery.\n_Note: alerts are only sent while you actively hold the Raider role._`
     );
   }
 
