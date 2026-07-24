@@ -10,6 +10,7 @@
 export const DEFAULT_TAGS = [
   "dain",
   "quake",
+  "earthquake",
   "vulak",
   "kt",
   "tormax",
