@@ -5,7 +5,12 @@ import {
 } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { authorizeByMemberRoles } from "../../../shared/command/util";
-import { knightRoleId, officerRoleId, raiderRoleId } from "../../../config";
+import {
+  knightRoleId,
+  modRoleId,
+  officerRoleId,
+  raiderRoleId,
+} from "../../../config";
 import { eqnotifyService } from "../eqnotify.service";
 import { getMember } from "../../..";
 
@@ -30,7 +35,10 @@ const describeMember = async (discordId: string, username: string) => {
 
 class ListUsersSubcommand extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
-    authorizeByMemberRoles([officerRoleId, knightRoleId], interaction);
+    authorizeByMemberRoles(
+      [officerRoleId, modRoleId, knightRoleId],
+      interaction
+    );
 
     const subscribers = await eqnotifyService.listSubscribers();
     if (subscribers.length === 0) {
@@ -88,5 +96,5 @@ const chunkLines = (lines: string[]) => {
 
 export const listUsersSubcommand = new ListUsersSubcommand(
   "list-users",
-  "(Officer/Knight) Show everyone registered for EQNotify."
+  "(Officer/Mod/Knight) Show everyone registered for EQNotify."
 );
