@@ -24,7 +24,7 @@ class AddTagSubcommand extends Subcommand {
       o
         .setName(Option.Tag)
         .setDescription(
-          "A keyword to match in batphones (e.g. 'vulak', 'kt'). Use 'all' for every batphone."
+          "Keyword to match at the start of a batphone word (e.g. 'doze' hits 'Dozekar'). Use 'all' for every batphone."
         )
         .setRequired(true)
     );

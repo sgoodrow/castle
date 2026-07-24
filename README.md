@@ -59,6 +59,8 @@ Some features required secrets, such as to connect to CastleDKP.com or the Castl
 
 `/eqnotify` lets raiders subscribe to phone notifications for the raid targets they care about. It watches the batphone channel and, for each subscriber whose keyword tags match the batphone (buff / last-hour RTE calls are filtered out), pushes an alert to their phone. Alerts are only delivered to subscribers who **currently hold the Raider role**, so anyone who goes inactive or leaves stops receiving them automatically.
 
+A tag matches when a word in the batphone **starts with** the tag, so abbreviations work (`doze` matches "Dozekar", `cazic` matches "Cazic-Thule") while short tags don't fire mid-word (`ct` matches "CT POP" but not "conta**ct**"). New subscribers start with a default tag set (`dain, quake, vulak, kt, tormax, doze, statue, ct, cazic`) which they can edit or `clear-tags`.
+
 - **Delivery channels**: **WirePusher** (free, Android-only) or **Telegram** (iOS/Android/desktop). Telegram delivery requires `TELEGRAM_BOT_TOKEN`; if unset, only WirePusher is offered.
 - **Getting your ID**: WirePusher users use their device ID from the app. Telegram users must **first open the guild's EQNotify bot and send it a message (e.g. `/start`)** — a Telegram bot cannot message a user who hasn't contacted it, so sends fail with `chat not found` until this is done — then register with their numeric chat ID (e.g. from [@userinfobot](https://t.me/userinfobot)).
 - **Subcommands**:
