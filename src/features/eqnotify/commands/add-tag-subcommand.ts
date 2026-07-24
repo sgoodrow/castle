@@ -23,8 +23,9 @@ class AddTagSubcommand extends Subcommand {
     return super.command.addStringOption((o) =>
       o
         .setName(Option.Tag)
+        // Discord limits option descriptions to 100 characters; keep it short.
         .setDescription(
-          "Keyword to match at the start of a batphone word (e.g. 'doze' hits 'Dozekar'). Use 'all' for every batphone."
+          "Keyword matched at the start of a batphone word (e.g. 'doze' hits Dozekar). 'all' = every BP."
         )
         .setRequired(true)
     );
