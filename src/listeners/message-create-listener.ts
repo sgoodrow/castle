@@ -5,6 +5,7 @@ import { tryRaidReportRevisionMessageAction } from "../features/dkp-records/requ
 import { tryParseInventoryAction } from "../features/bank-inventory/actions/inventory-file-action";
 import { buildTodAdapter } from "../features/spawn-timers/commands/prefix-adapter";
 import { todCommand } from "../features/spawn-timers/commands/tod";
+import { tryEqnotifyDispatchAction } from "../features/eqnotify/eqnotify-message-action";
 
 const messageActions = [
   tryCreateRaidReportThreadAction,
@@ -14,6 +15,10 @@ const messageActions = [
 ];
 
 export const messageCreateListener = async (message: Message) => {
+  // EQNotify must run before the bot-author guard: castle posts batphones
+  // itself (via /bp send), so the watched messages are bot-authored.
+  tryEqnotifyDispatchAction(message);
+
   if (message.author.bot) {
     return;
   }

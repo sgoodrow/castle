@@ -86,6 +86,21 @@ model batphone {
   message  String
 }
 
+enum eqnotify_type {
+  wire
+  telegram
+}
+
+model eqnotify_subscriber {
+  discordId       String        @id @db.VarChar
+  discordUsername String        @db.VarChar
+  contact         String        @db.VarChar
+  type            eqnotify_type @default(wire)
+  tags            String[]
+  createdAt       DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt       DateTime      @default(now()) @updatedAt @db.Timestamp(6)
+}
+
 enum bank_hour_day_enum {
   Monday
   Tuesday
