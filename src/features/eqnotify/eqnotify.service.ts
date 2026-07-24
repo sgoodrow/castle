@@ -1,5 +1,6 @@
 import { eqnotify_subscriber, eqnotify_type } from "@prisma/client";
-import { prismaClient } from "../..";
+import { getMember, prismaClient } from "../..";
+import { raiderRoleId } from "../../config";
 import { log } from "../../shared/logger";
 import { notify } from "./notifiers";
 import {
@@ -17,6 +18,24 @@ interface EnrollInput {
   contact: string;
   type: eqnotify_type;
 }
+
+/**
+ * Whether a member currently holds the Raider role. Batphone alerts are only
+ * delivered to active Raiders, so a subscriber who loses the role (goes
+ * inactive, leaves the guild, etc.) stops receiving alerts without having to
+ * unregister. Failures to resolve the member are treated as "not a Raider".
+ */
+const hasRaiderRole = async (discordId: string): Promise<boolean> => {
+  try {
+    const member = await getMember(discordId);
+    return member.roles.cache.has(raiderRoleId);
+  } catch (error) {
+    log(
+      `EQNotify could not resolve member ${discordId} for role check: ${error}`
+    );
+    return false;
+  }
+};
 
 const requireSubscriber = async (discordId: string) => {
   const subscriber = await prismaClient.eqnotify_subscriber.findUnique({
@@ -95,7 +114,8 @@ export const eqnotifyService = {
 
   /**
    * Matches a batphone against every subscriber's tags and delivers alerts.
-   * Delivery failures are logged but never interrupt other subscribers.
+   * Only subscribers who currently hold the Raider role are notified. Delivery
+   * failures are logged but never interrupt other subscribers.
    */
   dispatch: async (content: string) => {
     if (!content.trim() || isFiltered(content)) {
@@ -105,7 +125,12 @@ export const eqnotifyService = {
     await Promise.all(
       subscribers
         .filter((sub) => matchesTags(content, sub.tags))
-        .map((sub) => eqnotifyService.notifySubscriber(sub, content))
+        .map(async (sub) => {
+          if (!(await hasRaiderRole(sub.discordId))) {
+            return;
+          }
+          await eqnotifyService.notifySubscriber(sub, content);
+        })
     );
   },
 
