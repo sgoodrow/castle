@@ -34,6 +34,7 @@ import { requestBotButtonCommand } from "../features/bp/request-bot-button-comma
 import { parkBotButtonCommand } from "../features/raid-bots/park-bot-button-command"
 import { odkpCommand } from "../features/odkp/odkp-command";
 import { rteCommand } from "../features/rte/command";
+import { eqnotifyCommand } from "../features/eqnotify/command";
 import { endRteButtonCommand } from "../features/rte/end-session-button-command";
 import { endRtePopButtonCommand } from "../features/rte/end-session-pop-button-command";
 import {
@@ -72,6 +73,7 @@ const slashCommands = [
   wakeupCommand,
   odkpCommand,
   rteCommand,
+  eqnotifyCommand,
   aliasCommand,
   autotodCommand,
   earthquakeCommand,

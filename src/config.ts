@@ -90,6 +90,8 @@ export const {
   SHOW_FUTURE_WINDOW,
   CONDENSE_FUTURE_WINDOW,
   RTE_REQUIRE_OPEN_TARGET,
+  eqnotifyChannelId,
+  TELEGRAM_BOT_TOKEN,
 
 } = process.env as {
   /**
@@ -286,6 +288,23 @@ export const {
    * without it needing to be opened first. Defaults to requiring an open target.
    */
   RTE_REQUIRE_OPEN_TARGET?: string;
+
+  /**
+   * [Optional] Channel EQNotify watches for batphones to match against user
+   * tags. Defaults to the batphone channel if unset.
+   */
+  eqnotifyChannelId?: string;
+
+  /**
+   * [Optional] Telegram bot token (from @BotFather) used to deliver EQNotify
+   * alerts to Telegram subscribers. If unset, Telegram delivery is disabled.
+   */
+  TELEGRAM_BOT_TOKEN?: string;
 };
 
 export const rteRequireOpenTarget = RTE_REQUIRE_OPEN_TARGET !== "false";
+
+/**
+ * Channel EQNotify watches for batphones. Falls back to the batphone channel.
+ */
+export const eqnotifyWatchChannelId = eqnotifyChannelId || batphoneChannelId;

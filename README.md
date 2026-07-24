@@ -14,6 +14,7 @@ Provides various features for the Castle EverQuest guild's Discord server.
 - **Orientation** - welcome instructions and access provisioning
 - **Invites** - invite list and management tools
 - **Raid Enlistment** - raid instructions and enlistment tools
+- **EQNotify** - per-user phone notifications (WirePusher / Telegram) for the batphones you care about
 - **Monitoring** - player departures, application requests, etc.
 - **Utilities** - silently add roles to threads
 
@@ -51,6 +52,21 @@ Some features required secrets, such as to connect to CastleDKP.com or the Castl
 | `castleDkpTokenRO`    | Admin token for making authenticated requests to CastleDKP.com | Discord DKP Auctions, Discord DKP Uploads | Discuss with a Castle Moderator |
 | `GOOGLE_CLIENT_EMAIL` | The Google Drive account for accessing guild resources         | Banking, Shared Characters                | Discuss with a Castle Moderator |
 | `GOOGLE_PRIVATE_KEY`  | The Google Drive account key for accessing guild resources     | Banking, Shared Characters                | Discuss with a Castle Moderator |
+| `TELEGRAM_BOT_TOKEN`  | Bot token from Telegram's @BotFather                           | EQNotify Telegram delivery                | Create a bot via [@BotFather](https://t.me/BotFather) |
+| `eqnotifyChannelId`   | [Optional] Channel EQNotify watches; defaults to the batphone channel | EQNotify                           | Any batphone-style channel ID   |
+
+#### 📣 EQNotify
+
+`/eqnotify` lets raiders subscribe to phone notifications for the raid targets they care about. It watches the batphone channel and, for each subscriber whose keyword tags match the batphone (buff / last-hour RTE calls are filtered out), pushes an alert to their phone.
+
+- **Delivery channels**: **WirePusher** (free, Android-only) or **Telegram** (iOS/Android/desktop). Telegram delivery requires `TELEGRAM_BOT_TOKEN`; if unset, only WirePusher is offered.
+- **Getting your ID**: WirePusher users use their device ID from the app. Telegram users start a chat with the guild's EQNotify bot and get their numeric chat ID (e.g. from [@userinfobot](https://t.me/userinfobot)).
+- **Subcommands**:
+  - `/eqnotify register <type> <id>` — sign yourself up (self-service).
+  - `/eqnotify unregister` — remove yourself.
+  - `/eqnotify add-tag <tag>` / `remove-tag <tag>` / `list-tags` / `clear-tags` — manage your keywords (use `all` to be notified for every batphone).
+  - `/eqnotify test` — send yourself a test alert to verify delivery.
+  - `/eqnotify add-user <member> <type> <id>` / `remove-user <member>` — Officer/Mod/Knight tools to enroll or remove others.
 
 ### ⏺️ Local
 
