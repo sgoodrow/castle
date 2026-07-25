@@ -354,6 +354,17 @@ export const openDkpService = {
     const characterInfo = await openDkpService.getCharacter(character);
     if (!characterInfo) throw new Error(`Character ${character} not found`);
     const allCharactersSummary = await openDkpService.getDkpSummary();
+    // const result = allCharactersSummary
+    //   .map((s) => ({ name: s.CharacterName, calc60: s.Calculated_60 * 100 }))
+    //   .sort((a, b) => b.calc60 - a.calc60);
+
+    // const seen = new Set();
+    // const deduped = result.filter((r) => {
+    //   if (seen.has(r.calc60)) return false;
+    //   seen.add(r.calc60);
+    //   return true;
+    // });
+    // console.log(deduped);
     const characterDkpSummary = allCharactersSummary.find(
       (c) => c.CharacterId === characterInfo.CharacterId
     );
@@ -377,6 +388,61 @@ export const openDkpService = {
       log(error);
       throw error;
     }
+  },
+
+  getRaidAttendence: async (character: string): Promise<string> => {
+    const characterInfo = await openDkpService.getCharacter(character);
+    if (!characterInfo) throw new Error(`Character ${character} not found`);
+    const allCharactersSummary = await openDkpService.getDkpSummary();
+    const characterDkpSummary = allCharactersSummary.find(
+      (c) => c.CharacterId === characterInfo.CharacterId
+    );
+    if (!characterDkpSummary) {
+      return `No attendance data found for ${characterInfo.Name}`;
+    }
+    return openDkpService.formatAttendanceForMobile(characterDkpSummary);
+  },
+
+  formatAttendanceForMobile: (summary: ODKPCharacterDkpSummary): string => {
+    const periods = [
+      {
+        label: "30d",
+        pct: summary.Calculated_30,
+        attended: summary.AttendedTicks_30,
+        total: summary.TotalTicks_30,
+      },
+      {
+        label: "60d",
+        pct: summary.Calculated_60,
+        attended: summary.AttendedTicks_60,
+        total: summary.TotalTicks_60,
+      },
+      {
+        label: "90d",
+        pct: summary.Calculated_90,
+        attended: summary.AttendedTicks_90,
+        total: summary.TotalTicks_90,
+      },
+      {
+        label: "Life",
+        pct: summary.Calculated_Life,
+        attended: summary.AttendedTicks_Life,
+        total: summary.TotalTicks_Life,
+      },
+    ];
+
+    const rows = periods.map((p) => {
+      const pct = `${(p.pct * 100).toFixed(1)}%`.padStart(6);
+      const ticks = `(${p.attended}/${p.total})`.padStart(9);
+      return `${p.label.padEnd(4)} ${pct} ${ticks}`;
+    });
+
+    return (
+      `**${summary.CharacterName}** Raid Attendance\n` +
+      "```\n" +
+      rows.join("\n") +
+      "\n```"
+    );
   },
 
   summarizeByCharacter: (data: any[]) => {
@@ -412,7 +478,7 @@ export const openDkpService = {
   ) => {
     const summary = openDkpService.summarizeByCharacter(data);
 
-    const COL = { name: 20, raid: 8, adj: 8, items: 8, total: 8 };
+    const COL = { name: 16, raid: 8, adj: 8, items: 8, total: 8 };
 
     const header = [
       "Character".padEnd(COL.name),
@@ -455,32 +521,32 @@ export const openDkpService = {
 
     let overview = "";
     if (characterDkpSummary) {
-      const ATT_COL = { label: 12, col: 12 };
+      const ATT_COL = { label: 4, col: 12 };
 
       const attHeader = [
-        "".padEnd(ATT_COL.label),
-        "30d".padStart(ATT_COL.col),
-        "60d".padStart(ATT_COL.col),
-        "90d".padStart(ATT_COL.col),
-        "Lifetime".padStart(ATT_COL.col),
+        "".padEnd(8),
+        "30d".padStart(8),
+        "60d".padStart(10),
+        "90d".padStart(12),
+        "Lifetime".padStart(12),
       ].join(" ");
 
       const attDivider = "─".repeat(attHeader.length);
 
       const attendanceRow = [
-        "Attendance".padEnd(ATT_COL.label),
-        `${(characterDkpSummary.Calculated_30 * 100).toFixed(1)}%`.padStart(ATT_COL.col),
-        `${(characterDkpSummary.Calculated_60 * 100).toFixed(1)}%`.padStart(ATT_COL.col),
-        `${(characterDkpSummary.Calculated_90 * 100).toFixed(1)}%`.padStart(ATT_COL.col),
-        `${(characterDkpSummary.Calculated_Life * 100).toFixed(1)}%`.padStart(ATT_COL.col),
+        "Attendance".padEnd(2),
+        `${(characterDkpSummary.Calculated_30 * 100).toFixed(1)}%`.padStart(8),
+        `${(characterDkpSummary.Calculated_60 * 100).toFixed(1)}%`.padStart(10),
+        `${(characterDkpSummary.Calculated_90 * 100).toFixed(1)}%`.padStart(12),
+        `${(characterDkpSummary.Calculated_Life * 100).toFixed(1)}%`.padStart(12),
       ].join(" ");
 
       const ticksRow = [
-        "Ticks".padEnd(ATT_COL.label),
-        `${characterDkpSummary.AttendedTicks_30}/${characterDkpSummary.TotalTicks_30}`.padStart(ATT_COL.col),
-        `${characterDkpSummary.AttendedTicks_60}/${characterDkpSummary.TotalTicks_60}`.padStart(ATT_COL.col),
-        `${characterDkpSummary.AttendedTicks_90}/${characterDkpSummary.TotalTicks_90}`.padStart(ATT_COL.col),
-        `${characterDkpSummary.AttendedTicks_Life}/${characterDkpSummary.TotalTicks_Life}`.padStart(ATT_COL.col),
+        "Ticks".padEnd(10),
+        `${characterDkpSummary.AttendedTicks_30}/${characterDkpSummary.TotalTicks_30}`.padStart(8),
+        `${characterDkpSummary.AttendedTicks_60}/${characterDkpSummary.TotalTicks_60}`.padStart(10),
+        `${characterDkpSummary.AttendedTicks_90}/${characterDkpSummary.TotalTicks_90}`.padStart(12),
+        `${characterDkpSummary.AttendedTicks_Life}/${characterDkpSummary.TotalTicks_Life}`.padStart(12),
       ].join(" ");
 
       overview =
