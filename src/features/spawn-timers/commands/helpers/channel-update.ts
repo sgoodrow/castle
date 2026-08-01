@@ -10,19 +10,26 @@ import {
   inWindow,
   displayWindow,
 } from "./timer";
-import { formatTimeDistance } from "./duration";
+import { formatTimeDistance, formatMinutesSecondsAgo } from "./duration";
 import { getSettingByKey, saveSettingByKey } from "./settings";
 import { TIMER_CHANNEL_ID, SHOW_FUTURE_WINDOW } from "../../../../config";
 import { timerPrismaClient } from "../../../../db/timer-client";
 
 const MAX_DESCRIPTION_LENGTH = 4096;
 const MAX_EMBEDS_PER_MESSAGE = 10;
+const ENDED_RECENTLY_WINDOW_MS = 60 * 60 * 1000;
 
 interface TableRow {
   name: string;
   time: string;
   window: string;
   remainingMs: number;
+}
+
+interface EndedRow {
+  name: string;
+  time: string;
+  endedMsAgo: number;
 }
 
 function pad(str: string, len: number): string {
@@ -65,20 +72,15 @@ function renderTable(
   return "```\n" + lines.join("\n") + "\n```";
 }
 
-function chunkTable(
-  rows: TableRow[],
-  maxLen: number,
-  widths: { nameWidth: number; timeWidth: number; windowWidth: number },
-  thirdColumnLabel?: string
-): string[] {
+function chunkRows<T>(rows: T[], maxLen: number, render: (rows: T[]) => string): string[] {
   const chunks: string[] = [];
-  let currentRows: TableRow[] = [];
+  let currentRows: T[] = [];
 
   for (const row of rows) {
     const testRows = [...currentRows, row];
-    const rendered = renderTable(testRows, widths, thirdColumnLabel);
+    const rendered = render(testRows);
     if (rendered.length > maxLen && currentRows.length > 0) {
-      chunks.push(renderTable(currentRows, widths, thirdColumnLabel));
+      chunks.push(render(currentRows));
       currentRows = [row];
     } else {
       currentRows = testRows;
@@ -86,10 +88,35 @@ function chunkTable(
   }
 
   if (currentRows.length > 0) {
-    chunks.push(renderTable(currentRows, widths, thirdColumnLabel));
+    chunks.push(render(currentRows));
   }
 
   return chunks;
+}
+
+function getEndedColumnWidths(rows: EndedRow[]): { nameWidth: number; timeWidth: number } {
+  return {
+    nameWidth: Math.max(5, ...rows.map((r) => r.name.length)),
+    timeWidth: Math.max(5, ...rows.map((r) => r.time.length)),
+  };
+}
+
+function renderEndedTable(
+  rows: EndedRow[],
+  widths: { nameWidth: number; timeWidth: number }
+): string {
+  const { nameWidth, timeWidth } = widths;
+  const sep = " | ";
+  const header = `${pad("Timer", nameWidth)}${sep}${pad("Ended", timeWidth)}`;
+  const divider = "-".repeat(header.length);
+
+  const lines = [
+    header,
+    divider,
+    ...rows.map((r) => `${pad(r.name, nameWidth)}${sep}${pad(r.time, timeWidth)}`),
+  ];
+
+  return "```\n" + lines.join("\n") + "\n```";
 }
 
 /**
@@ -116,6 +143,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   const futureRows: TableRow[] = [];
   const upcomingRows: TableRow[] = [];
   const inWindowRows: TableRow[] = [];
+  const endedRows: EndedRow[] = [];
 
   for (const timer of sortedTimers) {
     if (!timer.lastTod) continue;
@@ -142,6 +170,16 @@ export async function updateTimersChannel(client: Client): Promise<void> {
           remainingMs,
         });
       }
+    } else if (
+      endsAt.getTime() < now.getTime() &&
+      now.getTime() - endsAt.getTime() <= ENDED_RECENTLY_WINDOW_MS
+    ) {
+      const endedMsAgo = now.getTime() - endsAt.getTime();
+      endedRows.push({
+        name: getDisplayName(timer.name, timer.skipCount),
+        time: formatMinutesSecondsAgo(endsAt, now),
+        endedMsAgo,
+      });
     } else if (startsAt.getTime() <= now.getTime() + 24 * 60 * 60 * 1000) {
       const remainingMs = startsAt.getTime() - now.getTime();
       upcomingRows.push({
@@ -165,6 +203,8 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   futureRows.sort((a, b) => b.remainingMs - a.remainingMs);
   upcomingRows.sort((a, b) => b.remainingMs - a.remainingMs);
   inWindowRows.sort((a, b) => b.remainingMs - a.remainingMs);
+  // Most recently ended at the bottom, oldest at the top
+  endedRows.sort((a, b) => b.endedMsAgo - a.endedMsAgo);
 
   const embeds: EmbedBuilder[] = [];
 
@@ -177,7 +217,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   // Future window embed(s)
   if (SHOW_FUTURE_WINDOW?.toLowerCase() === "true" && futureRows.length > 0) {
     const widths = getColumnWidths(futureRows);
-    const descChunks = chunkTable(futureRows, MAX_DESCRIPTION_LENGTH, widths);
+    const descChunks = chunkRows(futureRows, MAX_DESCRIPTION_LENGTH, (rs) => renderTable(rs, widths));
     for (let i = 0; i < descChunks.length; i++) {
       const embed = new EmbedBuilder().setDescription(descChunks[i]);
       if (i === 0) embed.setTitle("Future Windows");
@@ -188,7 +228,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   // Upcoming embed(s)
   if (upcomingRows.length > 0) {
     const widths = getColumnWidths(upcomingRows);
-    const descChunks = chunkTable(upcomingRows, MAX_DESCRIPTION_LENGTH, widths);
+    const descChunks = chunkRows(upcomingRows, MAX_DESCRIPTION_LENGTH, (rs) => renderTable(rs, widths));
     for (let i = 0; i < descChunks.length; i++) {
       const embed = new EmbedBuilder().setDescription(descChunks[i]);
       if (i === 0) embed.setTitle("Mobs Entering Window In The Next 24 Hours");
@@ -199,7 +239,7 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   // In-window embed(s)
   if (anyInWindow) {
     const widths = getColumnWidths(inWindowRows);
-    const descChunks = chunkTable(inWindowRows, MAX_DESCRIPTION_LENGTH, widths, "%");
+    const descChunks = chunkRows(inWindowRows, MAX_DESCRIPTION_LENGTH, (rs) => renderTable(rs, widths, "%"));
     for (let i = 0; i < descChunks.length; i++) {
       const embed = new EmbedBuilder().setColor(0xe67e22).setDescription(descChunks[i]);
       if (i === 0) embed.setTitle("Mobs In Window");
@@ -213,6 +253,17 @@ export async function updateTimersChannel(client: Client): Promise<void> {
         .setTitle("Nothing Currently in Window")
         .setFooter({ text: inWindowFooter })
     );
+  }
+
+  // Ended recently embed(s)
+  if (endedRows.length > 0) {
+    const widths = getEndedColumnWidths(endedRows);
+    const descChunks = chunkRows(endedRows, MAX_DESCRIPTION_LENGTH, (rs) => renderEndedTable(rs, widths));
+    for (let i = 0; i < descChunks.length; i++) {
+      const embed = new EmbedBuilder().setColor(0x95a5a6).setDescription(descChunks[i]);
+      if (i === 0) embed.setTitle("Ended Recently");
+      embeds.push(embed);
+    }
   }
 
   // Discord allows at most 10 embeds per message

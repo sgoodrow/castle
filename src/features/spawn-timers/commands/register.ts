@@ -75,6 +75,8 @@ class RegisterCommand extends SimpleCommand {
           windowEnd,
           variance,
           skipCount: 0,
+          alerted: null,
+          alertingSoon: false,
         },
       });
     } else {

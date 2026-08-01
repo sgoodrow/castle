@@ -48,12 +48,21 @@ export class PrefixInteractionAdapter {
 }
 
 export function buildTodAdapter(message: Message): PrefixInteractionAdapter {
-  const raw = message.content.slice(4).trim(); // strip "!tod"
+  let raw = message.content.slice(4).trim(); // strip "!tod"
+
+  // A trailing "#<n>" indicates a skip count, e.g. "lodi 7/26 04:04:10#1"
+  let skipCount: number | null = null;
+  const skipMatch = raw.match(/#(\d+)\s*$/);
+  if (skipMatch) {
+    skipCount = parseInt(skipMatch[1], 10);
+    raw = raw.slice(0, skipMatch.index).trim();
+  }
+
   const [mob, time] = parseArguments(raw);
   const args = new Map<string, string | number | null>([
     ["mob", mob],
     ["time", time],
-    ["skip_count", null],
+    ["skip_count", skipCount],
   ]);
   return new PrefixInteractionAdapter(message, args);
 }
