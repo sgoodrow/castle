@@ -130,6 +130,16 @@ export function formatTimeAgo(time: Date, now: Date = new Date()): string {
 }
 
 /**
+ * Format how long ago a time was as "Xm Ys ago", always including both units.
+ */
+export function formatMinutesSecondsAgo(time: Date, now: Date = new Date()): string {
+  const diffSeconds = Math.floor(Math.max(0, now.getTime() - time.getTime()) / 1000);
+  const minutes = Math.floor(diffSeconds / 60);
+  const seconds = diffSeconds % 60;
+  return `${minutes}m ${seconds}s ago`;
+}
+
+/**
  * Format a Date as a Discord Hammertime timestamp.
  * Default style is relative (R), which renders dynamically in Discord
  * e.g., "in 59 minutes" or "59 minutes ago".

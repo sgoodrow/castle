@@ -1,4 +1,9 @@
-import { parseDuration, formatDuration, formatTimeDistance } from "./duration";
+import {
+  parseDuration,
+  formatDuration,
+  formatTimeDistance,
+  formatMinutesSecondsAgo,
+} from "./duration";
 
 describe("parseDuration", () => {
   it("should parse various duration formats", () => {
@@ -66,5 +71,19 @@ describe("formatTimeDistance", () => {
     const now = new Date("2021-05-27T05:57:00Z");
     const past = new Date("2021-05-27T03:57:00Z");
     expect(formatTimeDistance(past, now)).toBe("2h");
+  });
+});
+
+describe("formatMinutesSecondsAgo", () => {
+  it("should always include both minutes and seconds", () => {
+    const now = new Date("2021-05-27T05:57:45Z");
+    expect(formatMinutesSecondsAgo(new Date("2021-05-27T05:57:00Z"), now)).toBe("0m 45s ago");
+    expect(formatMinutesSecondsAgo(new Date("2021-05-27T05:52:45Z"), now)).toBe("5m 0s ago");
+    expect(formatMinutesSecondsAgo(new Date("2021-05-27T05:53:12Z"), now)).toBe("4m 33s ago");
+  });
+
+  it("should clamp to zero for times not in the past", () => {
+    const now = new Date("2021-05-27T05:57:00Z");
+    expect(formatMinutesSecondsAgo(new Date("2021-05-27T05:58:00Z"), now)).toBe("0m 0s ago");
   });
 });
