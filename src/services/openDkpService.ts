@@ -687,9 +687,10 @@ export const openDkpService = {
 
       // Collect items from this tick
       for (const loot of tick.data.loot) {
+        const buyer = toSentenceCase(loot.buyer);
         const odkpItem = await openDkpService.getItem(loot.item);
-        if (!characters.find((c) => c.Name === loot.buyer)) {
-          const errorMsg = `${loot.buyer} won ${odkpItem.ItemName} on tick ${tick.name}, but is not a registered character. Item will not be uploaded.`;
+        if (!characters.find((c) => c.Name === buyer)) {
+          const errorMsg = `${buyer} won ${odkpItem.ItemName} on tick ${tick.name}, but is not a registered character. Item will not be uploaded.`;
           failures.push(errorMsg);
           log(errorMsg);
         } else {
@@ -699,7 +700,7 @@ export const openDkpService = {
             );
           }
           items.push({
-            CharacterName: loot.buyer,
+            CharacterName: buyer,
             Dkp: loot.price,
             ItemName: odkpItem.ItemName,
             GameItemId: odkpItem.GameItemId,
