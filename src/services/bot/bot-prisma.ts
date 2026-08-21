@@ -349,7 +349,6 @@ Password: ${spoiler(details.password)}
         currentPilot: "",
       },
       orderBy: [{ class: "asc" }, { name: "asc" }],
-      take: 25,
     });
   }
 

@@ -432,7 +432,7 @@ export const openDkpService = {
     ];
 
     const rows = periods.map((p) => {
-      const pct = `${(p.pct * 100).toFixed(1)}%`.padStart(6);
+      const pct = `${(p.pct * 100).toFixed(2)}%`.padStart(7);
       const ticks = `(${p.attended}/${p.total})`.padStart(9);
       return `${p.label.padEnd(4)} ${pct} ${ticks}`;
     });
