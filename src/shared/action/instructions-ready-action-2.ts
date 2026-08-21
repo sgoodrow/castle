@@ -55,6 +55,16 @@ export class InstructionsReadyAction {
     return embed?.thread;
   }
 
+  /**
+   * Cancels the tracked instruction records for this name without touching any
+   * Discord message. Use after the underlying message has been deleted out of
+   * band so the next createOrUpdate posts a fresh message instead of trying to
+   * fetch (and 404 on) the deleted one.
+   */
+  public async cancelTrackedInstructions() {
+    await this.cancelAllInstructions();
+  }
+
   private async cancelAllInstructions() {
     const repo = dataSource.getRepository(Instructions);
     const instructions = await repo.find({
