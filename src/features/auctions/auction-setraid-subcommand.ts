@@ -9,6 +9,7 @@ import { openDkpService } from "../../services/openDkpService";
 import { redisClient } from "../../redis/client";
 import { auctionChannelId, bankerRoleId, dkpDeputyRoleId, officerRoleId } from "../../config";
 import { truncate } from "lodash";
+import { log } from "../../shared/logger";
 
 export enum Option {
   Raid = "raid",
@@ -78,7 +79,8 @@ export class AuctionSetRaidSubcommand extends Subcommand {
           name: truncate(r.Name, { length: 100 }),
           value: String(r.RaidId),
         }));
-    } catch {
+    } catch (e) {
+      log(`Failed to load OpenDKP raids for autocomplete: ${e}`);
       return [];
     }
   }
