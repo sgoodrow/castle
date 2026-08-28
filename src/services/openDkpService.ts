@@ -1057,7 +1057,9 @@ ${result}${code}${notIncluded}`,
   getRaids: async (): Promise<ODKPRaidData[]> => {
     const getRaid = {
       method: "get",
-      url: `https://api.opendkp.com/clients/${openDkpClientName}/raids`,
+      // Passing a query param selects the paginated view (up to 5000 raids)
+      // instead of the default 50-raid stats view, so the picker sees all raids.
+      url: `https://api.opendkp.com/clients/${openDkpClientName}/raids?ItemsPerPage=5000`,
       headers: {
         Authorization: `${accessTokens.TokenType} ${accessTokens.IdToken}`,
       },
@@ -1065,8 +1067,12 @@ ${result}${code}${notIncluded}`,
 
     try {
       const resp = await axios(getRaid);
-      const raidResp = resp.data as ODKPRaidData[];
-      return raidResp;
+      const data = resp.data;
+      // The API now returns a paginated envelope
+      // ({ Raids, TotalRaids, TotalPages, CurrentPage }); older deployments
+      // returned a bare array. Support both.
+      const raids = Array.isArray(data) ? data : data?.Raids ?? [];
+      return raids as ODKPRaidData[];
     } catch (err: unknown) {
       log(err);
       throw err;
