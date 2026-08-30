@@ -4,6 +4,9 @@ import { Subcommand } from "../../shared/command/subcommand";
 import { IPublicAccountService } from "../../services/bot/public-accounts.i";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
+import { requireInteractionMemberRole } from "../../shared/command/util";
+import { raiderRoleId } from "../../config";
+import { getMember } from "../..";
 
 export enum Option {
   Name = "name",
@@ -32,6 +35,8 @@ export class SetFactionSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
+    requireInteractionMemberRole(raiderRoleId, interaction);
+
     const name = this.getRequiredOptionValue(
       Option.Name,
       interaction
@@ -50,8 +55,12 @@ export class SetFactionSubcommand extends Subcommand {
       return;
     }
 
-    // Stored alongside the date it was set, e.g. "Amiable (08/29)".
-    const value = `${faction} (${moment().format("MM/DD")})`;
+    // The server display name (nickname) of whoever set it.
+    const member = await getMember(interaction.user.id);
+    const setter = member.displayName;
+
+    // Stored with the date and who set it, e.g. "Amiable (08/29) - Pumped".
+    const value = `${faction} (${moment().format("MM/DD")}) - ${setter}`;
 
     try {
       await this.publicAccountService.updateBotRowDetails(name, {
