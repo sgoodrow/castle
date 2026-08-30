@@ -7,25 +7,45 @@ import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-she
 import { requireInteractionMemberRole } from "../../shared/command/util";
 import { raiderRoleId } from "../../config";
 import { getMember } from "../..";
+import { SheetPublicAccountService } from "../../services/bot/public-accounts-sheet";
+import { log } from "../../shared/logger";
 
 export enum Option {
   Name = "name",
   Faction = "faction",
 }
 
-// Standard EverQuest faction-standing levels, best (Ally) to worst (Scowling),
-// plus Unknown for bots whose standing hasn't been checked.
+// EverQuest faction-standing levels, best (Max Ally) to worst (KOS), plus
+// Unknown for bots whose standing hasn't been checked.
 export const FACTION_LEVELS = [
-  "Scowling",
-  "Threatening",
-  "Dubious",
-  "Indifferent",
-  "Amiable",
-  "Kindly",
-  "Warmly",
+  "Max Ally",
   "Ally",
+  "Warmly",
+  "Kindly",
+  "Amiable",
+  "Indifferent",
+  "Apprehensive",
+  "Dubious",
+  "Threatening",
+  "Scowling",
+  "KOS",
   "Unknown",
 ];
+
+// Sheet cell colors (0-1 RGBA) applied to the CoV Faction cell by standing.
+const RED = { red: 0.918, green: 0.6, blue: 0.6, alpha: 1 };
+const GREEN = { red: 0.576, green: 0.769, blue: 0.49, alpha: 1 };
+const YELLOW = { red: 1, green: 0.898, blue: 0.6, alpha: 1 };
+
+const factionBackgroundColor = (faction: string) => {
+  if (["KOS", "Scowling", "Threatening"].includes(faction)) {
+    return RED;
+  }
+  if (["Max Ally", "Ally"].includes(faction)) {
+    return GREEN;
+  }
+  return YELLOW;
+};
 
 export class SetFactionSubcommand extends Subcommand {
   publicAccountService: IPublicAccountService;
@@ -66,10 +86,28 @@ export class SetFactionSubcommand extends Subcommand {
       await this.publicAccountService.updateBotRowDetails(name, {
         [BOT_SPREADSHEET_COLUMNS.Faction]: value,
       });
-      await interaction.editReply(`${name}'s faction was set to **${value}**.`);
     } catch (error) {
       await interaction.editReply(`Failed to set faction: ${error}`);
+      return;
     }
+
+    // Color-code the CoV Faction cell by standing. Failure here shouldn't fail
+    // the whole command since the value was already recorded.
+    let colorNote = "";
+    try {
+      await SheetPublicAccountService.getInstance().setBotCellBackground(
+        name,
+        BOT_SPREADSHEET_COLUMNS.Faction,
+        factionBackgroundColor(faction)
+      );
+    } catch (error) {
+      log(`Failed to color CoV Faction cell for ${name}: ${error}`);
+      colorNote = " (couldn't update the cell color)";
+    }
+
+    await interaction.editReply(
+      `${name}'s faction was set to **${value}**.${colorNote}`
+    );
   }
 
   public get command() {
@@ -103,6 +141,6 @@ export class SetFactionSubcommand extends Subcommand {
 }
 
 export const setFactionSubcommand = new SetFactionSubcommand(
-  "setfaction",
-  "Set a bot's current faction standing"
+  "setcovfaction",
+  "Set a bot's current CoV faction standing"
 );

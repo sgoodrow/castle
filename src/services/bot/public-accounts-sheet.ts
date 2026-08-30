@@ -163,6 +163,43 @@ export class SheetPublicAccountService implements IPublicAccountService {
 
   }
 
+  /**
+   * Sets the background color of a single bot's cell in the given column.
+   * Used to color-code the CoV Faction cell by standing.
+   */
+  public async setBotCellBackground(
+    botName: string,
+    column: BOT_SPREADSHEET_COLUMNS,
+    backgroundColor: { red: number; green: number; blue: number; alpha: number }
+  ) {
+    await this.authorize();
+    await this.sheet.loadInfo();
+    const sheet = this.botInfoSheet;
+    const rows = await sheet.getRows();
+    const row = rows.find(
+      (r) =>
+        r[BOT_SPREADSHEET_COLUMNS.Name]?.toLowerCase() === botName.toLowerCase()
+    );
+    if (!row) {
+      throw new Error(`Bot ${botName} not found.`);
+    }
+    const columnIndex = sheet.headerValues.indexOf(column);
+    if (columnIndex === -1) {
+      throw new Error(`Column "${column}" not found in the bot sheet.`);
+    }
+    // getCell is 0-based; row.rowIndex is 1-based and includes the header row.
+    const rowIndex = row.rowIndex - 1;
+    await sheet.loadCells({
+      startRowIndex: rowIndex,
+      endRowIndex: rowIndex + 1,
+      startColumnIndex: columnIndex,
+      endColumnIndex: columnIndex + 1,
+    });
+    const cell = sheet.getCell(rowIndex, columnIndex);
+    cell.backgroundColor = backgroundColor;
+    await sheet.saveUpdatedCells();
+  }
+
   public async getFirstAvailableBotByClass(
     botClass: string,
     roles: GuildMemberRoleManager,
