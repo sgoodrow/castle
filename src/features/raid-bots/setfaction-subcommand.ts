@@ -141,6 +141,6 @@ export class SetFactionSubcommand extends Subcommand {
 }
 
 export const setFactionSubcommand = new SetFactionSubcommand(
-  "setfaction",
-  "Set a bot's current faction standing"
+  "setcovfaction",
+  "Set a bot's current CoV faction standing"
 );
