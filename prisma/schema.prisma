@@ -78,6 +78,7 @@ model bot {
   bindLocation  String
   requiredRoles String[]
   factioned     Boolean
+  faction       String   @default("")
 }
 
 model batphone {

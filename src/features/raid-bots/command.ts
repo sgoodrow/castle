@@ -5,6 +5,7 @@ import { requestClassSubcommand } from "./requestclass-subcommand"
 import { bindSubCommand } from "./bind-subcommand";
 import { cleanupSubCommand } from "./cleanup-subcommand";
 import { requestZoneSubcommand } from "./requestzone-subcommand";
+import { setFactionSubcommand } from "./setfaction-subcommand";
 
 export const botCommand = new Command(
   "bot",
@@ -16,5 +17,6 @@ export const botCommand = new Command(
     parkSubCommand,
     bindSubCommand,
     cleanupSubCommand,
+    setFactionSubcommand,
   ]
 );

@@ -97,6 +97,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
           currentPilot: row[BOT_SPREADSHEET_COLUMNS.CurrentPilot],
           bindLocation: row[BOT_SPREADSHEET_COLUMNS.BindLocation],
           factioned: row[BOT_SPREADSHEET_COLUMNS.Factioned] !== "",
+          faction: row[BOT_SPREADSHEET_COLUMNS.Faction] || "",
           requiredRoles: roles.map((r) => r.id),
         },
       });
@@ -405,6 +406,7 @@ Password: ${spoiler(details.password)}
       const pilot = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentPilot];
       const location = botRowData[BOT_SPREADSHEET_COLUMNS.CurrentLocation];
       const bindLocation = botRowData[BOT_SPREADSHEET_COLUMNS.BindLocation];
+      const faction = botRowData[BOT_SPREADSHEET_COLUMNS.Faction];
       log(
         `bot-prisma: updateBotRowDetails for bot ${bot.name}. Pilot ${pilot}. location ${location} `
       );
@@ -428,6 +430,9 @@ Password: ${spoiler(details.password)}
         bot.bindLocation = botRowData[
           BOT_SPREADSHEET_COLUMNS.BindLocation
         ] as string;
+      }
+      if (faction !== undefined) {
+        bot.faction = botRowData[BOT_SPREADSHEET_COLUMNS.Faction] as string;
       }
       await prismaClient.bot.update({
         where: {
