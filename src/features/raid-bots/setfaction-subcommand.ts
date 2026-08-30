@@ -41,7 +41,7 @@ const factionBackgroundColor = (faction: string) => {
   if (["KOS", "Scowling", "Threatening"].includes(faction)) {
     return RED;
   }
-  if (["Max Ally", "Ally", "Warmly"].includes(faction)) {
+  if (["Max Ally", "Ally"].includes(faction)) {
     return GREEN;
   }
   return YELLOW;
