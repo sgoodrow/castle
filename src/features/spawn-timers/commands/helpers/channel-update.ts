@@ -14,10 +14,10 @@ import { formatTimeDistance, formatMinutesSecondsAgo } from "./duration";
 import { getSettingByKey, saveSettingByKey } from "./settings";
 import { TIMER_CHANNEL_ID, SHOW_FUTURE_WINDOW } from "../../../../config";
 import { timerPrismaClient } from "../../../../db/timer-client";
+import { ENDED_RECENTLY_WINDOW_MS, getRecentlyEndedAt } from "./ended-timers";
 
 const MAX_DESCRIPTION_LENGTH = 4096;
 const MAX_EMBEDS_PER_MESSAGE = 10;
-const ENDED_RECENTLY_WINDOW_MS = 60 * 60 * 1000;
 
 interface TableRow {
   name: string;
@@ -146,7 +146,17 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   const endedRows: EndedRow[] = [];
 
   for (const timer of sortedTimers) {
-    if (!timer.lastTod) continue;
+    if (!timer.lastTod) {
+      const endedAt = getRecentlyEndedAt(timer, now);
+      if (endedAt) {
+        endedRows.push({
+          name: getDisplayName(timer.name, timer.skipCount),
+          time: formatMinutesSecondsAgo(endedAt, now),
+          endedMsAgo: now.getTime() - endedAt.getTime(),
+        });
+      }
+      continue;
+    }
 
     const startsAt = nextSpawnTimeStart(timer);
     const endsAt = nextSpawnTimeEnd(timer);

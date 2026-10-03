@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
 import { timerPrismaClient } from "../../../db/timer-client";
+import { forgetEndedTimers } from "./helpers/ended-timers";
 import { findTimerByMob } from "./helpers/timer";
 
 class TodRemoveCommand extends SimpleCommand {
@@ -33,6 +34,7 @@ class TodRemoveCommand extends SimpleCommand {
       return;
     }
 
+    forgetEndedTimers([timer.id]);
     await timerPrismaClient.timer.update({
       where: { id: timer.id },
       data: {

@@ -9,6 +9,7 @@ import { timerPrismaClient } from "../../db/timer-client";
 import { checkGoogleCredentials } from "../../services/gdrive";
 import { log } from "../../shared/logger";
 import { MINUTES } from "../../shared/time";
+import { getRecentlyEndedAt } from "./commands/helpers/ended-timers";
 import {
   nextSpawnTimeEnd,
   nextSpawnTimeStart,
@@ -37,6 +38,7 @@ let doc: GoogleSpreadsheet | null = null;
 const iso = (d: Date | null) => (d ? d.toISOString() : "");
 
 function getStatus(timer: Timer, now: Date): string {
+  if (getRecentlyEndedAt(timer, now)) return "ended";
   return timerPhase(timer, now) ?? "no tod";
 }
 
@@ -68,7 +70,7 @@ export async function exportTimersToSheet(): Promise<void> {
     timer.name,
     getStatus(timer, now),
     iso(nextSpawnTimeStart(timer)),
-    iso(nextSpawnTimeEnd(timer)),
+    iso(nextSpawnTimeEnd(timer) ?? getRecentlyEndedAt(timer, now)),
     iso(timer.lastTod ? new Date(timer.lastTod * 1000) : null),
     timer.skipCount ?? 0,
   ]);
