@@ -275,3 +275,23 @@ export function pastPossibleSpawnTime(
 
   return now.getTime() > nextSpawn.getTime() + 10 * 60 * 1000;
 }
+
+export type TimerPhase = "upcoming" | "in window" | "ended";
+
+/**
+ * Classify where a timer is in its spawn cycle. A window that has closed is
+ * "ended" even during the 10 minute grace period where inWindow() still
+ * returns true, so callers don't drop it between the two states.
+ */
+export function timerPhase(
+  timer: Timer,
+  now: Date = new Date()
+): TimerPhase | null {
+  const startsAt = nextSpawnTimeStart(timer);
+  const endsAt = nextSpawnTimeEnd(timer);
+  if (!startsAt || !endsAt) return null;
+
+  if (endsAt <= now) return "ended";
+  if (startsAt < now) return "in window";
+  return "upcoming";
+}

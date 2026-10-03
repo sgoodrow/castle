@@ -7,8 +7,8 @@ import {
 import {
   nextSpawnTimeStart,
   nextSpawnTimeEnd,
-  inWindow,
   displayWindow,
+  timerPhase,
 } from "./timer";
 import { formatTimeDistance, formatMinutesSecondsAgo } from "./duration";
 import { getSettingByKey, saveSettingByKey } from "./settings";
@@ -155,31 +155,30 @@ export async function updateTimersChannel(client: Client): Promise<void> {
 
     const dw = displayWindow(timer, "short") ?? "";
 
-    if (inWindow(timer, now)) {
-      if (endsAt > now) {
-        const remainingMs = endsAt.getTime() - now.getTime();
-        const windowDurationMs = endsAt.getTime() - startsAt.getTime();
-        const elapsedMs = now.getTime() - startsAt.getTime();
-        const pct = windowDurationMs > 0
-          ? Math.min(100, Math.max(0, Math.round((elapsedMs / windowDurationMs) * 100)))
-          : 0;
-        inWindowRows.push({
+    const phase = timerPhase(timer, now);
+
+    if (phase === "in window") {
+      const remainingMs = endsAt.getTime() - now.getTime();
+      const windowDurationMs = endsAt.getTime() - startsAt.getTime();
+      const elapsedMs = now.getTime() - startsAt.getTime();
+      const pct = windowDurationMs > 0
+        ? Math.min(100, Math.max(0, Math.round((elapsedMs / windowDurationMs) * 100)))
+        : 0;
+      inWindowRows.push({
+        name: getDisplayName(timer.name, timer.skipCount),
+        time: formatTimeDistance(endsAt, now, true),
+        window: `${pct}%`,
+        remainingMs,
+      });
+    } else if (phase === "ended") {
+      const endedMsAgo = now.getTime() - endsAt.getTime();
+      if (endedMsAgo <= ENDED_RECENTLY_WINDOW_MS) {
+        endedRows.push({
           name: getDisplayName(timer.name, timer.skipCount),
-          time: formatTimeDistance(endsAt, now, true),
-          window: `${pct}%`,
-          remainingMs,
+          time: formatMinutesSecondsAgo(endsAt, now),
+          endedMsAgo,
         });
       }
-    } else if (
-      endsAt.getTime() < now.getTime() &&
-      now.getTime() - endsAt.getTime() <= ENDED_RECENTLY_WINDOW_MS
-    ) {
-      const endedMsAgo = now.getTime() - endsAt.getTime();
-      endedRows.push({
-        name: getDisplayName(timer.name, timer.skipCount),
-        time: formatMinutesSecondsAgo(endsAt, now),
-        endedMsAgo,
-      });
     } else if (startsAt.getTime() <= now.getTime() + 24 * 60 * 60 * 1000) {
       const remainingMs = startsAt.getTime() - now.getTime();
       upcomingRows.push({
