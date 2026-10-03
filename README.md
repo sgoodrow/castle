@@ -53,6 +53,7 @@ Some features required secrets, such as to connect to CastleDKP.com or the Castl
 | `GOOGLE_CLIENT_EMAIL` | The Google Drive account for accessing guild resources         | Banking, Shared Characters                | Discuss with a Castle Moderator |
 | `GOOGLE_PRIVATE_KEY`  | The Google Drive account key for accessing guild resources     | Banking, Shared Characters                | Discuss with a Castle Moderator |
 | `TELEGRAM_BOT_TOKEN`  | Bot token from Telegram's @BotFather                           | EQNotify Telegram delivery                | Create a bot via [@BotFather](https://t.me/BotFather) |
+| `TIMER_EXPORT_SHEET_ID` | [Optional] Google Sheet ID the bot mirrors spawn timers into every minute (share it with `GOOGLE_CLIENT_EMAIL` as editor) | Spawn Timers | ID from the sheet's URL |
 | `eqnotifyChannelId`   | [Optional] Channel EQNotify watches; defaults to the batphone channel | EQNotify                           | Any batphone-style channel ID   |
 
 #### 📣 EQNotify

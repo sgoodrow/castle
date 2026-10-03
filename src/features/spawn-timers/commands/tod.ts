@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, CacheType } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
 import { timerPrismaClient } from "../../../db/timer-client";
+import { forgetEndedTimers } from "./helpers/ended-timers";
 import { formatDateFull } from "./helpers/format";
 import { findTimerByMob, lastSpawnTimeStart, nextSpawnTimeStart, nextSpawnTimeEnd, hasWindow } from "./helpers/timer";
 import { parseTime } from "./parsers/time-parser";
@@ -171,6 +172,7 @@ class TodCommand extends SimpleCommand {
       where: { clearParentTimerId: timer.id },
     });
 
+    forgetEndedTimers(clearTimers.map((t) => t.id));
     for (const clearTimer of clearTimers) {
       await timerPrismaClient.timer.update({
         where: { id: clearTimer.id },

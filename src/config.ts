@@ -82,6 +82,7 @@ export const {
   TIMER_CHANNEL_REFRESH_RATE,
   TIMER_ALERT_CHANNEL_REFRESH_RATE,
   TIMER_CHANNEL_WEBHOOK_URL,
+  TIMER_EXPORT_SHEET_ID,
   EARTHQUAKE_ALERT_CHANNEL_ID,
   EARTHQUAKE_ALERT_MESSAGE,
   TZ,
@@ -275,6 +276,11 @@ export const {
   TIMER_CHANNEL_REFRESH_RATE: string;
   TIMER_ALERT_CHANNEL_REFRESH_RATE: string;
   TIMER_CHANNEL_WEBHOOK_URL: string;
+  /**
+   * [Optional] Google Sheet the bot mirrors spawn timers into (read-only
+   * export). The sheet must be shared with GOOGLE_CLIENT_EMAIL as an editor.
+   */
+  TIMER_EXPORT_SHEET_ID?: string;
   TZ: string;
   USE_EVERYONE_ALERT: string;
   USE_DISCORD_TIMESTAMPS: string;

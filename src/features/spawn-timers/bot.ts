@@ -14,6 +14,7 @@ import { formatHammertime } from "./commands/helpers/duration";
 import { updateTimersChannel } from "./commands/helpers/channel-update";
 import { TIMER_ALERT_CHANNEL_ID, TIMER_ALERT_CHANNEL_REFRESH_RATE, TIMER_CHANNEL_REFRESH_RATE, USE_EVERYONE_ALERT } from "../../config";
 import { timerPrismaClient } from "../../db/timer-client";
+import { recordEndedTimer } from "./commands/helpers/ended-timers";
 
 // Timer tracking state
 let lastTimerUpdate: Date | null = null;
@@ -160,6 +161,11 @@ export async function spawnTimerLoop(): Promise<void> {
             where: { id: timer.id },
             data: updates,
           });
+
+          const endedAt = nextSpawnTimeEnd(timer);
+          if (updates.lastTod === null && endedAt) {
+            recordEndedTimer(timer.id, endedAt);
+          }
 
           sendTimerChannelUpdate = true;
         }

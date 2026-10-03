@@ -1,10 +1,12 @@
 import { ChatInputCommandInteraction, CacheType, TextChannel } from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
 import { timerPrismaClient } from "../../../db/timer-client";
+import { forgetEndedTimers } from "./helpers/ended-timers";
 import { EARTHQUAKE_ALERT_CHANNEL_ID, EARTHQUAKE_ALERT_MESSAGE, TIMER_ALERT_CHANNEL_ID } from "../../../config";
 
 class EarthquakeCommand extends SimpleCommand {
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
+    forgetEndedTimers();
     await timerPrismaClient.timer.updateMany({
       data: {
         lastTod: null,

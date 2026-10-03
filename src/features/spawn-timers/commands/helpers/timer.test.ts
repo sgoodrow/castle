@@ -13,6 +13,7 @@ import {
   getWindowStart,
   getWindowEnd,
   getVariance,
+  timerPhase,
 } from "./timer";
 
 /** Helper to create a Timer-like object for testing. */
@@ -294,5 +295,29 @@ describe("lastSpawnTimeStart", () => {
     // tod - windowStart - variance = tod - 2d - 1d = tod - 3d
     const expected = new Date(now.getTime() - 3 * 86400 * 1000);
     expect(last!.getTime()).toBe(expected.getTime());
+  });
+});
+
+describe("timerPhase", () => {
+  const tod = 1_700_000_000;
+  const timer = makeTimer({ lastTod: tod, windowStart: "1h", windowEnd: "2h" });
+  const at = (offsetSeconds: number) => new Date((tod + offsetSeconds) * 1000);
+
+  it("returns null without a tod", () => {
+    expect(timerPhase(makeTimer({ windowStart: "1h" }))).toBeNull();
+  });
+
+  it("is upcoming before the window opens", () => {
+    expect(timerPhase(timer, at(30 * 60))).toBe("upcoming");
+  });
+
+  it("is in window between open and close", () => {
+    expect(timerPhase(timer, at(90 * 60))).toBe("in window");
+  });
+
+  it("is ended right after close, while inWindow is still true", () => {
+    const now = at(2 * 60 * 60 + 4 * 60);
+    expect(inWindow(timer, now)).toBe(true);
+    expect(timerPhase(timer, now)).toBe("ended");
   });
 });
