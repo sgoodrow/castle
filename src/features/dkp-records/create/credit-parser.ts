@@ -22,6 +22,16 @@ export type CreditData = PilotCredit | ReasonCredit | UnknownCredit;
 
 const PILOT_KEYWORD = "botpilot";
 
+// matches "botpilot", "Botpilot", "bot pilot", "bot-pilot", etc.
+const PILOT_KEYWORD_VARIANTS = /\bbot[\s_-]*pilot\b/gi;
+
+// lowercase and strip punctuation so "Botpilot:" matches the keyword
+const normalizeWord = (word?: string) =>
+  word?.toLowerCase().replace(/[^a-z]/g, "") ?? "";
+
+// character names are letters only, so drop trailing commas, colons, etc.
+const cleanName = (word: string) => word.replace(/[^a-zA-Z]/g, "");
+
 export class CreditParser {
   public readonly character: string;
   protected readonly raw: string;
@@ -42,7 +52,7 @@ export class CreditParser {
     this.raw = stripped.slice(credit);
     const words = this.raw.split(" ");
     words.shift();
-    this.record = words.join(" ").trim();
+    this.record = words.join(" ").trim().replace(PILOT_KEYWORD_VARIANTS, PILOT_KEYWORD);
   }
 
   public getCredit(): CreditData {
@@ -61,7 +71,7 @@ export class CreditParser {
       return "UNKNOWN";
     }
     const words = this.record.split(" ");
-    if ([words[0], words[1]].includes(PILOT_KEYWORD)) {
+    if ([words[0], words[1]].map(normalizeWord).includes(PILOT_KEYWORD)) {
       return "PILOT";
     }
     return "REASON";
@@ -69,18 +79,17 @@ export class CreditParser {
 
   private get pilotCredit(): PilotCredit | UnknownCredit {
     const words = this.record.split(" ");
-    if (words[0] === PILOT_KEYWORD && words[1] !== undefined) {
+    const pilot =
+      normalizeWord(words[0]) === PILOT_KEYWORD
+        ? cleanName(words[1] ?? "")
+        : normalizeWord(words[1]) === PILOT_KEYWORD
+          ? cleanName(words[0])
+          : "";
+    if (pilot) {
       return {
         type: "PILOT",
         character: this.character,
-        pilot: words[1],
-        reason: words.slice(2).join(" "),
-      };
-    } else if (words[1] === PILOT_KEYWORD) {
-      return {
-        type: "PILOT",
-        character: this.character,
-        pilot: words[0],
+        pilot,
         reason: words.slice(2).join(" "),
       };
     }

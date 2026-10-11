@@ -223,14 +223,25 @@ ${result}${code}${notIncluded}`,
     }
 
     public get creditCommands(): string[] {
-        return this.data.credits.map((c) =>
-            c.type === "UNKNOWN"
-                ? `⚠️ Unparsable credit: ${c.character} said '${c.raw}' during Raid Tick ${this.data.tickNumber}`
-                : c.type === "PILOT"
-                    ? `!rep ${c.character} with ${c.pilot} ${this.data.tickNumber}${c.reason ? ` (${c.reason})` : ""
-                    }`
-                    : `!add ${c.character} ${this.data.tickNumber} (${c.reason})`
-        );
+        const tick = this.data.tickNumber;
+        const attendees = new Set(this.data.attendees.map((a) => a.toLowerCase()));
+        return this.data.credits.flatMap((c) => {
+            if (c.type === "UNKNOWN") {
+                return [`⚠️ Unparsable credit: ${c.character} said '${c.raw}' during Raid Tick ${tick}`];
+            }
+            if (c.type === "REASON") {
+                return [`!add ${c.character} ${tick} (${c.reason})`];
+            }
+            const rep = `!rep ${c.character} with ${c.pilot} ${tick}${c.reason ? ` (${c.reason})` : ""}`;
+            // a !rep only swaps someone already in attendance, so a bot that was out of
+            // zone has to be added first or the pilot silently gets no credit
+            const bot = c.character.toLowerCase();
+            if (attendees.has(bot)) {
+                return [rep];
+            }
+            attendees.add(bot);
+            return [`!add ${c.character} ${tick} (botpilot, not in attendance)`, rep];
+        });
     }
 
     private getPaddedDkp(secondColumnLength: number, value: string) {
