@@ -58,6 +58,7 @@ export abstract class RaidReportRevision {
       await this.execute(report);
     } catch (err) {
       await message.react("⚠️");
+      await message.reply(`⚠️ ${(err as Error).message ?? err}`);
       return false;
     }
 

@@ -29,12 +29,52 @@ describe("pilot", () => {
     }
   });
 
+  it.each([
+    "creditt Botpilot Pumped because we needed him",
+    "creditt BOTPILOT Pumped because we needed him",
+    "creditt bot pilot Pumped because we needed him",
+    "creditt Bot Pilot Pumped because we needed him",
+    "creditt bot-pilot Pumped because we needed him",
+    "creditt botpilot: Pumped, because we needed him",
+    "creditt Pumped Bot Pilot because we needed him",
+    "creditt Pumped, botpilot because we needed him",
+  ])("ignores case, spacing and punctuation: %s", (tell) => {
+    const credit = new CreditParser(
+      `[Sat Feb 25 16:15:52 2023] Iceburgh -> Someone: ${tell}`
+    ).getCredit();
+    expect(credit.type).toEqual("PILOT");
+
+    if (credit.type === "PILOT") {
+      expect(credit.pilot).toEqual("Pumped");
+      expect(credit.reason).toEqual("because we needed him");
+    }
+  });
+
+  it("works for quote tells with mixed case", () => {
+    const credit = new CreditParser(
+      "[Sat Feb 25 16:15:52 2023] Iceburgh tells you, 'Creditt Botpilot Pumped'"
+    ).getCredit();
+    expect(credit.type).toEqual("PILOT");
+
+    if (credit.type === "PILOT") {
+      expect(credit.pilot).toEqual("Pumped");
+      expect(credit.reason).toEqual("");
+    }
+  });
+
   it("doesn't work if pilot is missing", () => {
     const parser = new CreditParser(
       "[Sat Feb 25 16:15:52 2023] Iceburgh -> Someone: creditt botpilot"
     );
     const credit = parser.getCredit();
     expect(credit.type).toEqual("UNKNOWN");
+  });
+
+  it("doesn't work if pilot is missing with spaced keyword", () => {
+    const parser = new CreditParser(
+      "[Sat Feb 25 16:15:52 2023] Iceburgh -> Someone: creditt Bot Pilot"
+    );
+    expect(parser.getCredit().type).toEqual("UNKNOWN");
   });
 });
 

@@ -9,6 +9,9 @@ import axios from "axios";
 import { RaidReport } from "../raid-report";
 import { addRoleToThread } from "../../../shared/command/util";
 import { isValidXlsxData, SheetParser } from "./sheet-parser";
+import { getPilotWarnings } from "./pilot-checks";
+import { openDkpService } from "../../../services/openDkpService";
+import { PublicAccountsFactory } from "../../../services/bot/bot-factory";
 
 const supportedFormat =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -44,6 +47,9 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     const { Sheets, SheetNames } = read(data);
 
     const filename = a.name?.replace(".xlsx", "") || "raid";
+
+    // fill the character cache so the report can show class summaries
+    await openDkpService.getCharacters().catch(() => undefined);
 
     // parse the attachment into a raid report
     const ticks = this.parseSheets(SheetNames, Sheets);
@@ -85,10 +91,21 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
       embeds: [report.instructionsEmbed],
     });
 
-    // add credit messages
-    await Promise.all(
-      report.getCreditCommands().map((content) => thread.send({ content }))
-    );
+    // add credit messages, in order, since a bot's !add must land before its !rep
+    for (const content of report.getCreditCommands()) {
+      await thread.send({ content });
+    }
+
+    // flag botpilot tells that name an unknown character or the wrong pilot
+    const pilotWarnings = await getPilotWarnings(report.pilotCredits, {
+      characterExists: async (name) =>
+        !!(await openDkpService.getCharacter(name, false)),
+      getCurrentBotPilot: (bot) =>
+        PublicAccountsFactory.getService().getCurrentBotPilot(bot),
+    });
+    for (const content of pilotWarnings) {
+      await thread.send({ content });
+    }
 
     // add deputies to thread
     await addRoleToThread(dkpDeputyRoleId, thread);

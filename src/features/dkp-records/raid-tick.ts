@@ -1,5 +1,5 @@
 import { EmbedBuilder } from "discord.js";
-import { eq, sumBy } from "lodash";
+import { countBy, sumBy } from "lodash";
 import moment, { Moment } from "moment";
 import { castledkp, RaidEventData } from "../../services/castledkp";
 import { code } from "../../shared/util";
@@ -30,6 +30,8 @@ export interface RaidTickData {
     date: string;
     credits: CreditData[];
     adjustments?: AdjustmentData[];
+    // attendee -> the character they replaced via !rep, e.g. a botpilot's bot
+    replaced?: { [attendee: string]: string };
 }
 
 interface Change {
@@ -37,6 +39,34 @@ interface Change {
     change: string;
     reason: string;
 }
+
+const CLASS_ABBREVIATIONS: { [cls: string]: string } = {
+    bard: "BRD",
+    beastlord: "BST",
+    berserker: "BER",
+    cleric: "CLR",
+    druid: "DRU",
+    enchanter: "ENC",
+    mage: "MAG",
+    magician: "MAG",
+    monk: "MNK",
+    necromancer: "NEC",
+    paladin: "PAL",
+    ranger: "RNG",
+    rogue: "ROG",
+    shadowknight: "SHD",
+    shaman: "SHM",
+    warrior: "WAR",
+    wizard: "WIZ",
+};
+
+const abbreviateClass = (cls?: string) => {
+    if (!cls) {
+        return "?";
+    }
+    const key = cls.toLowerCase().replace(/[^a-z]/g, "");
+    return CLASS_ABBREVIATIONS[key] || key.slice(0, 3).toUpperCase() || "?";
+};
 
 export const getRaidUrl = (eventUrlSlug: string, raidId: number) =>
     `https://${openDkpClientName}.opendkp.com/#/raids/${raidId}`;
@@ -109,27 +139,53 @@ export class RaidTick {
         this.data.adjustments.push(adjustment);
     }
 
+    public hasPlayer(name: string): boolean {
+        return this.indexOfPlayer(name) >= 0;
+    }
+
+    private indexOfPlayer(name: string): number {
+        const lower = name.toLowerCase();
+        return this.data.attendees.findIndex((a) => a.toLowerCase() === lower);
+    }
+
     public addPlayer(name: string) {
-        if (!this.data.attendees.includes(name)) {
+        if (!this.hasPlayer(name)) {
             this.data.attendees.push(name);
             this.data.attendees.sort();
         }
     }
 
-    public removePlayer(name: string) {
-        const index = this.data.attendees.indexOf(name);
+    /** Returns false if the player was not in attendance. */
+    public removePlayer(name: string): boolean {
+        const index = this.indexOfPlayer(name);
         if (index < 0) {
-            return;
+            return false;
         }
-        this.data.attendees.splice(index, 1);
+        const [removed] = this.data.attendees.splice(index, 1);
+        if (this.data.replaced) {
+            delete this.data.replaced[removed];
+        }
+        return true;
     }
 
-    public replacePlayer(replacer: string, replaced: string) {
-        const index = this.data.attendees.indexOf(replaced);
+    /** Returns false if the replaced player was not in attendance. */
+    public replacePlayer(replacer: string, replaced: string): boolean {
+        const index = this.indexOfPlayer(replaced);
         if (index < 0) {
-            return;
+            return false;
         }
-        this.data.attendees[index] = replacer;
+        const original = this.data.attendees[index];
+        // keep the first character in a chain of replacements, e.g. the bot
+        const replacedBy = this.data.replaced?.[original] ?? original;
+        this.removePlayer(original);
+        this.addPlayer(replacer);
+        this.data.replaced = { ...this.data.replaced, [replacer]: replacedBy };
+        return true;
+    }
+
+    /** The character this attendee replaced via !rep, if any. */
+    public getReplaced(attendee: string): string | undefined {
+        return this.data.replaced?.[attendee];
     }
 
     public update(event: RaidValue, value: number, note?: string, eqDkpEvent?: RaidEventData) {
@@ -139,7 +195,11 @@ export class RaidTick {
         this.data.note = note;
     }
 
-    public renderTick(firstColumnLength: number, secondColumnLength: number) {
+    public renderTick(
+        firstColumnLength: number,
+        secondColumnLength: number,
+        getClass?: (name: string) => string | undefined
+    ) {
         const ready =
             this.data.value !== undefined && this.data.event !== undefined;
         const all = EVERYONE.padEnd(firstColumnLength);
@@ -167,8 +227,18 @@ export class RaidTick {
                     secondColumnLength
                 )}`
                 : "";
+        const classes = getClass ? `\n${this.renderClasses(getClass)}` : "";
         return `--- ${this.name} ---
-${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${change}`;
+${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${classes}${change}`;
+    }
+
+    public renderClasses(getClass: (name: string) => string | undefined): string {
+        const counts = countBy(this.data.attendees, (a) => abbreviateClass(getClass(a)));
+        const summary = Object.entries(counts)
+            .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
+            .map(([cls, count]) => `${cls} ${count}`)
+            .join(" · ");
+        return `  ${summary || "No attendees"}`;
     }
 
     public getCreatedEmbed(
@@ -223,14 +293,29 @@ ${result}${code}${notIncluded}`,
     }
 
     public get creditCommands(): string[] {
-        return this.data.credits.map((c) =>
-            c.type === "UNKNOWN"
-                ? `⚠️ Unparsable credit: ${c.character} said '${c.raw}' during Raid Tick ${this.data.tickNumber}`
-                : c.type === "PILOT"
-                    ? `!rep ${c.character} with ${c.pilot} ${this.data.tickNumber}${c.reason ? ` (${c.reason})` : ""
-                    }`
-                    : `!add ${c.character} ${this.data.tickNumber} (${c.reason})`
-        );
+        const tick = this.data.tickNumber;
+        const attendees = new Set(this.data.attendees.map((a) => a.toLowerCase()));
+        return this.data.credits.flatMap((c) => {
+            if (c.type === "UNKNOWN") {
+                return [`⚠️ Unparsable credit: ${c.character} said '${c.raw}' during Raid Tick ${tick}`];
+            }
+            if (c.type === "REASON") {
+                return [`!add ${c.character} ${tick} (${c.reason})`];
+            }
+            if (attendees.has(c.pilot.toLowerCase())) {
+                // swapping the bot for the pilot would credit the pilot twice, so leave it to a deputy
+                return [`⚠️ ${c.character} said botpilot ${c.pilot} during Raid Tick ${tick}, but ${c.pilot} is already in attendance`];
+            }
+            const rep = `!rep ${c.character} with ${c.pilot} ${tick}${c.reason ? ` (${c.reason})` : ""}`;
+            // a !rep only swaps someone already in attendance, so a bot that was out of
+            // zone has to be added first or the pilot silently gets no credit
+            const bot = c.character.toLowerCase();
+            if (attendees.has(bot)) {
+                return [rep];
+            }
+            attendees.add(bot);
+            return [`!add ${c.character} ${tick} (botpilot, not in attendance)`, rep];
+        });
     }
 
     private getPaddedDkp(secondColumnLength: number, value: string) {
