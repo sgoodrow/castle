@@ -20,7 +20,7 @@ export class SheetParser {
   /**
    * List of strings. Each string may be one of the following:
    *
-   * 1. a /who record: "[wed feb 15 20:10:55 2023] [anonymous] PLAYER <castle> {LEVEL CLASS}"
+   * 1. a /who record: "[Fri Oct 09 08:21:26 2026] [ANONYMOUS] PLAYER <Castle> {LEVEL CLASS}"
    * 2. a loot record: "[wed feb 15 20:11:03 2023] you say, 'loot:  ITEM PLAYER COST'"
    * 3a. creditt tell: "[wed feb 15 20:11:23 2023] PLAYER -> NINJALOOTER: creditt MESSAGE"
    * 3b. creditt tell: "[wed feb 15 21:14:22 2023] PLAYER tells you, 'creditt MESSAGE'"`,
@@ -39,6 +39,7 @@ export class SheetParser {
         ? "Unknown"
         : `${this.sheetName}?`,
       attendees: this.attendees,
+      classes: this.classes,
       credits: this.credits,
       date: this.date,
       loot: this.loot,
@@ -65,20 +66,37 @@ export class SheetParser {
   }
 
   private get attendees(): string[] {
-    return this.xlsxData
-      .filter((r) => this.getRecordType(r) === "Attendance")
-      .map(
-        (r) =>
-          r
-            // remove wrapping quotes
-            .replace(/"/g, "")
-            // remove bracketed expressions
-            .replace(/\[.+?\]/g, "")
-            // remove excess whitespace
-            .trim()
-            // get first word
-            .split(" ")[0]
-      );
+    return this.attendanceRecords.map((r) => this.getAttendee(r));
+  }
+
+  private get classes(): { [attendee: string]: string } {
+    const classes: { [attendee: string]: string } = {};
+    this.attendanceRecords.forEach((r) => {
+      // "{60 Shadow Knight}" -> "Shadow Knight"
+      const cls = /\{\s*\d+\s+([^}]+?)\s*\}/.exec(r)?.[1];
+      if (cls) {
+        classes[this.getAttendee(r)] = cls;
+      }
+    });
+    return classes;
+  }
+
+  private get attendanceRecords(): string[] {
+    return this.xlsxData.filter((r) => this.getRecordType(r) === "Attendance");
+  }
+
+  private getAttendee(record: string): string {
+    return (
+      record
+        // remove wrapping quotes
+        .replace(/"/g, "")
+        // remove bracketed expressions
+        .replace(/\[.+?\]/g, "")
+        // remove excess whitespace
+        .trim()
+        // get first word
+        .split(" ")[0]
+    );
   }
 
   private get loot(): LootData[] {

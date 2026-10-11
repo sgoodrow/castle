@@ -128,4 +128,10 @@ describe("renderClasses", () => {
       "  CLR 2 · ? 1 · SHD 1 · WAR 1"
     );
   });
+
+  it("counts a botpilot as their bot's class", () => {
+    const t = tick(["Aa", "Dd"], []);
+    t.replacePlayer("Iceburgh", "Dd");
+    expect(t.renderClasses((n) => classes[n])).toEqual("  CLR 1 · WAR 1");
+  });
 });
