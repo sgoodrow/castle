@@ -11,7 +11,6 @@ import { addRoleToThread } from "../../../shared/command/util";
 import { isValidXlsxData, SheetParser } from "./sheet-parser";
 import { getPilotWarnings } from "./pilot-checks";
 import { openDkpService } from "../../../services/openDkpService";
-import { PublicAccountsFactory } from "../../../services/bot/bot-factory";
 
 const supportedFormat =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -96,12 +95,10 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
       await thread.send({ content });
     }
 
-    // flag botpilot tells that name an unknown character or the wrong pilot
+    // flag botpilot tells that name an unknown character
     const pilotWarnings = await getPilotWarnings(report.pilotCredits, {
       characterExists: async (name) =>
         !!(await openDkpService.getCharacter(name, false)),
-      getCurrentBotPilot: (bot) =>
-        PublicAccountsFactory.getService().getCurrentBotPilot(bot),
     });
     for (const content of pilotWarnings) {
       await thread.send({ content });
