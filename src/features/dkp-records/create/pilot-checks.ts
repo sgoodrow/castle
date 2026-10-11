@@ -7,14 +7,15 @@ export interface PilotCredit {
 
 export interface PilotLookups {
   characterExists: (name: string) => Promise<boolean>;
-  getCurrentBotPilot: (bot: string) => Promise<string | undefined>;
 }
 
 /**
- * Flags botpilot tells whose pilot looks wrong, so deputies can fix them before
- * approving the !rep: a pilot name that isn't a known character (usually a typo),
- * or a public bot that the bot sheet says someone else has checked out.
- * Lookup failures are ignored; these are hints, not blockers.
+ * Flags botpilot tells naming a character OpenDKP doesn't know (usually a typo),
+ * so deputies can fix them before approving the !rep. Lookup failures are ignored;
+ * these are hints, not blockers.
+ *
+ * This deliberately doesn't compare against the bot sheet's current pilot: that's a
+ * Discord nickname, which needn't match any character name.
  */
 export const getPilotWarnings = async (
   credits: PilotCredit[],
@@ -32,12 +33,6 @@ export const getPilotWarnings = async (
         .catch(() => true);
       if (!exists) {
         return `⚠️ ${said}, but there is no character named ${pilot} in OpenDKP`;
-      }
-      const current = await lookups
-        .getCurrentBotPilot(bot)
-        .catch(() => undefined);
-      if (current && current.toLowerCase() !== pilot.toLowerCase()) {
-        return `⚠️ ${said}, but the bot sheet has ${bot} checked out to ${current}`;
       }
     })
   );
