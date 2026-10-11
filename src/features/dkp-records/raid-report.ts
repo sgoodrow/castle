@@ -35,8 +35,6 @@ const INSTRUCTIONS_TITLE = "Instructions";
 const THREAD_EMBED_CHAR_LIMIT = 4000;
 const SECOND_COLUMN_LENGTH = 6;
 
-const getClass = (name: string) =>
-  odkpCharacterCache.get(capitalize(name))?.Class;
 
 const isRaidReportMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
@@ -266,7 +264,9 @@ Kill bonus values: https://docs.google.com/spreadsheets/d/1cZdD1HOtDutOvxkEp0-up
   public getRaidReportEmbeds(): EmbedBuilder[] {
     const report = `${this.ticks
       .map((t) =>
-        t.renderTick(this.firstColumnLength, SECOND_COLUMN_LENGTH, getClass)
+        t.renderTick(this.firstColumnLength, SECOND_COLUMN_LENGTH, (name) =>
+          this.getClass(name)
+        )
       )
       .join("\n\n")}
 
@@ -440,6 +440,20 @@ ${sorted
           )
         )
         .join("\n")}`;
+  }
+
+  /**
+   * Prefer the class from the sheet's /who lines, which covers bots and anonymous
+   * players. Fall back to OpenDKP for players added later via !add or !rep.
+   */
+  private getClass(name: string): string | undefined {
+    for (const t of this.ticks) {
+      const cls = t.data.classes?.[name];
+      if (cls) {
+        return cls;
+      }
+    }
+    return odkpCharacterCache.get(capitalize(name))?.Class;
   }
 
   // e.g. "Iceburgh [Pumped]" when Iceburgh replaced their bot Pumped

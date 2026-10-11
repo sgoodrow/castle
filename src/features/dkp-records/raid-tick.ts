@@ -32,6 +32,8 @@ export interface RaidTickData {
     adjustments?: AdjustmentData[];
     // attendee -> the character they replaced via !rep, e.g. a botpilot's bot
     replaced?: { [attendee: string]: string };
+    // attendee -> class, from the /who line in the sheet
+    classes?: { [attendee: string]: string };
 }
 
 interface Change {
@@ -233,7 +235,10 @@ ${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${classes}${change}`;
     }
 
     public renderClasses(getClass: (name: string) => string | undefined): string {
-        const counts = countBy(this.data.attendees, (a) => abbreviateClass(getClass(a)));
+        // a botpilot's main isn't in the raid, their bot is, so count the bot's class
+        const counts = countBy(this.data.attendees, (a) =>
+            abbreviateClass(getClass(this.getReplaced(a) ?? a))
+        );
         const summary = Object.entries(counts)
             .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
             .map(([cls, count]) => `${cls} ${count}`)
