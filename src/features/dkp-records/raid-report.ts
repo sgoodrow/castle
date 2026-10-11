@@ -4,15 +4,19 @@ import {
   TextBasedChannel,
   ThreadChannel,
 } from "discord.js";
-import { every, flatMap, max, uniq } from "lodash";
+import { capitalize, compact, every, flatMap, max, uniq } from "lodash";
 import { raiderRoleId } from "../../config";
 import { redisChannels, redisClient } from "../../redis/client";
 import { CreateRaidResponse, RaidEventData } from "../../services/castledkp";
 import { DAYS } from "../../shared/time";
 import { code, isEqDkpPlusEnabled } from "../../shared/util";
 import { AdjustmentData, EVERYONE, RaidTick, RaidTickData } from "./raid-tick";
-import { openDkpService } from "../../services/openDkpService";
+import {
+  odkpCharacterCache,
+  openDkpService,
+} from "../../services/openDkpService";
 import { RaidValue } from "../../services/raidValuesService";
+import { PilotCredit } from "./create/pilot-checks";
 
 export interface LootData {
   item: string;
@@ -30,6 +34,9 @@ const RAID_REPORT_TITLE = "Raid Report";
 const INSTRUCTIONS_TITLE = "Instructions";
 const THREAD_EMBED_CHAR_LIMIT = 4000;
 const SECOND_COLUMN_LENGTH = 6;
+
+const getClass = (name: string) =>
+  odkpCharacterCache.get(capitalize(name))?.Class;
 
 const isRaidReportMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
@@ -78,6 +85,9 @@ export const getRaidReportMessages = async (channel: TextBasedChannel) => {
 
 export const getRaidReport = async (channel: TextBasedChannel) => {
   const messages = await getRaidReportMessages(channel);
+
+  // refill the character cache (used for class summaries) if it has expired
+  await openDkpService.getCharacters().catch(() => undefined);
 
   const serialized = await redisClient.get(channel.id);
   if (!serialized) {
@@ -137,6 +147,12 @@ export class RaidReport {
 
   public getCreditCommands(): string[] {
     return flatMap(this.ticks, (t) => t.creditCommands);
+  }
+
+  public get pilotCredits(): PilotCredit[] {
+    return flatMap(this.ticks, (t) => t.data.credits).flatMap((c) =>
+      c.type === "PILOT" ? [{ bot: c.character, pilot: c.pilot }] : []
+    );
   }
 
   public async updateMessages(messages: Message[]) {
@@ -249,7 +265,9 @@ Kill bonus values: https://docs.google.com/spreadsheets/d/1cZdD1HOtDutOvxkEp0-up
 
   public getRaidReportEmbeds(): EmbedBuilder[] {
     const report = `${this.ticks
-      .map((t) => t.renderTick(this.firstColumnLength, SECOND_COLUMN_LENGTH))
+      .map((t) =>
+        t.renderTick(this.firstColumnLength, SECOND_COLUMN_LENGTH, getClass)
+      )
       .join("\n\n")}
 
 ${this.attendance}`;
@@ -325,6 +343,7 @@ ${p}${code}`,
   }
 
   public removePlayer(name: string, tickNumbers: number[]) {
+    this.assertInAttendance(name, tickNumbers);
     this.getRaidTicks(tickNumbers).forEach((t) => t.removePlayer(name));
   }
 
@@ -333,9 +352,29 @@ ${p}${code}`,
     replaced: string,
     tickNumbers: number[]
   ) {
+    this.assertInAttendance(replaced, tickNumbers);
     this.getRaidTicks(tickNumbers).forEach((t) =>
       t.replacePlayer(replacer, replaced)
     );
+  }
+
+  /**
+   * Without this, a typo'd !rem or !rep silently changes nothing but is still approved.
+   * Named ticks must all include the player; with no ticks named, at least one must.
+   */
+  private assertInAttendance(name: string, tickNumbers: number[]) {
+    const ticks = this.getRaidTicks(tickNumbers);
+    const missing = ticks.filter((t) => !t.hasPlayer(name));
+    if (tickNumbers.length === 0 && missing.length === ticks.length) {
+      throw new Error(`${name} is not in attendance on any tick`);
+    }
+    if (tickNumbers.length > 0 && missing.length > 0) {
+      throw new Error(
+        `${name} is not in attendance on tick ${missing
+          .map((t) => t.data.tickNumber)
+          .join(", ")}`
+      );
+    }
   }
 
   public getEventForTick(tickNumber: number) {
@@ -394,11 +433,21 @@ ${p}${code}`,
 ${sorted
         .map((name) =>
           this.renderAttendee(
-            name.padEnd(this.firstColumnLength + SECOND_COLUMN_LENGTH + 1),
+            this.labelAttendee(name).padEnd(
+              this.firstColumnLength + SECOND_COLUMN_LENGTH + 1
+            ),
             attendanceMap[name]
           )
         )
         .join("\n")}`;
+  }
+
+  // e.g. "Iceburgh [Pumped]" when Iceburgh replaced their bot Pumped
+  private labelAttendee(name: string): string {
+    const replaced = uniq(
+      compact(this.ticks.map((t) => t.getReplaced(name)))
+    );
+    return replaced.length > 0 ? `${name} [${replaced.join(", ")}]` : name;
   }
 
   private get allAttendees() {

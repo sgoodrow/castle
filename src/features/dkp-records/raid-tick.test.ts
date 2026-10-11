@@ -62,6 +62,16 @@ describe("creditCommands", () => {
     ]);
   });
 
+  it("warns instead of swapping when the pilot is already in attendance", () => {
+    const commands = tick(
+      ["Pumped", "Iceburgh"],
+      [{ type: "PILOT", character: "Pumped", pilot: "Iceburgh", reason: "" }]
+    ).creditCommands;
+    expect(commands).toEqual([
+      "⚠️ Pumped said botpilot Iceburgh during Raid Tick 2, but Iceburgh is already in attendance",
+    ]);
+  });
+
   it("leaves reason and unknown credits unchanged", () => {
     const commands = tick(
       [],
@@ -74,5 +84,48 @@ describe("creditCommands", () => {
       "!add Pumped 2 (dead from DT)",
       "⚠️ Unparsable credit: Pumped said 'creditt' during Raid Tick 2",
     ]);
+  });
+});
+
+describe("attendance changes", () => {
+  it("reports whether a replace or remove found the player", () => {
+    const t = tick(["Pumped"], []);
+    expect(t.replacePlayer("Iceburgh", "Nobody")).toBe(false);
+    expect(t.removePlayer("Nobody")).toBe(false);
+    expect(t.replacePlayer("Iceburgh", "pumped")).toBe(true);
+    expect(t.data.attendees).toEqual(["Iceburgh"]);
+  });
+
+  it("remembers the original character through a chain of replacements", () => {
+    const t = tick(["Pumped"], []);
+    t.replacePlayer("Iceburgh", "Pumped");
+    expect(t.getReplaced("Iceburgh")).toEqual("Pumped");
+    t.replacePlayer("Kryg", "Iceburgh");
+    expect(t.getReplaced("Kryg")).toEqual("Pumped");
+    expect(t.getReplaced("Iceburgh")).toBeUndefined();
+    t.removePlayer("Kryg");
+    expect(t.getReplaced("Kryg")).toBeUndefined();
+  });
+
+  it("does not duplicate a replacer who is already in attendance", () => {
+    const t = tick(["Iceburgh", "Pumped"], []);
+    t.replacePlayer("Iceburgh", "Pumped");
+    expect(t.data.attendees).toEqual(["Iceburgh"]);
+  });
+});
+
+describe("renderClasses", () => {
+  const classes: { [name: string]: string } = {
+    Aa: "Cleric",
+    Bb: "Cleric",
+    Cc: "Shadow Knight",
+    Dd: "Warrior",
+  };
+
+  it("summarises attendee classes, most common first", () => {
+    const t = tick(["Aa", "Bb", "Cc", "Dd", "Unknown"], []);
+    expect(t.renderClasses((n) => classes[n])).toEqual(
+      "  CLR 2 · ? 1 · SHD 1 · WAR 1"
+    );
   });
 });
