@@ -126,13 +126,25 @@ describe("renderClasses", () => {
   it("summarises attendee classes, most common first", () => {
     const t = tick(["Aa", "Bb", "Cc", "Dd", "Unknown"], []);
     expect(t.renderClasses((n) => classes[n])).toEqual(
-      "  CLR 2 · ? 1 · SHD 1 · WAR 1"
+      "CLR 2   ?   1   SHD 1   WAR 1"
     );
+  });
+
+  it("wraps into rows and aligns counts", () => {
+    const many = ["Aa", "Bb", "Cc", "Dd", "Unknown"];
+    const t = tick([...many, ...Array.from({ length: 9 }, (_, i) => `X${i}`)], []);
+    expect(t.renderClasses((n) => classes[n], 2)).toEqual(
+      ["?   10   CLR  2", "SHD  1   WAR  1"].join("\n")
+    );
+  });
+
+  it("says when nobody is attending", () => {
+    expect(tick([], []).renderClasses(() => undefined)).toEqual("No attendees");
   });
 
   it("counts a botpilot as their bot's class", () => {
     const t = tick(["Aa", "Dd"], []);
     t.replacePlayer("Iceburgh", "Dd");
-    expect(t.renderClasses((n) => classes[n])).toEqual("  CLR 1 · WAR 1");
+    expect(t.renderClasses((n) => classes[n])).toEqual("CLR 1   WAR 1");
   });
 });

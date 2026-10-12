@@ -1,5 +1,5 @@
 import { EmbedBuilder } from "discord.js";
-import { countBy, sumBy } from "lodash";
+import { chunk, countBy, sumBy } from "lodash";
 import moment, { Moment } from "moment";
 import { castledkp, RaidEventData } from "../../services/castledkp";
 import { code } from "../../shared/util";
@@ -232,16 +232,28 @@ export class RaidTick {
 ${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${change}`;
     }
 
-    public renderClasses(getClass: (name: string) => string | undefined): string {
+    /** A grid of class counts, most common first, e.g. "CLR 4   WAR 3   SHD 2   ENC 2". */
+    public renderClasses(
+        getClass: (name: string) => string | undefined,
+        perRow = 4
+    ): string {
         // a botpilot's main isn't in the raid, their bot is, so count the bot's class
         const counts = countBy(this.data.attendees, (a) =>
             abbreviateClass(getClass(this.getReplaced(a) ?? a))
         );
-        const summary = Object.entries(counts)
-            .sort(([a, x], [b, y]) => y - x || a.localeCompare(b))
-            .map(([cls, count]) => `${cls} ${count}`)
-            .join(" · ");
-        return `  ${summary || "No attendees"}`;
+        const entries = Object.entries(counts).sort(
+            ([a, x], [b, y]) => y - x || a.localeCompare(b)
+        );
+        if (entries.length === 0) {
+            return "No attendees";
+        }
+        const countWidth = Math.max(...entries.map(([, n]) => `${n}`.length));
+        const cells = entries.map(
+            ([cls, n]) => `${cls.padEnd(3)} ${`${n}`.padStart(countWidth)}`
+        );
+        return chunk(cells, perRow)
+            .map((row) => row.join("   "))
+            .join("\n");
     }
 
     public getCreatedEmbed(
