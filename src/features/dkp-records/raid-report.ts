@@ -32,9 +32,9 @@ interface RaidData {
 
 const RAID_REPORT_TITLE = "Raid Report";
 const INSTRUCTIONS_TITLE = "Instructions";
+const CLASS_SUMMARY_TITLE = "Class Summary";
 const THREAD_EMBED_CHAR_LIMIT = 4000;
 const SECOND_COLUMN_LENGTH = 6;
-
 
 const isRaidReportMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
@@ -43,6 +43,9 @@ const isNotEmpty = (m: Message) => !!m.embeds.find((e) => e.length === 0);
 
 export const isRaidInstructionsMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === INSTRUCTIONS_TITLE);
+
+const isClassSummaryMessage = (m: Message) =>
+  !!m.embeds.find((e) => e.title === CLASS_SUMMARY_TITLE);
 
 export const getRaidReportMessages = async (channel: TextBasedChannel) => {
   if (!channel.isThread()) {
@@ -60,9 +63,9 @@ export const getRaidReportMessages = async (channel: TextBasedChannel) => {
   const all = await channel.messages.fetch({
     after: starter.id,
     // 4 is the typical number of messages for a "very large" raid (e.g. 9 ticks on a quake)
-    // 7 has some nice buffer incase something crazy happens
+    // plus the class summary; 8 has some nice buffer incase something crazy happens
     // assumption: fewer = faster
-    limit: 7,
+    limit: 8,
   });
   const messages = [
     ...all
@@ -71,6 +74,7 @@ export const getRaidReportMessages = async (channel: TextBasedChannel) => {
         (m) =>
           isRaidReportMessage(m) ||
           isRaidInstructionsMessage(m) ||
+          isClassSummaryMessage(m) ||
           isNotEmpty(m)
       )
       .values(),
@@ -155,15 +159,20 @@ export class RaidReport {
 
   public async updateMessages(messages: Message[]) {
     const raidReportEmbeds = this.getRaidReportEmbeds();
-    if (raidReportEmbeds.length > messages.length) {
+    const classSummaryMessages = messages.filter(isClassSummaryMessage);
+    const reportMessages = messages.filter((m) => !isClassSummaryMessage(m));
+    if (raidReportEmbeds.length > reportMessages.length) {
       throw new Error(
         "Insufficient messages for number of embeds. This should never happen"
       );
     }
 
     try {
-      await Promise.all(
-        messages.map((m, i) => {
+      await Promise.all([
+        ...classSummaryMessages.map((m) =>
+          m.edit({ embeds: [this.classSummaryEmbed] })
+        ),
+        ...reportMessages.map((m, i) => {
           // since the messages include a buffer message, which may not have any raid report content in it,
           // we need to verify there is actually an embed
           const embed: EmbedBuilder = raidReportEmbeds[i];
@@ -174,8 +183,8 @@ export class RaidReport {
           return m.edit({
             embeds,
           });
-        })
-      );
+        }),
+      ]);
     } catch (err) {
       throw new Error(
         `Could not generate edited raid report with action values: ${err}`
@@ -261,13 +270,23 @@ Kill bonus values: https://docs.google.com/spreadsheets/d/1cZdD1HOtDutOvxkEp0-up
     return embeds;
   }
 
+  /** Posted below the raid report, so the ticks themselves stay compact. */
+  public get classSummaryEmbed(): EmbedBuilder {
+    return new EmbedBuilder({
+      title: CLASS_SUMMARY_TITLE,
+      description: `${code}diff
+${this.ticks
+          .map(
+            (t) => `--- ${t.name} ---
+${t.renderClasses((name) => this.getClass(name))}`
+          )
+          .join("\n")}${code}`,
+    });
+  }
+
   public getRaidReportEmbeds(): EmbedBuilder[] {
     const report = `${this.ticks
-      .map((t) =>
-        t.renderTick(this.firstColumnLength, SECOND_COLUMN_LENGTH, (name) =>
-          this.getClass(name)
-        )
-      )
+      .map((t) => t.renderTick(this.firstColumnLength, SECOND_COLUMN_LENGTH))
       .join("\n\n")}
 
 ${this.attendance}`;

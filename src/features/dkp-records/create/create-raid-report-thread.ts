@@ -90,6 +90,11 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
       embeds: [report.instructionsEmbed],
     });
 
+    // class summary per tick, above the credit !add/!rep messages
+    await thread.send({
+      embeds: [report.classSummaryEmbed],
+    });
+
     // add credit messages, in order, since a bot's !add must land before its !rep
     for (const content of report.getCreditCommands()) {
       await thread.send({ content });

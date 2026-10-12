@@ -199,8 +199,7 @@ export class RaidTick {
 
     public renderTick(
         firstColumnLength: number,
-        secondColumnLength: number,
-        getClass?: (name: string) => string | undefined
+        secondColumnLength: number
     ) {
         const ready =
             this.data.value !== undefined && this.data.event !== undefined;
@@ -229,9 +228,8 @@ export class RaidTick {
                     secondColumnLength
                 )}`
                 : "";
-        const classes = getClass ? `\n${this.renderClasses(getClass)}` : "";
         return `--- ${this.name} ---
-${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${classes}${change}`;
+${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${change}`;
     }
 
     public renderClasses(getClass: (name: string) => string | undefined): string {
