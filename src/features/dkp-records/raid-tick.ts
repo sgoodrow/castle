@@ -232,10 +232,10 @@ export class RaidTick {
 ${ready ? "+" : "-"} ${all} ${attendanceValue} (Attendance)${change}`;
     }
 
-    /** A grid of class counts, most common first, e.g. "CLR 4   WAR 3   SHD 2   ENC 2". */
+    /** A grid of class counts, most common first, e.g. "CLR 4   WAR 3   SHD 2", narrow enough for phones. */
     public renderClasses(
         getClass: (name: string) => string | undefined,
-        perRow = 4
+        perRow = 3
     ): string {
         // a botpilot's main isn't in the raid, their bot is, so count the bot's class
         const counts = countBy(this.data.attendees, (a) =>

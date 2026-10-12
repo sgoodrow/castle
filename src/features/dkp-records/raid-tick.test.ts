@@ -126,7 +126,7 @@ describe("renderClasses", () => {
   it("summarises attendee classes, most common first", () => {
     const t = tick(["Aa", "Bb", "Cc", "Dd", "Unknown"], []);
     expect(t.renderClasses((n) => classes[n])).toEqual(
-      "CLR 2   ?   1   SHD 1   WAR 1"
+      "CLR 2   ?   1   SHD 1\nWAR 1"
     );
   });
 
