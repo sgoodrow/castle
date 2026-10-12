@@ -272,16 +272,13 @@ Kill bonus values: https://docs.google.com/spreadsheets/d/1cZdD1HOtDutOvxkEp0-up
 
   /** Posted below the raid report, so the ticks themselves stay compact. */
   public get classSummaryEmbed(): EmbedBuilder {
-    return new EmbedBuilder({
-      title: CLASS_SUMMARY_TITLE,
-      description: `${code}diff
-${this.ticks
-          .map(
-            (t) => `--- ${t.name} ---
-${t.renderClasses((name) => this.getClass(name))}`
-          )
-          .join("\n")}${code}`,
-    });
+    return new EmbedBuilder({ title: CLASS_SUMMARY_TITLE }).addFields(
+      this.ticks.map((t) => ({
+        name: `${t.name} · ${t.data.attendees.length} attending`,
+        value: `${code}
+${t.renderClasses((name) => this.getClass(name))}${code}`,
+      }))
+    );
   }
 
   public getRaidReportEmbeds(): EmbedBuilder[] {
