@@ -310,14 +310,14 @@ ${result}${code}${notIncluded}`,
                 return [`⚠️ ${c.character} said botpilot ${c.pilot} during Raid Tick ${tick}, but ${c.pilot} is already in attendance`];
             }
             const rep = `!rep ${c.character} with ${c.pilot} ${tick}${c.reason ? ` (${c.reason})` : ""}`;
-            // a !rep only swaps someone already in attendance, so a bot that was out of
-            // zone has to be added first or the pilot silently gets no credit
+            // a bot out of zone is only added when the tell gives a reason (e.g. "dead"),
+            // otherwise the !rep alone is left for a deputy to judge
             const bot = c.character.toLowerCase();
-            if (attendees.has(bot)) {
+            if (attendees.has(bot) || !c.reason) {
                 return [rep];
             }
             attendees.add(bot);
-            return [`!add ${c.character} ${tick} (botpilot, not in attendance)`, rep];
+            return [`!add ${c.character} ${tick} (${c.reason})`, rep];
         });
     }
 

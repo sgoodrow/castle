@@ -29,22 +29,23 @@ describe("creditCommands", () => {
     expect(commands).toEqual(["!rep Pumped with Iceburgh 2"]);
   });
 
-  it("adds the bot before the rep when it is not in attendance", () => {
+  it("adds the bot with the reason before the rep when it is not in attendance", () => {
     const commands = tick(
       ["Someone"],
-      [
-        {
-          type: "PILOT",
-          character: "Pumped",
-          pilot: "Iceburgh",
-          reason: "out of zone",
-        },
-      ]
+      [{ type: "PILOT", character: "Pumped", pilot: "Iceburgh", reason: "dead" }]
     ).creditCommands;
     expect(commands).toEqual([
-      "!add Pumped 2 (botpilot, not in attendance)",
-      "!rep Pumped with Iceburgh 2 (out of zone)",
+      "!add Pumped 2 (dead)",
+      "!rep Pumped with Iceburgh 2 (dead)",
     ]);
+  });
+
+  it("only reps a missing bot when the tell gives no reason", () => {
+    const commands = tick(
+      ["Someone"],
+      [{ type: "PILOT", character: "Pumped", pilot: "Iceburgh", reason: "" }]
+    ).creditCommands;
+    expect(commands).toEqual(["!rep Pumped with Iceburgh 2"]);
   });
 
   it("only adds a missing bot once per tick", () => {
@@ -52,13 +53,13 @@ describe("creditCommands", () => {
       type: "PILOT",
       character: "Pumped",
       pilot: "Iceburgh",
-      reason: "",
+      reason: "dead",
     };
     const commands = tick([], [credit, credit]).creditCommands;
     expect(commands).toEqual([
-      "!add Pumped 2 (botpilot, not in attendance)",
-      "!rep Pumped with Iceburgh 2",
-      "!rep Pumped with Iceburgh 2",
+      "!add Pumped 2 (dead)",
+      "!rep Pumped with Iceburgh 2 (dead)",
+      "!rep Pumped with Iceburgh 2 (dead)",
     ]);
   });
 
