@@ -448,15 +448,16 @@ ${p}${code}`,
   private get attendance(): string {
     const attendanceMap = this.getAttendanceMap();
     const sorted = Object.keys(attendanceMap).sort();
+    const labels = sorted.map((name) => this.labelAttendee(name));
+    // botpilot labels like "Iceburgh [Pumped]" can be longer than any name
+    const width = Math.max(
+      this.firstColumnLength + SECOND_COLUMN_LENGTH + 1,
+      ...labels.map((l) => l.length)
+    );
     return `--- Attendance (${sorted.length}) ---
 ${sorted
-        .map((name) =>
-          this.renderAttendee(
-            this.labelAttendee(name).padEnd(
-              this.firstColumnLength + SECOND_COLUMN_LENGTH + 1
-            ),
-            attendanceMap[name]
-          )
+        .map((name, i) =>
+          this.renderAttendee(labels[i].padEnd(width), attendanceMap[name])
         )
         .join("\n")}`;
   }
