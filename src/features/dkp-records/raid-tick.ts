@@ -185,6 +185,17 @@ export class RaidTick {
         return true;
     }
 
+    /** True when a !rep of `replaced` with `replacer` has already been applied to this tick. */
+    public hasReplacement(replaced: string, replacer: string): boolean {
+        const index = this.indexOfPlayer(replacer);
+        return (
+            index >= 0 &&
+            !this.hasPlayer(replaced) &&
+            this.getReplaced(this.data.attendees[index])?.toLowerCase() ===
+                replaced.toLowerCase()
+        );
+    }
+
     /** The character this attendee replaced via !rep, if any. */
     public getReplaced(attendee: string): string | undefined {
         return this.data.replaced?.[attendee];

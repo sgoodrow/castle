@@ -1,28 +1,49 @@
 import { debounce } from "lodash";
 import { getGuild } from "../../..";
+import { redisClient } from "../../../redis/client";
 import { SECONDS } from "../../../shared/time";
 import { getRaidReportMessages, RaidReport } from "../raid-report";
 
-export const updateRaidReport = debounce(
-  async (message: string, channel: string) => {
-    const words = channel.split(".");
-    if (words[0] !== "raid" || !words[1]) {
-      return;
-    }
+// one debounce per thread, so an edit in one raid thread can't swallow another thread's update
+const pendingUpdates = new Map<string, () => void>();
 
-    const guild = await getGuild();
-    const thread = await guild.channels.fetch(words[1]);
+export const updateRaidReport = (_message: string, channel: string) => {
+  const words = channel.split(".");
+  const threadId = words[1];
+  if (words[0] !== "raid" || !threadId) {
+    return;
+  }
 
-    if (!thread?.isThread()) {
-      throw new Error(
-        `Failed to update raid report: channel ${words[1]} is not a thread`
+  let update = pendingUpdates.get(threadId);
+  if (!update) {
+    update = debounce(() => {
+      pendingUpdates.delete(threadId);
+      updateThread(threadId).catch((err) =>
+        console.error(`Failed to update raid report ${threadId}: ${err}`)
       );
-    }
+    }, 3 * SECONDS);
+    pendingUpdates.set(threadId, update);
+  }
+  update();
+};
 
-    const report = new RaidReport(JSON.parse(message));
-    const messages = await getRaidReportMessages(thread);
+const updateThread = async (threadId: string) => {
+  const guild = await getGuild();
+  const thread = await guild.channels.fetch(threadId);
 
-    await report.updateMessages(messages);
-  },
-  3 * SECONDS
-);
+  if (!thread?.isThread()) {
+    throw new Error(
+      `Failed to update raid report: channel ${threadId} is not a thread`
+    );
+  }
+
+  // render what is saved now rather than the published copy, which may be stale
+  const serialized = await redisClient.get(threadId);
+  if (!serialized) {
+    return;
+  }
+  const report = new RaidReport(JSON.parse(serialized));
+  const messages = await getRaidReportMessages(thread);
+
+  await report.updateMessages(messages);
+};
