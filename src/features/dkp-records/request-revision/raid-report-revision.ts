@@ -1,7 +1,7 @@
 import { GuildMember, Message, PartialMessage } from "discord.js";
 import { client } from "../../..";
 import { dkpDeputyRoleId, officerRoleId } from "../../../config";
-import { getRaidReport, RaidReport } from "../raid-report";
+import { getRaidReport, RaidReport, withRaidReportLock } from "../raid-report";
 
 export const checkReactionFromClient = async (
   message: PartialMessage | Message,
@@ -50,20 +50,22 @@ export abstract class RaidReportRevision {
       return false;
     }
 
-    // get raid report
-    const { report } = await getRaidReport(message.channel);
+    // get, edit and save the raid report without interleaving other edits
+    const error = await withRaidReportLock(message.channelId, async () => {
+      const { report } = await getRaidReport(message.channel);
+      try {
+        await this.execute(report);
+      } catch (err) {
+        return err as Error;
+      }
+      await report.save(message.channelId);
+    });
 
-    // execute action on raid report
-    try {
-      await this.execute(report);
-    } catch (err) {
+    if (error) {
       await message.react("⚠️");
-      await message.reply(`⚠️ ${(err as Error).message ?? err}`);
+      await message.reply(`⚠️ ${error.message ?? error}`);
       return false;
     }
-
-    // save to redis cache
-    await report.save(message.channelId);
 
     // show success
     await message.react("✅");

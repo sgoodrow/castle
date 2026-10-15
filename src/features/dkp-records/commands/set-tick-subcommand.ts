@@ -10,7 +10,7 @@ import {
   officerRoleId,
 } from "../../../config";
 import { Subcommand } from "../../../shared/command/subcommand";
-import { getRaidReport } from "../raid-report";
+import { getRaidReport, withRaidReportLock } from "../raid-report";
 import { RaidValue, RaidValuesService } from "../../../services/raidValuesService";
 
 enum Option {
@@ -43,9 +43,6 @@ export class SetTickSubcommand extends Subcommand {
       throw new Error("Must be a DKP Deputy or Officer to use this command");
     }
 
-    // get raid report
-    const { report } = await getRaidReport(interaction.channel);
-
     const eventName = this.getRequiredOptionValue<string>(
       Option.Event,
       interaction
@@ -75,9 +72,17 @@ export class SetTickSubcommand extends Subcommand {
       value += dkpEvent?.killDkp || 0;
     }
 
-    const ticksUpdated = report.updateRaidTick(dkpEvent, value, tick, note);
-
-    await report.save(interaction.channelId);
+    // get, edit and save the raid report without interleaving other edits
+    const channel = interaction.channel;
+    const { report, ticksUpdated } = await withRaidReportLock(
+      channel.id,
+      async () => {
+        const { report } = await getRaidReport(channel);
+        const ticksUpdated = report.updateRaidTick(dkpEvent, value, tick, note);
+        await report.save(channel.id);
+        return { report, ticksUpdated };
+      }
+    );
 
     await report.tryUpdateThreadName(interaction.channel);
 

@@ -85,6 +85,30 @@ export const getRaidReportMessages = async (channel: TextBasedChannel) => {
   return messages;
 };
 
+const reportLocks = new Map<string, Promise<unknown>>();
+
+/**
+ * Runs read-modify-write edits of one thread's report one at a time. Without this, two
+ * approvals that land together each save their own copy and one silently undoes the other.
+ */
+export const withRaidReportLock = async <T>(
+  threadId: string,
+  edit: () => Promise<T>
+): Promise<T> => {
+  const run = (reportLocks.get(threadId) ?? Promise.resolve())
+    .catch(() => undefined)
+    .then(edit);
+  const tail = run.catch(() => undefined);
+  reportLocks.set(threadId, tail);
+  try {
+    return await run;
+  } finally {
+    if (reportLocks.get(threadId) === tail) {
+      reportLocks.delete(threadId);
+    }
+  }
+};
+
 export const getRaidReport = async (channel: TextBasedChannel) => {
   const messages = await getRaidReportMessages(channel);
 
@@ -359,8 +383,9 @@ ${p}${code}`,
   }
 
   public removePlayer(name: string, tickNumbers: number[]) {
-    this.assertInAttendance(name, tickNumbers);
-    this.getRaidTicks(tickNumbers).forEach((t) => t.removePlayer(name));
+    const ticks = this.getRaidTicks(tickNumbers);
+    this.assertInAttendance(name, ticks, tickNumbers.length > 0);
+    ticks.forEach((t) => t.removePlayer(name));
   }
 
   public replacePlayer(
@@ -368,23 +393,27 @@ ${p}${code}`,
     replaced: string,
     tickNumbers: number[]
   ) {
-    this.assertInAttendance(replaced, tickNumbers);
-    this.getRaidTicks(tickNumbers).forEach((t) =>
-      t.replacePlayer(replacer, replaced)
-    );
+    const ticks = this.getRaidTicks(tickNumbers);
+    // re-approving a !rep that already went through (e.g. its ✅ was slow to show)
+    // is a no-op rather than a "not in attendance" error
+    const pending = ticks.filter((t) => !t.hasReplacement(replaced, replacer));
+    const named = tickNumbers.length > 0;
+    if (named || pending.length === ticks.length) {
+      this.assertInAttendance(replaced, pending, named);
+    }
+    pending.forEach((t) => t.replacePlayer(replacer, replaced));
   }
 
   /**
    * Without this, a typo'd !rem or !rep silently changes nothing but is still approved.
    * Named ticks must all include the player; with no ticks named, at least one must.
    */
-  private assertInAttendance(name: string, tickNumbers: number[]) {
-    const ticks = this.getRaidTicks(tickNumbers);
+  private assertInAttendance(name: string, ticks: RaidTick[], named: boolean) {
     const missing = ticks.filter((t) => !t.hasPlayer(name));
-    if (tickNumbers.length === 0 && missing.length === ticks.length) {
+    if (!named && missing.length === ticks.length) {
       throw new Error(`${name} is not in attendance on any tick`);
     }
-    if (tickNumbers.length > 0 && missing.length > 0) {
+    if (named && missing.length > 0) {
       throw new Error(
         `${name} is not in attendance on tick ${missing
           .map((t) => t.data.tickNumber)
