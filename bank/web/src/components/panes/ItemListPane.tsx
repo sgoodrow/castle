@@ -2,7 +2,7 @@ import { Badge, Group, Text, Tooltip, UnstyledButton } from "@mantine/core";
 import { IconAlertTriangle, IconMinus } from "@tabler/icons-react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { memo, useLayoutEffect, useRef, useState } from "react";
-import { bankRequest, statParts, type Item } from "../../data";
+import { bankRequest, statParts, type ClassId, type Item } from "../../data";
 import type { Tab } from "../../state";
 import { GuildPriceText } from "../texts/GuildPriceText";
 import { ItemImage } from "../ItemImage";
@@ -15,7 +15,7 @@ interface Props {
   items: Item[];
   selected: number | null;
   tab: Tab;
-  cls: number;
+  cls: ClassId | null;
   canUse: (it: Item) => boolean;
   onSelect: (id: number) => void;
   onAdd?: (id: number, row: HTMLElement) => void; // double-click: one more on the tab
@@ -32,7 +32,7 @@ interface RowProps {
   usable: boolean;
   qty: number;
   table?: boolean;
-  cls: number;
+  cls: ClassId | null;
   on: { current: Pick<Props, "onSelect" | "onAdd" | "onRemove"> };
   index: number;
   start: number; // px from the top of the list
@@ -102,7 +102,7 @@ export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAd
     estimateSize: () => (table ? 31 : 64),
     overscan: 12,
     scrollMargin: offset,
-    getItemKey: i => items[i].id,
+    getItemKey: i => items[i]?.id ?? i,
   });
   return (
     <CollapsibleLayout id="items" title="Items Available" className={classes.root} data-table={table || undefined}
@@ -120,6 +120,7 @@ export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAd
       <ul ref={listRef} className={classes.list} style={{ height: v.getTotalSize() }}>
         {v.getVirtualItems().map(r => {
           const it = items[r.index];
+          if (!it) return null; // the virtualizer only hands out indexes below count
           return (
             <Row key={it.id} it={it} selected={selected === it.id} usable={canUse(it)} qty={tab[it.id] || 0} table={table} cls={cls} on={on}
               index={r.index} start={r.start - offset} measure={v.measureElement} />

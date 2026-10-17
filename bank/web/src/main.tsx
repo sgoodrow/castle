@@ -58,6 +58,7 @@ async function bank(): Promise<Payload> {
   return res.json();
 }
 
+// index.html ships the #root element, so it's always there.
 const root = createRoot(document.getElementById("root")!);
 bank().then(
   p => {

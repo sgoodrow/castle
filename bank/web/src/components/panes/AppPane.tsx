@@ -4,7 +4,7 @@ import { IconMoneybag } from "@tabler/icons-react";
 import { ToastNotification, type ToastMsg } from "../ToastNotification";
 import { OverflowTooltip } from "../OverflowTooltip";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ITEMS, bankRequest, ITEM_LIST, RESISTS, SLOT_CHIPS, STATS, sumOf, statText, usable, type Item } from "../../data";
+import { ITEMS, bankRequest, ITEM_LIST, RESISTS, SLOT_CHIP_BITS, STATS, sumOf, statText, usable, type Item } from "../../data";
 import { getRouteApi } from "@tanstack/react-router";
 import { toFilters, toSearch, useTab, type Filters } from "../../state";
 import { DetailPane } from "./DetailPane";
@@ -17,10 +17,10 @@ import { UpdatedText } from "../texts/UpdatedText";
 import { DevOptionsPane } from "./DevOptionsPane";
 
 function filterItems(f: Filters) {
-  const bits = f.slot ? SLOT_CHIPS.find(([l]) => l === f.slot)![1] : null;
+  const bits = f.slot ? SLOT_CHIP_BITS[f.slot] : null;
   const terms = f.q.toLowerCase().split(/\s+/).filter(Boolean);
   const char = { cls: f.cls, race: f.race };
-  const onlyUsable = f.cls >= 0 || f.race >= 0;
+  const onlyUsable = f.cls != null || f.race != null;
   return ITEM_LIST.filter(it => {
     if (f.kind !== "all" && it.kind !== f.kind) return false;
     if (bits && !bits.some(b => (it.slots || 0) & (1 << b))) return false;
@@ -67,6 +67,7 @@ export function AppPane() {
   };
   const addOne = (id: number, row: HTMLElement) => {
     const it = ITEMS[id];
+    if (!it) return;
     if (bankRequest(it, f.cls).text == null) return say(`${it.name} isn't for sale`, false);
     const have = tab[id] || 0;
     if (have >= it.total) {
@@ -83,11 +84,13 @@ export function AppPane() {
   };
   const removeOne = (id: number) => {
     const have = tab[id] || 0;
-    if (!have) return;
+    const it = ITEMS[id];
+    if (!have || !it) return;
     setQty(id, have - 1);
-    say(have > 1 ? `${ITEMS[id].name} ×${have - 1} on your tab` : `Removed ${ITEMS[id].name} from your tab`, true);
+    say(have > 1 ? `${it.name} ×${have - 1} on your tab` : `Removed ${it.name} from your tab`, true);
   };
-  const sel = selected != null ? ITEMS[selected] : null;
+  // The URL can name an item the bank no longer has.
+  const sel = (selected != null && ITEMS[selected]) || null;
   const shown = sel;
 
   // Phones show details in place of the list; remember where the list was.

@@ -21,7 +21,7 @@ const YEAR = 365 * 864e5;
 function sellerColors(rows: Row[]) {
   const counts = new Map<string, number>();
   for (const q of rows) counts.set(q.seller, (counts.get(q.seller) || 0) + 1);
-  const order = [...counts.keys()].sort((p, q) => counts.get(q)! - counts.get(p)!);
+  const order = [...counts].sort((p, q) => q[1] - p[1]).map(([seller]) => seller);
   return (s: string) => `var(--mantine-color-${SELLER_HUES[order.indexOf(s) % SELLER_HUES.length]}-5)`;
 }
 
@@ -64,9 +64,9 @@ function Timeline({ rows, median, big }: { rows: Row[]; median: number | null; b
 export function AuctionPane({ it }: { it: Item }) {
   const a = it.auc;
   const [big, setBig] = useState(false);
-  if (!a.hasTracker || !a.rows.length) return <Text fz="sm" c="dimmed">None</Text>;
+  const last = a.latest;
+  if (!a.hasTracker || !last) return <Text fz="sm" c="dimmed">None</Text>;
   const recent = a.recent;
-  const last = a.rows[0];
   const prices = recent.map(r => r.price);
   const spread = recent.length
     ? <Text span fz="sm"><b>{a.median}pp</b> <Text span inherit c="dimmed">± {Math.round(stdev(prices))}pp</Text></Text>

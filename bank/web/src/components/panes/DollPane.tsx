@@ -1,6 +1,6 @@
 import { Stack, Text, UnstyledButton } from "@mantine/core";
 import { IconBackpack, IconBox, IconScript, type Icon } from "@tabler/icons-react";
-import { DOLL, chipForBit, fitsBit, type Item } from "../../data";
+import { DOLL, chipForBit, fitsBit, type Item, type SlotChip } from "../../data";
 import type { Filters } from "../../state";
 import classes from "./DollPane.module.css";
 
@@ -14,9 +14,9 @@ const KIND_CELLS: { kind: Filters["kind"]; label: string; icon: Icon }[] = [
 
 interface Props {
   item: Item | null;
-  slot: string | null;
+  slot: SlotChip | null;
   kind: Filters["kind"];
-  onSlot: (chip: string | null) => void;
+  onSlot: (chip: SlotChip | null) => void;
   onKind: (kind: Filters["kind"]) => void;
 }
 
@@ -30,7 +30,8 @@ export function DollPane({ item, slot, kind, onSlot, onKind }: Props) {
         {DOLL.flat().map((s, i) => {
           if (!s) return <div key={i} />;
           const chip = chipForBit(s.bit);
-          const lit = !!item && fitsBit(item, s.bit);
+          const fits = item && fitsBit(item, s.bit) ? item : null;
+          const lit = !!fits;
           const active = chip === slot;
           return (
             <UnstyledButton
@@ -39,7 +40,7 @@ export function DollPane({ item, slot, kind, onSlot, onKind }: Props) {
               data-lit={lit || undefined}
               data-active={active || undefined}
               aria-pressed={active}
-              aria-label={`${(chip ?? s.label).toLowerCase()} slot${lit ? `, ${item!.name} fits here` : ""}`}
+              aria-label={`${(chip ?? s.label).toLowerCase()} slot${fits ? `, ${fits.name} fits here` : ""}`}
               onClick={() => onSlot(active ? null : chip)}
             >
               <span className={classes.label}>{s.label}</span>

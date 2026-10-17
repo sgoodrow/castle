@@ -7,7 +7,7 @@ import { DollPane } from "./DollPane";
 import { CollapsibleLayout } from "../CollapsibleLayout";
 
 
-const CLEARED: Partial<Filters> = { cls: -1, race: -1, kind: "all", slot: null, q: "" };
+const CLEARED: Partial<Filters> = { cls: null, race: null, kind: "all", slot: null, q: "" };
 
 interface Props {
   f: Filters;

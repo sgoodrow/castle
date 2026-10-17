@@ -1,9 +1,9 @@
 import { Text, Tooltip } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
-import { bankRequest, type Item } from "../../data";
+import { bankRequest, type ClassId, type Item } from "../../data";
 
 // What the guild charges, as plain text. A price from thin market data gets a quiet warning mark.
-export function GuildPriceText({ it, cls }: { it: Item; cls: number }) {
+export function GuildPriceText({ it, cls }: { it: Item; cls: ClassId | null }) {
   const req = bankRequest(it, cls);
   if (req.text == null || req.pp == null) return null;
   const thin = req.fromMarket && it.auc.level === "thin";
