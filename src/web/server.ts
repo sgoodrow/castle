@@ -78,14 +78,15 @@ async function pageError(req: IncomingMessage, res: ServerResponse, me: Session)
     return send(req, res, 400, "text/plain", "Bad report");
   }
   const str = (v: unknown) => (typeof v === "string" ? v : "");
-  const current = !!GIT_REV && str(e.rev) === GIT_REV;
+  const message = str(e.message).slice(0, 500) || "(no message)";
   const stack = [str(e.stack), str(e.componentStack) && "Component stack:" + str(e.componentStack)].filter(Boolean).join("\n");
-  reportError({
-    source: "page",
-    message: str(e.message).slice(0, 500) || "(no message)",
-    stack: current ? pageMap.map(stack) : pageMap.strip(stack) + "\n(from a page loaded before the last deploy, so positions aren't mapped to source)",
-    details: { Browser: str(req.headers["user-agent"]).slice(0, 200) },
-  });
+  // A page loaded before the last deploy runs old code, maybe with a bug that's since been fixed, and
+  // its issue closed: filing it would open a new issue and fix run for nothing. Log it instead.
+  if (GIT_REV && str(e.rev) !== GIT_REV) {
+    log(`error (page, from ${str(e.rev).slice(0, 12) || "an unknown commit"}, not filed): ${message}\n${pageMap.strip(stack)}`);
+  } else {
+    reportError({ source: "page", message, stack: pageMap.map(stack), details: { Browser: str(req.headers["user-agent"]).slice(0, 200) } });
+  }
   send(req, res, 204, "text/plain", "");
 }
 
