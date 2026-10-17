@@ -6,7 +6,7 @@ import { OverflowTooltip } from "../OverflowTooltip";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ITEMS, bankRequest, ITEM_LIST, RESISTS, SLOT_CHIPS, STATS, sumOf, statText, usable, type Item } from "../../data";
 import { getRouteApi } from "@tanstack/react-router";
-import { toFilters, toSearch, useTab, type Filters } from "../../state";
+import { sortDesc, sortKey, toFilters, toSearch, useTab, type Filters, type Sort } from "../../state";
 import { DetailPane } from "./DetailPane";
 import { ItemListPane } from "./ItemListPane";
 import { SearchPane } from "./SearchPane";
@@ -21,7 +21,7 @@ function filterItems(f: Filters) {
   const terms = f.q.toLowerCase().split(/\s+/).filter(Boolean);
   const char = { cls: f.cls, race: f.race };
   const onlyUsable = f.cls >= 0 || f.race >= 0;
-  return ITEM_LIST.filter(it => {
+  const found = ITEM_LIST.filter(it => {
     if (f.kind !== "all" && it.kind !== f.kind) return false;
     if (bits && !bits.some(b => (it.slots || 0) & (1 << b))) return false;
     if (onlyUsable && (it.kind === "gear" || it.kind === "spell") && !usable(it, char)) return false;
@@ -30,7 +30,22 @@ function filterItems(f: Filters) {
       if (!terms.every(t => hay.includes(t))) return false;
     }
     return true;
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  });
+  return sortItems(found, f.sort, f.cls);
+}
+
+// Price is what this class would pay; an unknown price, or one that isn't for sale, counts as 0.
+function sortItems(items: Item[], sort: Sort, cls: number) {
+  const byName = (a: Item, b: Item) => a.name.localeCompare(b.name);
+  const dir = sortDesc(sort) ? -1 : 1;
+  switch (sortKey(sort)) {
+    case "name":
+      return items.sort((a, b) => dir * byName(a, b));
+    case "price": {
+      const pp = new Map(items.map(it => [it, bankRequest(it, cls).pp ?? 0]));
+      return items.sort((a, b) => dir * ((pp.get(a) ?? 0) - (pp.get(b) ?? 0)) || byName(a, b));
+    }
+  }
 }
 
 const route = getRouteApi("__root__");
@@ -116,7 +131,7 @@ export function AppPane() {
   );
   const sticky = { position: "sticky", top: 16, maxHeight: "calc(100vh - 32px)", overflowY: "auto" } as const;
   const total = tabTotal(tab, f.cls);
-  const list = <ItemListPane items={items} selected={selected} tab={tab} cls={f.cls} canUse={canUse} onSelect={select} onAdd={addOne} onRemove={removeOne} table={md} />;
+  const list = <ItemListPane items={items} selected={selected} tab={tab} cls={f.cls} canUse={canUse} onSelect={select} onAdd={addOne} onRemove={removeOne} table={md} sort={f.sort} onSort={sort => set({ sort })} />;
 
   return (
     <Container size={1500} py="md" px={{ base: "md", sm: "lg" }}>
