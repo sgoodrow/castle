@@ -1,0 +1,45 @@
+/* The doll keeps a dark, in-game look in both themes so the white haze reads. */
+.doll {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px;
+  border-radius: var(--mantine-radius-md);
+  background: #1d1b19;
+}
+
+.slot {
+  aspect-ratio: 1;
+  max-width: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  border: 1px solid #3e3a35;
+  background: #2b2825;
+  color: #8f877c;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: background 120ms, box-shadow 120ms, color 120ms;
+}
+
+.slot:hover {
+  border-color: #6b645b;
+  color: #d8d0c4;
+}
+
+.slot[data-lit] {
+  background: rgba(255, 255, 255, 0.28);
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.45), 0 0 8px rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.slot[data-active] {
+  border: 2px solid var(--mantine-color-yellow-5);
+  color: #fff;
+}
+
+.slot:focus-visible {
+  outline: 2px solid var(--mantine-color-yellow-4);
+  outline-offset: 2px;
+}

@@ -1,4 +1,4 @@
-"""Bake bank sheet + item DB + wiki auctions + icons into dist/index.html.
+"""Bake bank sheet + item DB + wiki auctions + icons into web/payload.json.
 
 usage: python3 -I scripts/build.py <project dir>
 """
@@ -55,9 +55,7 @@ payload = {
     "spells": used_spells,
     "icons": icons,
 }
-blob = json.dumps(payload, separators=(",", ":")).replace("</", "<\\/")
-html = open(os.path.join(ROOT, "app.html"), encoding="utf-8").read()
-out = html.replace("__BANK_DATA__", blob)
-os.makedirs(os.path.join(ROOT, "dist"), exist_ok=True)
-open(os.path.join(ROOT, "dist", "castle-bank.html"), "w", encoding="utf-8").write(out)
+# The web app (bank/web) bakes this into the page at build time.
+out = json.dumps(payload, separators=(",", ":"))
+open(os.path.join(ROOT, "web", "payload.json"), "w", encoding="utf-8").write(out)
 print("items", len(items), "rows", len(bank), "icons", len(icons), "spells", len(used_spells), "bytes", len(out))

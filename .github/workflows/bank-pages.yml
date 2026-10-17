@@ -33,6 +33,12 @@ jobs:
         with:
           python-version: "3.12"
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: bank/web/package-lock.json
+
       - name: Restore wiki/icon cache
         uses: actions/cache@v4
         with:
@@ -49,11 +55,14 @@ jobs:
       - name: Scrape P99 wiki (cached 7 days)
         run: python3 -I scripts/scrape_wiki.py .
 
-      - name: Build page
+      - name: Bake data
         run: python3 -I scripts/build.py .
 
-      - name: Prepare site
-        run: cp dist/castle-bank.html dist/index.html
+      - name: Build page
+        working-directory: bank/web
+        run: |
+          npm ci
+          npm run build
 
       - uses: actions/upload-pages-artifact@v3
         with:

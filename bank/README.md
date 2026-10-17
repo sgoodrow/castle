@@ -1,8 +1,8 @@
 # Castle Bank browser
 
-A static page for browsing the Castle guild bank: dress your character in an EQ-style inventory window, filter to items your class and race can use, see recent Green auction prices, and copy a ready-made `#bank-requests` line.
+A static storefront for the Castle guild bank. Browse and filter the bank (by class, race, slot or banker), hover an item for its stats, open it for who holds it and its Green auction prices, and add it to a running tab that totals the price and gives you the `#bank-requests` lines to paste.
 
-The build produces one self-contained HTML file. `.github/workflows/bank-pages.yml` publishes it to GitHub Pages on changes here and nightly at 10:00 UTC, so the page follows the bank sheet within a day.
+The page is a React + Mantine app in `web/`, built into one self-contained HTML file with the data baked in. `.github/workflows/bank-pages.yml` publishes it to GitHub Pages on changes here and nightly at 10:00 UTC, so the page follows the bank sheet within a day.
 
 ## Data sources
 
@@ -16,10 +16,11 @@ The build produces one self-contained HTML file. `.github/workflows/bank-pages.y
 cd bank
 python3 -I scripts/fetch_sheet.py .
 python3 -I scripts/scrape_wiki.py .
-python3 -I scripts/build.py .
+python3 -I scripts/build.py .   # writes web/payload.json
+cd web && npm ci && npm run build   # writes ../dist/index.html
 ```
 
-Open `dist/castle-bank.html`. The first scrape takes about 6 minutes; later ones reuse `data/wiki/` and `data/icons/`.
+Open `dist/index.html`. For UI work, `npm run dev` in `web/` serves the app with hot reload (it still needs `web/payload.json`). The first scrape takes about 6 minutes; later ones reuse `data/wiki/` and `data/icons/`.
 
 ## Refreshing the item DB
 

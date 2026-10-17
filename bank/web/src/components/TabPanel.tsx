@@ -1,0 +1,89 @@
+import { ActionIcon, Button, Code, Group, Paper, Stack, Text, Title, UnstyledButton } from "@mantine/core";
+import { IconCheck, IconCopy, IconX } from "@tabler/icons-react";
+import { useRef, useState } from "react";
+import { ITEMS, bankRequest } from "../data";
+import type { Tab } from "../state";
+import { ItemIcon } from "./ItemIcon";
+
+interface Props {
+  tab: Tab;
+  cls: number;
+  banker: string | null;
+  onSelect: (id: number) => void;
+  onRemove: (id: number) => void;
+  onClear: () => void;
+}
+
+// The running tab: every request line ready to paste into #bank-requests, with a total.
+export function TabPanel({ tab, cls, banker, onSelect, onRemove, onClear }: Props) {
+  const [copied, setCopied] = useState(false);
+  const codeRef = useRef<HTMLPreElement>(null);
+  const lines = Object.entries(tab).map(([id, qty]) => ({ it: ITEMS[+id], qty, req: bankRequest(ITEMS[+id], cls, banker, qty) })).filter(l => l.it);
+  const known = lines.filter(l => l.req.pp != null);
+  const total = known.reduce((s, l) => s + l.req.pp! * l.qty, 0);
+  const quotes = lines.length - known.length;
+  const dkp = lines.filter(l => l.req.dkp).length;
+  const text = lines.map(l => l.req.text).filter(Boolean).join("\n");
+
+  const copy = () => {
+    const done = () => { setCopied(true); setTimeout(() => setCopied(false), 1500); };
+    navigator.clipboard?.writeText(text).then(done, () => {
+      // Clipboard refused: select the text so Ctrl/Cmd+C works.
+      const r = document.createRange();
+      r.selectNodeContents(codeRef.current!);
+      const sel = getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(r);
+    });
+  };
+
+  return (
+    <Paper withBorder p="md" radius="md">
+      <Group justify="space-between" mb="sm">
+        <Title order={2} fz="md">Your tab</Title>
+        {lines.length > 0 && <Button size="compact-xs" variant="subtle" color="gray" onClick={onClear}>Clear</Button>}
+      </Group>
+      {lines.length === 0 ? (
+        <Text fz="sm" c="dimmed">Nothing yet. Open an item and choose Add to tab.</Text>
+      ) : (
+        <Stack gap="sm">
+          <Stack gap={4} component="ul" style={{ listStyle: "none", margin: 0, padding: 0 }}>
+            {lines.map(({ it, qty, req }) => (
+              <Group key={it.id} component="li" gap="xs" wrap="nowrap">
+                <UnstyledButton onClick={() => onSelect(it.id)} style={{ display: "flex", gap: 8, alignItems: "center", flex: 1, minWidth: 0 }}>
+                  <ItemIcon it={it} size={28} />
+                  <Text fz="sm" truncate>{qty > 1 ? `${qty} × ` : ""}{it.name}</Text>
+                </UnstyledButton>
+                <Text fz="sm" c={req.pp == null ? "dimmed" : undefined} style={{ flex: "none" }}>
+                  {req.pp == null ? "ask" : req.pp === 0 ? "free" : `${req.pp * qty}pp`}
+                </Text>
+                <ActionIcon variant="subtle" color="gray" size="sm" aria-label={`Remove ${it.name}`} onClick={() => onRemove(it.id)}>
+                  <IconX size={14} />
+                </ActionIcon>
+              </Group>
+            ))}
+          </Stack>
+          <Group justify="space-between" fw={600}>
+            <Text fw={600}>Total</Text>
+            <Text fw={600}>{total}pp</Text>
+          </Group>
+          {(quotes > 0 || dkp > 0) && (
+            <Text fz="xs" c="dimmed">
+              {quotes > 0 && `${quotes} item${quotes === 1 ? " needs" : "s need"} a price from a banker. `}
+              {dkp > 0 && `Level 55+ spells can be paid with 1 DKP each instead.`}
+            </Text>
+          )}
+          {text && (
+            <>
+              <Code block ref={codeRef} fz="xs" style={{ whiteSpace: "pre-wrap" }}>{text}</Code>
+              <Button leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />} color={copied ? "green" : undefined} onClick={copy}>
+                {copied ? "Copied" : "Copy request"}
+              </Button>
+              <Text fz="xs" c="dimmed">Paste it in #bank-requests and say how long you'll be online.</Text>
+            </>
+          )}
+        </Stack>
+      )}
+    </Paper>
+  );
+}
