@@ -1,0 +1,7 @@
+dist/
+data/scrape.log
+__pycache__/
+*.pyc
+data/bank.csv
+data/wiki/
+data/icons/
