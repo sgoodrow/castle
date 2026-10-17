@@ -1,0 +1,19 @@
+name: Image
+
+# Builds the deploy image for a pull request, without pushing it, so a change that breaks the image
+# build shows up before it's merged rather than in Release.
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          cache-from: type=gha

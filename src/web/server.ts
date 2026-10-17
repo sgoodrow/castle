@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import { readFileSync } from "fs";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import path from "path";
-import { reportError } from "../shared/error-reports";
+import { commit, reportError } from "../shared/error-reports";
 import { log } from "../shared/logger";
 import { Auth, Session } from "./auth";
 import { BankApi } from "./bank-api";
@@ -26,9 +26,9 @@ const {
   bankWebUrl = `http://localhost:${PORT}`,
   bankWebDevNoAuth,
   bankCacheDir,
-  GIT_REV = "",
 } = process.env;
 
+const GIT_REV = commit();
 const ROOT = path.resolve(__dirname, "../..");
 const DIST = path.join(ROOT, "bank/dist");
 const PAGE = path.join(DIST, "index.html");
