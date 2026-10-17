@@ -1,4 +1,5 @@
 import { ActionIcon, Button, Code, Group, Stack, Text, UnstyledButton } from "@mantine/core";
+import { TextWithOverflow } from "./TextWithOverflow";
 import { IconCheck, IconCopy, IconX } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { ITEMS, bankRequest } from "../data";
@@ -8,20 +9,33 @@ import { ItemIcon } from "./ItemIcon";
 interface Props {
   tab: Tab;
   cls: number;
-  banker: string | null;
   onSelect: (id: number) => void;
   onRemove: (id: number) => void;
   onClear: () => void;
 }
 
+// What the tab adds up to, in platinum; null if anything on it has no known price.
+export function tabTotal(tab: Tab, cls: number): number | null {
+  let sum = 0;
+  for (const [id, qty] of Object.entries(tab)) {
+    const it = ITEMS[+id];
+    if (!it) continue; // no longer in the bank
+    const pp = bankRequest(it, cls, qty).pp;
+    if (pp == null) return null;
+    sum += pp * qty;
+  }
+  return sum;
+}
+export const totalText = (t: number | null) => (t == null ? "???" : `${t.toLocaleString()}pp`);
+
 // The running tab: every request line ready to paste into #bank-requests, with a total.
-export function TabPanel({ tab, cls, banker, onSelect, onRemove, onClear }: Props) {
+export function TabPanel({ tab, cls, onSelect, onRemove, onClear }: Props) {
   const [copied, setCopied] = useState(false);
   const codeRef = useRef<HTMLPreElement>(null);
-  const lines = Object.entries(tab).map(([id, qty]) => ({ it: ITEMS[+id], qty, req: bankRequest(ITEMS[+id], cls, banker, qty) })).filter(l => l.it);
-  const known = lines.filter(l => l.req.pp != null);
-  const total = known.reduce((s, l) => s + l.req.pp! * l.qty, 0);
-  const quotes = lines.length - known.length;
+  // Ids the bank no longer shows (sold, or NO DROP) are skipped.
+  const lines = Object.entries(tab).filter(([id]) => ITEMS[+id]).map(([id, qty]) => ({ it: ITEMS[+id], qty, req: bankRequest(ITEMS[+id], cls, qty) }));
+  const total = tabTotal(tab, cls);
+  const quotes = lines.filter(l => l.req.pp == null).length;
   const dkp = lines.filter(l => l.req.dkp).length;
   const text = lines.map(l => l.req.text).filter(Boolean).join("\n");
 
@@ -48,7 +62,7 @@ export function TabPanel({ tab, cls, banker, onSelect, onRemove, onClear }: Prop
               <Group key={it.id} component="li" gap="xs" wrap="nowrap">
                 <UnstyledButton onClick={() => onSelect(it.id)} style={{ display: "flex", gap: 8, alignItems: "center", flex: 1, minWidth: 0 }}>
                   <ItemIcon it={it} size={28} />
-                  <Text fz="sm" truncate>{qty > 1 ? `${qty} × ` : ""}{it.name}</Text>
+                  <TextWithOverflow fz="sm">{qty > 1 ? `${qty} × ` : ""}{it.name}</TextWithOverflow>
                 </UnstyledButton>
                 <Text fz="sm" c={req.pp == null ? "dimmed" : undefined} style={{ flex: "none" }}>
                   {req.pp == null ? "ask" : req.pp === 0 ? "free" : `${req.pp * qty}pp`}
@@ -61,7 +75,7 @@ export function TabPanel({ tab, cls, banker, onSelect, onRemove, onClear }: Prop
           </Stack>
           <Group justify="space-between" fw={600}>
             <Text fw={600}>Total</Text>
-            <Text fw={600}>{total}pp</Text>
+            <Text fw={600}>{totalText(total)}</Text>
           </Group>
           {(quotes > 0 || dkp > 0) && (
             <Text fz="xs" c="dimmed">

@@ -1,84 +1,73 @@
-import { Alert, Anchor, Button, Divider, Group, NumberInput, Paper, Stack, Text, Title } from "@mantine/core";
-import { IconAlertTriangle, IconArrowLeft, IconExternalLink, IconShoppingBagPlus } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
-import { bankRequest, prettyLoc, type Item } from "../data";
-import { AuctionChart } from "./AuctionChart";
+import { Alert, Badge, Button, CloseButton, Divider, Group, Paper, Stack, Text, Title, Tooltip } from "@mantine/core";
+import { IconAlertTriangle, IconArrowLeft } from "@tabler/icons-react";
+import { prettyLoc, type Holder, type Item } from "../data";
+import { AuctionChart, MarketWarning } from "./AuctionChart";
+import { Pane } from "./Pane";
 import { StatBlock } from "./StatBlock";
 
 interface Props {
   it: Item | null;
-  cls: number;
-  banker: string | null;
-  inTab: number;
   canUse: boolean;
-  onSetQty: (qty: number) => void;
   onBack?: () => void; // phones: details replace the list
+  onClose?: () => void; // wide screens: clear the selection
 }
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+// One entry per banker; their spots go in the tooltip.
+function byChar(it: Item) {
+  const m = new Map<string, Holder[]>();
+  for (const h of it.holders) m.set(h.char, [...(m.get(h.char) ?? []), h]);
+  return [...m];
+}
+
+const Section = ({ title, aside, children }: { title: string; aside?: React.ReactNode; children: React.ReactNode }) => (
   <Stack gap={6}>
-    <Title order={3} fz="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: "0.06em" }}>{title}</Title>
+    <Group justify="space-between" wrap="nowrap">
+      <Title order={3} fz="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: "0.06em" }}>{title}</Title>
+      {aside}
+    </Group>
     {children}
   </Stack>
 );
 
-// The product page: everything about one item, and the button that puts it on the tab.
-export function DetailPane({ it, cls, banker, inTab, canUse, onSetQty, onBack }: Props) {
-  const [qty, setQty] = useState(1);
-  useEffect(() => setQty(Math.max(1, inTab)), [it?.id, inTab]);
-
+// The product page: everything about one item.
+export function DetailPane({ it, canUse, onBack, onClose }: Props) {
   if (!it) {
     return (
-      <Paper withBorder p="md" radius="md">
-        <Title order={2} fz="md" mb="xs">Details</Title>
-        <Text c="dimmed" fz="sm">Pick an item from the bank to see its stats, who holds it, Green prices, and to add it to your tab.</Text>
-      </Paper>
+      <Pane id="details" title="Details">
+        <Text c="dimmed" fz="sm" p="md">Click an item in the bank to see its stats, who holds it and Green prices. Double-click it to add it to your tab.</Text>
+      </Pane>
     );
   }
-  const req = bankRequest(it, cls, banker);
-  const forSale = req.text != null;
   return (
-    <Paper withBorder p="md" radius="md">
-      <Stack gap="md">
+    <Pane id="details" title="Details"
+      actions={<CloseButton aria-label="Close details" onClick={onClose} style={{ visibility: onClose ? "visible" : "hidden" }} />}>
+      <Stack gap="md" p="md">
         {onBack && <Button variant="subtle" color="gray" leftSection={<IconArrowLeft size={16} />} onClick={onBack} style={{ alignSelf: "flex-start" }}>Back to the bank</Button>}
-        <StatBlock it={it} />
+        <Paper withBorder p="sm" radius="md" style={{ background: "var(--surface-head)", boxShadow: "none" }}>
+          <StatBlock it={it} />
+        </Paper>
         {!canUse && (
           <Alert color="red" variant="light" icon={<IconAlertTriangle size={18} />} p="xs">
             Your character can't use this.
           </Alert>
         )}
-        <Paper withBorder p="sm" radius="md" bg="var(--mantine-color-default-hover)">
-          <Stack gap="xs">
-            <Text fz="sm">{req.cost}</Text>
-            {forSale ? (
-              <Group gap="sm" align="flex-end">
-                {it.total > 1 && <NumberInput label="Quantity" w={80} min={1} max={it.total} value={qty} onChange={v => setQty(Math.min(it.total, Math.max(1, Number(v) || 1)))} />}
-                <Button w={130} leftSection={<IconShoppingBagPlus size={18} />} onClick={() => onSetQty(qty)} disabled={inTab === qty}>
-                  {inTab ? (inTab === qty ? "On tab" : "Update tab") : "Add to tab"}
-                </Button>
-                <Button variant="subtle" color="red" onClick={() => onSetQty(0)} style={{ visibility: inTab > 0 ? "visible" : "hidden" }}>Remove</Button>
-              </Group>
-            ) : null}
-            <Text fz="xs" c="dimmed">{it.total} in the bank</Text>
-          </Stack>
-        </Paper>
         <Divider />
-        <Section title={`In the bank · ${it.total}`}>
-          <Stack gap={2} fz="sm">
-            {it.holders.map((h, i) => (
-              <div key={i}>{h.char} <Text span c="dimmed" fz="sm">· {prettyLoc(h.loc)}{h.count > 1 ? ` · ×${h.count}` : ""}</Text></div>
+        <Section title={`Count · ${it.total}`}>
+          <Group gap={6}>
+            {byChar(it).map(([char, spots]) => (
+              <Tooltip key={char} multiline label={spots.map(h => <div key={h.loc}>{prettyLoc(h.loc)}{h.count > 1 ? ` · ×${h.count}` : ""}</div>)}>
+                <Badge variant="default" size="lg" radius="sm" tt="none" fw={500} style={{ cursor: "help" }}>
+                  {char}{spots.length > 1 || spots[0].count > 1 ? <Text span c="dimmed" inherit> ×{spots.reduce((n, h) => n + h.count, 0)}</Text> : null}
+                </Badge>
+              </Tooltip>
             ))}
-          </Stack>
+          </Group>
         </Section>
-        <Section title="Green auctions · last 6 months">
+        <Divider />
+        <Section title="Market data" aside={<MarketWarning it={it} />}>
           <AuctionChart it={it} />
         </Section>
-        {it.wiki && (
-          <Anchor href={it.wiki} target="_blank" rel="noopener" fz="sm">
-            <Group gap={4} component="span">Open on the P99 wiki <IconExternalLink size={14} /></Group>
-          </Anchor>
-        )}
       </Stack>
-    </Paper>
+    </Pane>
   );
 }

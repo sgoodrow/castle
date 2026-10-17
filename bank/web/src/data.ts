@@ -22,6 +22,7 @@ export interface RawItem {
 interface Payload {
   snapshot: string;
   built: string;
+  builtAt?: string; // full timestamp; older payloads only have the date
   bank: [string, string, number, number][];
   items: Record<string, RawItem>;
   spells: Record<string, { name: string; lv: number[] }>;
@@ -51,10 +52,9 @@ export interface Item extends RawItem {
 
 const D: Payload = JSON.parse(document.getElementById("bank-data")!.textContent!);
 
-export const SELLER_COLORS = ["#e4b85a", "#4f8fe0", "#4caf62", "#e0634f", "#a777e0", "#2fb3a6", "#e07fb3", "#a8a040", "#6f7fe8", "#e0904f"];
 export const SNAPSHOT = D.snapshot;
 export const BUILT = D.built;
-export const STACKS = D.bank.length;
+export const BUILT_AT = new Date(D.builtAt ?? D.built + "T00:00:00");
 export const SPELLS = D.spells;
 export const NOW = new Date(D.built + "T00:00:00");
 export const WINDOW_DAYS = 182;
@@ -110,16 +110,18 @@ function auctions(it: RawItem): Auctions {
   return { rows, recent, sellers, median, level, older: rows.length - recent.length, hasTracker: it.green != null };
 }
 
+// NO DROP items can't leave the bank, so they're never shown.
+const BANK = D.bank.filter(([, , id]) => !D.items[id]?.nodrop);
 export const ITEMS: Record<number, Item> = {};
 for (const [id, raw] of Object.entries(D.items)) {
+  if (raw.nodrop) continue;
   ITEMS[+id] = { ...raw, id: +id, holders: [], total: 0, kind: kindOf(raw), auc: auctions(raw) };
 }
-for (const [char, loc, id, count] of D.bank) {
+for (const [char, loc, id, count] of BANK) {
   ITEMS[id].holders.push({ char, loc, count });
   ITEMS[id].total += count;
 }
 export const ITEM_LIST = Object.values(ITEMS);
-export const BANKERS = [...new Set(D.bank.map(r => r[0]))].sort();
 
 // Icons are embedded as base64 and turned into blob URLs once.
 const ICON_URL: Record<string, string> = {};
@@ -184,24 +186,16 @@ export function prettyLoc(loc: string) {
   if ((m = loc.match(/^General(\d+)$/))) return `inventory ${m[1]}`;
   if ((m = loc.match(/^Bank(\d+)-Slot(\d+)$/))) return `bank bag ${m[1]}, slot ${m[2]}`;
   if ((m = loc.match(/^Bank(\d+)$/))) return `bank ${m[1]}`;
-  return "worn: " + loc.toLowerCase();
-}
-
-export function whereText(holders: Holder[]) {
-  if (!holders.length) return "";
-  const chars = [...new Set(holders.map(h => h.char))];
-  const n = holders.reduce((s, h) => s + h.count, 0);
-  return chars.length === 1
-    ? `${chars[0]} · ${prettyLoc(holders[0].loc)}${holders.length > 1 ? ` +${holders.length - 1} more` : ""}${n > 1 ? ` · ×${n}` : ""}`
-    : `×${n} across ${chars.length} bankers`;
+  return "slot: " + loc.toLowerCase();
 }
 
 // ---------- bank requests (formats from the bot's #bank-requests instructions) ----------
 const RAID_REAGENTS = /^(Peridot|Hate Stone|Pearl|Small Portal Fragment)s?$/i;
 // pp is the expected platinum cost; null means a banker has to quote it.
-export interface BankRequest { text: string | null; cost: string; pp: number | null; dkp?: boolean }
-export function bankRequest(it: Item, cls: number, banker: string | null, qty = 1): BankRequest {
-  const holder = (banker && it.holders.find(h => h.char === banker)) || it.holders[0];
+// fromMarket: pp follows the Green median, so it is only as good as that data.
+export interface BankRequest { text: string | null; cost: string; pp: number | null; dkp?: boolean; fromMarket?: boolean }
+export function bankRequest(it: Item, cls: number, qty = 1): BankRequest {
+  const holder = it.holders[0];
   const mule = holder?.char || "Mule";
   const sp = it.scroll ? SPELLS[it.scroll] : undefined;
   const mkt = it.auc.level !== "none" ? it.auc.median : null;
@@ -215,7 +209,7 @@ export function bankRequest(it: Item, cls: number, banker: string | null, qty = 
     if (level && level >= 51 && level <= 54) return { text, pp: 50, cost: "50pp (levels 51–54)." };
     if (level && level >= 55) {
       const pp = Math.min(200, mkt ?? 200);
-      return { text, pp, dkp: true, cost: `The lesser of 200pp${mkt ? ` (market ${mkt}pp)` : ""} or 1 DKP (levels 55–60). Forbidden spells go to DKP auction.` };
+      return { text, pp, dkp: true, fromMarket: mkt != null && mkt < 200, cost: `The lesser of 200pp${mkt ? ` (market ${mkt}pp)` : ""} or 1 DKP (levels 55–60). Forbidden spells go to DKP auction.` };
     }
     return { text, pp: null, cost: level ? `Level ${level} spell. Ask a banker about price.` : "Check the dropped-spell rules in Discord." };
   }
@@ -223,6 +217,6 @@ export function bankRequest(it: Item, cls: number, banker: string | null, qty = 
   if (it.kind === "bag") return { text: null, pp: null, cost: "Bags aren't for sale." };
   const text = `Misc item: ${it.name} (${mule})${qty > 1 ? ` x${qty}` : ""}`;
   return mkt
-    ? { text, pp: Math.round(mkt * 0.8), cost: `About ${Math.round(mkt * 0.8)}pp: 80% of the ${mkt}pp Green median${it.auc.level === "thin" ? " (thin data)" : ""}.` }
+    ? { text, pp: Math.round(mkt * 0.8), fromMarket: true, cost: `About ${Math.round(mkt * 0.8)}pp: 80% of the ${mkt}pp Green median${it.auc.level === "thin" ? " (thin data)" : ""}.` }
     : { text, pp: null, cost: "80% of market rate. No recent Green sales to go by, so ask a banker." };
 }

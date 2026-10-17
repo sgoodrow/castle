@@ -1,10 +1,19 @@
-import { Box, Group, Stack, Text } from "@mantine/core";
+import { Anchor, Box, Group, Stack, Text } from "@mantine/core";
+import { IconExternalLink } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import {
   ALL_CLASSES, ALL_RACES, CLASSES, ELEM, RACES, RESISTS, SIZES, SPELLS, STATS, TYPES, WEAPON,
   maskText, signed, slotText, type Item,
 } from "../data";
 import { ItemIcon } from "./ItemIcon";
+
+// A P99 wiki page, marked as leaving the site.
+const Wiki = ({ href, children, fw }: { href: string; children: ReactNode; fw?: number }) => (
+  <Anchor href={href} target="_blank" rel="noopener" fw={fw} inherit>
+    {children}<IconExternalLink size="0.9em" style={{ marginLeft: 3, verticalAlign: "-0.1em" }} />
+  </Anchor>
+);
+const spellWiki = (name: string) => `https://wiki.project1999.com/${encodeURIComponent(name.replace(/ /g, "_"))}`;
 
 const K = ({ children }: { children: ReactNode }) => (
   <Text span c="dimmed" fz="sm">{children}</Text>
@@ -28,7 +37,7 @@ export function StatBlock({ it, header = true }: { it: Item; header?: boolean })
         <Group gap="sm" wrap="nowrap" mb={4}>
           <ItemIcon it={it} />
           <div>
-            <Text fw={600}>{it.name}</Text>
+            <Text fw={600}>{it.wiki ? <Wiki href={it.wiki} fw={600}>{it.name}</Wiki> : it.name}</Text>
             {flags && <Text fz="xs" c="dimmed" style={{ whiteSpace: "pre" }}>{flags}</Text>}
           </div>
         </Group>
@@ -44,15 +53,20 @@ export function StatBlock({ it, header = true }: { it: Item; header?: boolean })
       {!!it.elemamt && <div><K>{ELEM[it.elemtype ?? 0] || "Elemental"} DMG:</K> {it.elemamt}</div>}
       {!!it.baneamt && <div><K>Bane DMG:</K> {it.baneamt}</div>}
       {!!it.ac && <div><K>AC:</K> {it.ac}</div>}
-      {stats.length > 0 && <Pairs items={stats} />}
+      {stats.length > 0 && (
+        <Group gap={6} align="flex-start" wrap="nowrap">
+          <K>Stats:</K>
+          <Pairs items={stats} />
+        </Group>
+      )}
       {resists.length > 0 && <Pairs items={resists} />}
       {effects.map(([k, l]) => (
         <div key={k}>
-          <K>{l}:</K> {SPELLS[it[k]!].name}
+          <K>{l}:</K> <Wiki href={spellWiki(SPELLS[it[k]!].name)}>{SPELLS[it[k]!].name}</Wiki>
           {k === "proc" && it.proclvl ? ` (lvl ${it.proclvl})` : ""}
-          {k === "click" && (it.charges ?? 0) > 0 ? ` · ${it.charges} charge${it.charges === 1 ? "" : "s"}` : ""}
         </div>
       ))}
+      {!!it.click && SPELLS[it.click] && (it.charges ?? 0) > 0 && <div><K>Charges:</K> {it.charges}</div>}
       {sp && (
         <div>
           <K>Spell:</K> {sp.name}
@@ -65,7 +79,7 @@ export function StatBlock({ it, header = true }: { it: Item; header?: boolean })
           {it.bagwr ? <> &nbsp;<K>Weight Reduction:</K> {it.bagwr}%</> : null}
         </div>
       )}
-      <div><K>WT:</K> {((it.wt || 0) / 10).toFixed(1)} &nbsp;<K>Size:</K> {SIZES[it.size || 0]}</div>
+      <div><K>Weight:</K> {((it.wt || 0) / 10).toFixed(1)} &nbsp;<K>Size:</K> {SIZES[it.size || 0]}</div>
       {(gear || !!it.scroll) && (
         <>
           <div><K>Class:</K> {maskText(it.classes, CLASSES, ALL_CLASSES)}</div>

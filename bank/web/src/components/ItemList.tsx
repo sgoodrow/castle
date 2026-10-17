@@ -1,85 +1,143 @@
-import { Badge, Group, HoverCard, Paper, Stack, Text, Title, UnstyledButton } from "@mantine/core";
-import { useMediaQuery } from "@mantine/hooks";
-import { statParts, whereText, type Item } from "../data";
+import { Badge, Group, Text, Tooltip, UnstyledButton } from "@mantine/core";
+import { IconAlertTriangle, IconMinus } from "@tabler/icons-react";
+import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { memo, useLayoutEffect, useRef, useState } from "react";
+import { bankRequest, statParts, type Item } from "../data";
 import type { Tab } from "../state";
 import { ItemIcon } from "./ItemIcon";
-import { StatBlock } from "./StatBlock";
+import { Pane } from "./Pane";
+import { TextWithOverflow } from "./TextWithOverflow";
 import classes from "./ItemList.module.css";
 
-export function PriceBadge({ it }: { it: Item }) {
-  const a = it.auc;
-  if (!a.hasTracker) return null;
-  if (a.level === "none" || a.median == null) return <Badge color="gray" variant="light" title="No Green auction listings in the last 6 months">no sales</Badge>;
-  return (
-    <Badge color={a.level === "solid" ? "green" : "yellow"} variant="light" title={`Green median over 6 months, ${a.recent.length} listings from ${a.sellers.size} sellers`}>
-      {a.median}pp
-    </Badge>
+// What the guild charges, as plain text. A price from thin market data gets a quiet warning mark.
+export function GuildPrice({ it, cls }: { it: Item; cls: number }) {
+  const req = bankRequest(it, cls);
+  if (req.text == null || req.pp == null) return null;
+  const thin = req.fromMarket && it.auc.level === "thin";
+  const price = (
+    <Text span fz="xs" fw={600} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", cursor: thin ? "help" : undefined }}>
+      {thin && <IconAlertTriangle size={12} stroke={1.75} aria-label="Low confidence" style={{ display: "block", color: "var(--mantine-color-dimmed)" }} />}
+      {req.pp ? `${req.pp}pp` : "free"}
+    </Text>
   );
+  return thin ? <Tooltip label="Low confidence">{price}</Tooltip> : price;
 }
 
 interface Props {
   items: Item[];
-  total: number;
   selected: number | null;
   tab: Tab;
+  cls: number;
   canUse: (it: Item) => boolean;
   onSelect: (id: number) => void;
-  onHover: (id: number | null) => void;
+  onAdd?: (id: number, row: HTMLElement) => void; // double-click: one more on the tab
+  onRemove?: (id: number) => void; // click the tab count: one fewer
+  table?: boolean; // one line per item in columns; phones get stacked rows
 }
 
-// Bank rows keep the in-game item-link look: icon, name, stat line, where it sits.
-export function ItemList({ items, total, selected, tab, canUse, onSelect, onHover }: Props) {
-  const canHover = useMediaQuery("(hover: hover)") ?? false;
+const stats = (it: Item) =>
+  statParts(it).map((p, i) => <span key={i}>{p.label && <span className={classes.k}>{p.label} </span>}{p.value}</span>);
+
+interface RowProps {
+  it: Item;
+  selected: boolean;
+  usable: boolean;
+  qty: number;
+  table?: boolean;
+  cls: number;
+  on: { current: Pick<Props, "onSelect" | "onAdd" | "onRemove"> };
+  index: number;
+  start: number; // px from the top of the list
+  measure: (el: Element | null) => void;
+}
+
+// One item. Memoized: selecting or filtering only re-renders the rows that changed.
+const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index, start, measure }: RowProps) {
   return (
-    <Paper withBorder radius="md">
-      <Group justify="space-between" p="md" pb="xs">
-        <Title order={2} fz="md">Bank</Title>
-        <Text fz="sm" c="dimmed">{items.length === total ? `${total} items` : `${items.length} of ${total} items`}</Text>
-      </Group>
+    <li ref={measure} data-index={index} className={classes.item} style={{ transform: `translateY(${start}px)` }}>
+      <UnstyledButton
+        className={classes.row}
+        data-selected={selected || undefined}
+        data-unusable={!usable || undefined}
+        aria-current={selected || undefined}
+        onClick={() => on.current.onSelect(it.id)}
+        onDoubleClick={e => on.current.onAdd?.(it.id, e.currentTarget)}
+      >
+        <span className={classes.icon}><ItemIcon it={it} size={table ? 24 : 32} /></span>
+        <Group gap={6} wrap="nowrap" className={classes.name}>
+          {it.lore && <Badge size="xs" variant="outline" color="gray" style={{ flex: "none" }}>LORE</Badge>}
+          <TextWithOverflow fw={600} fz="sm" className={classes.nameText}>{it.name}</TextWithOverflow>
+          {!usable && <Badge size="xs" variant="outline" color="red" style={{ flex: "none" }}>CAN'T USE</Badge>}
+        </Group>
+        {table
+          ? <TextWithOverflow fz="xs" className={classes.stats}>{stats(it)}</TextWithOverflow>
+          : <Text fz="xs" className={`${classes.stats} ${classes.wrap}`}>{stats(it)}</Text>}
+        <span className={`${classes.price} ${classes.end}`}><GuildPrice it={it} cls={cls} /></span>
+        {/* Space is always held so adding to the tab never reflows the row. */}
+        <span className={`${classes.tab} ${classes.end}`}>
+          {/* Clicking it takes one off; on hover it turns into a minus so that's clear. */}
+          <Badge size="sm" variant="filled" className={classes.qty} role="button" aria-label={`Remove one ${it.name} from your tab`}
+            style={{ visibility: qty ? "visible" : "hidden" }}
+            onClick={e => { e.stopPropagation(); on.current.onRemove?.(it.id); }}
+            onDoubleClick={e => e.stopPropagation()}>
+            <IconMinus size={10} stroke={3} className={classes.minus} />
+            {/* Out of the bank's count, so it's clear when there are no more to add. */}
+            {table ? (it.total > 1 ? `${qty}/${it.total}` : qty) : `In tab ${qty}/${it.total}`}
+          </Badge>
+        </span>
+      </UnstyledButton>
+    </li>
+  );
+});
+
+// The bank as a table: icon, name, stat line, price, tab.
+export function ItemList({ items, selected, tab, cls, canUse, onSelect, onAdd, onRemove, table }: Props) {
+  // Handlers go through a ref so rows never see a new function and stay memoized.
+  const on = useRef({ onSelect, onAdd, onRemove });
+  on.current = { onSelect, onAdd, onRemove };
+
+  // Only the rows on screen are rendered, but the list keeps its full height,
+  // so the page scrollbar still reflects every item.
+  const listRef = useRef<HTMLUListElement>(null);
+  const [offset, setOffset] = useState(0);
+  useLayoutEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const read = () => setOffset(el.getBoundingClientRect().top + window.scrollY);
+    read();
+    const ro = new ResizeObserver(read);
+    ro.observe(document.body);
+    return () => ro.disconnect();
+  }, []);
+  const v = useWindowVirtualizer({
+    count: items.length,
+    estimateSize: () => (table ? 31 : 64),
+    overscan: 12,
+    scrollMargin: offset,
+    getItemKey: i => items[i].id,
+  });
+  return (
+    <Pane id="items" title="Items Available" className={classes.root} data-table={table || undefined}
+      actions={<Text fz="sm" c="dimmed">{items.length} {items.length === 1 ? "item" : "items"}</Text>}>
+      {table && (
+        <div className={`${classes.row} ${classes.head}`} aria-hidden>
+          <span />
+          <span>Item</span>
+          <span>Stats</span>
+          <Tooltip label="80% of market price"><span className={classes.end} style={{ cursor: "help" }}>Guild price</span></Tooltip>
+          <span className={classes.end}>Buy</span>
+        </div>
+      )}
       {items.length === 0 && <Text p="md" c="dimmed">Nothing in the bank matches. Try clearing a filter.</Text>}
-      <Stack gap={0} component="ul" className={classes.list} onMouseLeave={() => onHover(null)}>
-        {items.map(it => (
-          <li key={it.id}>
-            <HoverCard disabled={!canHover} openDelay={250} closeDelay={0} position="right-start" width={340} shadow="md" withinPortal>
-              <HoverCard.Target>
-                <UnstyledButton
-                  className={classes.row}
-                  data-selected={selected === it.id || undefined}
-                  data-unusable={!canUse(it) || undefined}
-                  aria-current={selected === it.id || undefined}
-                  onClick={() => onSelect(it.id)}
-                  onMouseEnter={() => onHover(it.id)}
-                  onFocus={() => onHover(it.id)}
-                >
-                  <ItemIcon it={it} />
-                  <div className={classes.body}>
-                    <Group gap={6} wrap="wrap">
-                      <Text fw={600} fz="sm" className={classes.name}>{it.name}</Text>
-                      {it.nodrop && <Badge size="xs" variant="outline" color="gray">NO DROP</Badge>}
-                      {it.lore && <Badge size="xs" variant="outline" color="gray">LORE</Badge>}
-                    </Group>
-                    <Text fz="xs" className={classes.stats}>
-                      {statParts(it).map((p, i) => (
-                        <span key={i}>{p.label && <span className={classes.k}>{p.label} </span>}{p.value}</span>
-                      ))}
-                    </Text>
-                    <Text fz="xs" c="dimmed" lineClamp={1}>{whereText(it.holders)}</Text>
-                  </div>
-                  <Stack gap={4} align="flex-end" className={classes.side}>
-                    <PriceBadge it={it} />
-                    {/* Space is always held so adding to the tab never reflows the row. */}
-                    <Badge size="sm" variant="filled" style={{ visibility: tab[it.id] ? "visible" : "hidden" }}>In tab{tab[it.id] > 1 ? ` ×${tab[it.id]}` : ""}</Badge>
-                    {!canUse(it) && <Text fz="xs" c="red">can't use</Text>}
-                  </Stack>
-                </UnstyledButton>
-              </HoverCard.Target>
-              <HoverCard.Dropdown>
-                <StatBlock it={it} />
-              </HoverCard.Dropdown>
-            </HoverCard>
-          </li>
-        ))}
-      </Stack>
-    </Paper>
+      <ul ref={listRef} className={classes.list} style={{ height: v.getTotalSize() }}>
+        {v.getVirtualItems().map(r => {
+          const it = items[r.index];
+          return (
+            <Row key={it.id} it={it} selected={selected === it.id} usable={canUse(it)} qty={tab[it.id] || 0} table={table} cls={cls} on={on}
+              index={r.index} start={r.start - offset} measure={v.measureElement} />
+          );
+        })}
+      </ul>
+    </Pane>
   );
 }

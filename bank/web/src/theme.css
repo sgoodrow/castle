@@ -1,0 +1,66 @@
+/* Surfaces: the page sits lowest, panes float on it, pane headers sit a step above the pane. */
+:root {
+  --page: var(--mantine-color-gray-1);
+  --surface: #fff;
+  --surface-head: var(--mantine-color-gray-0);
+  --shadow: 0 1px 2px rgba(20, 22, 26, 0.06), 0 4px 12px rgba(20, 22, 26, 0.06);
+}
+:root[data-mantine-color-scheme="dark"] {
+  --page: var(--mantine-color-dark-9);
+  --surface: var(--mantine-color-dark-7);
+  --surface-head: var(--mantine-color-dark-6);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+body {
+  background: var(--page);
+}
+
+/* The top of a pane: the pane's own colour, a small-caps title, an accent rule underneath. */
+.pane-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--mantine-spacing-xs);
+  min-height: 40px;
+  padding: 6px var(--mantine-spacing-md);
+  border-bottom: 2px solid var(--mantine-primary-color-filled);
+  border-radius: var(--mantine-radius-md) var(--mantine-radius-md) 0 0;
+}
+.pane-head h2 {
+  font-size: var(--mantine-font-size-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* The whole title area folds the pane; the chevron is a quiet hint. */
+.pane-toggle {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: calc(var(--mantine-spacing-md) * -1);
+  padding-left: var(--mantine-spacing-md);
+}
+.pane-chevron {
+  flex: none;
+  color: var(--mantine-color-dimmed);
+  opacity: 0.6;
+  transition: transform 150ms, opacity 100ms;
+}
+.pane-toggle:hover .pane-chevron { opacity: 1; }
+.pane-head[data-closed] {
+  border-bottom-color: transparent;
+  border-radius: var(--mantine-radius-md);
+}
+.pane-head[data-closed] .pane-chevron { transform: rotate(-90deg); }
+
+/* The shared tooltip for cut-off text: plain white, and stat parts keep their spacing. */
+[role="tooltip"].overflow-tip * { color: inherit; }
+.overflow-tip > span { white-space: nowrap; }
+.overflow-tip > span + span { margin-left: 10px; }
+
+/* Space between filter tiles (slots, races, classes). */
+:root { --tile-gap: 6px; }

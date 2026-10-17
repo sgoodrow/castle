@@ -1,34 +1,78 @@
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-sm);
+}
+
+/* Side by side in the filter bar: race and class split the width evenly. */
+.row {
+  flex: 1;
+  display: flex;
+  gap: var(--mantine-spacing-lg);
+}
+
+.row > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+/* Race and class are separate filters, so they get a clear rule between them. */
+.row > * + * {
+  border-left: 1px solid var(--mantine-color-default-border);
+  padding-left: var(--mantine-spacing-lg);
+}
+
+/* Group labels stay quiet so the tiles carry the colour. */
+.groupName {
+  color: var(--mantine-color-dimmed);
+  font-size: var(--mantine-font-size-xs);
+}
+
 .heading {
   letter-spacing: 0.06em;
 }
 
-.row {
+.columns {
   display: grid;
-  grid-template-columns: 56px minmax(0, 1fr);
-  align-items: center;
-  gap: 8px;
+  row-gap: calc(var(--tile-gap) + 6px);
 }
 
-.groupName {
-  text-align: right;
+/* Each category sits in its own column with a divider between them. */
+.group {
+  padding: 0 calc(var(--tile-gap) + 2px);
 }
 
-.tiles {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 4px;
+.group[data-row-start] {
+  padding-left: 0;
+}
+
+.group[data-row-end] {
+  padding-right: 0;
+}
+
+/* Fainter than the rules between filters, so they read as one filter's sub-groups. */
+.group:not([data-row-start]) {
+  border-left: 1px solid color-mix(in srgb, var(--mantine-color-default-border) 40%, transparent);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--tile-gap);
 }
 
 .tile {
   height: 30px;
-  display: grid;
-  place-items: center;
+  width: 100%;
+  padding: 0 2px;
+  display: block;
+  text-align: center;
+  line-height: 28px;
   border-radius: var(--mantine-radius-sm);
   border: 1px solid var(--mantine-color-default-border);
   background: var(--mantine-color-default);
   font-size: var(--mantine-font-size-xs);
   font-weight: 600;
-  letter-spacing: 0.04em;
   transition: background 100ms, border-color 100ms;
 }
 

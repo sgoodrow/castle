@@ -1,45 +1,65 @@
-/* The doll keeps a dark, in-game look in both themes so the white haze reads. */
+/* The inventory window, drawn with the same tiles as the race and class pickers. */
 .doll {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 6px;
-  padding: 10px;
-  border-radius: var(--mantine-radius-md);
-  background: #1d1b19;
+  gap: var(--tile-gap);
 }
 
 .slot {
   aspect-ratio: 1;
   max-width: 100%;
-  display: grid;
-  place-items: center;
-  border-radius: 6px;
-  border: 1px solid #3e3a35;
-  background: #2b2825;
-  color: #8f877c;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: var(--mantine-radius-sm);
+  border: 1px solid var(--mantine-color-default-border);
+  background: var(--mantine-color-default);
+  color: var(--mantine-color-dimmed);
   font-size: 9px;
   font-weight: 600;
   letter-spacing: 0.04em;
-  transition: background 120ms, box-shadow 120ms, color 120ms;
+  transition: background 100ms, border-color 100ms, box-shadow 120ms, color 100ms;
 }
 
 .slot:hover {
-  border-color: #6b645b;
-  color: #d8d0c4;
+  background: var(--mantine-color-default-hover);
+  color: var(--mantine-color-text);
 }
 
+/* Spells, bags and other: a separate row below the doll. */
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--tile-gap);
+  margin-top: var(--mantine-spacing-xs);
+}
+
+.kind {
+  aspect-ratio: auto;
+  height: 32px;
+  flex-direction: row;
+  gap: 6px;
+  font-size: var(--mantine-font-size-xs);
+  letter-spacing: 0;
+}
+
+/* Where the item under the pointer is worn. */
 .slot[data-lit] {
-  background: rgba(255, 255, 255, 0.28);
-  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.45), 0 0 8px rgba(255, 255, 255, 0.25);
-  color: #fff;
+  border-color: var(--mantine-primary-color-filled);
+  background: var(--mantine-primary-color-light);
+  box-shadow: 0 0 8px var(--mantine-primary-color-light);
+  color: var(--mantine-color-text);
 }
 
 .slot[data-active] {
-  border: 2px solid var(--mantine-color-yellow-5);
-  color: #fff;
+  border-color: var(--mantine-primary-color-filled);
+  background: var(--mantine-primary-color-filled);
+  color: var(--mantine-primary-color-contrast);
 }
 
 .slot:focus-visible {
-  outline: 2px solid var(--mantine-color-yellow-4);
+  outline: 2px solid var(--mantine-primary-color-filled);
   outline-offset: 2px;
 }

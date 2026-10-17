@@ -1,32 +1,70 @@
-import { Divider, Paper, SegmentedControl, Stack, Switch, Text } from "@mantine/core";
+import { ActionIcon, Divider, Paper, Stack, Text, Tooltip } from "@mantine/core";
+import { IconFilterOff } from "@tabler/icons-react";
 import type { Item } from "../data";
 import type { Filters } from "../state";
 import { CharacterPicker } from "./CharacterPicker";
 import { Doll } from "./Doll";
+import { Pane } from "./Pane";
+import { activeChips } from "./SearchBar";
 
 export const KINDS = [
   { value: "all", label: "All" }, { value: "gear", label: "Gear" }, { value: "spell", label: "Spells" },
   { value: "bag", label: "Bags" }, { value: "other", label: "Other" },
 ];
 
-export function FilterPanel({ f, set, minimap, bare }: { f: Filters; set: (p: Partial<Filters>) => void; minimap: Item | null; bare?: boolean }) {
-  const char = f.cls >= 0 || f.race >= 0;
+const CLEARED: Partial<Filters> = { cls: -1, race: -1, kind: "all", slot: null, q: "" };
+
+interface Props {
+  f: Filters;
+  set: (p: Partial<Filters>) => void;
+  minimap: Item | null;
+  bare?: boolean; // inside the phone drawer
+  bar?: boolean; // one horizontal strip above the list
+  search?: React.ReactNode; // the search box, at the top of the strip
+}
+
+export function FilterPanel({ f, set, minimap, bare, bar, search }: Props) {
+  // A slot means gear; a kind means no slot. The two never combine.
+  const doll = (
+    <Doll item={minimap} slot={f.slot} kind={f.kind}
+      onSlot={slot => set({ slot, ...(slot ? { kind: "all" as const } : {}) })}
+      onKind={kind => set({ kind, slot: null })} />
+  );
+  // Always rendered so the header never changes size.
+  const clear = (
+    <Tooltip label="Clear filters">
+      <ActionIcon variant="subtle" color="gray" size="sm" aria-label="Clear filters" disabled={!activeChips(f).length && !f.q} onClick={() => set(CLEARED)}>
+        <IconFilterOff size={16} />
+      </ActionIcon>
+    </Tooltip>
+  );
+
+  if (bar) {
+    return (
+      <Pane id="filters" title="Search" actions={clear}>
+        {search && (
+          <Stack gap={6} pt="md" px="md">
+            <Text fz="xs" fw={600} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.06em" }}>Filter by name</Text>
+            {search}
+          </Stack>
+        )}
+        <div style={{ display: "flex", gap: "var(--mantine-spacing-lg)", padding: "var(--mantine-spacing-md)" }}>
+          <div style={{ flex: "none", width: 290 }}>{doll}</div>
+          <Divider orientation="vertical" />
+          <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
+            <CharacterPicker cls={f.cls} race={f.race} onChange={set} row />
+          </div>
+        </div>
+      </Pane>
+    );
+  }
+
   const body = (
     <Stack gap="md">
-      <Doll item={minimap} slot={f.slot} onSlot={slot => set({ slot, ...(slot ? { kind: "all" as const } : {}) })} />
+      {doll}
       <Divider />
       <CharacterPicker cls={f.cls} race={f.race} onChange={set} />
-      <Switch
-        label="Only what my character can use"
-        disabled={!char}
-        checked={char && f.usableOnly}
-        onChange={e => set({ usableOnly: e.currentTarget.checked })}
-      />
-      <Divider />
-      <Stack gap={6}>
-        <Text fz="xs" fw={600} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.06em" }}>Kind</Text>
-        <SegmentedControl fullWidth size="xs" aria-label="Kind" value={f.kind} onChange={v => set({ kind: v as Filters["kind"] })} data={KINDS} />
-      </Stack>
+      {clear}
     </Stack>
   );
   return bare ? body : <Paper withBorder p="md" radius="md">{body}</Paper>;

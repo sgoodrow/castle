@@ -14,8 +14,11 @@ rows = [r for r in csv.reader(open(os.path.join(DATA, "bank.csv"), encoding="utf
 bank, items, snap_dates = [], {}, set()
 for char, loc, name, iid, count, _slots, date in rows:
     iid = int(iid)
-    bank.append([char, loc, iid, int(count or 1)])
     snap_dates.add(date)
+    # NO DROP items can't be traded out of the bank, so buyers never see them.
+    if (itemdb.get(str(iid)) or {}).get("nodrop"):
+        continue
+    bank.append([char, loc, iid, int(count or 1)])
     if iid in items:
         continue
     it = dict(itemdb.get(str(iid)) or {"name": name, "unknown": True})
@@ -50,6 +53,7 @@ def parse_date(s):
 payload = {
     "snapshot": max(parse_date(d) for d in snap_dates),
     "built": datetime.date.today().isoformat(),
+    "builtAt": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
     "bank": bank,
     "items": items,
     "spells": used_spells,
