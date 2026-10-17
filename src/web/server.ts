@@ -26,11 +26,12 @@ const {
   bankWebUrl = `http://localhost:${PORT}`,
   bankWebDevNoAuth,
   bankCacheDir,
+  bankDistDir,
   GIT_REV = "",
 } = process.env;
 
 const ROOT = path.resolve(__dirname, "../..");
-const DIST = path.join(ROOT, "bank/dist");
+const DIST = bankDistDir ? path.resolve(bankDistDir) : path.join(ROOT, "bank/dist");
 const PAGE = path.join(DIST, "index.html");
 const WIKI_EVERY = 30 * 60e3;
 
@@ -135,6 +136,9 @@ async function route(req: IncomingMessage, res: ServerResponse) {
 export function handle(req: IncomingMessage, res: ServerResponse) {
   return route(req, res).catch(err => {
     reportError({ source: "web", message: String(err?.message || err), stack: err?.stack, details: { Path: (req.url || "").split("?")[0] } });
+    // Every route answers in one send or redirect, so nothing throws once headers are out; ending
+    // the response is only a guard in case a route someday streams.
+    /* istanbul ignore else */
     if (!res.headersSent) send(req, res, 500, "text/plain", "Something went wrong");
     else res.end();
   });

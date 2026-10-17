@@ -7,7 +7,7 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/src'], // bank/web has its own tests, run by vitest
   // Count every file, not just the ones a test imports, so the total is honest.
-  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.test.ts'],
+  collectCoverageFrom: ['src/**/*.ts', '!src/**/*.test.ts', '!src/web/features/**'],
   coverageReporters: ['text-summary', 'text'],
   // Files with tests can't lose coverage. Raise these as tests grow; add a file here once it has tests.
   coverageThreshold: {
@@ -24,11 +24,11 @@ module.exports = {
     './src/features/spawn-timers/commands/helpers/timer.ts': { lines: 83, branches: 57, functions: 66 },
     './src/features/spawn-timers/commands/parsers/argument-parser.ts': { lines: 96, branches: 88, functions: 100 },
     './src/features/spawn-timers/commands/parsers/time-parser.ts': { lines: 100, branches: 81, functions: 100 },
-    './src/shared/error-reports.ts': { lines: 87, branches: 62, functions: 90 },
+    './src/shared/error-reports.ts': { lines: 89, branches: 77, functions: 100 },
     './src/web/auth.ts': { lines: 100, branches: 100, functions: 100 },
     './src/web/bank-api.ts': { lines: 100, branches: 92, functions: 100 },
-    './src/web/respond.ts': { lines: 100, branches: 93, functions: 100 },
-    './src/web/server.ts': { lines: 100, branches: 92, functions: 100 },
-    './src/web/wiki-cache.ts': { lines: 66, branches: 37, functions: 53 },
+    './src/web/respond.ts': { lines: 100, branches: 100, functions: 100 },
+    './src/web/server.ts': { lines: 100, branches: 93, functions: 100 },
+    './src/web/wiki-cache.ts': { lines: 97, branches: 80, functions: 100 },
   },
 };
