@@ -5,3 +5,4 @@ __pycache__/
 data/bank.csv
 data/wiki/
 data/icons/
+cache/

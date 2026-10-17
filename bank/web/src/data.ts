@@ -1,4 +1,4 @@
-// Bank data baked into the page by build.py, plus the EverQuest rules needed to read it.
+// The bank, as the bot's web server sends it from /api/bank, plus the EverQuest rules needed to read it.
 
 export interface RawItem {
   name: string;
@@ -17,16 +17,16 @@ export interface RawItem {
   baneamt?: number; elemtype?: number; elemamt?: number;
   click?: number; proc?: number; worn?: number; focus?: number; scroll?: number;
   proclvl?: number; charges?: number;
+  price?: string; // set by a banker with the bot, e.g. "250p" or "200p, 1dkp"
 }
 
-interface Payload {
-  snapshot: string;
-  built: string;
-  builtAt?: string; // full timestamp; older payloads only have the date
+// What /api/bank sends: every filled slot (character, slot, item id, count), and the items in them.
+export interface Payload {
+  snapshot: string; // the newest inventory upload
+  today: string; // the server's date, which auction windows count back from
   bank: [string, string, number, number][];
   items: Record<string, RawItem>;
   spells: Record<string, { name: string; lv: number[] }>;
-  icons: Record<string, string>;
 }
 
 export interface Holder { char: string; loc: string; count: number }
@@ -50,13 +50,10 @@ export interface Item extends RawItem {
   auc: Auctions;
 }
 
-const D: Payload = JSON.parse(document.getElementById("bank-data")!.textContent!);
-
-export const SNAPSHOT = D.snapshot;
-export const BUILT = D.built;
-export const BUILT_AT = new Date(D.builtAt ?? D.built + "T00:00:00");
-export const SPELLS = D.spells;
-export const NOW = new Date(D.built + "T00:00:00");
+// Set once by loadBank, before the first render.
+export const SPELLS: Payload["spells"] = {};
+export let SNAPSHOT_AT = new Date();
+export let NOW = new Date();
 export const WINDOW_DAYS = 182;
 const DAY = 864e5;
 
@@ -66,19 +63,19 @@ export const RACES = [["HUM","Human"],["BAR","Barbarian"],["ERU","Erudite"],["EL
 export const ALL_CLASSES = (1 << CLASSES.length) - 1;
 export const ALL_RACES = (1 << RACES.length) - 1;
 // Slot bits as stored in the item database.
-const SLOT_NAMES = ["CHARM","EAR","HEAD","FACE","EAR","NECK","SHOULDERS","ARMS","BACK","WRIST","WRIST","RANGE","HANDS","PRIMARY","SECONDARY","FINGERS","FINGERS","CHEST","LEGS","FEET","WAIST","AMMO"];
+const SLOT_NAMES = ["Charm","Ear","Head","Face","Ear","Neck","Shoulders","Arms","Back","Wrist","Wrist","Range","Hands","Primary","Secondary","Fingers","Fingers","Chest","Legs","Feet","Waist","Ammo"];
 
 export interface Slot { key: string; label: string; bit: number }
 // Paper doll, laid out like the classic inventory window. null = empty cell.
 export const DOLL: (Slot | null)[][] = [
-  [null, ["ear1","EAR",1], ["neck","NECK",5], ["face","FACE",3], ["head","HEAD",2], ["ear2","EAR",4]],
-  [["fing1","FINGER",15], ["wrist1","WRIST",9], ["arms","ARMS",7], ["hands","HANDS",12], ["wrist2","WRIST",10], ["fing2","FINGER",16]],
-  [["shoul","SHLDR",6], ["chest","CHEST",17], ["back","BACK",8], ["waist","WAIST",20], ["legs","LEGS",18], ["feet","FEET",19]],
-  [null, null, ["prim","PRIM",13], ["sec","SEC",14], ["range","RANGE",11], ["ammo","AMMO",21]],
+  [null, ["ear1","Ear",1], ["neck","Neck",5], ["face","Face",3], ["head","Head",2], ["ear2","Ear",4]],
+  [["fing1","Finger",15], ["wrist1","Wrist",9], ["arms","Arms",7], ["hands","Hands",12], ["wrist2","Wrist",10], ["fing2","Finger",16]],
+  [["shoul","Shoulder",6], ["chest","Chest",17], ["back","Back",8], ["waist","Waist",20], ["legs","Legs",18], ["feet","Feet",19]],
+  [null, null, ["prim","Primary",13], ["sec","Second",14], ["range","Range",11], ["ammo","Ammo",21]],
 ].map(row => row.map(c => (c ? { key: c[0] as string, label: c[1] as string, bit: c[2] as number } : null)));
 export const SLOTS: Record<string, Slot> = Object.fromEntries(DOLL.flat().filter((s): s is Slot => !!s).map(s => [s.key, s]));
 // Slot filter chips merge the paired slots.
-export const SLOT_CHIPS: [string, number[]][] = [["EAR",[1,4]],["NECK",[5]],["FACE",[3]],["HEAD",[2]],["FINGER",[15,16]],["WRIST",[9,10]],["ARMS",[7]],["HANDS",[12]],["SHOULDERS",[6]],["CHEST",[17]],["BACK",[8]],["WAIST",[20]],["LEGS",[18]],["FEET",[19]],["PRIMARY",[13]],["SECONDARY",[14]],["RANGE",[11]],["AMMO",[21]]];
+export const SLOT_CHIPS: [string, number[]][] = [["Ear",[1,4]],["Neck",[5]],["Face",[3]],["Head",[2]],["Finger",[15,16]],["Wrist",[9,10]],["Arms",[7]],["Hands",[12]],["Shoulders",[6]],["Chest",[17]],["Back",[8]],["Waist",[20]],["Legs",[18]],["Feet",[19]],["Primary",[13]],["Secondary",[14]],["Range",[11]],["Ammo",[21]]];
 export const TYPES: Record<number, string> = {0:"1H Slashing",1:"2H Slashing",2:"Piercing",3:"1H Blunt",4:"2H Blunt",5:"Archery",7:"Throwing",8:"Shield",10:"Armor",11:"Misc",12:"Lockpicks",14:"Food",15:"Drink",16:"Light",17:"Combinable",18:"Bandages",19:"Throwing",20:"Scroll",21:"Potion",23:"Wind Instrument",24:"Stringed Instrument",25:"Brass Instrument",26:"Percussion Instrument",27:"Arrow",29:"Jewelry",35:"2H Piercing",45:"Hand to Hand"};
 export const WEAPON = new Set([0,1,2,3,4,5,7,19,35,45]);
 export const SIZES = ["TINY","SMALL","MEDIUM","LARGE","GIANT"];
@@ -110,27 +107,29 @@ function auctions(it: RawItem): Auctions {
   return { rows, recent, sellers, median, level, older: rows.length - recent.length, hasTracker: it.green != null };
 }
 
-// NO DROP items can't leave the bank, so they're never shown.
-const BANK = D.bank.filter(([, , id]) => !D.items[id]?.nodrop);
 export const ITEMS: Record<number, Item> = {};
-for (const [id, raw] of Object.entries(D.items)) {
-  if (raw.nodrop) continue;
-  ITEMS[+id] = { ...raw, id: +id, holders: [], total: 0, kind: kindOf(raw), auc: auctions(raw) };
-}
-for (const [char, loc, id, count] of BANK) {
-  ITEMS[id].holders.push({ char, loc, count });
-  ITEMS[id].total += count;
-}
-export const ITEM_LIST = Object.values(ITEMS);
+export const ITEM_LIST: Item[] = [];
 
-// Icons are embedded as base64 and turned into blob URLs once.
-const ICON_URL: Record<string, string> = {};
-for (const [k, b64] of Object.entries(D.icons)) {
-  const bin = atob(b64), u8 = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
-  ICON_URL[k] = URL.createObjectURL(new Blob([u8], { type: "image/png" }));
+// Fill ITEMS from the bank. Runs once, before the first render, so nothing shifts when data lands.
+export function loadBank(p: Payload) {
+  Object.assign(SPELLS, p.spells);
+  SNAPSHOT_AT = new Date(p.snapshot);
+  NOW = new Date(p.today + "T00:00:00");
+  for (const [char, loc, id, count] of p.bank) {
+    let it = ITEMS[id];
+    if (!it) {
+      const raw = p.items[id];
+      if (!raw || raw.nodrop) continue; // NO DROP items can't leave the bank, so they're never shown.
+      it = ITEMS[id] = { ...raw, id, holders: [], total: 0, kind: kindOf(raw), auc: auctions(raw) };
+      ITEM_LIST.push(it);
+    }
+    it.holders.push({ char, loc, count });
+    it.total += count;
+  }
 }
-export const iconUrl = (it: Item) => (it.icon != null ? ICON_URL[it.icon] : undefined);
+
+// The server keeps the wiki's icons.
+export const iconUrl = (it: Item) => (it.icon != null ? `/icons/${it.icon}.png` : undefined);
 
 // ---------- rules ----------
 export interface Character { cls: number; race: number }
@@ -195,6 +194,13 @@ const RAID_REAGENTS = /^(Peridot|Hate Stone|Pearl|Small Portal Fragment)s?$/i;
 // fromMarket: pp follows the Green median, so it is only as good as that data.
 export interface BankRequest { text: string | null; cost: string; pp: number | null; dkp?: boolean; fromMarket?: boolean }
 export function bankRequest(it: Item, cls: number, qty = 1): BankRequest {
+  const req = ruleRequest(it, cls, qty);
+  // A price a banker set with the bot beats anything worked out from the rules or the market.
+  const pp = it.price?.match(/\d+/);
+  if (!it.price || req.text == null) return req;
+  return { text: req.text, pp: pp ? +pp[0] : null, dkp: /dkp/i.test(it.price), cost: `Banker's price: ${it.price}.` };
+}
+function ruleRequest(it: Item, cls: number, qty: number): BankRequest {
   const holder = it.holders[0];
   const mule = holder?.char || "Mule";
   const sp = it.scroll ? SPELLS[it.scroll] : undefined;
@@ -220,3 +226,26 @@ export function bankRequest(it: Item, cls: number, qty = 1): BankRequest {
     ? { text, pp: Math.round(mkt * 0.8), fromMarket: true, cost: `About ${Math.round(mkt * 0.8)}pp: 80% of the ${mkt}pp Green median${it.auc.level === "thin" ? " (thin data)" : ""}.` }
     : { text, pp: null, cost: "80% of market rate. No recent Green sales to go by, so ask a banker." };
 }
+
+// Classic class/race combinations; anything else can't be rolled.
+const CAN_BE: Record<string, string[]> = {
+  WAR: ["BAR", "DEF", "DWF", "GNM", "HEF", "HFL", "HUM", "IKS", "OGR", "TRL", "ELF"],
+  CLR: ["DEF", "DWF", "ERU", "GNM", "HIE", "HFL", "HUM"],
+  PAL: ["DWF", "ERU", "HEF", "HIE", "HFL", "HUM"],
+  RNG: ["HEF", "HUM", "ELF"],
+  SHD: ["DEF", "ERU", "GNM", "HUM", "IKS", "OGR", "TRL"],
+  DRU: ["HEF", "HFL", "HUM", "ELF"],
+  MNK: ["HUM", "IKS"],
+  BRD: ["HEF", "HUM", "ELF"],
+  ROG: ["BAR", "DEF", "DWF", "GNM", "HEF", "HFL", "HUM", "ELF"],
+  SHM: ["BAR", "IKS", "OGR", "TRL"],
+  NEC: ["DEF", "ERU", "GNM", "HUM", "IKS"],
+  WIZ: ["DEF", "ERU", "GNM", "HIE", "HUM"],
+  MAG: ["DEF", "ERU", "GNM", "HIE", "HUM"],
+  ENC: ["DEF", "ERU", "GNM", "HIE", "HUM"],
+};
+export const validCombo = (cls: number, race: number) =>
+  cls < 0 || race < 0 || CAN_BE[CLASSES[cls][0]].includes(RACES[race][0]);
+
+// The slot filter a paper-doll cell belongs to.
+export const chipForBit = (bit: number) => SLOT_CHIPS.find(([, bits]) => bits.includes(bit))?.[0] ?? null;

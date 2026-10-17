@@ -1,12 +1,11 @@
-import { Button, Group, Paper, Stack, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 
 // Dev only: candidate looks to click between while iterating. Each option sets
 // html[data-<key>] and is remembered across reloads. "primary" swaps the theme's primary colour.
-const OPTIONS: { key: string; label: string; values: string[] }[] = [];
+export const OPTIONS: { key: string; label: string; values: string[] }[] = [];
 
 const STORE = "castle-bank-dev";
-const load = (): Record<string, string> => { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch { return {}; } };
+export const load = (): Record<string, string> => { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch { return {}; } };
 // The first value of each option is the default, and is what ships.
 const apply = (v: Record<string, string>) => OPTIONS.forEach(o => (document.documentElement.dataset[o.key] = v[o.key] ?? o.values[0]));
 apply(load());
@@ -37,28 +36,9 @@ export function useDevOption(key: string): string {
   return v;
 }
 
-export function DevOptions() {
-  const [v, setV] = useState(load);
-  if (!OPTIONS.length) return null;
-  const pick = (k: string, x: string) => {
-    const next = { ...v, [k]: x };
-    apply(next);
-    setV(next);
-    try { localStorage.setItem(STORE, JSON.stringify(next)); } catch { /* fine without */ }
-    window.dispatchEvent(new Event(EVENT));
-  };
-  return (
-    <Paper p="xs" style={{ position: "fixed", right: 12, bottom: 12, zIndex: 300 }}>
-      <Stack gap={4}>
-        {OPTIONS.map(o => (
-          <Group key={o.key} gap={4} wrap="nowrap">
-            <Text fz="xs" c="dimmed" w={80}>{o.label}</Text>
-            {o.values.map(x => (
-              <Button key={x} size="compact-xs" variant={(v[o.key] ?? o.values[0]) === x ? "filled" : "default"} onClick={() => pick(o.key, x)}>{x}</Button>
-            ))}
-          </Group>
-        ))}
-      </Stack>
-    </Paper>
-  );
+// Pick a value for one option and tell every hook listening.
+export function pickDevOption(v: Record<string, string>) {
+  apply(v);
+  try { localStorage.setItem(STORE, JSON.stringify(v)); } catch { /* fine without */ }
+  window.dispatchEvent(new Event(EVENT));
 }

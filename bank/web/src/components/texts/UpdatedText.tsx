@@ -1,6 +1,6 @@
 import { Text, Tooltip } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { BUILT, BUILT_AT, SNAPSHOT } from "../data";
+import { SNAPSHOT_AT } from "../../data";
 
 function ago(from: Date, now: number) {
   const min = Math.max(0, Math.round((now - from.getTime()) / 60000));
@@ -13,15 +13,15 @@ function ago(from: Date, now: number) {
 }
 
 // How fresh the page is, with the exact dates on hover.
-export function Updated() {
+export function UpdatedText() {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const t = window.setInterval(() => setNow(Date.now()), 60000);
     return () => window.clearInterval(t);
   }, []);
   return (
-    <Tooltip label={`Bank snapshot ${SNAPSHOT} · prices as of ${BUILT}`} fz="xs">
-      <Text fz="xs" c="dimmed" span style={{ cursor: "default" }}>Updated {ago(BUILT_AT, now)}</Text>
+    <Tooltip label={`Newest inventory upload ${SNAPSHOT_AT.toLocaleString()}`} fz="xs">
+      <Text fz="xs" c="dimmed" span style={{ cursor: "default" }}>Updated {ago(SNAPSHOT_AT, now)}</Text>
     </Tooltip>
   );
 }

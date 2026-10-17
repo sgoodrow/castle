@@ -42,7 +42,7 @@ export function toFilters(s: Search): Filters {
     race: RACES.findIndex(r => r[0] === s.race),
     q: s.q ?? "",
     kind: s.kind ?? "all",
-    slot: s.slot?.toUpperCase() ?? null,
+    slot: SLOT_CHIPS.find(c => c[0].toLowerCase() === s.slot)?.[0] ?? null,
   };
 }
 
@@ -84,4 +84,19 @@ export function useTab() {
     try { localStorage.setItem(KEY, JSON.stringify(tab)); } catch { /* storage blocked */ }
   }, [tab]);
   return [tab, setTab] as const;
+}
+
+export const KIND_OPTIONS = [
+  { value: "all", label: "All" }, { value: "gear", label: "Gear" }, { value: "spell", label: "Spells" },
+  { value: "bag", label: "Bags" }, { value: "other", label: "Other" },
+];
+
+// The active filters, each with what clears it.
+export function activeChips(f: Filters): { label: string; clear: Partial<Filters> }[] {
+  const out: { label: string; clear: Partial<Filters> }[] = [];
+  if (f.cls >= 0) out.push({ label: CLASSES[f.cls][1], clear: { cls: -1 } });
+  if (f.race >= 0) out.push({ label: RACES[f.race][1], clear: { race: -1 } });
+  if (f.kind !== "all") out.push({ label: KIND_OPTIONS.find(k => k.value === f.kind)!.label, clear: { kind: "all" } });
+  if (f.slot) out.push({ label: `Slot: ${f.slot}`, clear: { slot: null } });
+  return out;
 }

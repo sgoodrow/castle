@@ -1,12 +1,12 @@
 import { Text, Transition } from "@mantine/core";
 import { IconCheck, IconInfoCircle } from "@tabler/icons-react";
 import { useRef } from "react";
-import classes from "./Toast.module.css";
+import classes from "./ToastNotification.module.css";
 
 export interface ToastMsg { key: number; text: string; ok: boolean }
 
 // A solid one-line confirmation floating over the bottom-left corner. Fixed, so it never moves anything.
-export function Toast({ msg }: { msg: ToastMsg | null }) {
+export function ToastNotification({ msg }: { msg: ToastMsg | null }) {
   // Keep showing the last message while it slides away.
   const last = useRef(msg);
   if (msg) last.current = msg;

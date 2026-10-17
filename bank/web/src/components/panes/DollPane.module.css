@@ -19,7 +19,7 @@
   color: var(--mantine-color-dimmed);
   font-size: 9px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   transition: background 100ms, border-color 100ms, box-shadow 120ms, color 100ms;
 }
 

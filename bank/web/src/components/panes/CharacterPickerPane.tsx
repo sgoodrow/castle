@@ -1,28 +1,9 @@
 import { Group, Stack, Text, UnstyledButton } from "@mantine/core";
 import { IconHeartPlus, IconShieldHalf, IconSkull, IconSun, IconSwords, IconTornado, IconWand } from "@tabler/icons-react";
-import { CLASSES, RACES } from "../data";
-import classes from "./CharacterPicker.module.css";
-import { TextWithOverflow } from "./TextWithOverflow";
+import { CLASSES, RACES, validCombo } from "../../data";
+import classes from "./CharacterPickerPane.module.css";
+import { OverflowText } from "../texts/OverflowText";
 
-// Classic class/race combinations; anything else can't be rolled.
-const CAN_BE: Record<string, string[]> = {
-  WAR: ["BAR", "DEF", "DWF", "GNM", "HEF", "HFL", "HUM", "IKS", "OGR", "TRL", "ELF"],
-  CLR: ["DEF", "DWF", "ERU", "GNM", "HIE", "HFL", "HUM"],
-  PAL: ["DWF", "ERU", "HEF", "HIE", "HFL", "HUM"],
-  RNG: ["HEF", "HUM", "ELF"],
-  SHD: ["DEF", "ERU", "GNM", "HUM", "IKS", "OGR", "TRL"],
-  DRU: ["HEF", "HFL", "HUM", "ELF"],
-  MNK: ["HUM", "IKS"],
-  BRD: ["HEF", "HUM", "ELF"],
-  ROG: ["BAR", "DEF", "DWF", "GNM", "HEF", "HFL", "HUM", "ELF"],
-  SHM: ["BAR", "IKS", "OGR", "TRL"],
-  NEC: ["DEF", "ERU", "GNM", "HUM", "IKS"],
-  WIZ: ["DEF", "ERU", "GNM", "HIE", "HUM"],
-  MAG: ["DEF", "ERU", "GNM", "HIE", "HUM"],
-  ENC: ["DEF", "ERU", "GNM", "HIE", "HUM"],
-};
-export const validCombo = (cls: number, race: number) =>
-  cls < 0 || race < 0 || CAN_BE[CLASSES[cls][0]].includes(RACES[race][0]);
 
 const CLASS_GROUPS: [string, string[]][] = [
   ["Melee", ["WAR", "MNK", "ROG"]],
@@ -85,7 +66,7 @@ function TileGroups({ label, list, groups, perRow, value, other, onChange }: {
                     aria-pressed={on}
                     onClick={() => onChange(on ? -1 : i)}
                   >
-                    <TextWithOverflow span inherit display="block">{list[i][1]}</TextWithOverflow>
+                    <OverflowText span inherit display="block">{list[i][1]}</OverflowText>
                   </UnstyledButton>
                 );
               })}
@@ -99,7 +80,7 @@ function TileGroups({ label, list, groups, perRow, value, other, onChange }: {
 
 // Every race and class on screen at once, grouped the way players think about them.
 // Picking a race narrows the classes; races are never narrowed.
-export function CharacterPicker({ cls, race, onChange, row }: { cls: number; race: number; onChange: (p: { cls?: number; race?: number }) => void; row?: boolean }) {
+export function CharacterPickerPane({ cls, race, onChange, row }: { cls: number; race: number; onChange: (p: { cls?: number; race?: number }) => void; row?: boolean }) {
   return (
     <div className={row ? classes.row : classes.stack}>
       <TileGroups

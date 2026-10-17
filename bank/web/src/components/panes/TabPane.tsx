@@ -1,10 +1,11 @@
 import { ActionIcon, Button, Code, Group, Stack, Text, UnstyledButton } from "@mantine/core";
-import { TextWithOverflow } from "./TextWithOverflow";
+import { OverflowText } from "../texts/OverflowText";
 import { IconCheck, IconCopy, IconX } from "@tabler/icons-react";
 import { useRef, useState } from "react";
-import { ITEMS, bankRequest } from "../data";
-import type { Tab } from "../state";
-import { ItemIcon } from "./ItemIcon";
+import { ITEMS, bankRequest } from "../../data";
+import { tabTotal, totalText } from "../../tab";
+import type { Tab } from "../../state";
+import { ItemImage } from "../ItemImage";
 
 interface Props {
   tab: Tab;
@@ -14,22 +15,23 @@ interface Props {
   onClear: () => void;
 }
 
-// What the tab adds up to, in platinum; null if anything on it has no known price.
-export function tabTotal(tab: Tab, cls: number): number | null {
-  let sum = 0;
-  for (const [id, qty] of Object.entries(tab)) {
-    const it = ITEMS[+id];
-    if (!it) continue; // no longer in the bank
-    const pp = bankRequest(it, cls, qty).pp;
-    if (pp == null) return null;
-    sum += pp * qty;
-  }
-  return sum;
+
+type Line = { it: (typeof ITEMS)[number]; qty: number; pp: number | null };
+// The tab as a plain-text table, for pasting into Discord as a code block.
+function tabTable(lines: Line[]) {
+  const head = ["Item", "Location", "Count", "Each", "Total"];
+  const rows = lines.map(({ it, qty, pp }) => [it.name, it.holders[0]?.char ?? "", String(qty), pp == null ? "ask" : String(pp), pp == null ? "ask" : String(pp * qty)]);
+  // Known prices still add up when some lines need a banker's quote.
+  const sum = lines.reduce((t, l) => t + (l.pp ?? 0) * l.qty, 0);
+  const foot = ["GRAND TOTAL", "", "", "", lines.some(l => l.pp == null) ? (sum ? `${sum} + ask` : "ask") : String(sum)];
+  const w = head.map((h, i) => Math.max(h.length, ...[...rows, foot].map(r => r[i].length)));
+  const fmt = (r: string[]) => r.map((c, i) => (i < 2 ? c.padEnd(w[i]) : c.padStart(w[i]))).join(" | ").trimEnd();
+  const rule = w.map(n => "-".repeat(n)).join("-|-");
+  return [fmt(head), rule, ...rows.map(fmt), rule, fmt(foot)].join("\n");
 }
-export const totalText = (t: number | null) => (t == null ? "???" : `${t.toLocaleString()}pp`);
 
 // The running tab: every request line ready to paste into #bank-requests, with a total.
-export function TabPanel({ tab, cls, onSelect, onRemove, onClear }: Props) {
+export function TabPane({ tab, cls, onSelect, onRemove, onClear }: Props) {
   const [copied, setCopied] = useState(false);
   const codeRef = useRef<HTMLPreElement>(null);
   // Ids the bank no longer shows (sold, or NO DROP) are skipped.
@@ -37,11 +39,11 @@ export function TabPanel({ tab, cls, onSelect, onRemove, onClear }: Props) {
   const total = tabTotal(tab, cls);
   const quotes = lines.filter(l => l.req.pp == null).length;
   const dkp = lines.filter(l => l.req.dkp).length;
-  const text = lines.map(l => l.req.text).filter(Boolean).join("\n");
+  const text = lines.length ? tabTable(lines.map(l => ({ it: l.it, qty: l.qty, pp: l.req.pp }))) : "";
 
   const copy = () => {
     const done = () => { setCopied(true); setTimeout(() => setCopied(false), 1500); };
-    navigator.clipboard?.writeText(text).then(done, () => {
+    navigator.clipboard?.writeText("```\n" + text + "\n```").then(done, () => {
       // Clipboard refused: select the text so Ctrl/Cmd+C works.
       const r = document.createRange();
       r.selectNodeContents(codeRef.current!);
@@ -61,8 +63,8 @@ export function TabPanel({ tab, cls, onSelect, onRemove, onClear }: Props) {
             {lines.map(({ it, qty, req }) => (
               <Group key={it.id} component="li" gap="xs" wrap="nowrap">
                 <UnstyledButton onClick={() => onSelect(it.id)} style={{ display: "flex", gap: 8, alignItems: "center", flex: 1, minWidth: 0 }}>
-                  <ItemIcon it={it} size={28} />
-                  <TextWithOverflow fz="sm">{qty > 1 ? `${qty} × ` : ""}{it.name}</TextWithOverflow>
+                  <ItemImage it={it} size={28} />
+                  <OverflowText fz="sm">{qty > 1 ? `${qty} × ` : ""}{it.name}</OverflowText>
                 </UnstyledButton>
                 <Text fz="sm" c={req.pp == null ? "dimmed" : undefined} style={{ flex: "none" }}>
                   {req.pp == null ? "ask" : req.pp === 0 ? "free" : `${req.pp * qty}pp`}
@@ -85,7 +87,7 @@ export function TabPanel({ tab, cls, onSelect, onRemove, onClear }: Props) {
           )}
           {text && (
             <>
-              <Code block ref={codeRef} fz="xs" style={{ whiteSpace: "pre-wrap" }}>{text}</Code>
+              <Code block ref={codeRef} fz="xs" style={{ whiteSpace: "pre", overflowX: "auto" }}>{text}</Code>
               <Button fullWidth leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />} color={copied ? "green" : undefined} onClick={copy}>
                 {copied ? "Copied" : "Copy request"}
               </Button>

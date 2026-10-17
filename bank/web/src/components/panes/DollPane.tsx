@@ -1,10 +1,9 @@
 import { Stack, Text, UnstyledButton } from "@mantine/core";
 import { IconBackpack, IconBox, IconScript, type Icon } from "@tabler/icons-react";
-import { DOLL, SLOT_CHIPS, fitsBit, type Item } from "../data";
-import type { Filters } from "../state";
-import classes from "./Doll.module.css";
+import { DOLL, chipForBit, fitsBit, type Item } from "../../data";
+import type { Filters } from "../../state";
+import classes from "./DollPane.module.css";
 
-export const chipForBit = (bit: number) => SLOT_CHIPS.find(([, bits]) => bits.includes(bit))?.[0] ?? null;
 
 // The things that aren't worn, in a row under the doll.
 const KIND_CELLS: { kind: Filters["kind"]; label: string; icon: Icon }[] = [
@@ -23,7 +22,7 @@ interface Props {
 
 // The inventory window as a slot picker, with spells, bags and other things below.
 // It also lights up where the item under the pointer is worn.
-export function Doll({ item, slot, kind, onSlot, onKind }: Props) {
+export function DollPane({ item, slot, kind, onSlot, onKind }: Props) {
   return (
     <Stack gap={6}>
       <Text fz="xs" fw={600} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.06em" }}>Filter by slot</Text>

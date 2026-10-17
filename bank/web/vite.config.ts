@@ -1,24 +1,14 @@
-import { existsSync, readFileSync } from "node:fs";
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 import { viteSingleFile } from "vite-plugin-singlefile";
 
-// build.py writes the bank payload here; it is baked into the page so the
-// site is a single static file with no runtime fetches.
-const PAYLOAD = new URL("./payload.json", import.meta.url);
-
-function bankData(): Plugin {
+// One self-contained page; the bot's web server (src/web) serves it and the bank data.
+export default defineConfig(({ mode }) => {
+  const api = loadEnv(mode, ".", "BANK_").BANK_API || "http://localhost:5000";
   return {
-    name: "bank-data",
-    transformIndexHtml(html) {
-      if (!existsSync(PAYLOAD)) throw new Error("payload.json missing: run scripts/build.py first");
-      const json = readFileSync(PAYLOAD, "utf-8").replace(/<\//g, "<\\/");
-      return html.replace("__BANK_DATA__", () => json);
-    },
+    plugins: [react(), viteSingleFile()],
+    build: { outDir: "../dist", emptyOutDir: true },
+    // `npm run dev` talks to a local bank web server (BANK_API, default the bot's port 5000).
+    server: { proxy: { "/api": api, "/icons": api } },
   };
-}
-
-export default defineConfig({
-  plugins: [react(), bankData(), viteSingleFile()],
-  build: { outDir: "../dist", emptyOutDir: true },
 });

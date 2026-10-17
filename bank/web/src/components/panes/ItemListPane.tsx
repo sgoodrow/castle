@@ -2,26 +2,14 @@ import { Badge, Group, Text, Tooltip, UnstyledButton } from "@mantine/core";
 import { IconAlertTriangle, IconMinus } from "@tabler/icons-react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { memo, useLayoutEffect, useRef, useState } from "react";
-import { bankRequest, statParts, type Item } from "../data";
-import type { Tab } from "../state";
-import { ItemIcon } from "./ItemIcon";
-import { Pane } from "./Pane";
-import { TextWithOverflow } from "./TextWithOverflow";
-import classes from "./ItemList.module.css";
+import { bankRequest, statParts, type Item } from "../../data";
+import type { Tab } from "../../state";
+import { GuildPriceText } from "../texts/GuildPriceText";
+import { ItemImage } from "../ItemImage";
+import { CollapsibleLayout } from "../CollapsibleLayout";
+import { OverflowText } from "../texts/OverflowText";
+import classes from "./ItemListPane.module.css";
 
-// What the guild charges, as plain text. A price from thin market data gets a quiet warning mark.
-export function GuildPrice({ it, cls }: { it: Item; cls: number }) {
-  const req = bankRequest(it, cls);
-  if (req.text == null || req.pp == null) return null;
-  const thin = req.fromMarket && it.auc.level === "thin";
-  const price = (
-    <Text span fz="xs" fw={600} style={{ display: "inline-flex", alignItems: "center", gap: 3, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", cursor: thin ? "help" : undefined }}>
-      {thin && <IconAlertTriangle size={12} stroke={1.75} aria-label="Low confidence" style={{ display: "block", color: "var(--mantine-color-dimmed)" }} />}
-      {req.pp ? `${req.pp}pp` : "free"}
-    </Text>
-  );
-  return thin ? <Tooltip label="Low confidence">{price}</Tooltip> : price;
-}
 
 interface Props {
   items: Item[];
@@ -63,16 +51,16 @@ const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index
         onClick={() => on.current.onSelect(it.id)}
         onDoubleClick={e => on.current.onAdd?.(it.id, e.currentTarget)}
       >
-        <span className={classes.icon}><ItemIcon it={it} size={table ? 24 : 32} /></span>
+        <span className={classes.icon}><ItemImage it={it} size={table ? 24 : 32} /></span>
         <Group gap={6} wrap="nowrap" className={classes.name}>
           {it.lore && <Badge size="xs" variant="outline" color="gray" style={{ flex: "none" }}>LORE</Badge>}
-          <TextWithOverflow fw={600} fz="sm" className={classes.nameText}>{it.name}</TextWithOverflow>
+          <OverflowText fw={600} fz="sm" className={classes.nameText}>{it.name}</OverflowText>
           {!usable && <Badge size="xs" variant="outline" color="red" style={{ flex: "none" }}>CAN'T USE</Badge>}
         </Group>
         {table
-          ? <TextWithOverflow fz="xs" className={classes.stats}>{stats(it)}</TextWithOverflow>
+          ? <OverflowText fz="xs" className={classes.stats}>{stats(it)}</OverflowText>
           : <Text fz="xs" className={`${classes.stats} ${classes.wrap}`}>{stats(it)}</Text>}
-        <span className={`${classes.price} ${classes.end}`}><GuildPrice it={it} cls={cls} /></span>
+        <span className={`${classes.price} ${classes.end}`}><GuildPriceText it={it} cls={cls} /></span>
         {/* Space is always held so adding to the tab never reflows the row. */}
         <span className={`${classes.tab} ${classes.end}`}>
           {/* Clicking it takes one off; on hover it turns into a minus so that's clear. */}
@@ -91,7 +79,7 @@ const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index
 });
 
 // The bank as a table: icon, name, stat line, price, tab.
-export function ItemList({ items, selected, tab, cls, canUse, onSelect, onAdd, onRemove, table }: Props) {
+export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAdd, onRemove, table }: Props) {
   // Handlers go through a ref so rows never see a new function and stay memoized.
   const on = useRef({ onSelect, onAdd, onRemove });
   on.current = { onSelect, onAdd, onRemove };
@@ -117,7 +105,7 @@ export function ItemList({ items, selected, tab, cls, canUse, onSelect, onAdd, o
     getItemKey: i => items[i].id,
   });
   return (
-    <Pane id="items" title="Items Available" className={classes.root} data-table={table || undefined}
+    <CollapsibleLayout id="items" title="Items Available" className={classes.root} data-table={table || undefined}
       actions={<Text fz="sm" c="dimmed">{items.length} {items.length === 1 ? "item" : "items"}</Text>}>
       {table && (
         <div className={`${classes.row} ${classes.head}`} aria-hidden>
@@ -138,6 +126,6 @@ export function ItemList({ items, selected, tab, cls, canUse, onSelect, onAdd, o
           );
         })}
       </ul>
-    </Pane>
+    </CollapsibleLayout>
   );
 }

@@ -1,22 +1,8 @@
 import { Group, Modal, Stack, Text, Tooltip, UnstyledButton } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { useState } from "react";
-import { NOW, type Item } from "../data";
+import { NOW, type Item } from "../../data";
 
-const WARNING = { thin: "Thin data", none: "No sales in 6 months" } as const;
-
-// Shown beside the Market data heading only when the market can't be trusted; a steady one says nothing.
-export function MarketWarning({ it }: { it: Item }) {
-  const a = it.auc;
-  if (!a.hasTracker || !a.rows.length || a.level === "solid") return null;
-  return (
-    <Tooltip label="Low confidence">
-      <Text fz="xs" c="dimmed" style={{ display: "inline-flex", alignItems: "center", gap: 3, cursor: "help" }}>
-        <IconAlertTriangle size={12} stroke={1.75} />{WARNING[a.level]}
-      </Text>
-    </Tooltip>
-  );
-}
 
 function stdev(xs: number[]) {
   const mean = xs.reduce((a, b) => a + b, 0) / xs.length;
@@ -75,7 +61,7 @@ function Timeline({ rows, median, big }: { rows: Row[]; median: number | null; b
 }
 
 // A year of Green WTS listings on a timeline; click it for a bigger copy.
-export function AuctionChart({ it }: { it: Item }) {
+export function AuctionPane({ it }: { it: Item }) {
   const a = it.auc;
   const [big, setBig] = useState(false);
   if (!a.hasTracker || !a.rows.length) return <Text fz="sm" c="dimmed">None</Text>;

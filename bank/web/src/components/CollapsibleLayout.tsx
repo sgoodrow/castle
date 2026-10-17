@@ -11,7 +11,7 @@ interface Props extends PaperProps {
 }
 
 // A bordered pane whose title bar folds it away. Each pane remembers its own state.
-export function Pane({ id, title, actions, children, ...paper }: Props) {
+export function CollapsibleLayout({ id, title, actions, children, ...paper }: Props) {
   const [open, setOpen] = useLocalStorage({ key: `castle-bank-pane-${id}`, defaultValue: true, getInitialValueInEffect: false });
   return (
     <Paper withBorder radius="md" {...paper}>

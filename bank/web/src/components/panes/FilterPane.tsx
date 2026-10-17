@@ -1,16 +1,11 @@
 import { ActionIcon, Divider, Paper, Stack, Text, Tooltip } from "@mantine/core";
 import { IconFilterOff } from "@tabler/icons-react";
-import type { Item } from "../data";
-import type { Filters } from "../state";
-import { CharacterPicker } from "./CharacterPicker";
-import { Doll } from "./Doll";
-import { Pane } from "./Pane";
-import { activeChips } from "./SearchBar";
+import type { Item } from "../../data";
+import { activeChips, type Filters } from "../../state";
+import { CharacterPickerPane } from "./CharacterPickerPane";
+import { DollPane } from "./DollPane";
+import { CollapsibleLayout } from "../CollapsibleLayout";
 
-export const KINDS = [
-  { value: "all", label: "All" }, { value: "gear", label: "Gear" }, { value: "spell", label: "Spells" },
-  { value: "bag", label: "Bags" }, { value: "other", label: "Other" },
-];
 
 const CLEARED: Partial<Filters> = { cls: -1, race: -1, kind: "all", slot: null, q: "" };
 
@@ -23,10 +18,10 @@ interface Props {
   search?: React.ReactNode; // the search box, at the top of the strip
 }
 
-export function FilterPanel({ f, set, minimap, bare, bar, search }: Props) {
+export function FilterPane({ f, set, minimap, bare, bar, search }: Props) {
   // A slot means gear; a kind means no slot. The two never combine.
   const doll = (
-    <Doll item={minimap} slot={f.slot} kind={f.kind}
+    <DollPane item={minimap} slot={f.slot} kind={f.kind}
       onSlot={slot => set({ slot, ...(slot ? { kind: "all" as const } : {}) })}
       onKind={kind => set({ kind, slot: null })} />
   );
@@ -41,7 +36,7 @@ export function FilterPanel({ f, set, minimap, bare, bar, search }: Props) {
 
   if (bar) {
     return (
-      <Pane id="filters" title="Search" actions={clear}>
+      <CollapsibleLayout id="filters" title="Search" actions={clear}>
         {search && (
           <Stack gap={6} pt="md" px="md">
             <Text fz="xs" fw={600} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.06em" }}>Filter by name</Text>
@@ -52,10 +47,10 @@ export function FilterPanel({ f, set, minimap, bare, bar, search }: Props) {
           <div style={{ flex: "none", width: 290 }}>{doll}</div>
           <Divider orientation="vertical" />
           <div style={{ flex: 1, minWidth: 0, display: "flex" }}>
-            <CharacterPicker cls={f.cls} race={f.race} onChange={set} row />
+            <CharacterPickerPane cls={f.cls} race={f.race} onChange={set} row />
           </div>
         </div>
-      </Pane>
+      </CollapsibleLayout>
     );
   }
 
@@ -63,7 +58,7 @@ export function FilterPanel({ f, set, minimap, bare, bar, search }: Props) {
     <Stack gap="md">
       {doll}
       <Divider />
-      <CharacterPicker cls={f.cls} race={f.race} onChange={set} />
+      <CharacterPickerPane cls={f.cls} race={f.race} onChange={set} />
       {clear}
     </Stack>
   );

@@ -1,9 +1,10 @@
 import { Alert, Badge, Button, CloseButton, Divider, Group, Paper, Stack, Text, Title, Tooltip } from "@mantine/core";
 import { IconAlertTriangle, IconArrowLeft } from "@tabler/icons-react";
-import { prettyLoc, type Holder, type Item } from "../data";
-import { AuctionChart, MarketWarning } from "./AuctionChart";
-import { Pane } from "./Pane";
-import { StatBlock } from "./StatBlock";
+import { prettyLoc, type Holder, type Item } from "../../data";
+import { AuctionPane } from "./AuctionPane";
+import { MarketWarningText } from "../texts/MarketWarningText";
+import { CollapsibleLayout } from "../CollapsibleLayout";
+import { StatPane } from "./StatPane";
 
 interface Props {
   it: Item | null;
@@ -33,18 +34,18 @@ const Section = ({ title, aside, children }: { title: string; aside?: React.Reac
 export function DetailPane({ it, canUse, onBack, onClose }: Props) {
   if (!it) {
     return (
-      <Pane id="details" title="Details">
+      <CollapsibleLayout id="details" title="Details">
         <Text c="dimmed" fz="sm" p="md">Click an item in the bank to see its stats, who holds it and Green prices. Double-click it to add it to your tab.</Text>
-      </Pane>
+      </CollapsibleLayout>
     );
   }
   return (
-    <Pane id="details" title="Details"
+    <CollapsibleLayout id="details" title="Details"
       actions={<CloseButton aria-label="Close details" onClick={onClose} style={{ visibility: onClose ? "visible" : "hidden" }} />}>
       <Stack gap="md" p="md">
         {onBack && <Button variant="subtle" color="gray" leftSection={<IconArrowLeft size={16} />} onClick={onBack} style={{ alignSelf: "flex-start" }}>Back to the bank</Button>}
         <Paper withBorder p="sm" radius="md" style={{ background: "var(--surface-head)", boxShadow: "none" }}>
-          <StatBlock it={it} />
+          <StatPane it={it} />
         </Paper>
         {!canUse && (
           <Alert color="red" variant="light" icon={<IconAlertTriangle size={18} />} p="xs">
@@ -64,10 +65,10 @@ export function DetailPane({ it, canUse, onBack, onClose }: Props) {
           </Group>
         </Section>
         <Divider />
-        <Section title="Market data" aside={<MarketWarning it={it} />}>
-          <AuctionChart it={it} />
+        <Section title="Market data" aside={<MarketWarningText it={it} />}>
+          <AuctionPane it={it} />
         </Section>
       </Stack>
-    </Pane>
+    </CollapsibleLayout>
   );
 }

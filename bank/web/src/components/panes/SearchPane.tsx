@@ -1,9 +1,7 @@
 import { ActionIcon, CloseButton, Group, Indicator, TextInput } from "@mantine/core";
 import { IconFilter, IconSearch } from "@tabler/icons-react";
 import { useEffect, useRef, useState } from "react";
-import { CLASSES, RACES } from "../data";
-import type { Filters } from "../state";
-import { KINDS } from "./FilterPanel";
+import { activeChips, type Filters } from "../../state";
 
 interface Props {
   f: Filters;
@@ -11,17 +9,8 @@ interface Props {
   onFilters?: () => void; // phones: open the filter drawer
 }
 
-// The active filters, each with what clears it.
-export function activeChips(f: Filters): { label: string; clear: Partial<Filters> }[] {
-  const out: { label: string; clear: Partial<Filters> }[] = [];
-  if (f.cls >= 0) out.push({ label: CLASSES[f.cls][1], clear: { cls: -1 } });
-  if (f.race >= 0) out.push({ label: RACES[f.race][1], clear: { race: -1 } });
-  if (f.kind !== "all") out.push({ label: KINDS.find(k => k.value === f.kind)!.label, clear: { kind: "all" } });
-  if (f.slot) out.push({ label: `Slot: ${f.slot.toLowerCase()}`, clear: { slot: null } });
-  return out;
-}
 
-export function SearchBar({ f, set, onFilters }: Props) {
+export function SearchPane({ f, set, onFilters }: Props) {
   // The box keeps its own text: the URL catches up a tick later and would eat fast keystrokes.
   const [q, setQ] = useState(f.q);
   const sent = useRef(f.q);

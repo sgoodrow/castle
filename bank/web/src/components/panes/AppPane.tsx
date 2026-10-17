@@ -1,19 +1,20 @@
 import { Box, Button, Container, Drawer, Grid, Group, Text, Title } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { IconMoneybag } from "@tabler/icons-react";
-import { Toast, type ToastMsg } from "./components/Toast";
-import { OverflowTooltip } from "./components/TextWithOverflow";
+import { ToastNotification, type ToastMsg } from "../ToastNotification";
+import { OverflowTooltip } from "../OverflowTooltip";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ITEMS, bankRequest, ITEM_LIST, RESISTS, SLOT_CHIPS, STATS, sumOf, statText, usable, type Item } from "./data";
+import { ITEMS, bankRequest, ITEM_LIST, RESISTS, SLOT_CHIPS, STATS, sumOf, statText, usable, type Item } from "../../data";
 import { getRouteApi } from "@tanstack/react-router";
-import { toFilters, toSearch, useTab, type Filters } from "./state";
-import { DetailPane } from "./components/DetailPane";
-import { ItemList } from "./components/ItemList";
-import { SearchBar } from "./components/SearchBar";
-import { FilterPanel } from "./components/FilterPanel";
-import { TabPanel, tabTotal, totalText } from "./components/TabPanel";
-import { Updated } from "./components/Updated";
-import { DevOptions } from "./components/DevOptions";
+import { toFilters, toSearch, useTab, type Filters } from "../../state";
+import { DetailPane } from "./DetailPane";
+import { ItemListPane } from "./ItemListPane";
+import { SearchPane } from "./SearchPane";
+import { FilterPane } from "./FilterPane";
+import { TabPane } from "./TabPane";
+import { tabTotal, totalShort, totalText } from "../../tab";
+import { UpdatedText } from "../texts/UpdatedText";
+import { DevOptionsPane } from "./DevOptionsPane";
 
 function filterItems(f: Filters) {
   const bits = f.slot ? SLOT_CHIPS.find(([l]) => l === f.slot)![1] : null;
@@ -34,7 +35,7 @@ function filterItems(f: Filters) {
 
 const route = getRouteApi("__root__");
 
-export default function App() {
+export function AppPane() {
   const search = route.useSearch();
   const navigate = route.useNavigate();
   const f = useMemo(() => toFilters(search), [search]);
@@ -115,44 +116,44 @@ export default function App() {
   );
   const sticky = { position: "sticky", top: 16, maxHeight: "calc(100vh - 32px)", overflowY: "auto" } as const;
   const total = tabTotal(tab, f.cls);
-  const list = <ItemList items={items} selected={selected} tab={tab} cls={f.cls} canUse={canUse} onSelect={select} onAdd={addOne} onRemove={removeOne} table={md} />;
+  const list = <ItemListPane items={items} selected={selected} tab={tab} cls={f.cls} canUse={canUse} onSelect={select} onAdd={addOne} onRemove={removeOne} table={md} />;
 
   return (
     <Container size={1500} py="md" px={{ base: "md", sm: "lg" }}>
       <Group gap="sm" justify="space-between" wrap="nowrap" mb="sm">
         <Group gap="sm" align="baseline" style={{ minWidth: 0 }}>
           <Title order={1} fz="h2">Castle Guild Bank</Title>
-          <Updated />
+          <UpdatedText />
         </Group>
         {/* The tab: a coin pouch with the bill so far. Fixed width so a growing bill never moves anything. */}
-        <Button ref={tabBtn} variant="light" h={36} px={6} w={md ? 140 : 120} style={{ flex: "none" }} aria-label={`Show tab, ${total == null ? "total unknown" : `${total.toLocaleString()} platinum`}`} onClick={() => setTabOpen(true)}
+        <Button ref={tabBtn} variant="light" h={36} px={6} w={md ? 140 : 120} style={{ flex: "none" }} aria-label={`Show tab, ${totalText(total)}`} onClick={() => setTabOpen(true)}
           leftSection={<IconMoneybag size={20} />} styles={{ inner: { justifyContent: "stretch" }, label: { flex: 1 }, section: { marginInlineEnd: 6 } }}>
           <Text span fw={700} fz="sm" px={6} py={2} w="100%" ta="right" style={{ fontVariantNumeric: "tabular-nums", borderRadius: 4, background: "var(--mantine-color-body)", color: "light-dark(#5f6b76, #dde3e9)" }}>
-            {totalText(total)}
+            {totalShort(total)}
           </Text>
         </Button>
       </Group>
-      {!md && <Box mb="sm"><SearchBar f={f} set={set} onFilters={() => setFiltersOpen(true)} /></Box>}
+      {!md && <Box mb="sm"><SearchPane f={f} set={set} onFilters={() => setFiltersOpen(true)} /></Box>}
       {md ? (
         <>
-          <Box mb="md"><FilterPanel f={f} set={set} minimap={sel} bar search={<SearchBar f={f} set={set} />} /></Box>
+          <Box mb="md"><FilterPane f={f} set={set} minimap={sel} bar search={<SearchPane f={f} set={set} />} /></Box>
           <Grid gutter="md">
             <Grid.Col span={8}>{list}</Grid.Col>
             <Grid.Col span={4}><div style={sticky}>{detail}</div></Grid.Col>
           </Grid>
         </>
       ) : sel ? detail : list}
-      <Toast msg={toast} />
+      <ToastNotification msg={toast} />
       <OverflowTooltip />
       <Drawer opened={tabOpen} onClose={() => setTabOpen(false)} position="right" size="min(440px, 100%)" title="Your tab" withinPortal>
-        <TabPanel tab={tab} cls={f.cls} onSelect={id => { setTabOpen(false); select(id); }} onRemove={id => setQty(id, 0)} onClear={() => setTab({})} />
+        <TabPane tab={tab} cls={f.cls} onSelect={id => { setTabOpen(false); select(id); }} onRemove={id => setQty(id, 0)} onClear={() => setTab({})} />
       </Drawer>
       {!md && (
         <Drawer opened={filtersOpen} onClose={() => setFiltersOpen(false)} position="left" size="min(400px, 100%)" title="Filters" withinPortal>
-          <FilterPanel f={f} set={set} minimap={sel} bare />
+          <FilterPane f={f} set={set} minimap={sel} bare />
         </Drawer>
       )}
-      {import.meta.env.DEV && <DevOptions />}
+      {import.meta.env.DEV && <DevOptionsPane />}
     </Container>
   );
 }

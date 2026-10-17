@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import {
   ALL_CLASSES, ALL_RACES, CLASSES, ELEM, RACES, RESISTS, SIZES, SPELLS, STATS, TYPES, WEAPON,
   maskText, signed, slotText, type Item,
-} from "../data";
-import { ItemIcon } from "./ItemIcon";
+} from "../../data";
+import { ItemImage } from "../ItemImage";
 
 // A P99 wiki page, marked as leaving the site.
 const Wiki = ({ href, children, fw }: { href: string; children: ReactNode; fw?: number }) => (
@@ -20,7 +20,7 @@ const K = ({ children }: { children: ReactNode }) => (
 );
 
 // The in-game item inspect window, line for line.
-export function StatBlock({ it, header = true }: { it: Item; header?: boolean }) {
+export function StatPane({ it, header = true }: { it: Item; header?: boolean }) {
   const flags = [it.magic && "MAGIC ITEM", it.lore && "LORE ITEM", it.nodrop && "NO DROP", it.norent && "NO RENT"].filter(Boolean).join("  ");
   const stats = STATS.filter(([k]) => it[k]).map(([k, l]) => `${l}: ${signed(it[k]!)}`);
   if (it.hp) stats.push(`HP: ${signed(it.hp)}`);
@@ -35,7 +35,7 @@ export function StatBlock({ it, header = true }: { it: Item; header?: boolean })
     <Stack gap={4} fz="sm">
       {header && (
         <Group gap="sm" wrap="nowrap" mb={4}>
-          <ItemIcon it={it} />
+          <ItemImage it={it} />
           <div>
             <Text fw={600}>{it.wiki ? <Wiki href={it.wiki} fw={600}>{it.name}</Wiki> : it.name}</Text>
             {flags && <Text fz="xs" c="dimmed" style={{ whiteSpace: "pre" }}>{flags}</Text>}
