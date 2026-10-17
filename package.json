@@ -15,7 +15,7 @@
     "predev": "docker-compose up -d --wait",
     "dev": "nodemon",
     "test": "jest --watch",
-    "test:ci": "jest"
+    "test:ci": "jest --coverage"
   },
   "engines": {
     "node": ">=22.22.0"
