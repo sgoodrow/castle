@@ -1,5 +1,7 @@
 // The bank, as the bot's web server sends it from /api/bank, plus the EverQuest rules needed to read it.
 
+import { reportError } from "./errors";
+
 export interface RawItem {
   name: string;
   unknown?: boolean;
@@ -176,10 +178,14 @@ export const ITEM_LIST: Item[] = [];
 
 // Fill ITEMS from the bank. Runs once, before the first render, so nothing shifts when data lands.
 export function loadBank(p: Payload) {
+  const bad: string[] = [];
   for (const [id, raw] of Object.entries(p.spells)) {
     const sp = toSpell(raw);
     if (sp) SPELLS[id] = sp;
+    else bad.push(id);
   }
+  // One report for the lot: the page still works without those scrolls' levels, but the data needs fixing.
+  if (bad.length) reportError(new Error(`Spell data without 15 class levels: ${bad.join(", ")}`));
   SNAPSHOT_AT = new Date(p.snapshot);
   NOW = new Date(p.today + "T00:00:00");
   for (const [char, loc, id, count] of p.bank) {

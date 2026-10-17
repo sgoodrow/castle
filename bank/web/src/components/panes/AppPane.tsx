@@ -65,28 +65,25 @@ export function AppPane() {
     clearTimeout(toastTimer.current);
     toastTimer.current = window.setTimeout(() => setToast(null), 2200);
   };
-  const addOne = (id: number, row: HTMLElement) => {
-    const it = ITEMS[id];
-    if (!it) return;
+  const addOne = (it: Item, row: HTMLElement) => {
     if (bankRequest(it, f.cls).text == null) return say(`${it.name} isn't for sale`, false);
-    const have = tab[id] || 0;
+    const have = tab[it.id] || 0;
     if (have >= it.total) {
       // Shake the count so it's clear it has hit the ceiling. Transform only, so nothing moves.
       row.querySelector("[role=button]")?.animate(
         [0, -4, 4, -3, 3, 0].map(x => ({ transform: `translateX(${x}px)` })), { duration: 300, easing: "ease-out" });
       return say(it.total === 1 ? "The bank only has one, and it's on your tab" : `The bank only has ${it.total}, all on your tab`, false);
     }
-    setQty(id, have + 1);
+    setQty(it.id, have + 1);
     say(have ? `${it.name} ×${have + 1} on your tab` : `Added ${it.name} to your tab`, true);
     // Transforms and colour only, so nothing around them moves.
     row.animate([{ background: "var(--mantine-primary-color-light)" }, { background: "transparent" }], { duration: 600, easing: "ease-out" });
     tabBtn.current?.animate([{ transform: "scale(1)" }, { transform: "scale(1.1)" }, { transform: "scale(1)" }], { duration: 320, easing: "ease-out" });
   };
-  const removeOne = (id: number) => {
-    const have = tab[id] || 0;
-    const it = ITEMS[id];
-    if (!have || !it) return;
-    setQty(id, have - 1);
+  const removeOne = (it: Item) => {
+    const have = tab[it.id] || 0;
+    if (!have) return; // never below zero
+    setQty(it.id, have - 1);
     say(have > 1 ? `${it.name} ×${have - 1} on your tab` : `Removed ${it.name} from your tab`, true);
   };
   // The URL can name an item the bank no longer has.
