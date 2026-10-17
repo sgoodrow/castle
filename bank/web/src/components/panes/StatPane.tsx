@@ -70,7 +70,7 @@ export function StatPane({ it, header = true }: { it: Item; header?: boolean }) 
       {sp && (
         <div>
           <K>Spell:</K> {sp.name}
-          {" · "}{sp.lv.map((l, i) => (l ? `${CLASSES[i][0]}(${l})` : null)).filter(Boolean).join(" ")}
+          {" · "}{sp.lv.map((l, i) => (l && CLASSES[i] ?`${CLASSES[i][0]}(${l})` : null)).filter(Boolean).join(" ")}
         </div>
       )}
       {!!it.bagslots && (
