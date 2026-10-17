@@ -17,6 +17,7 @@ import { updateRaidReport } from "./features/dkp-records/update/update-raid-repo
 import { guildMemberUpdateListener } from "./listeners/guild-member-update-listener";
 import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
+import { reportError } from "./shared/error-reports";
 import { log } from "./shared/logger";
 import { openDkpService } from "./services/openDkpService";
 import { accounts } from "./services/accounts";
@@ -100,8 +101,16 @@ setInterval(() => {
   openDkpService.generateToken();
 }, 1500000);
 
-process.on("unhandledRejection", (reason, promise) => {
+process.on("unhandledRejection", (reason: any, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  reportError({ source: "worker", message: String(reason?.message || reason), stack: reason?.stack });
+});
+process.on("uncaughtException", (err) => {
+  // Report, then exit as Node would have; Dokku starts the bot again.
+  console.error(err);
+  const exit = () => process.exit(1);
+  setTimeout(exit, 5000).unref();
+  reportError({ source: "worker", message: err.message, stack: err.stack }).finally(exit);
 });
 
 const shutdown = async (signal: string) => {
