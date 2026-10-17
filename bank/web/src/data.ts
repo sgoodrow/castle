@@ -171,7 +171,7 @@ export function statParts(it: Item): StatPart[] {
   if (it.focus && sp[it.focus]) parts.push({ label: "Focus:", value: sp[it.focus].name });
   if (it.click && sp[it.click]) parts.push({ label: "Click:", value: sp[it.click].name });
   if (it.scroll && sp[it.scroll]) {
-    const lv = sp[it.scroll].lv.map((l, i) => (l ? `${CLASSES[i][0]} ${l}` : null)).filter(Boolean);
+    const lv = sp[it.scroll].lv.map((l, i) => (l && CLASSES[i] ?`${CLASSES[i][0]} ${l}` : null)).filter(Boolean);
     if (lv.length) parts.push({ label: "", value: lv.join(", ") });
   }
   if (it.bagslots) parts.push({ label: "", value: `${it.bagslots} slots, ${SIZES[it.bagsize ?? 0] || ""}` });
