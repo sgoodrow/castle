@@ -1,4 +1,4 @@
-import { ActionIcon, Button, Code, Group, Paper, Stack, Text, Title, UnstyledButton } from "@mantine/core";
+import { ActionIcon, Button, Code, Group, Stack, Text, UnstyledButton } from "@mantine/core";
 import { IconCheck, IconCopy, IconX } from "@tabler/icons-react";
 import { useRef, useState } from "react";
 import { ITEMS, bankRequest } from "../data";
@@ -38,11 +38,7 @@ export function TabPanel({ tab, cls, banker, onSelect, onRemove, onClear }: Prop
   };
 
   return (
-    <Paper withBorder p="md" radius="md">
-      <Group justify="space-between" mb="sm">
-        <Title order={2} fz="md">Your tab</Title>
-        {lines.length > 0 && <Button size="compact-xs" variant="subtle" color="gray" onClick={onClear}>Clear</Button>}
-      </Group>
+    <div>
       {lines.length === 0 ? (
         <Text fz="sm" c="dimmed">Nothing yet. Open an item and choose Add to tab.</Text>
       ) : (
@@ -76,14 +72,15 @@ export function TabPanel({ tab, cls, banker, onSelect, onRemove, onClear }: Prop
           {text && (
             <>
               <Code block ref={codeRef} fz="xs" style={{ whiteSpace: "pre-wrap" }}>{text}</Code>
-              <Button leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />} color={copied ? "green" : undefined} onClick={copy}>
+              <Button fullWidth leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />} color={copied ? "green" : undefined} onClick={copy}>
                 {copied ? "Copied" : "Copy request"}
               </Button>
               <Text fz="xs" c="dimmed">Paste it in #bank-requests and say how long you'll be online.</Text>
+              <Button variant="subtle" color="gray" onClick={onClear}>Clear tab</Button>
             </>
           )}
         </Stack>
       )}
-    </Paper>
+    </div>
   );
 }

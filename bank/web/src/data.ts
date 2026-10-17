@@ -73,12 +73,12 @@ export interface Slot { key: string; label: string; bit: number }
 export const DOLL: (Slot | null)[][] = [
   [null, ["ear1","EAR",1], ["neck","NECK",5], ["face","FACE",3], ["head","HEAD",2], ["ear2","EAR",4]],
   [["fing1","FINGER",15], ["wrist1","WRIST",9], ["arms","ARMS",7], ["hands","HANDS",12], ["wrist2","WRIST",10], ["fing2","FINGER",16]],
-  [["shoul","SHOULD",6], ["chest","CHEST",17], ["back","BACK",8], ["waist","WAIST",20], ["legs","LEGS",18], ["feet","FEET",19]],
-  [null, null, ["prim","PRIME",13], ["sec","SEC",14], ["range","RANGE",11], ["ammo","AMMO",21]],
+  [["shoul","SHLDR",6], ["chest","CHEST",17], ["back","BACK",8], ["waist","WAIST",20], ["legs","LEGS",18], ["feet","FEET",19]],
+  [null, null, ["prim","PRIM",13], ["sec","SEC",14], ["range","RANGE",11], ["ammo","AMMO",21]],
 ].map(row => row.map(c => (c ? { key: c[0] as string, label: c[1] as string, bit: c[2] as number } : null)));
 export const SLOTS: Record<string, Slot> = Object.fromEntries(DOLL.flat().filter((s): s is Slot => !!s).map(s => [s.key, s]));
 // Slot filter chips merge the paired slots.
-export const SLOT_CHIPS: [string, number[]][] = [["EAR",[1,4]],["NECK",[5]],["FACE",[3]],["HEAD",[2]],["FINGER",[15,16]],["WRIST",[9,10]],["ARMS",[7]],["HANDS",[12]],["SHOULD",[6]],["CHEST",[17]],["BACK",[8]],["WAIST",[20]],["LEGS",[18]],["FEET",[19]],["PRIME",[13]],["SEC",[14]],["RANGE",[11]],["AMMO",[21]]];
+export const SLOT_CHIPS: [string, number[]][] = [["EAR",[1,4]],["NECK",[5]],["FACE",[3]],["HEAD",[2]],["FINGER",[15,16]],["WRIST",[9,10]],["ARMS",[7]],["HANDS",[12]],["SHOULDERS",[6]],["CHEST",[17]],["BACK",[8]],["WAIST",[20]],["LEGS",[18]],["FEET",[19]],["PRIMARY",[13]],["SECONDARY",[14]],["RANGE",[11]],["AMMO",[21]]];
 export const TYPES: Record<number, string> = {0:"1H Slashing",1:"2H Slashing",2:"Piercing",3:"1H Blunt",4:"2H Blunt",5:"Archery",7:"Throwing",8:"Shield",10:"Armor",11:"Misc",12:"Lockpicks",14:"Food",15:"Drink",16:"Light",17:"Combinable",18:"Bandages",19:"Throwing",20:"Scroll",21:"Potion",23:"Wind Instrument",24:"Stringed Instrument",25:"Brass Instrument",26:"Percussion Instrument",27:"Arrow",29:"Jewelry",35:"2H Piercing",45:"Hand to Hand"};
 export const WEAPON = new Set([0,1,2,3,4,5,7,19,35,45]);
 export const SIZES = ["TINY","SMALL","MEDIUM","LARGE","GIANT"];

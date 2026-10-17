@@ -1,5 +1,5 @@
 import { Alert, Anchor, Button, Divider, Group, NumberInput, Paper, Stack, Text, Title } from "@mantine/core";
-import { IconAlertTriangle, IconExternalLink, IconShoppingBagPlus } from "@tabler/icons-react";
+import { IconAlertTriangle, IconArrowLeft, IconExternalLink, IconShoppingBagPlus } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { bankRequest, prettyLoc, type Item } from "../data";
 import { AuctionChart } from "./AuctionChart";
@@ -12,6 +12,7 @@ interface Props {
   inTab: number;
   canUse: boolean;
   onSetQty: (qty: number) => void;
+  onBack?: () => void; // phones: details replace the list
 }
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
@@ -22,7 +23,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 );
 
 // The product page: everything about one item, and the button that puts it on the tab.
-export function DetailPane({ it, cls, banker, inTab, canUse, onSetQty }: Props) {
+export function DetailPane({ it, cls, banker, inTab, canUse, onSetQty, onBack }: Props) {
   const [qty, setQty] = useState(1);
   useEffect(() => setQty(Math.max(1, inTab)), [it?.id, inTab]);
 
@@ -39,6 +40,7 @@ export function DetailPane({ it, cls, banker, inTab, canUse, onSetQty }: Props) 
   return (
     <Paper withBorder p="md" radius="md">
       <Stack gap="md">
+        {onBack && <Button variant="subtle" color="gray" leftSection={<IconArrowLeft size={16} />} onClick={onBack} style={{ alignSelf: "flex-start" }}>Back to the bank</Button>}
         <StatBlock it={it} />
         {!canUse && (
           <Alert color="red" variant="light" icon={<IconAlertTriangle size={18} />} p="xs">
@@ -50,11 +52,11 @@ export function DetailPane({ it, cls, banker, inTab, canUse, onSetQty }: Props) 
             <Text fz="sm">{req.cost}</Text>
             {forSale ? (
               <Group gap="sm" align="flex-end">
-                {it.total > 1 && <NumberInput label="Quantity" w={100} min={1} max={it.total} value={qty} onChange={v => setQty(Math.min(it.total, Math.max(1, Number(v) || 1)))} />}
-                <Button leftSection={<IconShoppingBagPlus size={18} />} onClick={() => onSetQty(qty)} disabled={inTab === qty}>
-                  {inTab ? (inTab === qty ? "On your tab" : "Update tab") : "Add to tab"}
+                {it.total > 1 && <NumberInput label="Quantity" w={80} min={1} max={it.total} value={qty} onChange={v => setQty(Math.min(it.total, Math.max(1, Number(v) || 1)))} />}
+                <Button w={130} leftSection={<IconShoppingBagPlus size={18} />} onClick={() => onSetQty(qty)} disabled={inTab === qty}>
+                  {inTab ? (inTab === qty ? "On tab" : "Update tab") : "Add to tab"}
                 </Button>
-                {inTab > 0 && <Button variant="subtle" color="red" onClick={() => onSetQty(0)}>Remove</Button>}
+                <Button variant="subtle" color="red" onClick={() => onSetQty(0)} style={{ visibility: inTab > 0 ? "visible" : "hidden" }}>Remove</Button>
               </Group>
             ) : null}
             <Text fz="xs" c="dimmed">{it.total} in the bank</Text>

@@ -67,7 +67,8 @@ export function ItemList({ items, total, selected, tab, canUse, onSelect, onHove
                   </div>
                   <Stack gap={4} align="flex-end" className={classes.side}>
                     <PriceBadge it={it} />
-                    {tab[it.id] ? <Badge size="sm" variant="filled">In tab{tab[it.id] > 1 ? ` ×${tab[it.id]}` : ""}</Badge> : null}
+                    {/* Space is always held so adding to the tab never reflows the row. */}
+                    <Badge size="sm" variant="filled" style={{ visibility: tab[it.id] ? "visible" : "hidden" }}>In tab{tab[it.id] > 1 ? ` ×${tab[it.id]}` : ""}</Badge>
                     {!canUse(it) && <Text fz="xs" c="red">can't use</Text>}
                   </Stack>
                 </UnstyledButton>
