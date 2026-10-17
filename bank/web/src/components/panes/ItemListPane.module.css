@@ -1,0 +1,108 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  box-sizing: content-box;
+  padding-bottom: var(--mantine-spacing-xs);
+}
+
+/* Virtualized: each row is placed by the virtualizer, not by flow. */
+.item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* Phones: icon on the left, name and stats stacked, price and tab on the right. */
+.row {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 84px;
+  grid-template-areas:
+    "icon name price"
+    "icon stats tab";
+  column-gap: var(--mantine-spacing-sm);
+  row-gap: 2px;
+  align-items: center;
+  width: 100%;
+  padding: 8px var(--mantine-spacing-md);
+  border-top: 1px solid var(--mantine-color-default-border);
+}
+
+/* Wide screens: one line per item, in columns. */
+.root[data-table] .row {
+  grid-template-columns: 24px minmax(0, 3fr) minmax(0, 2.4fr) 100px 76px;
+  grid-template-areas: "icon name stats price tab";
+  padding-block: 2px;
+  min-height: 30px;
+}
+
+.head {
+  background: var(--surface-head);
+  border-top: none;
+  padding-block: 4px;
+  font-size: var(--mantine-font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mantine-color-dimmed);
+}
+
+.head > :nth-child(1) { grid-area: icon; }
+.head > :nth-child(2) { grid-area: name; }
+.head > :nth-child(3) { grid-area: stats; }
+.head > :nth-child(4) { grid-area: price; }
+.head > :nth-child(5) { grid-area: tab; }
+
+.icon { grid-area: icon; align-self: start; }
+.name { grid-area: name; min-width: 0; }
+.nameText { min-width: 0; }
+.stats { grid-area: stats; min-width: 0; }
+.price { grid-area: price; }
+.tab { grid-area: tab; }
+
+/* The tab count: hover turns it red with a minus, click takes one off. */
+.qty { cursor: pointer; transition: background 100ms; }
+.qty:hover { --badge-bg: var(--mantine-color-red-filled) !important; }
+.minus { display: none; margin-right: 2px; vertical-align: -1px; }
+.qty:hover .minus { display: inline; }
+
+.root[data-table] .icon { align-self: center; }
+
+.end {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.wrap {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 10px;
+}
+
+.stats > span {
+  margin-right: 10px;
+}
+
+.row:not(.head):hover {
+  background: var(--mantine-color-default-hover);
+}
+
+.row[data-selected] {
+  background: var(--mantine-primary-color-light);
+  box-shadow: inset 3px 0 0 var(--mantine-primary-color-filled);
+}
+
+.row[data-unusable] .nameText {
+  color: var(--mantine-color-dimmed);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: -2px;
+}
+
+.k {
+  color: var(--mantine-color-dimmed);
+}

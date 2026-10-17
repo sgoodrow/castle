@@ -1,0 +1,73 @@
+/* The inventory window, drawn with the same tiles as the race and class pickers. */
+.doll {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--tile-gap);
+}
+
+.slot {
+  aspect-ratio: 1;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: var(--mantine-radius-sm);
+  border: 1px solid var(--mantine-color-default-border);
+  background: var(--mantine-color-default);
+  color: var(--mantine-color-dimmed);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0;
+  padding: 0 4px;
+  transition: background 100ms, border-color 100ms, box-shadow 120ms, color 100ms;
+}
+
+.label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.slot:hover {
+  background: var(--mantine-color-default-hover);
+  color: var(--mantine-color-text);
+}
+
+/* Spells, bags and other: a separate row below the doll. */
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--tile-gap);
+  margin-top: var(--mantine-spacing-xs);
+}
+
+.kind {
+  aspect-ratio: auto;
+  height: 32px;
+  flex-direction: row;
+  gap: 6px;
+  font-size: var(--mantine-font-size-xs);
+  letter-spacing: 0;
+}
+
+/* Where the item under the pointer is worn. */
+.slot[data-lit] {
+  border-color: var(--mantine-primary-color-filled);
+  background: var(--mantine-primary-color-light);
+  box-shadow: 0 0 8px var(--mantine-primary-color-light);
+  color: var(--mantine-color-text);
+}
+
+.slot[data-active] {
+  border-color: var(--mantine-primary-color-filled);
+  background: var(--mantine-primary-color-filled);
+  color: var(--mantine-primary-color-contrast);
+}
+
+.slot:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-filled);
+  outline-offset: 2px;
+}

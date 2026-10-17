@@ -1,0 +1,26 @@
+{
+  "name": "castle-bank-web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build"
+  },
+  "dependencies": {
+    "@mantine/core": "7.15.2",
+    "@mantine/hooks": "7.15.2",
+    "@tabler/icons-react": "3.24.0",
+    "@tanstack/react-router": "1.170.41",
+    "@tanstack/react-virtual": "^3.10.8",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.4",
+    "typescript": "5.6.3",
+    "vite": "5.4.11",
+    "vite-plugin-singlefile": "2.0.3"
+  }
+}

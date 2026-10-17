@@ -1,0 +1,22 @@
+.toast {
+  position: fixed;
+  left: max(16px, env(safe-area-inset-left, 0px));
+  bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  z-index: 400;
+  max-width: min(420px, calc(100vw - 32px));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--mantine-radius-md);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3), 0 12px 32px rgba(0, 0, 0, 0.35);
+  /* Not added (not for sale, all already on the tab): solid neutral. */
+  background: light-dark(var(--mantine-color-dark-6), var(--mantine-color-gray-2));
+  color: light-dark(var(--mantine-color-white), var(--mantine-color-black));
+}
+
+/* Added: the theme's primary colour. */
+.toast[data-ok] {
+  background: var(--mantine-primary-color-filled);
+  color: var(--mantine-primary-color-contrast);
+}
