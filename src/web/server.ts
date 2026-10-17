@@ -30,12 +30,12 @@ const ROOT = path.resolve(__dirname, "../..");
 const PAGE = path.join(ROOT, "bank/dist/index.html");
 const WIKI_EVERY = 30 * 60e3;
 
-// Only for running the page locally against a dev database.
-const NO_AUTH = bankWebDevNoAuth === "true" && NODE_ENV !== "production";
 const auth =
   clientId && guildId && discordClientSecret && bankWebRoleId && bankWebSessionSecret
     ? new Auth({ clientId, guildId, clientSecret: discordClientSecret, roleId: bankWebRoleId, secret: bankWebSessionSecret, baseUrl: bankWebUrl })
     : null;
+// Only for running the page locally against a dev database, and never once sign-in is set up.
+const NO_AUTH = bankWebDevNoAuth === "true" && NODE_ENV !== "production" && !auth;
 // Missing settings show a notice rather than crashing, so a half-configured web process can't fail a deploy.
 if (!auth && !NO_AUTH) log("bank web: set clientId, guildId, discordClientSecret, bankWebRoleId and bankWebSessionSecret to open the bank");
 

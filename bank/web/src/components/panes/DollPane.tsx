@@ -42,7 +42,7 @@ export function DollPane({ item, slot, kind, onSlot, onKind }: Props) {
               aria-label={`${(chip ?? s.label).toLowerCase()} slot${lit ? `, ${item!.name} fits here` : ""}`}
               onClick={() => onSlot(active ? null : chip)}
             >
-              {s.label}
+              <span className={classes.label}>{s.label}</span>
             </UnstyledButton>
           );
         })}

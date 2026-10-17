@@ -101,7 +101,8 @@ export class WikiCache {
       if (res.ok) {
         const page = await res.text();
         const m = page.match(/class="itemicon"[\s\S]*?\/images\/Item_(\d+)\.png/);
-        rec.icon = m ? +m[1] : null;
+        // A page with no item icon is probably a maintenance or challenge page: keep the old icon.
+        rec.icon = m ? +m[1] : this.items.get(id)?.icon ?? null;
         rec.green = parseTracker(page, "Green");
       } else if (res.status !== 404) {
         throw new Error(`HTTP ${res.status}`);
@@ -125,9 +126,10 @@ export class WikiCache {
         writeFileSync(path.join(this.dir, "icons", `${icon}.png`), buf);
         return;
       }
+      // Only a real 404 is final; anything else is tried again on the next run.
+      if (res.status === 404) this.noIcon.add(icon);
     } catch (e) {
       log(`bank web: icon ${icon}: ${e}`);
     }
-    this.noIcon.add(icon);
   }
 }

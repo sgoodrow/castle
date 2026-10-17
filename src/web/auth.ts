@@ -88,6 +88,7 @@ export class Auth {
     const tokenRes = await fetch(`${DISCORD}/oauth2/token`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      signal: AbortSignal.timeout(10000),
       body: new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: this.redirectUri, client_id: this.c.clientId, client_secret: this.c.clientSecret }),
     });
     if (!tokenRes.ok) {
@@ -95,7 +96,7 @@ export class Auth {
       return message(req, res, 502, "Discord sign-in failed", "Discord didn't accept the sign-in. Try again.");
     }
     const { access_token } = (await tokenRes.json()) as { access_token: string };
-    const memberRes = await fetch(`${DISCORD}/users/@me/guilds/${this.c.guildId}/member`, { headers: { Authorization: `Bearer ${access_token}` } });
+    const memberRes = await fetch(`${DISCORD}/users/@me/guilds/${this.c.guildId}/member`, { headers: { Authorization: `Bearer ${access_token}` }, signal: AbortSignal.timeout(10000) });
     if (memberRes.status === 404) return message(req, res, 403, "Not in Castle", "This Discord account isn't in the Castle server.");
     if (!memberRes.ok) {
       log(`bank web: member lookup failed ${memberRes.status}`);
