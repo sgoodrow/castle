@@ -12,16 +12,19 @@ export default defineConfig(({ mode }) => {
     // `npm run dev` talks to a local bank web server (BANK_API, default the bot's port 5000).
     server: { proxy: { "/api": api, "/icons": api } },
     test: {
+      // The features in features/ drive the whole page in a pretend browser.
+      environment: "jsdom",
+      setupFiles: ["features/support/setup.ts"],
       coverage: {
         provider: "v8",
         include: ["src/**/*.{ts,tsx}"],
-        exclude: ["src/**/*.test.*", "src/__fixtures__/**"],
+        exclude: ["src/**/*.test.*", "src/__fixtures__/**", "src/main.tsx"],
         reporter: ["text-summary", "text"],
         // Files with tests can't lose coverage. Raise these as tests grow; add a file here once it has tests.
         thresholds: {
-          "src/data.ts": { lines: 95, branches: 80, functions: 90 },
+          "src/data.ts": { lines: 100, branches: 83, functions: 100 },
           "src/search.ts": { lines: 100, branches: 100, functions: 100 },
-          "src/state.ts": { lines: 75, branches: 90, functions: 75 },
+          "src/state.ts": { lines: 100, branches: 94, functions: 100 },
         },
       },
     },

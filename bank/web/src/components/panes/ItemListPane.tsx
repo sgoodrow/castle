@@ -117,7 +117,7 @@ export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAd
         </div>
       )}
       {items.length === 0 && <Text p="md" c="dimmed">Nothing in the bank matches. Try clearing a filter.</Text>}
-      <ul ref={listRef} className={classes.list} style={{ height: v.getTotalSize() }}>
+      <ul ref={listRef} aria-label="Items in the bank" className={classes.list} style={{ height: v.getTotalSize() }}>
         {v.getVirtualItems().map(r => {
           const it = items[r.index];
           return (
