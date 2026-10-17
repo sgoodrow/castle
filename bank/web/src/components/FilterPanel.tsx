@@ -13,6 +13,8 @@ export function FilterPanel({ f, set, minimap, bare }: { f: Filters; set: (p: Pa
   const char = f.cls >= 0 || f.race >= 0;
   const body = (
     <Stack gap="md">
+      <Doll item={minimap} slot={f.slot} onSlot={slot => set({ slot, ...(slot ? { kind: "all" as const } : {}) })} />
+      <Divider />
       <CharacterPicker cls={f.cls} race={f.race} onChange={set} />
       <Switch
         label="Only what my character can use"
@@ -25,7 +27,6 @@ export function FilterPanel({ f, set, minimap, bare }: { f: Filters; set: (p: Pa
         <Text fz="xs" fw={600} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.06em" }}>Kind</Text>
         <SegmentedControl fullWidth size="xs" aria-label="Kind" value={f.kind} onChange={v => set({ kind: v as Filters["kind"] })} data={KINDS} />
       </Stack>
-      <Doll item={minimap} slot={f.slot} onSlot={slot => set({ slot, ...(slot ? { kind: "all" as const } : {}) })} />
     </Stack>
   );
   return bare ? body : <Paper withBorder p="md" radius="md">{body}</Paper>;
