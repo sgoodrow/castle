@@ -45,6 +45,7 @@
     "redis": "^5.11.0",
     "reflect-metadata": "^0.2.2",
     "rimraf": "^3.0.2",
+    "source-map": "0.6.1",
     "tsyringe": "^4.8.0",
     "typeorm": "^0.3.6",
     "xlsx": "^0.18.5",

@@ -4,7 +4,9 @@ import { MantineProvider, Paper, Text, Tooltip, createTheme } from "@mantine/cor
 import { RouterProvider, createBrowserHistory, createRootRoute, createRouter } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { createRoot } from "react-dom/client";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AppPane } from "./components/panes/AppPane";
+import "./errors";
 import { useDevPrimary } from "./devOptions";
 import { parseSearch, stringifySearch, validateSearch } from "./state";
 import { loadBank, type Payload } from "./data";
@@ -30,7 +32,9 @@ function Root() {
   const t = useMemo(() => (primary ? { ...theme, primaryColor: primary } : theme), [primary]);
   return (
     <MantineProvider theme={t} defaultColorScheme="auto">
-      <AppPane />
+      <ErrorBoundary>
+        <AppPane />
+      </ErrorBoundary>
     </MantineProvider>
   );
 }

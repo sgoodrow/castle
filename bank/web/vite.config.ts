@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
   const api = loadEnv(mode, ".", "BANK_").BANK_API || "http://localhost:5000";
   return {
     plugins: [react(), viteSingleFile()],
-    build: { outDir: "../dist", emptyOutDir: true },
+    build: { outDir: "../dist", emptyOutDir: true, sourcemap: "hidden" },
     // `npm run dev` talks to a local bank web server (BANK_API, default the bot's port 5000).
     server: { proxy: { "/api": api, "/icons": api } },
   };
