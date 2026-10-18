@@ -5,6 +5,7 @@
 - Read `bank/ROADMAP.md` before planning bank work. It holds the plan, the phase statuses and the open questions. Update it in the same PR when a phase's status changes or a question gets answered.
 - Make bugs impossible through static analysis wherever possible. Prefer data models that don't need defensive checks, such as indexed lookups that can miss.
 - In `bank/web`, each file exports one component. Names end in `Button`, `Text` or `Pane`, and live under `components/buttons`, `components/texts` or `components/panes`.
+- To offer UX alternatives, never stack them on the page. List them in `OPTIONS` in `bank/web/src/devOptions.ts`, read the pick with `useDevOption`, and the user toggles them from the dev-only corner button. Once one is chosen, keep it and remove the option.
 - Tests are Gherkin features: `bank/web/features` for the page (vitest), `src/web/features` for the server (jest-cucumber).
 
 ## Checks before a PR

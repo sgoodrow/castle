@@ -1,7 +1,7 @@
 import { Alert, Badge, CloseButton, Divider, Group, Paper, Stack, Text, Title, Tooltip } from "@mantine/core";
-import { IconAlertTriangle } from "@tabler/icons-react";
+import { IconAlertTriangle, IconGavel } from "@tabler/icons-react";
 import { useRef } from "react";
-import { auctionOnly, prettyLoc, type Holder, type Item } from "../../data";
+import { bankRequest, prettyLoc, priceText, type ClassId, type Holder, type Item } from "../../data";
 import { BuyPane } from "./BuyPane";
 import { AuctionPane } from "./AuctionPane";
 import { MarketWarningText } from "../texts/MarketWarningText";
@@ -11,6 +11,7 @@ import { StatPane } from "./StatPane";
 interface Props {
   it: Item | null;
   canUse: boolean;
+  cls: ClassId | null; // prices depend on the member's class
   qty: number; // how many are on the tab
   onAdd: (it: Item, el: HTMLElement) => void;
   onRemove: (it: Item) => void;
@@ -41,7 +42,7 @@ const Section = ({ title, aside, children }: { title: string; aside?: React.Reac
 );
 
 // The product page: everything about one item.
-export function DetailPane({ it, canUse, qty, onAdd, onRemove, onClose, bare }: Props) {
+export function DetailPane({ it, canUse, cls, qty, onAdd, onRemove, onClose, bare }: Props) {
   const buy = useRef<HTMLDivElement>(null);
   if (!it) {
     return (
@@ -50,21 +51,36 @@ export function DetailPane({ it, canUse, qty, onAdd, onRemove, onClose, bare }: 
       </CollapsibleLayout>
     );
   }
+  const req = bankRequest(it, cls);
+  const auction = req.text != null && req.price.kind === "auction";
+  const guild = req.text == null ? "Not for sale" : req.price.kind === "ask" ? "Ask a banker" : priceText(req.price, 1);
+  // A tinted card: its label (Guild price or DKP auction) with the tab count beside it, then
+  // the price, or for an auction one line on what happens.
+  const tint = auction ? "yellow" : "blue";
+  const priceCard = (
+    <Paper ref={buy} role="group" aria-label="On your tab" withBorder p="xs" radius="md"
+      style={{ background: `var(--mantine-color-${tint}-light)`, borderColor: `var(--mantine-color-${tint}-outline)`, boxShadow: "none" }}>
+      <Group justify="space-between" wrap="nowrap">
+        <Group gap={4} wrap="nowrap" c={`var(--mantine-color-${tint}-light-color)`}>
+          {auction && <IconGavel size={14} style={{ flex: "none" }} />}
+          <Title order={3} fz="xs" tt="uppercase" c="inherit" style={{ letterSpacing: "0.06em" }}>{auction ? "DKP auction" : "Guild price"}</Title>
+        </Group>
+        <BuyPane it={it} qty={qty} onAdd={() => buy.current && onAdd(it, buy.current)} onRemove={() => onRemove(it)} />
+      </Group>
+      {auction ? (
+        <Text fz="sm">{req.cost}</Text>
+      ) : (
+        <Text fz="lg" fw={700} c={req.text == null || req.price.kind === "ask" ? "dimmed" : undefined}>{guild}</Text>
+      )}
+    </Paper>
+  );
   const body = (
       <Stack gap="md" p={bare ? 0 : "md"}>
         <Paper withBorder p="sm" radius="md" style={{ background: "var(--surface-head)", boxShadow: "none" }}>
           <StatPane it={it} />
         </Paper>
         <Divider />
-        <Group ref={buy} role="group" aria-label="On your tab" justify="space-between" wrap="nowrap" style={{ borderRadius: "var(--mantine-radius-sm)" }}>
-          <SectionTitle>On your tab</SectionTitle>
-          <BuyPane it={it} qty={qty} onAdd={() => buy.current && onAdd(it, buy.current)} onRemove={() => onRemove(it)} />
-        </Group>
-        {auctionOnly(it) && (
-          <Alert color="yellow" variant="light" p="xs" title="DKP auction only">
-            A banker starts a DKP auction for it.
-          </Alert>
-        )}
+        {priceCard}
         {!canUse && (
           <Alert color="red" variant="light" icon={<IconAlertTriangle size={18} />} p="xs">
             Your character can't use this.

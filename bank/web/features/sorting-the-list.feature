@@ -47,16 +47,17 @@ Feature: Sorting the list
     Given the bank holds the usual stock
     And the bank also holds spells priced by the spell sheet
     And I have opened the bank page
-    And I play a Necromancer
     When I sort by "Guild price"
     Then the bank lists, in order:
       | item                      |
       | Bone Chips                |
+      | Fine Steel Long Sword     |
       | Large Sewing Kit          |
       | Pearl                     |
       | Spell: Lifetap            |
       | Spell: Aegis              |
       | Spell: Splurt             |
+      | Spell: Aegolism           |
       | Spell: Gift of Brilliance |
       | Scaled Tunic              |
       | Cloak of Flames           |

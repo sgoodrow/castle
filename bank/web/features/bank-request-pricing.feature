@@ -40,12 +40,12 @@ Feature: Bank request pricing
 
     Examples:
       | item             | who           | explanation                                                                                      |
-      | Cloak of Flames  | anyone        | About 800pp: 80% of the 1000pp Green median.                                                     |
-      | Bone Chips       | anyone        | 80% of market rate. No recent Green sales to go by, so ask a banker.                             |
-      | Scaled Tunic     | anyone        | Banker's price: 300p, 1dkp.                                                                      |
-      | Spell: Splurt    | a Necromancer | 50pp (levels 51–54).                                                                             |
-      | Spell: Aegolism  | a Cleric      | The lesser of 200pp (market 150pp) or 1 DKP (levels 55–60).                                    |
-      | Spell: Lifetap   | a Necromancer | Level 1 spell. Ask a banker about price.                                                         |
+      | Cloak of Flames  | anyone        | 80% of the 1000pp Green median.                                                                  |
+      | Bone Chips       | anyone        | No recent Green sales to go by, so ask a banker.                                                 |
+      | Scaled Tunic     | anyone        | Set by a banker: 300p, 1dkp.                                                                      |
+      | Spell: Splurt    | a Necromancer | The set price for level 51–54 spells.                                                            |
+      | Spell: Aegolism  | a Cleric      | Level 55–60 spells: 200pp, or the Green median if lower. Or pay 1 DKP.                           |
+      | Spell: Lifetap   | a Necromancer | Level 1 spell. Ask a banker.                                                                     |
       | Pearl            | anyone        | Free for raid use.                                                                               |
       | Large Sewing Kit | anyone        | Bags aren't for sale.                                                                            |
 
@@ -157,17 +157,17 @@ Feature: Bank request pricing
 
     Examples:
       | item                      | who           | price | explanation                              |
-      | Spell: Aegis              | a Cleric      | 50pp  | Spell sheet price: 50pp.                 |
-      | Spell: Gift of Brilliance | an Enchanter  | 200pp | Spell sheet price: 200pp or 1 DKP.       |
+      | Spell: Aegis              | a Cleric      | 50pp  | From the spell sheet.                    |
+      | Spell: Gift of Brilliance | an Enchanter  | 200pp | From the spell sheet. Or pay 1 DKP.      |
 
   Scenario: A forbidden spell is a request for a DKP auction
     Given the bank holds the usual stock
     And the bank also holds spells priced by the spell sheet
     And I have opened the bank page
     Then "Spell: Bedlam" is priced "DKP auction"
-    And the price of "Spell: Bedlam" for anyone is explained as "DKP auction only. A banker starts a DKP auction for it."
+    And the price of "Spell: Bedlam" for anyone is explained as "A banker starts an auction at 1 DKP."
     When I click "Spell: Bedlam" in the bank
-    Then the page says "A banker starts a DKP auction for it."
+    Then the page says "A banker starts an auction at 1 DKP."
 
   Scenario: A DKP auction is for one spell at a time
     Given the bank holds the usual stock

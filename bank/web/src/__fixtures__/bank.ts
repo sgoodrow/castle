@@ -54,7 +54,7 @@ export const PAYLOAD: Payload = {
   ],
   items,
   spells: {
-    500: { name: "Lifetap", lv: levels({ NEC: 1, SHD: 9 }) },
+    500: { name: "Lifetap", lv: levels({ NEC: 1, SHD: 9, BRD: 61 }) }, // a level past P99's 60 is EverQuest's, not ours
     501: { name: "Aegolism", lv: levels({ CLR: 60 }) },
     502: { name: "Splurt", lv: levels({ NEC: 52 }) },
     900: { name: "Flame Shield", lv: levels({}) },
