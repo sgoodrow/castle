@@ -11,7 +11,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  # The bot and the bank web server. Coverage can't drop in any file with tests (jest.config.js).
+  bot:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -29,14 +30,34 @@ jobs:
         if: startsWith(github.head_ref || github.ref_name, 'auto-fix/')
         run: git show origin/main:.github/scripts/check-tests-kept.sh | bash -s origin/main
 
-      # The bot and the bank web server. Coverage can't drop in any file with tests (jest.config.js).
       - run: yarn install --frozen-lockfile
       - run: yarn tsc
       - run: yarn test:ci
+      # Lint gates only the bank: its server here, its page in the bank job (together, `yarn lint`).
+      - run: yarn eslint src/web
 
-      # The bank page. Same rule for coverage (bank/web/vite.config.ts).
+  # The bank page. Same rule for coverage (bank/web/vite.config.ts).
+  bank:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+          cache: npm
+          cache-dependency-path: bank/web/package-lock.json
+
       - run: npm ci --prefix bank/web
-      # Lint gates only the bank: its server (src/web) and its page (bank/web).
-      - run: yarn lint
+      - run: npm --prefix bank/web run lint
+      # Type-checks the page and its features, then builds it.
       - run: npm --prefix bank/web run build
       - run: npm --prefix bank/web run test:ci
+
+  # Branch protection on main requires a check named `test`: it passes only when both jobs do.
+  test:
+    needs: [bot, bank]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - if: needs.bot.result != 'success' || needs.bank.result != 'success'
+        run: exit 1

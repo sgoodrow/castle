@@ -1,11 +1,13 @@
-// Runs every .feature here: each step is matched against the step library in steps.ts.
+// Runs one .feature here: each step is matched against the step library in steps.ts. Each feature has
+// its own <name>.test.ts that calls this, so vitest runs the features side by side in its workers.
 import { describeFeature, loadFeature } from "@amiceli/vitest-cucumber";
 import { reset, runStep } from "./steps";
 
 type Outline = { examples?: unknown; getStepDocStrings(step: unknown, example: Record<string, string>): string | null };
 const fill = (s: string, ex?: Record<string, string>) => (ex ? s.replace(/<([^<>]+)>/g, (m, k) => ex[k] ?? m) : s);
 
-for (const path of Object.keys(import.meta.glob("./*.feature"))) {
+// The path is relative to this folder.
+export async function runFeature(path: string) {
   const feature = await loadFeature(path);
   describeFeature(feature, ({ Scenario, ScenarioOutline, BeforeEachScenario }) => {
     BeforeEachScenario(reset);
