@@ -1,11 +1,12 @@
 // Everything the bank page shows, read from the bot's database: who holds what, plus stats
 // (the item DB in bank/data), banker prices, icons and auctions from the wiki cache, and spell
-// prices from the bankers' spell sheet.
+// prices from the bankers' spell sheet, and which items are Plane of Sky quest parts from the Sky sheet.
 import { readFileSync } from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { WikiCache } from "./wiki-cache";
 import { SpellSheet, spellKey } from "./spell-sheet";
+import { SkySheet, isSkyMule } from "./sky-sheet";
 
 type DbItem = {
   name: string;
@@ -25,7 +26,8 @@ export class BankApi {
   constructor(
     dataDir: string,
     private wiki: WikiCache,
-    private sheet: SpellSheet
+    private sheet: SpellSheet,
+    private sky: SkySheet
   ) {
     this.itemdb = JSON.parse(
       readFileSync(path.join(dataDir, "itemdb.json"), "utf-8")
@@ -74,17 +76,26 @@ export class BankApi {
     return this.sheet.refresh(known);
   }
 
+  // Every item the database knows, so the Sky sheet's misspellings get noticed.
+  refreshSkySheet() {
+    return this.sky.refresh(
+      new Set(Object.values(this.itemdb).map((it) => it.name.toLowerCase()))
+    );
+  }
+
   async bank() {
     let latest = 0;
     const rows: [string, string, number, number][] = [];
     const items: Record<number, Record<string, unknown>> = {};
     const spells: Record<string, unknown> = {};
+    const offSky = new Set<number>(); // items some non-Sky mule holds
     for (const s of await this.filledSlots()) {
       const id = s.itemId!;
       const db = this.itemdb[id];
       if (!s.item || s.item.name === "Empty" || db?.nodrop) continue; // NO DROP never leaves the bank
       latest = Math.max(latest, +s.updatedAt);
       rows.push([titleCase(s.charName), s.slot, id, s.count || 1]);
+      if (!isSkyMule(s.charName)) offSky.add(id);
       if (items[id]) continue;
       const w = this.wiki.get(id);
       const sheet = this.sheet.get(s.item.name);
@@ -106,6 +117,12 @@ export class BankApi {
         if (sid != null && this.spells[String(sid)])
           spells[String(sid)] = this.spells[String(sid)];
       }
+    }
+    // A Sky item is one the Sky sheet lists, or one only the Sky mules hold.
+    for (const [id, it] of Object.entries(items)) {
+      const part = this.sky.get(it.name as string);
+      if (part) it.sky = part;
+      else if (!offSky.has(+id)) it.sky = { island: null, note: "" };
     }
     return {
       snapshot: new Date(latest || Date.now()).toISOString(),

@@ -1,5 +1,5 @@
 import { Stack, Text, UnstyledButton } from "@mantine/core";
-import { IconBackpack, IconBox, IconScript, type Icon } from "@tabler/icons-react";
+import { IconBackpack, IconBox, IconCloud, IconScript, type Icon } from "@tabler/icons-react";
 import { DOLL, chipForBit, fitsBit, type Item, type SlotChip } from "../../data";
 import type { Filters } from "../../state";
 import classes from "./DollPane.module.css";
@@ -20,7 +20,8 @@ interface Props {
   onKind: (kind: Filters["kind"]) => void;
 }
 
-// The inventory window as a slot picker, with spells, bags and other things below.
+// The inventory window as a slot picker, with spells, bags and other things below, then the
+// Plane of Sky mules' stock, which is kept and priced apart.
 // It also lights up where the item under the pointer is worn.
 export function DollPane({ item, slot, kind, onSlot, onKind }: Props) {
   return (
@@ -59,6 +60,13 @@ export function DollPane({ item, slot, kind, onSlot, onKind }: Props) {
             </UnstyledButton>
           );
         })}
+      </div>
+      <div className={classes.kinds} role="group" aria-label="Other inventories">
+        <UnstyledButton className={`${classes.slot} ${classes.kind} ${classes.wide}`} data-active={kind === "sky" || undefined} aria-pressed={kind === "sky"}
+          onClick={() => onKind(kind === "sky" ? "all" : "sky")}>
+          <IconCloud size={16} stroke={1.8} aria-hidden />
+          Plane of Sky
+        </UnstyledButton>
       </div>
     </Stack>
   );

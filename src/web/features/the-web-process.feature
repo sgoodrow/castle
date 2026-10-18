@@ -29,7 +29,7 @@ Feature: The web process
     When the wiki refresh has finished
     Then the wiki has been asked for "/Cloak_of_Flames", "/Spell%3A_Lifetap"
     And the wiki has been asked for the icons "77", "504", "658"
-    And the wiki and the spell sheet are refreshed again every 30 minutes
+    And the wiki and both sheets are refreshed again every 30 minutes
     When Someone visits "/icons/658.png"
     Then the answer is the PNG for icon 658
 

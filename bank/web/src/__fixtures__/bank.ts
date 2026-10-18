@@ -79,3 +79,28 @@ export const WITH_SHEET: Payload = {
     505: { name: "Gift of Brilliance", lv: levels({ ENC: 60 }) },
   },
 };
+
+// The usual stock plus the Plane of Sky mules': island quest items, an Efreeti weapon (DKP auction),
+// one the Sky sheet marks "dkp bid", a bag, one a banker priced, and one a regular mule holds too.
+export const WITH_SKY: Payload = {
+  ...PAYLOAD,
+  bank: [
+    ...PAYLOAD.bank,
+    ["Cgskya", "General1", 1021, 2],
+    ["Cgskyb", "General2", 1022, 2],
+    ["Gmskyone", "General3", 1023, 1],
+    ["Cgskyc", "General4", 1024, 1],
+    ["Cgskyc", "General5", 1025, 1],
+    ["Mulea", "General9", 1026, 1],
+    ["Cgskya", "General6", 1026, 3],
+  ],
+  items: {
+    ...items,
+    1021: { name: "Emerald Spiroc Feather", sky: { island: 4, note: "fd ring" } },
+    1022: { name: "Efreeti War Axe", slots: 1 << 13, dmg: 20, dly: 40, type: 1, sky: { island: null, note: "" } },
+    1023: { name: "Bixie Stinger", sky: { island: 3, note: "dkp bid" } },
+    1024: { name: "Backpack", cls: 1, bagslots: 8, bagsize: 3, sky: { island: null, note: "" } },
+    1025: { name: "Kite Shield", slots: 1 << 14, ac: 6, price: "100p", sky: { island: null, note: "" } },
+    1026: { name: "Efreeti Statuette", sky: { island: 4, note: "" } },
+  },
+};

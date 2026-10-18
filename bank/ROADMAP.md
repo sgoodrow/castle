@@ -17,7 +17,7 @@ The guild bank offers many services. To a member they're all the same thing: an 
 | 1 | Misc items | Stock on the mules, 80% of market, posted to #bank-requests | Done |
 | 2 | Dropped spells | Spells in stock, priced by level (51–54, 55–60) | Done |
 | 3 | Forbidden spells | A price of "Auction" instead of pp or DKP, and a tab total that allows for auction lines | Done |
-| 4 | Plane of Sky | A second inventory, fixed prices, auctions, and "must have won X first" | Not started |
+| 4 | Plane of Sky | A second inventory, fixed prices, auctions, and "must have won X first" | In progress |
 | 5 | Jewelry | Made-to-order items, a discount for materials you bring, posted to #jewelry-requests | Not started |
 | — | Recharges, research spells, bounties, PP4DKP | Rarer, one-off services | Parked |
 
@@ -45,8 +45,17 @@ UX (agreed):
 - **Decided:** a request holds up to 9 different items, with any quantity of each. Discord posts at most 10 embeds a message: one for the summary and one per item. 9 item cards from the real bank use under half of Discord's 6,000-character limit. A tab saved before the limit keeps its first 9 items.
 - **Decided:** each item card lists its spots by character, then by spot (pack 2 before pack 10), so a banker logs in to each character once per card. Not yet: ordering across cards to minimise logins for the whole request.
 
+**Phase 4: Plane of Sky**
+- What we know: the Sky mules (cgskya … cgskyhh, gmskyone … gmskyseven) are bank characters like the others; their names are the only mark. The Sky bankers' "Plane of Sky" sheet lists each island's quest items on its "Item Counts and announcements" tab, with notes such as "fd ring" or "dkp bid", and keeps a waitlist.
+- **Decided:** read the sheet as it is. An item is a Sky item if the sheet lists it, or if only Sky mules hold it.
+- **Decided:** the waitlist stays in the sheet. The site doesn't read or change it.
+- **Decided:** requests go to #bank-requests like everything else, as "Sky: Item (Mule, count)".
+- **Decided:** Sky items are 250pp, picked up at the East Freeport docks, once the member has won the DKP items the quest needs. A banker checks that; the site doesn't track who won what.
+- **Decided:** items the sheet marks "dkp bid", and Efreeti weapons it doesn't list, go to DKP auction. A banker's price still wins.
+- Found under a "Plane of Sky" button beside the slots.
+
 **Later phases**
-- Sky and jewelry data are in Google Sheets today. Read them as they are, or move them to something bankers manage from Discord?
+- Jewelry data is in a Google Sheet today. Read it as it is, or move it to something bankers manage from Discord?
 
 ## How work runs
 

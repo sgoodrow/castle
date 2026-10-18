@@ -44,6 +44,10 @@
   margin-top: var(--mantine-spacing-xs);
 }
 
+.wide {
+  grid-column: 1 / -1;
+}
+
 .kind {
   aspect-ratio: auto;
   height: 32px;

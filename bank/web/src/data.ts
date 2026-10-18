@@ -21,10 +21,15 @@ export interface RawItem {
   proclvl?: number; charges?: number;
   price?: string; // set by a banker with the bot, e.g. "250p" or "200p, 1dkp"
   sheet?: SheetPrice; // a scroll's price on the bankers' spell sheet
+  sky?: SkyPart; // a Plane of Sky item: on the Sky sheet, or held only by the Sky mules
 }
 
 // A spell's price on the bankers' spell sheet: platinum, maybe with a DKP alternative, or a DKP auction.
 export type SheetPrice = { kind: "pp"; pp: number; dkp: number | null } | { kind: "auction" };
+
+// A Plane of Sky item: the island whose quest it's for (null when the Sky sheet doesn't list it), and
+// the sheet's note on it, e.g. "fd ring" or "dkp bid".
+export interface SkyPart { island: number | null; note: string }
 
 // What /api/bank sends: every filled slot (character, slot, item id, count), and the items in them.
 export interface Payload {
@@ -308,9 +313,10 @@ export function priceText(price: Price, qty = 1) {
 const pp = (pp: number, dkp = false, fromMarket = false): Price => ({ kind: "pp", pp, dkp, fromMarket });
 const AUCTION_COST = "A banker starts an auction at 1 DKP.";
 
-// A price a banker set with the bot beats the spell sheet, which beats the rules and the market.
+// A price a banker set with the bot beats the spell sheet and the Plane of Sky rules, which beat the
+// rules and the market.
 export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest {
-  const req = ruleRequest(it, cls, qty);
+  const req = it.sky ? skyRequest(it, it.sky, qty) : ruleRequest(it, cls, qty);
   if (req.text == null) return req;
   if (it.price) {
     const n = it.price.match(/\d+/);
@@ -332,6 +338,20 @@ export const auctionOnly = (it: Item) => {
 // and one per item.
 export const MAX_TAB_ITEMS = 9;
 export const tabLimit = (it: Item) => (auctionOnly(it) ? 1 : it.total);
+// The Sky mules: cgskya … cgskyhh and gmskyone … gmskyseven.
+export const isSkyMule = (char: string) => /sky/i.test(char);
+const SKY_PICKUP = "Pick up at the East Freeport docks.";
+// Efreeti weapons and shields (from Noble Dojorn and the Overseer of Air) and items the Sky sheet
+// marks "dkp bid" go to DKP auction. Every other Sky item is 250pp, once the member has won the DKP
+// items its quest needs; a banker checks that.
+function skyRequest(it: Item, sky: SkyPart, qty: number): BankRequest {
+  const holder = it.holders.find(h => isSkyMule(h.char)) ?? it.holders[0];
+  const text = `Sky: ${it.name} (${holder.char}, ${holder.count})${qty > 1 ? ` x${qty}` : ""}`;
+  const what = sky.island ? `Island ${sky.island} quest item${sky.note ? ` (${sky.note})` : ""}` : "Plane of Sky item";
+  if (/dkp/i.test(sky.note) || (sky.island == null && /^Efreeti /.test(it.name)))
+    return { text, price: { kind: "auction" }, cost: `${what}. A banker starts a DKP auction. ${SKY_PICKUP}` };
+  return { text, price: pp(250), cost: `${what}: 250pp, once you've won the DKP items its quest needs. ${SKY_PICKUP}` };
+}
 function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
   const [holder] = it.holders;
   const mule = holder.char || "Mule";

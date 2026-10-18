@@ -16,6 +16,7 @@ import os from "os";
 import path from "path";
 import { SourceMapGenerator } from "source-map";
 import { CLASS_TABS, FORBIDDEN_TAB } from "../spell-sheet";
+import { SKY_SHEET, SKY_TAB } from "../sky-sheet";
 
 type Slot = {
   charName: string;
@@ -94,6 +95,9 @@ interface World {
   sheet: Record<string, string>; // the spell sheet's tabs as CSV, by tab id
   sheetStatus: number;
   sheetAsked: number;
+  sky: string | null; // the Sky sheet's announcements tab as CSV
+  skyStatus: number;
+  skyAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
   postStatus: number;
   logs: string[];
@@ -200,6 +204,17 @@ const ROUTES: Route[] = [
     },
   ],
 ];
+// The Sky sheet's announcements tab: the scenario's, or an empty one with its headers.
+ROUTES.push([
+  "GET",
+  new RegExp(`^${SKY_SHEET.replace(/[.?]/g, "\\$&")}${SKY_TAB}$`),
+  () => {
+    world.skyAsked++;
+    return new Response(world.sky ?? "Items,Island,Notes\n", {
+      status: world.skyStatus,
+    });
+  },
+]);
 // The spell sheet's tabs: the scenario's, or empty ones with their headers.
 ROUTES.push([
   "GET",
@@ -267,6 +282,9 @@ export async function reset() {
     sheet: {},
     sheetStatus: 200,
     sheetAsked: 0,
+    sky: null,
+    skyStatus: 200,
+    skyAsked: 0,
     posts: [],
     postStatus: 200,
     logs: [],
@@ -623,6 +641,9 @@ export const steps = ({
   step(/^the bank sends no sheet price for "(.*)"$/, (name: string) =>
     expect(bank().items[itemId(name)]).not.toHaveProperty("sheet")
   );
+  step(/^the bank sends no Sky part for "(.*)"$/, (name: string) =>
+    expect(bank().items[itemId(name)]).not.toHaveProperty("sky")
+  );
   step(/^the bank sends the spells (".*)$/, (names: string) => {
     expect(
       Object.values(bank().spells)
@@ -743,6 +764,29 @@ export const steps = ({
     await site();
     await world.mod!.readSpellSheet();
     expect(world.sheetAsked).toBe(Object.keys(TAB_IDS).length);
+  });
+
+  // ---------- the Sky sheet ----------
+  step(/^the Sky sheet's announcements tab is:$/, (csv: string) => {
+    world.sky = csv;
+  });
+  step(/^Google answers the Sky sheet with (\d+)$/, (status: string) => {
+    world.skyStatus = +status;
+  });
+  step(
+    /^a saved copy of the Sky sheet puts "(.*)" on island (\d)$/,
+    (name: string, island: string) => {
+      mkdirSync(path.join(world.dir, "cache"), { recursive: true });
+      writeFileSync(
+        path.join(world.dir, "cache/sky-sheet.json"),
+        JSON.stringify([[name.toLowerCase(), { island: +island, note: "" }]])
+      );
+    }
+  );
+  step(/^the site reads the Sky sheet$/, async () => {
+    await site();
+    await world.mod!.readSkySheet();
+    expect(world.skyAsked).toBe(1);
   });
 
   // ---------- bank requests ----------
@@ -933,8 +977,9 @@ export const steps = ({
     );
   });
   step(
-    /^the wiki and the spell sheet are refreshed again every (\d+) minutes$/,
-    (min: string) => expect(world.every).toEqual([+min * 60e3, +min * 60e3])
+    /^the wiki and both sheets are refreshed again every (\d+) minutes$/,
+    (min: string) =>
+      expect(world.every).toEqual([+min * 60e3, +min * 60e3, +min * 60e3])
   );
   step(
     /^a promise fails with (an error|the bare value) "(.*)" and nothing catches it$/,

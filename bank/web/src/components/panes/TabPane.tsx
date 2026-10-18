@@ -63,7 +63,7 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
           )}
           {auction && (
             <Text fz="xs" c="dimmed">
-              A banker starts a DKP auction for each auction spell.
+              A banker starts a DKP auction for each auction item.
             </Text>
           )}
           {msg && (

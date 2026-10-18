@@ -212,7 +212,7 @@ Feature: Bank request pricing
     And the tab button shows "800pp + 1 DKP auction + 1 unknown cost"
     And I open my tab
     And my tab says "800pp + 1 DKP auction + 1 unknown cost"
-    And my tab says "A banker starts a DKP auction for each auction spell."
+    And my tab says "A banker starts a DKP auction for each auction item."
     When I send my tab to Discord
     Then the post reads "• Spell: Bedlam (DKP auction)"
     And the post reads "Total: 800pp + 1 DKP auction + 1 unknown cost"
