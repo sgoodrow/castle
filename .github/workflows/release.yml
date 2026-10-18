@@ -3,7 +3,8 @@ name: Release
 # Every push to main: runs Test (the workflow PRs run) and builds the image from the same commit at
 # once, and has Dokku run the image (`git:from-image`) only when both pass. The image is built here,
 # where there's CPU and a layer cache, not on the server. To roll back to an earlier build:
-# `dokku git:from-image castle-discord-bot ghcr.io/sgoodrow/castle:<sha>` on the server.
+# `dokku git:from-image castle-discord-bot ghcr.io/sgoodrow/castle:<sha>` on the server, with the sha of a
+# Release whose deploy succeeded: the image is pushed before the tests finish, so a failed commit has one too.
 on:
   push:
     branches: [main]
@@ -12,6 +13,10 @@ on:
 # newer commit holds it.
 concurrency:
   group: release
+
+# Read-only by default, the tests included. The image job adds what it needs to push.
+permissions:
+  contents: read
 
 env:
   IMAGE: ghcr.io/sgoodrow/castle:${{ github.sha }}
