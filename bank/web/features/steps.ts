@@ -9,7 +9,7 @@ import { bankPage } from "../src/app";
 import { ALL_CLASSES, CLASS_BIT, CLASSES, ITEM_LIST, bankRequest, maskText, prettyLoc, type EqClassLevels, type Payload } from "../src/data";
 import { server } from "./support/setup";
 
-interface World { payload: Payload; status: number; user: UserEvent; reports: string[] }
+interface World { payload: Payload; status: number; user: UserEvent; reports: string[]; posts: { embeds: { title: string; description: string }[] }[]; postStatus: number }
 let world: World;
 
 // A fresh page, bank and browser for every scenario.
@@ -18,10 +18,14 @@ export function reset() {
   server.resetHandlers();
   localStorage.clear();
   history.replaceState(null, "", "/");
-  world = { payload: PAYLOAD, status: 200, user: userEvent.setup(), reports: [] };
+  world = { payload: PAYLOAD, status: 200, user: userEvent.setup(), reports: [], posts: [], postStatus: 204 };
   server.use(http.post("/api/errors", async ({ request }) => {
     world.reports.push(((await request.json()) as { message: string }).message);
     return new HttpResponse(null, { status: 204 });
+  }));
+  server.use(http.post("/api/bank-request", async ({ request }) => {
+    if (world.postStatus === 204) world.posts.push((await request.json()) as World["posts"][number]);
+    return new HttpResponse(null, { status: world.postStatus });
   }));
 }
 
@@ -68,7 +72,7 @@ const picker = (kind: string, name: string) => within(group(`Filter by ${kind}`)
 const slots = (slot: string) => within(group("Filter by slot")).getAllByRole("button", { name: new RegExp(`^${slot.toLowerCase()} slot\\b`) });
 const notWorn = (name: string) => within(group("Not worn")).getByRole("button", { name });
 const searchBox = () => screen.getByRole("textbox", { name: "Search the bank" });
-const tab = () => screen.findByRole("dialog", { name: "Your tab" });
+const tab = () => screen.findByRole("dialog", { name: /Your tab/ });
 const classId = (match: (c: (typeof CLASSES)[number]) => boolean, what: string) => {
   const c = CLASSES.find(match);
   if (!c) throw new Error(`No class ${what}`);
@@ -182,16 +186,22 @@ step(/^I open my tab$/, async () => {
 });
 step(/^my tab says "(.*)"$/, async (_, text) => { within(await tab()).getAllByText(reading(text)); });
 step(/^my tab lists (".*)$/, async (_, lines) => { for (const l of quoted(lines)) within(await tab()).getAllByText(reading(l)); });
-step(/^I copy the request$/, async () => {
-  await world.user.click(within(await tab()).getByRole("button", { name: "Copy request" }));
-  await within(await tab()).findByRole("button", { name: "Copied" });
+const confirm = () => screen.findByRole("dialog", { name: "Post this in #bank-requests?" });
+step(/^the post reads "(.*)"$/, async (_, text) => {
+  expect(norm((await confirm()).textContent)).toContain(text);
 });
-// Discord code fences can't sit inside a feature's doc string, so the step adds them.
-step(/^my clipboard holds a code block of:$/, async ({ doc }) => {
-  expect(await navigator.clipboard.readText()).toBe(`\`\`\`\n${doc}\n\`\`\``);
+step(/^I send my tab to Discord$/, async () => { await world.user.click(within(await tab()).getByRole("button", { name: "Send to Discord" })); });
+step(/^I confirm the post$/, async () => { await world.user.click(within(await confirm()).getByRole("button", { name: "Send" })); });
+step(/^I'm told "(.*)" before it posts$/, async (_, text) => { await within(await confirm()).findByText(text); });
+step(/^the site (?:refuses|has refused) posts with (\d+)$/, (_, status) => { world.postStatus = +status; });
+step(/^#bank-requests gets my request for (".*)$/, async (_, names) => {
+  await waitFor(() => expect(world.posts).toHaveLength(1));
+  expect(world.posts[0]?.embeds.slice(1).map(e => e.title)).toEqual(quoted(names));
 });
+step(/^nothing is posted$/, () => expect(world.posts).toEqual([]));
+step(/^I'm told "(.*)"$/, async (_, text) => { await screen.findByText(text); });
 step(/^I remove "(.*)" from my tab$/, async (_, name) => world.user.click(within(await tab()).getByRole("button", { name: `Remove ${name}` })));
-step(/^I click "(.*)" on my tab$/, async (_, name) => world.user.click(within(await tab()).getByText(reading(name))));
+step(/^I click "(.*)" on my tab$/, async (_, name) => world.user.click(within(await tab()).getByRole("button", { name })));
 step(/^I clear my tab$/, async () => world.user.click(within(await tab()).getByRole("button", { name: "Clear tab" })));
 
 // ---------- rules the page doesn't show ----------

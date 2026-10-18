@@ -68,6 +68,8 @@ const SETTINGS = [
   "bankCacheDir",
   "bankDistDir",
   "githubErrorToken",
+  "token",
+  "bankRequestsChannelId",
   ...Object.keys(SIGN_IN),
 ];
 
@@ -89,6 +91,8 @@ interface World {
   wiki: string[]; // what the wiki was asked for
   wikiPage: string;
   wikiIcon: number | null;
+  posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
+  postStatus: number;
   logs: string[];
   every: number[];
   handlers: Record<string, (err: unknown) => void>;
@@ -104,7 +108,28 @@ type Route = [
   answer: (req: Request, m: RegExpMatchArray) => Response | Promise<Response>,
 ];
 const json = (body: unknown) => Response.json(body);
+interface Post {
+  allowed_mentions: unknown;
+  embeds: {
+    title: string;
+    description: string;
+    color: number;
+    footer?: { text: string };
+    thumbnail?: { url: string };
+  }[];
+}
 const ROUTES: Route[] = [
+  [
+    "POST",
+    /^https:\/\/discord\.com\/api\/v10\/channels\/requests-channel\/messages$/,
+    async (req) => {
+      world.posts.push({
+        auth: req.headers.get("authorization"),
+        body: (await req.json()) as Post,
+      });
+      return new Response(null, { status: world.postStatus });
+    },
+  ],
   [
     "GET",
     /^https:\/\/api\.github\.com\/search\/issues\?/,
@@ -222,6 +247,8 @@ export async function reset() {
     wiki: [],
     wikiPage: "",
     wikiIcon: null,
+    posts: [],
+    postStatus: 200,
     logs: [],
     every: [],
     handlers: {},
@@ -661,6 +688,89 @@ export const steps: StepDefinitions = ({ defineStep: step }) => {
           existsSync(path.join(world.dir, "cache/icons", `${icon}.png`))
         ).toBe(true);
     }, 10000).then(settle)
+  );
+
+  // ---------- bank requests ----------
+  step(/^posting bank requests is set up$/, () => {
+    world.env.token = "bot-token";
+    world.env.bankRequestsChannelId = "requests-channel";
+  });
+  // The site reads its settings as it starts, so this one starts afresh. Sign-ins outlast it.
+  step(/^the site restarts without the bot's token$/, () => {
+    delete world.env.token;
+    world.base = "";
+  });
+  step(/^Discord refuses posts$/, () => {
+    world.postStatus = 403;
+  });
+  step(/^(\w+) posts the bank request:$/, (who: string, json: string) =>
+    request(who, "/api/bank-request", { method: "POST", body: json })
+  );
+  const embeds = (n: number, description = "x") =>
+    JSON.stringify({
+      embeds: Array.from({ length: n }, (_, i) => ({
+        title: `Embed ${i + 1}`,
+        description,
+        color: 0,
+      })),
+    });
+  step(
+    /^(\w+) posts a bank request of (\d+) embeds?$/,
+    (who: string, n: string) =>
+      request(who, "/api/bank-request", { method: "POST", body: embeds(+n) })
+  );
+  step(
+    /^(\w+) posts a bank request with a (\d+)-character description$/,
+    (who: string, n: string) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: embeds(1, "x".repeat(+n)),
+      })
+  );
+  step(
+    /^(\w+) posts a bank request of (\d+) embeds with (\d+)-character descriptions$/,
+    (who: string, n: string, len: string) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: embeds(+n, "x".repeat(+len)),
+      })
+  );
+  step(/^(\w+) posts a bank request that isn't JSON$/, (who: string) =>
+    request(who, "/api/bank-request", { method: "POST", body: "not json" })
+  );
+  step(/^(\w+) posts (\d+) bank requests$/, async (who: string, n: string) => {
+    world.answers = [];
+    for (let i = 0; i < +n; i++)
+      await request(who, "/api/bank-request", {
+        method: "POST",
+        body: embeds(1),
+      });
+  });
+  step(
+    /^the bot posts in #bank-requests:$/,
+    (rows: Record<string, string>[]) => {
+      expect(world.posts).toHaveLength(1);
+      const [post] = world.posts;
+      expect(post.auth).toBe("Bot bot-token");
+      expect(post.body.allowed_mentions).toEqual({ parse: [] });
+      expect(
+        post.body.embeds.map((e) => ({
+          title: e.title,
+          description: e.description,
+          footer: e.footer?.text ?? "",
+          thumbnail: e.thumbnail?.url ?? "",
+        }))
+      ).toEqual(rows);
+    }
+  );
+  step(/^the bot has posted (\d+) bank requests?$/, (n: string) =>
+    expect(world.posts).toHaveLength(+n)
+  );
+  step(/^the bot posts nothing$/, () => expect(world.posts).toHaveLength(0));
+  step(
+    /^the bank says (\w+) is signed in as "(.*)"$/,
+    (_: string, name: string) =>
+      expect((JSON.parse(text()) as { me: unknown }).me).toEqual({ name })
   );
 
   // ---------- page errors ----------

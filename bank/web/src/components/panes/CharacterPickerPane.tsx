@@ -1,4 +1,4 @@
-import { Group, Stack, Text, UnstyledButton } from "@mantine/core";
+import { Divider, Group, Stack, Text, UnstyledButton } from "@mantine/core";
 import { IconHeartPlus, IconShieldHalf, IconSkull, IconSun, IconSwords, IconTornado, IconWand } from "@tabler/icons-react";
 import { CLASS_NAME, RACE_NAME, validCombo, type ClassId, type RaceId } from "../../data";
 import classes from "./CharacterPickerPane.module.css";
@@ -98,6 +98,8 @@ export function CharacterPickerPane({ cls, race, onChange, row }: {
         other={() => true}
         onChange={id => onChange(validCombo(cls, id) ? { race: id } : { race: id, cls: null })}
       />
+      {/* Stacked, a rule keeps the two sets of tiles apart, as the doll is kept from them. */}
+      {!row && <Divider />}
       <TileGroups
         label="Filter by class"
         names={CLASS_NAME}

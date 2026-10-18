@@ -1,5 +1,5 @@
 Feature: Bank request pricing
-  A member sees what the guild charges, gathers items on a tab, and pastes the request into #bank-requests.
+  A member sees what the guild charges, gathers items on a tab, and sends the request to #bank-requests.
 
   Scenario Outline: The guild price follows the bank's rules
     Given the bank holds the usual stock
@@ -105,15 +105,15 @@ Feature: Bank request pricing
     And I take one "Pearl" off my tab
     And I am told "Removed Pearl from your tab"
 
-  Scenario: Items a banker has to price are left to ask about
+  Scenario: Items a banker has to price are counted as unknown
     Given the bank holds the usual stock
     And I have opened the bank page
     When I add "Bone Chips" to my tab
-    Then the tab button shows "ask"
+    Then the tab button shows "1 unknown"
     And I add "Cloak of Flames" to my tab
-    And the tab button shows "800pp + ask"
+    And the tab button shows "800pp + 1 unknown"
     And I open my tab
-    And my tab says "1 item needs a price from a banker."
+    And my tab says "800pp + 1 unknown"
 
   Scenario: Level 55 and up spells can be paid with DKP
     Given the bank holds the usual stock
@@ -125,7 +125,7 @@ Feature: Bank request pricing
     And "Spell: Aegolism" can be paid with DKP for a Cleric
     And "Scaled Tunic" can be paid with DKP for anyone
 
-  Scenario: Copying the request to paste in Discord
+  Scenario: Seeing the request as it will look in Discord
     Given the bank holds the usual stock
     And I have opened the bank page
     And I have added "Cloak of Flames" to my tab
@@ -133,17 +133,36 @@ Feature: Bank request pricing
     And I have added "Bone Chips" to my tab
     When I open my tab
     Then my tab lists "Cloak of Flames", "3 × Pearl" and "Bone Chips"
-    And I copy the request
-    And my clipboard holds a code block of:
-      """
-      Item            | Location | Count | Each |     Total
-      ----------------|----------|-------|------|----------
-      Cloak of Flames | Mulea    |     1 |  800 |       800
-      Bone Chips      | Mulea    |     1 |  ask |       ask
-      Pearl           | Muleb    |     3 |    0 |         0
-      ----------------|----------|-------|------|----------
-      GRAND TOTAL     |          |       |      | 800 + ask
-      """
+    When I send my tab to Discord
+    Then the post reads "@Alice has placed a bank request."
+    And the post reads "• Cloak of Flames (800pp)"
+    And the post reads "• 3 × Pearl (free)"
+    And the post reads "Total: 800pp + 1 unknown"
+    And the post reads "Pearl"
+
+  Scenario: Sending my tab to #bank-requests
+    Given the bank holds the usual stock
+    And I have opened the bank page
+    And I have added "Cloak of Flames" to my tab
+    And I have added 3 "Pearl" to my tab
+    When I open my tab
+    And I send my tab to Discord
+    And I confirm the post
+    Then #bank-requests gets my request for "Cloak of Flames", "Pearl"
+    And I'm told "Posted to #bank-requests"
+    And the tab button shows "0pp"
+
+  Scenario: A post the site refuses stays on my tab
+    Given the bank holds the usual stock
+    And the site refuses posts with 429
+    And I have opened the bank page
+    And I have added "Cloak of Flames" to my tab
+    When I open my tab
+    And I send my tab to Discord
+    And I confirm the post
+    Then I'm told "That's a lot of requests. Try again in a few minutes." before it posts
+    And nothing is posted
+    And my tab lists "Cloak of Flames"
 
   Scenario: Removing a line from my tab
     Given the bank holds the usual stock

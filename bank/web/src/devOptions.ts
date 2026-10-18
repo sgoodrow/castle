@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 
 // Dev only: candidate looks to click between while iterating. Each option sets
 // html[data-<key>] and is remembered across reloads. "primary" swaps the theme's primary colour.
-export const OPTIONS: { key: string; label: string; values: string[] }[] = [];
+export const OPTIONS: { key: string; label: string; values: string[] }[] = [
+];
 
 const STORE = "castle-bank-dev";
 export const load = (): Record<string, string> => { try { return JSON.parse(localStorage.getItem(STORE) || "{}"); } catch { return {}; } };

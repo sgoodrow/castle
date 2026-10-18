@@ -1,5 +1,5 @@
-import { Alert, Badge, Button, CloseButton, Divider, Group, Paper, Stack, Text, Title, Tooltip } from "@mantine/core";
-import { IconAlertTriangle, IconArrowLeft } from "@tabler/icons-react";
+import { Alert, Badge, CloseButton, Divider, Group, Paper, Stack, Text, Title, Tooltip } from "@mantine/core";
+import { IconAlertTriangle } from "@tabler/icons-react";
 import { prettyLoc, type Holder, type Item } from "../../data";
 import { AuctionPane } from "./AuctionPane";
 import { MarketWarningText } from "../texts/MarketWarningText";
@@ -9,8 +9,8 @@ import { StatPane } from "./StatPane";
 interface Props {
   it: Item | null;
   canUse: boolean;
-  onBack?: () => void; // phones: details replace the list
   onClose?: () => void; // wide screens: clear the selection
+  bare?: boolean; // inside the details drawer, which has its own header
 }
 
 // One entry per banker; their spots go in the tooltip.
@@ -31,7 +31,7 @@ const Section = ({ title, aside, children }: { title: string; aside?: React.Reac
 );
 
 // The product page: everything about one item.
-export function DetailPane({ it, canUse, onBack, onClose }: Props) {
+export function DetailPane({ it, canUse, onClose, bare }: Props) {
   if (!it) {
     return (
       <CollapsibleLayout id="details" title="Details">
@@ -39,11 +39,8 @@ export function DetailPane({ it, canUse, onBack, onClose }: Props) {
       </CollapsibleLayout>
     );
   }
-  return (
-    <CollapsibleLayout id="details" title="Details"
-      actions={<CloseButton aria-label="Close details" onClick={onClose} style={{ visibility: onClose ? "visible" : "hidden" }} />}>
-      <Stack gap="md" p="md">
-        {onBack && <Button variant="subtle" color="gray" leftSection={<IconArrowLeft size={16} />} onClick={onBack} style={{ alignSelf: "flex-start" }}>Back to the bank</Button>}
+  const body = (
+      <Stack gap="md" p={bare ? 0 : "md"}>
         <Paper withBorder p="sm" radius="md" style={{ background: "var(--surface-head)", boxShadow: "none" }}>
           <StatPane it={it} />
         </Paper>
@@ -69,6 +66,12 @@ export function DetailPane({ it, canUse, onBack, onClose }: Props) {
           <AuctionPane it={it} />
         </Section>
       </Stack>
+  );
+  if (bare) return body;
+  return (
+    <CollapsibleLayout id="details" title="Details"
+      actions={<CloseButton aria-label="Close details" onClick={onClose} style={{ visibility: onClose ? "visible" : "hidden" }} />}>
+      {body}
     </CollapsibleLayout>
   );
 }

@@ -9,6 +9,7 @@ import { commit, reportError } from "../shared/error-reports";
 import { log } from "../shared/logger";
 import { Auth, Session } from "./auth";
 import { BankApi } from "./bank-api";
+import { postRequest, readPost, type Poster } from "./bank-post";
 import { PageMap } from "./page-map";
 import { message, send } from "./respond";
 import { WikiCache } from "./wiki-cache";
@@ -27,6 +28,8 @@ const {
   bankWebDevNoAuth,
   bankCacheDir,
   bankDistDir,
+  token,
+  bankRequestsChannelId,
 } = process.env;
 
 const GIT_REV = commit();
@@ -63,6 +66,16 @@ if (!auth && !NO_AUTH)
 
 const wiki = new WikiCache(bankCacheDir || path.join(ROOT, "bank/cache"));
 const api = new BankApi(path.join(ROOT, "bank/data"), wiki);
+// Posting bank requests needs the bot's token and the channel; without them the page is told so.
+const poster: Poster | null =
+  token && bankRequestsChannelId
+    ? {
+        token,
+        channelId: bankRequestsChannelId,
+        baseUrl: bankWebUrl,
+        icon: (id) => wiki.get(id)?.icon,
+      }
+    : null;
 
 let page: Buffer | null = null;
 // The page reports its errors with this commit, so they're mapped with the right source map.
@@ -82,26 +95,38 @@ function session(req: IncomingMessage): Session | null {
     : (auth?.session(req) ?? null);
 }
 
+// At most `n` in `ms` from each member. True if this one is allowed, and counts it.
+function limiter(n: number, ms: number) {
+  const times = new Map<string, number[]>();
+  return (who: string) => {
+    const recent = (times.get(who) || []).filter((t) => Date.now() - t < ms);
+    if (recent.length >= n) return false;
+    times.set(who, [...recent, Date.now()]);
+    return true;
+  };
+}
+
+// The request body, or null once it passes `max` characters.
+async function body(req: IncomingMessage, max: number) {
+  let raw = "";
+  for await (const chunk of req) {
+    raw += chunk;
+    if (raw.length > max) return null;
+  }
+  return raw;
+}
+
 // Errors from the page, filed for fixing. Members only, small, and not too many from one person.
-const ERRORS_PER_MINUTE = 10;
-const errorCounts = new Map<string, number[]>();
+const errorAllowed = limiter(10, 60e3);
 async function pageError(
   req: IncomingMessage,
   res: ServerResponse,
   me: Session
 ) {
-  const recent = (errorCounts.get(me.id) || []).filter(
-    (t) => Date.now() - t < 60e3
-  );
-  if (recent.length >= ERRORS_PER_MINUTE)
+  if (!errorAllowed(me.id))
     return send(req, res, 429, "text/plain", "Too many");
-  errorCounts.set(me.id, [...recent, Date.now()]);
-  let raw = "";
-  for await (const chunk of req) {
-    raw += chunk;
-    if (raw.length > 16384)
-      return send(req, res, 413, "text/plain", "Too large");
-  }
+  const raw = await body(req, 16384);
+  if (raw == null) return send(req, res, 413, "text/plain", "Too large");
   let e: {
     message?: unknown;
     stack?: unknown;
@@ -125,7 +150,9 @@ async function pageError(
   // its issue closed: filing it would open a new issue and fix run for nothing. Log it instead.
   if (GIT_REV && str(e.rev) !== GIT_REV) {
     log(
-      `error (page, from ${str(e.rev).slice(0, 12) || "an unknown commit"}, not filed): ${message}\n${pageMap.strip(stack)}`
+      `error (page, from ${
+        str(e.rev).slice(0, 12) || "an unknown commit"
+      }, not filed): ${message}\n${pageMap.strip(stack)}`
     );
   } else {
     reportError({
@@ -138,12 +165,42 @@ async function pageError(
   send(req, res, 204, "text/plain", "");
 }
 
+// A member's tab, posted to #bank-requests. A few at a time, so a stuck button can't flood the channel.
+const postAllowed = limiter(5, 10 * 60e3);
+async function bankRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+  me: Session
+) {
+  if (!poster) return send(req, res, 503, "text/plain", "Posting isn't set up");
+  if (!postAllowed(me.id)) return send(req, res, 429, "text/plain", "Too many");
+  const raw = await body(req, 65536);
+  if (raw == null) return send(req, res, 413, "text/plain", "Too large");
+  let post;
+  try {
+    post = readPost(JSON.parse(raw));
+  } catch {
+    post = null;
+  }
+  if (!post) return send(req, res, 400, "text/plain", "Bad request");
+  if (!(await postRequest(poster, me, post)))
+    return send(req, res, 502, "text/plain", "Discord didn't take it");
+  log(`bank web: ${me.name} (${me.id}) posted a bank request`);
+  send(req, res, 204, "text/plain", "");
+}
+
+const POSTS: Record<
+  string,
+  (req: IncomingMessage, res: ServerResponse, me: Session) => Promise<void>
+> = { "/api/errors": pageError, "/api/bank-request": bankRequest };
+
 async function route(req: IncomingMessage, res: ServerResponse) {
   const url = new URL(req.url || "/", bankWebUrl);
-  if (req.method === "POST" && url.pathname === "/api/errors") {
+  const post = req.method === "POST" ? POSTS[url.pathname] : undefined;
+  if (post) {
     const me = session(req);
     return me
-      ? pageError(req, res, me)
+      ? post(req, res, me)
       : send(req, res, 401, "text/plain", "Sign in");
   }
   if (req.method !== "GET" && req.method !== "HEAD")
@@ -205,7 +262,7 @@ async function route(req: IncomingMessage, res: ServerResponse) {
       res,
       200,
       "application/json",
-      JSON.stringify(await api.bank())
+      JSON.stringify({ ...(await api.bank()), me: { name: me.name } })
     );
   }
   if (url.pathname === "/" || url.pathname === "/index.html") {
@@ -244,7 +301,9 @@ export function handle(req: IncomingMessage, res: ServerResponse) {
 export function start() {
   createServer(handle).listen(+PORT, () =>
     log(
-      `bank web: listening on ${PORT} as ${bankWebUrl}${NO_AUTH ? " (no auth)" : ""}`
+      `bank web: listening on ${PORT} as ${bankWebUrl}${
+        NO_AUTH ? " (no auth)" : ""
+      }`
     )
   );
 

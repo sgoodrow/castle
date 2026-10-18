@@ -37,6 +37,7 @@ const items: Record<string, RawItem> = {
 export const PAYLOAD: Payload = {
   snapshot: "2026-05-30T18:00:00.000Z",
   today: "2026-06-01",
+  me: { name: "Alice" },
   bank: [
     ["Mulea", "General1-Slot2", 1001, 1],
     ["Muleb", "Bank3", 1002, 1],

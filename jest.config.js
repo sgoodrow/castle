@@ -29,6 +29,7 @@ module.exports = {
     './src/web/bank-api.ts': { lines: 100, branches: 92, functions: 100 },
     './src/web/respond.ts': { lines: 100, branches: 100, functions: 100 },
     './src/web/server.ts': { lines: 100, branches: 93, functions: 100 },
+    './src/web/bank-post.ts': { lines: 100, branches: 100, functions: 100 },
     './src/web/wiki-cache.ts': { lines: 97, branches: 80, functions: 100 },
   },
 };

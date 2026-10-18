@@ -30,9 +30,12 @@ export interface Search {
   slot?: string;
   q?: string;
   sort?: Sort;
+  item?: number; // the item whose details are open
 }
 const KINDS: Kind[] = ["gear", "spell", "bag", "other"];
 const str = (v: unknown) => (typeof v === "string" && v ? v : undefined);
+// A positive whole number: from the address bar it's text, from the page's own links a number.
+const id = (v: unknown) => { const n = Number(typeof v === "number" ? v : str(v)); return n > 0 && Number.isInteger(n) ? n : undefined; };
 const oneOf = <T extends string>(v: unknown, ok: readonly T[]) => ok.find(o => o.toLowerCase() === str(v)?.toLowerCase());
 
 // Anything unknown in the URL is dropped rather than trusted.
@@ -44,6 +47,7 @@ export function validateSearch(raw: Record<string, unknown>): Search {
     slot: oneOf(raw.slot, SLOT_CHIPS.map(c => c.id))?.toLowerCase(),
     q: str(raw.q),
     sort: oneOf(raw.sort, SORTS),
+    item: id(raw.item),
   };
 }
 
