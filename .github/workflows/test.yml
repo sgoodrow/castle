@@ -32,6 +32,7 @@ jobs:
       # The bot and the bank web server. Coverage can't drop in any file with tests (jest.config.js).
       - run: yarn install --frozen-lockfile
       - run: yarn tsc
+      - run: yarn lint
       - run: yarn test:ci
 
       # The bank page. Same rule for coverage (bank/web/vite.config.ts).
