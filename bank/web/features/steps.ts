@@ -4,7 +4,7 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent, { type UserEvent } from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { expect } from "vitest";
-import { PAYLOAD } from "../src/__fixtures__/bank";
+import { PAYLOAD, WITH_SHEET } from "../src/__fixtures__/bank";
 import { bankPage } from "../src/app";
 import { ALL_CLASSES, CLASS_BIT, CLASSES, ITEM_LIST, bankRequest, maskText, prettyLoc, type EqClassLevels, type Payload } from "../src/data";
 import { server } from "./support/setup";
@@ -88,6 +88,7 @@ const pressed = (el: HTMLElement) => el.getAttribute("aria-pressed") === "true";
 
 // ---------- the bank ----------
 step(/^the bank holds the usual stock$/, () => { world.payload = PAYLOAD; });
+step(/^the bank also holds spells priced by the spell sheet$/, () => { world.payload = WITH_SHEET; });
 step(/^the bank is empty$/, () => { world.payload = { ...PAYLOAD, bank: [], items: {} }; });
 step(/^the spell data for "(.*)" has only (\d+) class levels$/, (_, name, n) => {
   const [id, sp] = first(Object.entries(PAYLOAD.spells).filter(([, sp]) => sp.name === name), `spell ${name}`);
@@ -174,6 +175,12 @@ step(/^I point at "(.*)" among the holders$/, (_, char) => world.user.hover(scre
 step(/^I (?:add|have added) (?:(\d+) )?"(.*)" to my tab$/, async (_, n, name) => {
   for (let i = 0; i < +(n || 1); i++) await world.user.dblClick(rowButton(name));
 });
+const details = () => first(screen.getAllByRole("group", { name: "On your tab" }), "tab count in the details");
+step(/^I add one "(.*)" from its details$/, (_, name) =>
+  world.user.click(within(details()).getByRole("button", { name: `Add one ${name} to your tab` })));
+step(/^I take one "(.*)" off my tab from its details$/, (_, name) =>
+  world.user.click(within(details()).getByRole("button", { name: `Remove one ${name} from your tab` })));
+step(/^the details show "(.*)" on my tab$/, (_, count) => { within(details()).getByText(count); });
 step(/^I take one "(.*)" off my tab$/, (_, name) =>
   world.user.click(within(row(name)).getByRole("button", { name: `Remove one ${name} from your tab` })));
 step(/^I am told "(.*)"$/, async (_, text) => {
@@ -214,7 +221,9 @@ step(/^the request line for (?:(\d+) )?"(.*)" for (.+) reads "(.*)"$/, (_, n, na
 step(/^the price of "(.*)" for (.+) is explained as "(.*)"$/, (_, name, who, cost) => {
   expect(bankRequest(item(name), cls(who)).cost).toBe(cost);
 });
-step(/^"(.*)" can be paid with DKP for (.+)$/, (_, name, who) => { expect(bankRequest(item(name), cls(who)).dkp).toBe(true); });
+step(/^"(.*)" can be paid with DKP for (.+)$/, (_, name, who) => {
+  expect(bankRequest(item(name), cls(who))).toMatchObject({ price: { kind: "pp", dkp: true } });
+});
 const mask = (who: string) => {
   if (who === "everyone") return undefined;
   if (who === "no one") return 0;

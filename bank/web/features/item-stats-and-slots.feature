@@ -24,10 +24,16 @@ Feature: Item stats and slots
     And the doll shows "Fine Steel Long Sword" fits the primary and secondary slots
 
   Scenario: Opening a spell shows who can scribe it, and at what level
+    Levels past 60 are from later EverQuest expansions, so those classes can't scribe it on P99.
+
     Given the bank holds the usual stock
     And I have opened the bank page
     When I click "Spell: Lifetap" in the bank
-    Then the page says "Spell: Lifetap · SHD(9) NEC(1)"
+    Then the page says "Class: SHD(9) NEC(1)"
+    And the page doesn't say "Spell: Lifetap ·"
+    And the page doesn't say "BRD(61)"
+    When I play a Bard
+    Then the page says "Your character can't use this."
 
   Scenario: Opening a bag shows its size
     Given the bank holds the usual stock
@@ -41,7 +47,7 @@ Feature: Item stats and slots
     When I click "Bone Chips" in the bank
     Then the page says:
       | text       |
-      | Count · 35 |
+      | Bank location · 35 |
       | Mulea ×20  |
       | Muleb ×15  |
 

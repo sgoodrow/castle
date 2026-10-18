@@ -1,6 +1,6 @@
 // The item list for the current filters: kind, slot, what the chosen class and race can use, and
 // the search box, where every word has to appear in the item's name or stats. Then the chosen sort.
-import { ITEM_LIST, SLOT_CHIP_BITS, bankRequest, statText, usable, type ClassId, type Item } from "./data";
+import { ITEM_LIST, SLOT_CHIP_BITS, bankRequest, statText, usable, type BankRequest, type ClassId, type Item } from "./data";
 import { sortDesc, sortKey, type Filters, type Sort } from "./state";
 
 export function filterItems(f: Filters, list: Item[] = ITEM_LIST) {
@@ -21,7 +21,16 @@ export function filterItems(f: Filters, list: Item[] = ITEM_LIST) {
   return sortItems(found, f.sort, f.cls);
 }
 
-// Price is what this class would pay; an unknown price, or one that isn't for sale, counts as 0.
+// Price is what this class would pay; an unknown price, or one that isn't for sale, counts as 0, and
+// a DKP auction above any platinum price.
+function sortPrice(req: BankRequest) {
+  if (req.text == null) return 0;
+  switch (req.price.kind) {
+    case "pp": return req.price.pp;
+    case "free": case "ask": return 0;
+    case "auction": return Number.MAX_SAFE_INTEGER;
+  }
+}
 function sortItems(items: Item[], sort: Sort, cls: ClassId | null) {
   const byName = (a: Item, b: Item) => a.name.localeCompare(b.name);
   const dir = sortDesc(sort) ? -1 : 1;
@@ -30,7 +39,7 @@ function sortItems(items: Item[], sort: Sort, cls: ClassId | null) {
       return items.sort((a, b) => dir * byName(a, b));
     case "price":
       return items
-        .map(it => ({ it, pp: bankRequest(it, cls).pp ?? 0 }))
+        .map(it => ({ it, pp: sortPrice(bankRequest(it, cls)) }))
         .sort((a, b) => dir * (a.pp - b.pp) || byName(a.it, b.it))
         .map(p => p.it);
   }

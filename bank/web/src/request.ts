@@ -1,4 +1,4 @@
-import { ITEMS, bankRequest, prettyLoc, type ClassId, type Item } from "./data";
+import { ITEMS, bankRequest, prettyLoc, priceText, type ClassId, type Item } from "./data";
 import type { Tab } from "./state";
 import { tabTotal, totalText } from "./tab";
 
@@ -12,8 +12,6 @@ export interface RequestMessage { embeds: Embed[] }
 const MAX_EMBEDS = 10;
 const BLURPLE = 0x5865f2;
 const GREY = 0x4e5058;
-
-const price = (pp: number | null, qty: number) => (pp == null ? "unknown" : pp === 0 ? "free" : `${(pp * qty).toLocaleString()}pp`);
 
 // Where a banker finds it: up to six spots, then how many more as Discord's dim subtext (`-# `).
 function spots(it: Item) {
@@ -32,7 +30,7 @@ export function requestMessage(tab: Tab, cls: ClassId | null): RequestMessage | 
   // The site swaps this title for one naming the member, linked to their Discord profile.
   const request: Embed = {
     title: "Bank request",
-    description: [...lines.map(l => `• ${l.qty > 1 ? `${l.qty} × ` : ""}${l.it.name} (${price(l.req.pp, l.qty)})`), "", `**Total: ${total}**`].join("\n"),
+    description: [...lines.map(l => `• ${l.qty > 1 ? `${l.qty} × ` : ""}${l.it.name} (${l.req.text == null ? "not for sale" : priceText(l.req.price, l.qty)})`), "", `**Total: ${total}**`].join("\n"),
     color: BLURPLE,
   };
   // One embed per item; past Discord's limit, the rest share the last one.

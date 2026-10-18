@@ -1,6 +1,6 @@
 # Castle Bank browser
 
-A storefront for the Castle guild bank. Browse and filter the bank (by class, race or slot), hover an item for its stats, open it for who holds it and its Green auction prices, and add it to a running tab that totals the price and gives you a table to paste into `#bank-requests`.
+A storefront for the Castle guild bank. Browse and filter the bank (by class, race or slot), hover an item for its stats, open it for who holds it and its Green auction prices, and add it to a running tab that totals the price and posts it to `#bank-requests` as the bot. See `ROADMAP.md` for what comes next.
 
 It runs as the bot's `web` process (`src/web`, see the `Procfile`), on the same Dokku app and database as the bot. Castle members sign in with Discord; only members with the bank role get in.
 

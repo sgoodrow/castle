@@ -70,12 +70,6 @@ export function StatPane({ it, header = true }: { it: Item; header?: boolean }) 
         </div>
       ))}
       {spellOf(it.click) && (it.charges ?? 0) > 0 && <div><K>Charges:</K> {it.charges}</div>}
-      {sp && (
-        <div>
-          <K>Spell:</K> {sp.name}
-          {" · "}{sp.levels.map(c => `${c.cls}(${c.level})`).join(" ")}
-        </div>
-      )}
       {!!it.bagslots && (
         <div>
           <K>Capacity:</K> {it.bagslots} &nbsp;<K>Size:</K> {SIZES[it.bagsize ?? 0] || "?"}
@@ -85,7 +79,8 @@ export function StatPane({ it, header = true }: { it: Item; header?: boolean }) 
       <div><K>Weight:</K> {((it.wt || 0) / 10).toFixed(1)} &nbsp;<K>Size:</K> {SIZES[it.size || 0]}</div>
       {(gear || !!it.scroll) && (
         <>
-          <div><K>Class:</K> {maskText(it.classes, CLASSES, ALL_CLASSES)}</div>
+          {/* A scroll's classes come with the level each can scribe it at. */}
+          <div><K>Class:</K> {sp ? sp.levels.map(c => `${c.cls}(${c.level})`).join(" ") : maskText(it.classes, CLASSES, ALL_CLASSES)}</div>
           <div><K>Race:</K> {maskText(it.races, RACES, ALL_RACES)}</div>
         </>
       )}

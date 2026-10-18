@@ -1,7 +1,7 @@
 import { ActionIcon, Group, Text } from "@mantine/core";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import type { KeyboardEvent, MouseEvent } from "react";
-import type { Item } from "../../data";
+import { tabLimit, type Item } from "../../data";
 
 interface Props {
   it: Item;
@@ -26,8 +26,9 @@ const act = (f: () => void) => ({
 
 // How many of an item are on the tab, with a plus and a minus to change it.
 export function BuyPane({ it, qty, onAdd, onRemove }: Props) {
-  // Out of the bank's count, so it's clear when there are no more to add.
-  const count = it.total > 1 ? `${qty}/${it.total}` : `${qty}`;
+  // Out of the most allowed, so it's clear when there are no more to add.
+  const max = tabLimit(it);
+  const count = max > 1 ? `${qty}/${max}` : `${qty}`;
   const plus = (
     <ActionIcon component="span" size="sm" variant="light" color="gray" aria-label={`Add one ${it.name} to your tab`} {...act(onAdd)}>
       <IconPlus size={14} stroke={2.5} />

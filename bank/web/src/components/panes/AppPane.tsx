@@ -4,7 +4,7 @@ import { IconArrowLeft, IconMoneybag } from "@tabler/icons-react";
 import { ToastNotification, type ToastMsg } from "../ToastNotification";
 import { OverflowTooltip } from "../OverflowTooltip";
 import { useMemo, useRef, useState } from "react";
-import { ITEMS, bankRequest, usable, type Item } from "../../data";
+import { ITEMS, bankRequest, tabLimit, usable, type Item } from "../../data";
 import { filterItems } from "../../search";
 import { getRouteApi } from "@tanstack/react-router";
 import { toFilters, toSearch, useTab, type Filters } from "../../state";
@@ -55,10 +55,12 @@ export function AppPane() {
   const addOne = (it: Item, row: HTMLElement) => {
     if (bankRequest(it, f.cls).text == null) return say(`${it.name} isn't for sale`, false);
     const have = tab[it.id] || 0;
-    if (have >= it.total) {
+    const max = tabLimit(it);
+    if (have >= max) {
       // Shake the count so it's clear it has hit the ceiling. Transform only, so nothing moves.
       row.querySelector("[data-qty]")?.animate(
         [0, -4, 4, -3, 3, 0].map(x => ({ transform: `translateX(${x}px)` })), { duration: 300, easing: "ease-out" });
+      if (max < it.total) return say(`One DKP auction at a time for ${it.name}`, false);
       return say(it.total === 1 ? "The bank only has one, and it's on your tab" : `The bank only has ${it.total}, all on your tab`, false);
     }
     setQty(it.id, have + 1);
@@ -98,6 +100,10 @@ export function AppPane() {
     <DetailPane
       it={shown}
       canUse={!shown || canUse(shown)}
+      cls={f.cls}
+      qty={shown ? tab[shown.id] || 0 : 0}
+      onAdd={addOne}
+      onRemove={removeOne}
       onClose={() => select(null)}
     />
   );
@@ -154,7 +160,7 @@ export function AppPane() {
               Details
             </Group>
           }>
-          {drawerItem && <DetailPane it={drawerItem} canUse={canUse(drawerItem)} bare />}
+          {drawerItem && <DetailPane it={drawerItem} canUse={canUse(drawerItem)} cls={f.cls} qty={tab[drawerItem.id] || 0} onAdd={addOne} onRemove={removeOne} bare />}
         </Drawer>
       )}
       {!md && (
