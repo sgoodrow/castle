@@ -26,12 +26,11 @@ The guild bank offers many services. To a member they're all the same thing: an 
 Each phase starts by answering its questions with the user and recording the answers here.
 
 **Phase 3: Forbidden spells**
-- What we know: the scrolls themselves are in the database as stock, from the mules' inventory uploads. Nothing marks them as forbidden. The `item` table has a free-text `price` and a `type` (`dropped_spell`, `sky_droppable`, …) but no forbidden flag. `/bank set-item-data` only sets the price, because its type option is commented out. Today "forbidden" exists only as a gold highlight in the dropped-spell spreadsheet.
-- Which spells are forbidden, and how often does the list change?
-- Who marks them: bankers from Discord (a flag, or a price convention like "Auction"), or read from the spreadsheet?
+- What we know: the scrolls themselves are in the database as stock, from the mules' inventory uploads. Nothing in the database marks them as forbidden. The "Kunark/Velious Spells" Google Sheet has a Forbidden Spells tab listing them by class, and a Cost column on each class tab ("50p", "200p OR 1DKP", "DKP Auction only", with some prices reduced).
+- **Decided:** the sheet's Forbidden Spells tab is the source of truth for which spells are forbidden. The database stays the source of truth for stock (the sheet's "All Items" tab is a copy of the same mule uploads).
+- Should the sheet's Cost column also override the page's level rules? Today the page gets some wrong, e.g. Aegis (57) is 50p on the sheet, and Burnout IV (55) is auction-only.
 - Where does a request for one go: #bank-requests for a banker to start the auction, #auctions, or does it start the auction itself?
 - What should a member see besides "Goes to DKP auction": a minimum bid, who can bid, limits?
-- Are the forbidden spells on the mules the page already reads?
 
 **Later phases**
 - Sky and jewelry data are in Google Sheets today. Read them as they are, or move them to something bankers manage from Discord?
