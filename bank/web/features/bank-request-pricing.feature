@@ -169,6 +169,14 @@ Feature: Bank request pricing
     When I click "Spell: Bedlam" in the bank
     Then the page says "A banker starts a DKP auction for it."
 
+  Scenario: A DKP auction is for one spell at a time
+    Given the bank holds the usual stock
+    And the bank also holds spells priced by the spell sheet
+    And I have opened the bank page
+    When I add 2 "Spell: Bedlam" to my tab
+    Then I am told "One DKP auction at a time for Spell: Bedlam"
+    And the tab button shows "1 DKP auction"
+
   Scenario: A DKP auction is counted apart from platinum
     Given the bank holds the usual stock
     And the bank also holds spells priced by the spell sheet

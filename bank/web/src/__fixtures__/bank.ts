@@ -65,7 +65,7 @@ export const PAYLOAD: Payload = {
 // the level rule, and one at the sheet's price though the market is lower.
 export const WITH_SHEET: Payload = {
   ...PAYLOAD,
-  bank: [...PAYLOAD.bank, ["Mulec", "General1", 1011, 1], ["Mulec", "General2", 1012, 1], ["Mulec", "General3", 1013, 1]],
+  bank: [...PAYLOAD.bank, ["Mulec", "General1", 1011, 2], ["Mulec", "General2", 1012, 1], ["Mulec", "General3", 1013, 1]],
   items: {
     ...items,
     1011: { name: "Spell: Bedlam", scroll: 503, sheet: { kind: "auction" } },

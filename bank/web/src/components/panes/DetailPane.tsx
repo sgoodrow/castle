@@ -1,7 +1,7 @@
 import { Alert, Badge, CloseButton, Divider, Group, Paper, Stack, Text, Title, Tooltip } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { useRef } from "react";
-import { bankRequest, prettyLoc, type Holder, type Item } from "../../data";
+import { auctionOnly, prettyLoc, type Holder, type Item } from "../../data";
 import { BuyPane } from "./BuyPane";
 import { AuctionPane } from "./AuctionPane";
 import { MarketWarningText } from "../texts/MarketWarningText";
@@ -24,12 +24,6 @@ function byChar(it: Item) {
   for (const h of it.holders) m.set(h.char, [...(m.get(h.char) ?? []), h]);
   return [...m];
 }
-
-// Whether a spell only goes to DKP auction. The bankers' list doesn't depend on the member's class.
-const isAuction = (it: Item) => {
-  const req = bankRequest(it, null);
-  return req.text != null && req.price.kind === "auction";
-};
 
 const Section = ({ title, aside, children }: { title: string; aside?: React.ReactNode; children: React.ReactNode }) => (
   <Stack gap={6}>
@@ -60,7 +54,7 @@ export function DetailPane({ it, canUse, qty, onAdd, onRemove, onClose, bare }: 
           <Text fz="sm" c="dimmed">On your tab</Text>
           <BuyPane it={it} qty={qty} onAdd={() => buy.current && onAdd(it, buy.current)} onRemove={() => onRemove(it)} />
         </Group>
-        {isAuction(it) && (
+        {auctionOnly(it) && (
           <Alert color="yellow" variant="light" p="xs" title="DKP auction only">
             A banker starts a DKP auction for it.
           </Alert>

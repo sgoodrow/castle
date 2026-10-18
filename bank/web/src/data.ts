@@ -315,6 +315,13 @@ export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest
     return { text: req.text, price: pp(it.sheet.pp, it.sheet.dkp != null), cost: `Spell sheet price: ${it.sheet.pp}pp${it.sheet.dkp != null ? ` or ${it.sheet.dkp} DKP` : ""}.` };
   return req;
 }
+// Whether a spell only goes to DKP auction. That doesn't depend on the member's class.
+export const auctionOnly = (it: Item) => {
+  const req = bankRequest(it, null);
+  return req.text != null && req.price.kind === "auction";
+};
+// The most a member can put on their tab: what the bank holds, or one auction at a time.
+export const tabLimit = (it: Item) => (auctionOnly(it) ? 1 : it.total);
 function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
   const [holder] = it.holders;
   const mule = holder.char || "Mule";
