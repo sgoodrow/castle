@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CLASSES, CLASS_NAME, RACES, RACE_NAME, SLOT_CHIPS, type ClassId, type Kind, type RaceId, type SlotChip } from "./data";
+import { CLASSES, CLASS_NAME, MAX_TAB_ITEMS, RACES, RACE_NAME, SLOT_CHIPS, type ClassId, type Kind, type RaceId, type SlotChip } from "./data";
 
 export interface Filters {
   cls: ClassId | null; // null means any
@@ -86,7 +86,7 @@ export function stringifySearch(o: Record<string, unknown>) {
 // ---------- the tab stays in this browser ----------
 const KEY = "castle-bank-tab";
 
-function load(): Tab {
+function stored(): Tab {
   try {
     const s = JSON.parse(localStorage.getItem(KEY) || "null");
     if (s) return s;
@@ -94,6 +94,8 @@ function load(): Tab {
     return JSON.parse(localStorage.getItem("castle-bank-v2") || "null")?.tab || {};
   } catch { return {}; /* storage blocked */ }
 }
+// A tab saved before the item limit keeps its first items.
+const load = (): Tab => Object.fromEntries(Object.entries(stored()).slice(0, MAX_TAB_ITEMS));
 
 export function useTab() {
   const [tab, setTab] = useState(load);
