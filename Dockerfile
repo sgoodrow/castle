@@ -6,11 +6,13 @@ FROM node:22.22.2-bookworm-slim AS base
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
-# Production dependencies: a cached layer until the lockfile or schema changes.
+# Production dependencies: a cached layer until the lockfile or schema changes. devDependencies are
+# dropped from package.json first, because `yarn install --production` still installs some of them
+# (typescript, ts-node and @swc's native binaries, about 135MB).
 FROM base AS deps
 COPY package.json yarn.lock ./
 COPY prisma prisma
-RUN yarn install --frozen-lockfile --production && npx prisma generate && yarn cache clean
+RUN npm pkg delete devDependencies && yarn install --frozen-lockfile --production && npx prisma generate && yarn cache clean
 
 FROM base AS build
 COPY package.json yarn.lock ./
