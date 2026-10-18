@@ -27,6 +27,22 @@ const noteFailure = (interaction: ButtonInteraction<CacheType> | ChatInputComman
       (error instanceof DiscordAPIError ? describeError(error).message : `a ${error instanceof Error ? error.name : typeof error} from the command`)
   );
 
+// Answering a failure can itself fail: the interaction may have expired (10062, Discord wants an
+// answer within 3s), been taken by another instance (40060) or Discord may be down (503). Never
+// throw from here: it would escape the listener and crash the bot.
+const answerFailure = async (interaction: ButtonInteraction<CacheType> | ChatInputCommandInteraction<CacheType>, error: unknown) => {
+  const content = String(error);
+  try {
+    if (interaction.deferred || interaction.replied) {
+      await interaction.editReply(content);
+    } else {
+      await interaction.reply({ content, flags: MessageFlags.Ephemeral });
+    }
+  } catch (replyError) {
+    console.error(`could not tell the member about ${featureOf(interaction)} failing: ${replyError}`);
+  }
+};
+
 export const interactionCreateListener = async (
   interaction: Interaction<CacheType>
 ) => {
@@ -43,7 +59,7 @@ export const interactionCreateListener = async (
     } catch (error) {
       console.error(`/${interaction.customId} ${error}`);
       noteFailure(interaction, error);
-      await interaction.editReply({ content: String(error) });
+      await answerFailure(interaction, error);
     }
     return;
   }
@@ -65,7 +81,7 @@ export const interactionCreateListener = async (
     } catch (error) {
       console.error(`/${interaction.commandName} ${error}`);
       noteFailure(interaction, error);
-      await interaction.editReply(String(error));
+      await answerFailure(interaction, error);
     }
   }
 };
