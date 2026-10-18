@@ -5,7 +5,12 @@ import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { WikiCache } from "./wiki-cache";
 
-type DbItem = { name: string; nodrop?: boolean; icon?: number; [k: string]: unknown };
+type DbItem = {
+  name: string;
+  nodrop?: boolean;
+  icon?: number;
+  [k: string]: unknown;
+};
 
 const SPELL_KEYS = ["click", "proc", "worn", "focus", "scroll"];
 const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -15,15 +20,29 @@ export class BankApi {
   private itemdb: Record<string, DbItem>;
   private spells: Record<string, unknown>;
 
-  constructor(dataDir: string, private wiki: WikiCache) {
-    this.itemdb = JSON.parse(readFileSync(path.join(dataDir, "itemdb.json"), "utf-8"));
-    this.spells = JSON.parse(readFileSync(path.join(dataDir, "spells.json"), "utf-8"));
+  constructor(
+    dataDir: string,
+    private wiki: WikiCache
+  ) {
+    this.itemdb = JSON.parse(
+      readFileSync(path.join(dataDir, "itemdb.json"), "utf-8")
+    );
+    this.spells = JSON.parse(
+      readFileSync(path.join(dataDir, "spells.json"), "utf-8")
+    );
   }
 
   private filledSlots() {
     return this.prisma.slot.findMany({
       where: { itemId: { gt: 0 } },
-      select: { charName: true, slot: true, itemId: true, count: true, updatedAt: true, item: { select: { name: true, price: true } } },
+      select: {
+        charName: true,
+        slot: true,
+        itemId: true,
+        count: true,
+        updatedAt: true,
+        item: { select: { name: true, price: true } },
+      },
     });
   }
 
@@ -32,7 +51,12 @@ export class BankApi {
     const seen = new Map<number, { id: number; name: string; icon?: number }>();
     for (const s of await this.filledSlots()) {
       const db = this.itemdb[s.itemId!];
-      if (s.item && s.item.name !== "Empty" && !db?.nodrop) seen.set(s.itemId!, { id: s.itemId!, name: s.item.name, icon: db?.icon });
+      if (s.item && s.item.name !== "Empty" && !db?.nodrop)
+        seen.set(s.itemId!, {
+          id: s.itemId!,
+          name: s.item.name,
+          icon: db?.icon,
+        });
     }
     await this.wiki.refresh([...seen.values()]);
   }
@@ -54,13 +78,26 @@ export class BankApi {
         ...(db || { unknown: true }),
         name: s.item.name, // the inventory file's spelling matches the P99 client
         ...(s.item.price ? { price: s.item.price } : {}),
-        ...(w ? { wiki: w.url, ...(w.icon ? { icon: w.icon } : {}), ...(w.green ? { green: w.green } : {}) } : {}),
+        ...(w
+          ? {
+              wiki: w.url,
+              ...(w.icon ? { icon: w.icon } : {}),
+              ...(w.green ? { green: w.green } : {}),
+            }
+          : {}),
       };
       for (const k of SPELL_KEYS) {
         const sid = db?.[k];
-        if (sid != null && this.spells[String(sid)]) spells[String(sid)] = this.spells[String(sid)];
+        if (sid != null && this.spells[String(sid)])
+          spells[String(sid)] = this.spells[String(sid)];
       }
     }
-    return { snapshot: new Date(latest || Date.now()).toISOString(), today: new Date().toISOString().slice(0, 10), bank: rows, items, spells };
+    return {
+      snapshot: new Date(latest || Date.now()).toISOString(),
+      today: new Date().toISOString().slice(0, 10),
+      bank: rows,
+      items,
+      spells,
+    };
   }
 }

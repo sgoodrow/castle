@@ -13,7 +13,11 @@ const config: AuthConfig = {
   baseUrl: "https://bank.example.com",
 };
 
-const fakeReq = (cookie?: string) => ({ method: "GET", headers: cookie === undefined ? {} : { cookie } } as unknown as IncomingMessage);
+const fakeReq = (cookie?: string) =>
+  ({
+    method: "GET",
+    headers: cookie === undefined ? {} : { cookie },
+  }) as unknown as IncomingMessage;
 
 const fakeRes = () => {
   const r = {
@@ -33,7 +37,8 @@ const fakeRes = () => {
 };
 const asRes = (r: ReturnType<typeof fakeRes>) => r as unknown as ServerResponse;
 
-const setCookies = (r: ReturnType<typeof fakeRes>) => r.headers["Set-Cookie"] as string[];
+const setCookies = (r: ReturnType<typeof fakeRes>) =>
+  r.headers["Set-Cookie"] as string[];
 // "name=value; Path=/; ..." -> "name=value"
 const pair = (setCookie: string) => setCookie.split(";")[0];
 
@@ -46,7 +51,11 @@ const future = () => Date.now() + 3600_000;
 
 describe("cookies", () => {
   test("parses name=value pairs", () => {
-    expect(cookies(fakeReq("a=1; b=two;c=3"))).toEqual({ a: "1", b: "two", c: "3" });
+    expect(cookies(fakeReq("a=1; b=two;c=3"))).toEqual({
+      a: "1",
+      b: "two",
+      c: "3",
+    });
   });
 
   test("keeps '=' inside values", () => {
@@ -65,12 +74,16 @@ describe("Auth.session", () => {
 
   test("accepts a cookie it signed", () => {
     const session = { ...s, exp: future() };
-    expect(auth.session(fakeReq(`other=1; bank_session=${signed(session)}`))).toEqual(session);
+    expect(
+      auth.session(fakeReq(`other=1; bank_session=${signed(session)}`))
+    ).toEqual(session);
   });
 
   test("rejects a tampered body", () => {
     const [, sig] = signed({ ...s, exp: future() }).split(".");
-    const body = Buffer.from(JSON.stringify({ ...s, id: "999", exp: future() })).toString("base64url");
+    const body = Buffer.from(
+      JSON.stringify({ ...s, id: "999", exp: future() })
+    ).toString("base64url");
     expect(auth.session(fakeReq(`bank_session=${body}.${sig}`))).toBeNull();
   });
 
@@ -78,17 +91,29 @@ describe("Auth.session", () => {
     const [body, sig] = signed({ ...s, exp: future() }).split(".");
     const flipped = (sig[0] === "A" ? "B" : "A") + sig.slice(1);
     expect(auth.session(fakeReq(`bank_session=${body}.${flipped}`))).toBeNull();
-    expect(auth.session(fakeReq(`bank_session=${body}.${sig.slice(1)}`))).toBeNull();
+    expect(
+      auth.session(fakeReq(`bank_session=${body}.${sig.slice(1)}`))
+    ).toBeNull();
     expect(auth.session(fakeReq(`bank_session=${body}.`))).toBeNull();
     expect(auth.session(fakeReq(`bank_session=${body}`))).toBeNull();
   });
 
   test("rejects a cookie signed with another secret", () => {
-    expect(auth.session(fakeReq(`bank_session=${signed({ ...s, exp: future() }, "other-secret")}`))).toBeNull();
+    expect(
+      auth.session(
+        fakeReq(
+          `bank_session=${signed({ ...s, exp: future() }, "other-secret")}`
+        )
+      )
+    ).toBeNull();
   });
 
   test("rejects an expired session", () => {
-    expect(auth.session(fakeReq(`bank_session=${signed({ ...s, exp: Date.now() - 1 })}`))).toBeNull();
+    expect(
+      auth.session(
+        fakeReq(`bank_session=${signed({ ...s, exp: Date.now() - 1 })}`)
+      )
+    ).toBeNull();
   });
 
   test("rejects garbage", () => {
@@ -99,21 +124,33 @@ describe("Auth.session", () => {
     // Correctly signed, but not a session.
     expect(auth.session(fakeReq(`bank_session=${signed({})}`))).toBeNull();
     const notJson = Buffer.from("not json").toString("base64url");
-    const sig = createHmac("sha256", config.secret).update(notJson).digest("base64url");
+    const sig = createHmac("sha256", config.secret)
+      .update(notJson)
+      .digest("base64url");
     expect(auth.session(fakeReq(`bank_session=${notJson}.${sig}`))).toBeNull();
     const nul = Buffer.from("null").toString("base64url");
-    const nulSig = createHmac("sha256", config.secret).update(nul).digest("base64url");
+    const nulSig = createHmac("sha256", config.secret)
+      .update(nul)
+      .digest("base64url");
     expect(auth.session(fakeReq(`bank_session=${nul}.${nulSig}`))).toBeNull();
   });
 });
 
 describe("Auth.cookie", () => {
   test("adds Secure for an https base URL", () => {
-    expect(new Auth(config).cookie("n", "v", 60)).toBe("n=v; Path=/; HttpOnly; SameSite=Lax; Max-Age=60; Secure");
+    expect(new Auth(config).cookie("n", "v", 60)).toBe(
+      "n=v; Path=/; HttpOnly; SameSite=Lax; Max-Age=60; Secure"
+    );
   });
 
   test("leaves out Secure for an http base URL", () => {
-    expect(new Auth({ ...config, baseUrl: "http://localhost:3000" }).cookie("n", "v", 60)).toBe("n=v; Path=/; HttpOnly; SameSite=Lax; Max-Age=60");
+    expect(
+      new Auth({ ...config, baseUrl: "http://localhost:3000" }).cookie(
+        "n",
+        "v",
+        60
+      )
+    ).toBe("n=v; Path=/; HttpOnly; SameSite=Lax; Max-Age=60");
   });
 });
 
@@ -127,15 +164,20 @@ describe("Auth.login", () => {
     const state = pair(stateCookie).split("=")[1];
 
     const to = new URL(res.headers.Location as string);
-    expect(to.origin + to.pathname).toBe("https://discord.com/oauth2/authorize");
+    expect(to.origin + to.pathname).toBe(
+      "https://discord.com/oauth2/authorize"
+    );
     expect(to.searchParams.get("client_id")).toBe("client-id");
-    expect(to.searchParams.get("redirect_uri")).toBe("https://bank.example.com/auth/callback");
+    expect(to.searchParams.get("redirect_uri")).toBe(
+      "https://bank.example.com/auth/callback"
+    );
     expect(to.searchParams.get("response_type")).toBe("code");
     expect(to.searchParams.get("state")).toBe(state);
   });
 
   test("uses a fresh state each time", () => {
-    const a = fakeRes(), b = fakeRes();
+    const a = fakeRes(),
+      b = fakeRes();
     new Auth(config).login(asRes(a));
     new Auth(config).login(asRes(b));
     expect(pair(setCookies(a)[0])).not.toBe(pair(setCookies(b)[0]));
@@ -156,8 +198,17 @@ describe("Auth.callback", () => {
   const realFetch = global.fetch;
   let fetchMock: jest.Mock;
 
-  const json = (status: number, body: unknown) => ({ ok: status >= 200 && status < 300, status, json: async () => body } as Response);
-  const member = (roles: string[]) => ({ roles, nick: "Nick", user: { id: "42", username: "user", global_name: "Global" } });
+  const json = (status: number, body: unknown) =>
+    ({
+      ok: status >= 200 && status < 300,
+      status,
+      json: async () => body,
+    }) as Response;
+  const member = (roles: string[]) => ({
+    roles,
+    nick: "Nick",
+    user: { id: "42", username: "user", global_name: "Global" },
+  });
 
   beforeEach(() => {
     fetchMock = jest.fn();
@@ -170,12 +221,19 @@ describe("Auth.callback", () => {
   const callback = async (query: string, cookie?: string) => {
     const res = fakeRes();
     const auth = new Auth(config);
-    await auth.callback(fakeReq(cookie), asRes(res), new URL(`https://bank.example.com/auth/callback?${query}`));
+    await auth.callback(
+      fakeReq(cookie),
+      asRes(res),
+      new URL(`https://bank.example.com/auth/callback?${query}`)
+    );
     return { res, auth };
   };
 
   test("a cancelled sign-in is a 403", async () => {
-    const { res } = await callback("error=access_denied&state=s", "bank_state=s");
+    const { res } = await callback(
+      "error=access_denied&state=s",
+      "bank_state=s"
+    );
     expect(res.status).toBe(403);
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -199,28 +257,39 @@ describe("Auth.callback", () => {
   });
 
   test("someone not in the guild is a 403", async () => {
-    fetchMock.mockResolvedValueOnce(json(200, { access_token: "tok" })).mockResolvedValueOnce(json(404, {}));
+    fetchMock
+      .mockResolvedValueOnce(json(200, { access_token: "tok" }))
+      .mockResolvedValueOnce(json(404, {}));
     const { res } = await callback("code=c&state=s", "bank_state=s");
     expect(res.status).toBe(403);
     expect(res.headers["Set-Cookie"]).toBeUndefined();
   });
 
   test("a failed member lookup is a 502", async () => {
-    fetchMock.mockResolvedValueOnce(json(200, { access_token: "tok" })).mockResolvedValueOnce(json(500, {}));
+    fetchMock
+      .mockResolvedValueOnce(json(200, { access_token: "tok" }))
+      .mockResolvedValueOnce(json(500, {}));
     const { res } = await callback("code=c&state=s", "bank_state=s");
     expect(res.status).toBe(502);
   });
 
   test("a member without the bank role is a 403", async () => {
-    fetchMock.mockResolvedValueOnce(json(200, { access_token: "tok" })).mockResolvedValueOnce(json(200, member(["other-role"])));
+    fetchMock
+      .mockResolvedValueOnce(json(200, { access_token: "tok" }))
+      .mockResolvedValueOnce(json(200, member(["other-role"])));
     const { res } = await callback("code=c&state=s", "bank_state=s");
     expect(res.status).toBe(403);
     expect(res.headers["Set-Cookie"]).toBeUndefined();
   });
 
   test("a member with the bank role gets a session and is sent home", async () => {
-    fetchMock.mockResolvedValueOnce(json(200, { access_token: "tok" })).mockResolvedValueOnce(json(200, member(["x", "bank-role"])));
-    const { res, auth } = await callback("code=the-code&state=s", "bank_state=s");
+    fetchMock
+      .mockResolvedValueOnce(json(200, { access_token: "tok" }))
+      .mockResolvedValueOnce(json(200, member(["x", "bank-role"])));
+    const { res, auth } = await callback(
+      "code=the-code&state=s",
+      "bank_state=s"
+    );
 
     expect(res.status).toBe(302);
     expect(res.headers.Location).toBe("/");
@@ -237,20 +306,38 @@ describe("Auth.callback", () => {
     expect(tokenUrl).toBe("https://discord.com/api/v10/oauth2/token");
     const form = tokenInit.body as URLSearchParams;
     expect(form.get("code")).toBe("the-code");
-    expect(form.get("redirect_uri")).toBe("https://bank.example.com/auth/callback");
+    expect(form.get("redirect_uri")).toBe(
+      "https://bank.example.com/auth/callback"
+    );
     const [memberUrl, memberInit] = fetchMock.mock.calls[1];
-    expect(memberUrl).toBe("https://discord.com/api/v10/users/@me/guilds/guild-id/member");
+    expect(memberUrl).toBe(
+      "https://discord.com/api/v10/users/@me/guilds/guild-id/member"
+    );
     expect(memberInit.headers.Authorization).toBe("Bearer tok");
   });
 
   test("falls back from nick to global name to username", async () => {
     const m = member(["bank-role"]);
-    fetchMock.mockResolvedValueOnce(json(200, { access_token: "tok" })).mockResolvedValueOnce(json(200, { ...m, nick: undefined }));
+    fetchMock
+      .mockResolvedValueOnce(json(200, { access_token: "tok" }))
+      .mockResolvedValueOnce(json(200, { ...m, nick: undefined }));
     const { res, auth } = await callback("code=c&state=s", "bank_state=s");
-    expect(auth.session(fakeReq(pair(setCookies(res)[0])))!.name).toBe("Global");
+    expect(auth.session(fakeReq(pair(setCookies(res)[0])))!.name).toBe(
+      "Global"
+    );
 
-    fetchMock.mockResolvedValueOnce(json(200, { access_token: "tok" })).mockResolvedValueOnce(json(200, { ...m, nick: undefined, user: { id: "42", username: "user" } }));
+    fetchMock
+      .mockResolvedValueOnce(json(200, { access_token: "tok" }))
+      .mockResolvedValueOnce(
+        json(200, {
+          ...m,
+          nick: undefined,
+          user: { id: "42", username: "user" },
+        })
+      );
     const second = await callback("code=c&state=s", "bank_state=s");
-    expect(second.auth.session(fakeReq(pair(setCookies(second.res)[0])))!.name).toBe("user");
+    expect(
+      second.auth.session(fakeReq(pair(setCookies(second.res)[0])))!.name
+    ).toBe("user");
   });
 });
