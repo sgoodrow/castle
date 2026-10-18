@@ -98,6 +98,10 @@ export function AppPane() {
     <DetailPane
       it={shown}
       canUse={!shown || canUse(shown)}
+      cls={f.cls}
+      qty={shown ? tab[shown.id] || 0 : 0}
+      onAdd={addOne}
+      onRemove={removeOne}
       onClose={() => select(null)}
     />
   );
@@ -154,7 +158,7 @@ export function AppPane() {
               Details
             </Group>
           }>
-          {drawerItem && <DetailPane it={drawerItem} canUse={canUse(drawerItem)} bare />}
+          {drawerItem && <DetailPane it={drawerItem} canUse={canUse(drawerItem)} cls={f.cls} qty={tab[drawerItem.id] || 0} onAdd={addOne} onRemove={removeOne} bare />}
         </Drawer>
       )}
       {!md && (

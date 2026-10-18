@@ -1,6 +1,9 @@
 import { Alert, Badge, CloseButton, Divider, Group, Paper, Stack, Text, Title, Tooltip } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
-import { bankRequest, prettyLoc, type Holder, type Item } from "../../data";
+import { useRef } from "react";
+import { bankRequest, prettyLoc, type ClassId, type Holder, type Item } from "../../data";
+import { GuildPriceText } from "../texts/GuildPriceText";
+import { BuyPane } from "./BuyPane";
 import { AuctionPane } from "./AuctionPane";
 import { MarketWarningText } from "../texts/MarketWarningText";
 import { CollapsibleLayout } from "../CollapsibleLayout";
@@ -9,6 +12,10 @@ import { StatPane } from "./StatPane";
 interface Props {
   it: Item | null;
   canUse: boolean;
+  cls: ClassId | null; // what the member's class pays
+  qty: number; // how many are on the tab
+  onAdd: (it: Item, el: HTMLElement) => void;
+  onRemove: (it: Item) => void;
   onClose?: () => void; // wide screens: clear the selection
   bare?: boolean; // inside the details drawer, which has its own header
 }
@@ -37,7 +44,8 @@ const Section = ({ title, aside, children }: { title: string; aside?: React.Reac
 );
 
 // The product page: everything about one item.
-export function DetailPane({ it, canUse, onClose, bare }: Props) {
+export function DetailPane({ it, canUse, cls, qty, onAdd, onRemove, onClose, bare }: Props) {
+  const buy = useRef<HTMLDivElement>(null);
   if (!it) {
     return (
       <CollapsibleLayout id="details" title="Details">
@@ -50,6 +58,10 @@ export function DetailPane({ it, canUse, onClose, bare }: Props) {
         <Paper withBorder p="sm" radius="md" style={{ background: "var(--surface-head)", boxShadow: "none" }}>
           <StatPane it={it} />
         </Paper>
+        <Group ref={buy} role="group" aria-label="Price and tab" justify="space-between" wrap="nowrap" px="xs" style={{ borderRadius: "var(--mantine-radius-sm)" }}>
+          <GuildPriceText it={it} cls={cls} />
+          <BuyPane it={it} qty={qty} onAdd={() => buy.current && onAdd(it, buy.current)} onRemove={() => onRemove(it)} />
+        </Group>
         {isAuction(it) && (
           <Alert color="yellow" variant="light" p="xs" title="DKP auction only">
             A banker starts a DKP auction for it.

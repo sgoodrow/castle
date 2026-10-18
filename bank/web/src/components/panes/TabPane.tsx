@@ -32,7 +32,7 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
   return (
     <div>
       {lines.length === 0 ? (
-        <Text fz="sm" c="dimmed">Nothing yet. Open an item and choose Add to tab.</Text>
+        <Text fz="sm" c="dimmed">Nothing yet. Double-click an item, or use its + button.</Text>
       ) : (
         <Stack gap="sm">
           <Stack gap={4} component="ul" style={{ listStyle: "none", margin: 0, padding: 0 }}>

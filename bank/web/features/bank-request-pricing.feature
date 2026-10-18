@@ -105,6 +105,28 @@ Feature: Bank request pricing
     And I take one "Pearl" off my tab
     And I am told "Removed Pearl from your tab"
 
+  Scenario: An item's details add it to my tab and take it off
+    Given the bank holds the usual stock
+    And I have opened the bank page
+    And I have clicked "Bone Chips" in the bank
+    When I add one "Bone Chips" from its details
+    Then I am told "Added Bone Chips to your tab"
+    And I add one "Bone Chips" from its details
+    And I am told "Bone Chips ×2 on your tab"
+    And the details show "2/35" on my tab
+    And I take one "Bone Chips" off my tab from its details
+    And I am told "Bone Chips ×1 on your tab"
+    And the tab button shows "1 unknown"
+
+  Scenario: An item's details can't add more than the bank has
+    Given the bank holds the usual stock
+    And I have opened the bank page
+    And I have clicked "Cloak of Flames" in the bank
+    When I add one "Cloak of Flames" from its details
+    And I add one "Cloak of Flames" from its details
+    Then I am told "The bank only has one, and it's on your tab"
+    And the tab button shows "800pp"
+
   Scenario: Items a banker has to price are counted as unknown
     Given the bank holds the usual stock
     And I have opened the bank page
@@ -219,7 +241,7 @@ Feature: Bank request pricing
     And I have added "Cloak of Flames" to my tab
     And I open my tab
     When I clear my tab
-    Then my tab says "Nothing yet. Open an item and choose Add to tab."
+    Then my tab says "Nothing yet. Double-click an item, or use its + button."
     And the tab button shows "0pp"
 
   Scenario: An item on my tab opens its details
