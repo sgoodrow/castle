@@ -55,6 +55,17 @@
 .head > :nth-child(4) { grid-area: price; }
 .head > :nth-child(5) { grid-area: tab; }
 
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font: inherit;
+  color: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+}
+.sort:hover, .sort[data-active] { color: var(--mantine-color-text); }
+
 .icon { grid-area: icon; align-self: start; }
 .name { grid-area: name; min-width: 0; }
 .nameText { min-width: 0; }

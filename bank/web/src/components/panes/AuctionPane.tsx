@@ -51,11 +51,19 @@ function Timeline({ rows, median, big }: { rows: Row[]; median: number | null; b
         </g>
       ))}
       {median != null && <line x1={L} x2={W - R} y1={y(median)} y2={y(median)} stroke="var(--mantine-color-yellow-6)" strokeDasharray="3 3" />}
-      {placed.map(({ q, cx, cy }, i) => (
-        <circle key={i} cx={cx} cy={cy} r={r} fill={color(q.seller)} fillOpacity={0.55}>
-          <title>{`${q.d.toISOString().slice(0, 10)} · ${q.price}pp · ${q.seller}`}</title>
-        </circle>
-      ))}
+      {placed.map(({ q, cx, cy }, i) => {
+        const when = `${q.d.toISOString().slice(0, 10)} · ${q.price}pp`;
+        // Inline the chart is one button that opens the big copy, so only the big one gets real tooltips.
+        return big ? (
+          <Tooltip key={i} label={<><Text span fz="sm" fw={600}>{q.seller}</Text> <Text span fz="xs" c="dimmed">{when}</Text></>}>
+            <circle cx={cx} cy={cy} r={r} fill={color(q.seller)} fillOpacity={0.55} />
+          </Tooltip>
+        ) : (
+          <circle key={i} cx={cx} cy={cy} r={r} fill={color(q.seller)} fillOpacity={0.55}>
+            <title>{`${when} · ${q.seller}`}</title>
+          </circle>
+        );
+      })}
     </svg>
   );
 }
@@ -71,7 +79,10 @@ export function AuctionPane({ it }: { it: Item }) {
   const spread = recent.length
     ? <Text span fz="sm"><b>{a.median}pp</b> <Text span inherit c="dimmed">± {Math.round(stdev(prices))}pp</Text></Text>
     : <Text span fz="sm" c="dimmed">No sales in 6 months</Text>;
-  const n = <Text span fz="xs" c="dimmed" style={{ fontVariantNumeric: "tabular-nums" }}>N={recent.length}</Text>;
+  const count = (label: string, text: string) => (
+    <Tooltip label={label}><Text span fz="xs" c="dimmed" style={{ fontVariantNumeric: "tabular-nums", cursor: "help" }}>{text}</Text></Tooltip>
+  );
+  const n = <Group gap={8} wrap="nowrap">{count("Number of sales", `N=${recent.length}`)}{count("Number of sellers", `M=${a.sellers.size}`)}</Group>;
 
   return (
     <Stack gap="xs">

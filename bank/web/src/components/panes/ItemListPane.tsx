@@ -1,9 +1,9 @@
-import { Badge, Group, Text, Tooltip, UnstyledButton } from "@mantine/core";
-import { IconAlertTriangle, IconMinus } from "@tabler/icons-react";
+import { Badge, Group, NativeSelect, Text, Tooltip, UnstyledButton } from "@mantine/core";
+import { IconAlertTriangle, IconArrowDown, IconArrowUp, IconMinus } from "@tabler/icons-react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { memo, useLayoutEffect, useRef, useState } from "react";
 import { bankRequest, statParts, type ClassId, type Item } from "../../data";
-import type { Tab } from "../../state";
+import { nextSort, sortDesc, sortKey, SORTS, type Sort, type SortKey, type Tab } from "../../state";
 import { GuildPriceText } from "../texts/GuildPriceText";
 import { ItemImage } from "../ItemImage";
 import { CollapsibleLayout } from "../CollapsibleLayout";
@@ -21,6 +21,26 @@ interface Props {
   onAdd?: (it: Item, row: HTMLElement) => void; // double-click: one more on the tab
   onRemove?: (it: Item) => void; // click the tab count: one fewer
   table?: boolean; // one line per item in columns; phones get stacked rows
+  sort: Sort;
+  onSort: (sort: Sort) => void;
+}
+
+const SORT_LABELS: Record<Sort, string> = { name: "A–Z", "-name": "Z–A", price: "Cheapest", "-price": "Priciest" };
+
+// A column header that sorts the list; clicking it again flips the direction.
+function SortHeader({ k, sort, onSort, end, tip, children }: { k: SortKey; sort: Sort; onSort: (s: Sort) => void; end?: boolean; tip?: string; children: React.ReactNode }) {
+  const on = sortKey(sort) === k;
+  const Arrow = sortDesc(sort) ? IconArrowDown : IconArrowUp;
+  return (
+    <span className={end ? classes.end : undefined} aria-sort={on ? (sortDesc(sort) ? "descending" : "ascending") : "none"}>
+      <Tooltip label={tip} disabled={!tip}>
+        <UnstyledButton className={classes.sort} data-active={on || undefined} onClick={() => onSort(nextSort(sort, k))}>
+          {children}
+          <Arrow size={12} stroke={2.5} style={{ visibility: on ? "visible" : "hidden" }} />
+        </UnstyledButton>
+      </Tooltip>
+    </span>
+  );
 }
 
 const stats = (it: Item) =>
@@ -79,7 +99,7 @@ const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index
 });
 
 // The bank as a table: icon, name, stat line, price, tab.
-export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAdd, onRemove, table }: Props) {
+export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAdd, onRemove, table, sort, onSort }: Props) {
   // Handlers go through a ref so rows never see a new function and stay memoized.
   const on = useRef({ onSelect, onAdd, onRemove });
   on.current = { onSelect, onAdd, onRemove };
@@ -106,18 +126,27 @@ export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAd
   });
   return (
     <CollapsibleLayout id="items" title="Items Available" className={classes.root} data-table={table || undefined}
-      actions={<Text fz="sm" c="dimmed">{items.length} {items.length === 1 ? "item" : "items"}</Text>}>
+      actions={
+        <Group gap="sm" wrap="nowrap">
+          {/* Phones have no column headers to click, so they get a picker. */}
+          {!table && (
+            <NativeSelect size="xs" aria-label="Sort items" value={sort} onChange={e => onSort(SORTS.find(s => s === e.currentTarget.value) ?? "name")}
+              data={SORTS.map(s => ({ value: s, label: SORT_LABELS[s] }))} />
+          )}
+          <Text fz="sm" c="dimmed" style={{ whiteSpace: "nowrap" }}>{items.length} {items.length === 1 ? "item" : "items"}</Text>
+        </Group>
+      }>
       {table && (
-        <div className={`${classes.row} ${classes.head}`} aria-hidden>
+        <div className={`${classes.row} ${classes.head}`}>
           <span />
-          <span>Item</span>
+          <SortHeader k="name" sort={sort} onSort={onSort}>Item</SortHeader>
           <span>Stats</span>
-          <Tooltip label="80% of market price"><span className={classes.end} style={{ cursor: "help" }}>Guild price</span></Tooltip>
+          <SortHeader k="price" sort={sort} onSort={onSort} end tip="80% of market price. Unknown prices sort as 0.">Guild price</SortHeader>
           <span className={classes.end}>Buy</span>
         </div>
       )}
       {items.length === 0 && <Text p="md" c="dimmed">Nothing in the bank matches. Try clearing a filter.</Text>}
-      <ul ref={listRef} className={classes.list} style={{ height: v.getTotalSize() }}>
+      <ul ref={listRef} aria-label="Items in the bank" className={classes.list} style={{ height: v.getTotalSize() }}>
         {v.getVirtualItems().map(r => {
           const it = items[r.index];
           // The virtualizer only hands out indexes below count, so a miss is our bug: say so, don't hide it.

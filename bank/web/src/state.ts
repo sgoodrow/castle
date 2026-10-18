@@ -7,11 +7,20 @@ export interface Filters {
   q: string;
   kind: "all" | Kind;
   slot: SlotChip | null;
+  sort: Sort;
 }
+// What the list is ordered by; a leading "-" is high to low. Unknown prices count as 0.
+export const SORTS = ["name", "-name", "price", "-price"] as const;
+export type Sort = (typeof SORTS)[number];
+export type SortKey = "name" | "price";
+export const sortKey = (s: Sort): SortKey => (s === "name" || s === "-name" ? "name" : "price");
+export const sortDesc = (s: Sort) => s.startsWith("-");
+// Clicking a column: the same column flips direction; a new one starts low to high.
+export const nextSort = (s: Sort, key: SortKey): Sort => (sortKey(s) !== key ? key : sortDesc(s) ? key : `-${key}`);
 // Item id -> quantity on the tab.
 export type Tab = Record<number, number>;
 
-export const DEFAULT_FILTERS: Filters = { cls: null, race: null, q: "", kind: "all", slot: null };
+export const DEFAULT_FILTERS: Filters = { cls: null, race: null, q: "", kind: "all", slot: null, sort: "name" };
 
 // ---------- filters live in the URL, readable: ?class=NEC&race=IKS&slot=head ----------
 export interface Search {
@@ -20,6 +29,7 @@ export interface Search {
   kind?: Kind;
   slot?: string;
   q?: string;
+  sort?: Sort;
 }
 const KINDS: Kind[] = ["gear", "spell", "bag", "other"];
 const str = (v: unknown) => (typeof v === "string" && v ? v : undefined);
@@ -33,6 +43,7 @@ export function validateSearch(raw: Record<string, unknown>): Search {
     kind: oneOf(raw.kind, KINDS),
     slot: oneOf(raw.slot, SLOT_CHIPS.map(c => c.id))?.toLowerCase(),
     q: str(raw.q),
+    sort: oneOf(raw.sort, SORTS),
   };
 }
 
@@ -43,6 +54,7 @@ export function toFilters(s: Search): Filters {
     q: s.q ?? "",
     kind: s.kind ?? "all",
     slot: SLOT_CHIPS.find(c => c.id.toLowerCase() === s.slot)?.id ?? null,
+    sort: s.sort ?? "name",
   };
 }
 
@@ -54,6 +66,7 @@ export function toSearch(f: Filters): Search {
     kind: f.kind === "all" ? undefined : f.kind,
     slot: f.slot?.toLowerCase() || undefined,
     q: f.q || undefined,
+    sort: f.sort === "name" ? undefined : f.sort,
   };
 }
 
@@ -86,17 +99,14 @@ export function useTab() {
   return [tab, setTab] as const;
 }
 
-export const KIND_OPTIONS = [
-  { value: "all", label: "All" }, { value: "gear", label: "Gear" }, { value: "spell", label: "Spells" },
-  { value: "bag", label: "Bags" }, { value: "other", label: "Other" },
-];
+export const KIND_LABEL: Record<Filters["kind"], string> = { all: "All", gear: "Gear", spell: "Spells", bag: "Bags", other: "Other" };
 
 // The active filters, each with what clears it.
 export function activeChips(f: Filters): { label: string; clear: Partial<Filters> }[] {
   const out: { label: string; clear: Partial<Filters> }[] = [];
   if (f.cls) out.push({ label: CLASS_NAME[f.cls], clear: { cls: null } });
   if (f.race) out.push({ label: RACE_NAME[f.race], clear: { race: null } });
-  if (f.kind !== "all") out.push({ label: KIND_OPTIONS.find(k => k.value === f.kind)?.label ?? f.kind, clear: { kind: "all" } });
+  if (f.kind !== "all") out.push({ label: KIND_LABEL[f.kind], clear: { kind: "all" } });
   if (f.slot) out.push({ label: `Slot: ${f.slot}`, clear: { slot: null } });
   return out;
 }

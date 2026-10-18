@@ -33,7 +33,7 @@ export interface Payload {
 
 // spells.json lists a spell's level for each of EverQuest's 15 classes, in the client's order.
 // The 15th is Beastlord, which P99 doesn't have, so it isn't one of CLASSES.
-type EqClassLevels = readonly [
+export type EqClassLevels = readonly [
   war: number, clr: number, pal: number, rng: number, shd: number, dru: number, mnk: number, brd: number,
   rog: number, shm: number, nec: number, wiz: number, mag: number, enc: number, bst: number,
 ];
@@ -107,8 +107,8 @@ function byId<T extends { readonly id: string }, V>(list: readonly T[], value: (
 }
 export const CLASS_NAME = byId(CLASSES, c => c.name);
 export const RACE_NAME = byId(RACES, r => r.name);
-const CLASS_BIT = byId(CLASSES, (_, i) => 1 << i);
-const RACE_BIT = byId(RACES, (_, i) => 1 << i);
+export const CLASS_BIT = byId(CLASSES, (_, i) => 1 << i);
+export const RACE_BIT = byId(RACES, (_, i) => 1 << i);
 export const ALL_CLASSES = (1 << CLASSES.length) - 1;
 export const ALL_RACES = (1 << RACES.length) - 1;
 // Slot bits as stored in the item database.
@@ -139,7 +139,6 @@ export const SIZES = ["TINY","SMALL","MEDIUM","LARGE","GIANT"];
 export const ELEM: Record<number, string> = {1:"Magic",2:"Fire",3:"Cold",4:"Poison",5:"Disease"};
 export const STATS = [["str","STR"],["sta","STA"],["agi","AGI"],["dex","DEX"],["wis","WIS"],["int","INT"],["cha","CHA"]] as const;
 export const RESISTS = [["pr","POISON"],["mr","MAGIC"],["dr","DISEASE"],["fr","FIRE"],["cr","COLD"]] as const;
-type NumKey = "ac" | "hp" | "mana" | (typeof STATS)[number][0] | (typeof RESISTS)[number][0];
 
 // ---------- data shaping ----------
 function kindOf(it: RawItem): Kind {
@@ -176,8 +175,11 @@ function auctions(it: RawItem): Auctions {
 export const ITEMS: Record<number, Item> = {};
 export const ITEM_LIST: Item[] = [];
 
-// Fill ITEMS from the bank. Runs once, before the first render, so nothing shifts when data lands.
+// Fill ITEMS from the bank, replacing whatever was there. Runs before the first render, so nothing shifts when data lands.
 export function loadBank(p: Payload) {
+  for (const k of Object.keys(SPELLS)) delete SPELLS[k];
+  for (const k of Object.keys(ITEMS)) delete ITEMS[+k];
+  ITEM_LIST.length = 0;
   const bad: string[] = [];
   for (const [id, raw] of Object.entries(p.spells)) {
     const sp = toSpell(raw);
@@ -211,9 +213,6 @@ export interface Character { cls: ClassId | null; race: RaceId | null }
 export const usable = (it: Item, c: Character) =>
   (!c.cls || !!((it.classes ?? ALL_CLASSES) & CLASS_BIT[c.cls])) && (!c.race || !!((it.races ?? ALL_RACES) & RACE_BIT[c.race]));
 export const fitsBit = (it: Item, bit: number) => !!((it.slots || 0) & (1 << bit));
-export const fitsKeys = (it: Item) => Object.values(SLOTS).filter(s => fitsBit(it, s.bit)).map(s => s.key);
-
-export const sumOf = (it: Item, keys: readonly (readonly [NumKey, string])[]) => keys.reduce((s, [k]) => s + (it[k] || 0), 0);
 
 // ---------- formatting ----------
 export const signed = (v: number) => (v > 0 ? "+" : "") + v;

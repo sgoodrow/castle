@@ -4,7 +4,8 @@ import { IconMoneybag } from "@tabler/icons-react";
 import { ToastNotification, type ToastMsg } from "../ToastNotification";
 import { OverflowTooltip } from "../OverflowTooltip";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ITEMS, bankRequest, ITEM_LIST, RESISTS, SLOT_CHIP_BITS, STATS, sumOf, statText, usable, type Item } from "../../data";
+import { ITEMS, bankRequest, RESISTS, STATS, usable, type Item } from "../../data";
+import { filterItems } from "../../search";
 import { getRouteApi } from "@tanstack/react-router";
 import { toFilters, toSearch, useTab, type Filters } from "../../state";
 import { DetailPane } from "./DetailPane";
@@ -15,23 +16,6 @@ import { TabPane } from "./TabPane";
 import { tabTotal, totalShort, totalText } from "../../tab";
 import { UpdatedText } from "../texts/UpdatedText";
 import { DevOptionsPane } from "./DevOptionsPane";
-
-function filterItems(f: Filters) {
-  const bits = f.slot ? SLOT_CHIP_BITS[f.slot] : null;
-  const terms = f.q.toLowerCase().split(/\s+/).filter(Boolean);
-  const char = { cls: f.cls, race: f.race };
-  const onlyUsable = f.cls != null || f.race != null;
-  return ITEM_LIST.filter(it => {
-    if (f.kind !== "all" && it.kind !== f.kind) return false;
-    if (bits && !bits.some(b => (it.slots || 0) & (1 << b))) return false;
-    if (onlyUsable && (it.kind === "gear" || it.kind === "spell") && !usable(it, char)) return false;
-    if (terms.length) {
-      const hay = (it.name + " " + statText(it)).toLowerCase();
-      if (!terms.every(t => hay.includes(t))) return false;
-    }
-    return true;
-  }).sort((a, b) => a.name.localeCompare(b.name));
-}
 
 const route = getRouteApi("__root__");
 
@@ -116,7 +100,7 @@ export function AppPane() {
   );
   const sticky = { position: "sticky", top: 16, maxHeight: "calc(100vh - 32px)", overflowY: "auto" } as const;
   const total = tabTotal(tab, f.cls);
-  const list = <ItemListPane items={items} selected={selected} tab={tab} cls={f.cls} canUse={canUse} onSelect={select} onAdd={addOne} onRemove={removeOne} table={md} />;
+  const list = <ItemListPane items={items} selected={selected} tab={tab} cls={f.cls} canUse={canUse} onSelect={select} onAdd={addOne} onRemove={removeOne} table={md} sort={f.sort} onSort={sort => set({ sort })} />;
 
   return (
     <Container size={1500} py="md" px={{ base: "md", sm: "lg" }}>

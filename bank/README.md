@@ -21,6 +21,7 @@ Set on the Dokku app with `dokku config:set castle-discord-bot ...`:
 | `bankWebSessionSecret` | Any long random string; signs the sign-in cookie. |
 | `bankWebUrl` | The public address, e.g. `https://bank.172-105-106-208.sslip.io`. Add `<bankWebUrl>/auth/callback` as a redirect in the Discord developer portal. |
 | `bankCacheDir` | Optional; where the wiki cache lives. Defaults to `bank/cache`. |
+| `bankDistDir` | Optional; where the built page lives. Defaults to `bank/dist`. |
 
 Until the sign-in settings are set, the page says it isn't open yet; the bot itself is unaffected.
 
