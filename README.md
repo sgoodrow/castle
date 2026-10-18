@@ -1,4 +1,4 @@
-# 🤖 Castle Steward [![CI](https://github.com/sgoodrow/castle/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/sgoodrow/castle/actions/workflows/test.yml) [![Release](https://github.com/sgoodrow/castle/actions/workflows/release.yml/badge.svg)](https://github.com/sgoodrow/castle/actions/workflows/release.yml)
+# 🤖 Castle Steward [![Release](https://github.com/sgoodrow/castle/actions/workflows/release.yml/badge.svg)](https://github.com/sgoodrow/castle/actions/workflows/release.yml)
 
 ## ✨ Features
 
@@ -80,7 +80,7 @@ If you don't want to use a Gitpod (or have run out of credits 😅), extract the
 
 This bot is deployed to a [Dokku](https://dokku.com/docs/) instance running on Linode with the application name `castle-discord-bot`.
 
-**Automatic deployment is configured on a push to the 'dokku' branch in github.**
+**Merging to `main` deploys:** the Release workflow tests the commit and builds its image side by side, then has Dokku run the image once both pass.
 
 With appropriate SSH access, Dokku can be managed through the CLI at:
 

@@ -1,31 +1,32 @@
 name: Release
 
-# Builds the image here, where there's CPU and a layer cache, from the commit Test passed on main, and
-# has Dokku run it (`git:from-image`) instead of building on the server. To roll back to an earlier
-# build: `dokku git:from-image castle-discord-bot ghcr.io/sgoodrow/castle:<sha>` on the server.
+# Every push to main: runs Test (the workflow PRs run) and builds the image from the same commit at
+# once, and has Dokku run the image (`git:from-image`) only when both pass. The image is built here,
+# where there's CPU and a layer cache, not on the server. To roll back to an earlier build:
+# `dokku git:from-image castle-discord-bot ghcr.io/sgoodrow/castle:<sha>` on the server.
 on:
-  workflow_run:
-    workflows: [Test]
+  push:
     branches: [main]
-    types: [completed]
 
+# One release at a time, in push order. A push that arrives while one is waiting replaces it: the
+# newer commit holds it.
 concurrency:
   group: release
 
 env:
-  IMAGE: ghcr.io/sgoodrow/castle:${{ github.event.workflow_run.head_sha }}
+  IMAGE: ghcr.io/sgoodrow/castle:${{ github.sha }}
 
 jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
   image:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     permissions:
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
@@ -37,12 +38,12 @@ jobs:
           context: .
           push: true
           tags: ${{ env.IMAGE }}
-          build-args: SOURCE_REV=${{ github.event.workflow_run.head_sha }}
+          build-args: SOURCE_REV=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
   deploy:
-    needs: image
+    needs: [test, image]
     runs-on: ubuntu-latest
     steps:
       # The server pulls without credentials, so the package has to be public (a one-time setting).
@@ -57,4 +58,4 @@ jobs:
           git_remote_url: 'ssh://dokku@172.105.106.208/castle-discord-bot'
           ssh_private_key: ${{ secrets.DOKKU_PRIVATE_KEY }}
           deploy_docker_image: ${{ env.IMAGE }}
-          ci_commit: ${{ github.event.workflow_run.head_sha }}
+          ci_commit: ${{ github.sha }}
