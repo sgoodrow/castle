@@ -13,6 +13,7 @@ import { postRequest, readPost, type Poster } from "./bank-post";
 import { PageMap } from "./page-map";
 import { message, send } from "./respond";
 import { WikiCache } from "./wiki-cache";
+import { SpellSheet } from "./spell-sheet";
 
 dotenv.config();
 
@@ -64,8 +65,13 @@ if (!auth && !NO_AUTH)
     "bank web: set clientId, guildId, discordClientSecret, bankWebRoleId and bankWebSessionSecret to open the bank"
   );
 
-const wiki = new WikiCache(bankCacheDir || path.join(ROOT, "bank/cache"));
-const api = new BankApi(path.join(ROOT, "bank/data"), wiki);
+const CACHE = bankCacheDir || path.join(ROOT, "bank/cache");
+const wiki = new WikiCache(CACHE);
+const api = new BankApi(
+  path.join(ROOT, "bank/data"),
+  wiki,
+  new SpellSheet(CACHE)
+);
 // Posting bank requests needs the bot's token and the channel; without them the page is told so.
 const poster: Poster | null =
   token && bankRequestsChannelId
@@ -297,6 +303,8 @@ export function handle(req: IncomingMessage, res: ServerResponse) {
   });
 }
 
+export const readSpellSheet = () => api.refreshSheet();
+
 // Listening, the wiki refresh and the process handlers only start when this file is run, so tests can import it.
 export function start() {
   createServer(handle).listen(+PORT, () =>
@@ -307,17 +315,23 @@ export function start() {
     )
   );
 
-  // Keep icons and auctions current in the background; the page never waits on the wiki.
-  const refreshWiki = () =>
-    api.refreshWiki().catch((err) =>
+  // Keep icons, auctions and spell prices current in the background; the page never waits on the
+  // wiki or the spell sheet.
+  const inBackground = (what: string, run: () => Promise<unknown>) => () =>
+    run().catch((err) =>
       reportError({
         source: "web",
-        message: `wiki refresh failed: ${err?.message || err}`,
+        message: `${what} failed: ${err?.message || err}`,
         stack: err?.stack,
       })
     );
-  refreshWiki();
-  setInterval(refreshWiki, WIKI_EVERY);
+  for (const refresh of [
+    inBackground("wiki refresh", () => api.refreshWiki()),
+    inBackground("spell sheet refresh", readSpellSheet),
+  ]) {
+    refresh();
+    setInterval(refresh, WIKI_EVERY);
+  }
 
   process.on("unhandledRejection", (reason: unknown) => {
     const err = reason instanceof Error ? reason : undefined;

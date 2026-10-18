@@ -40,12 +40,12 @@ Feature: Bank request pricing
 
     Examples:
       | item             | who           | explanation                                                                                      |
-      | Cloak of Flames  | anyone        | About 800pp: 80% of the 1000pp Green median.                                                     |
-      | Bone Chips       | anyone        | 80% of market rate. No recent Green sales to go by, so ask a banker.                             |
-      | Scaled Tunic     | anyone        | Banker's price: 300p, 1dkp.                                                                      |
-      | Spell: Splurt    | a Necromancer | 50pp (levels 51–54).                                                                             |
-      | Spell: Aegolism  | a Cleric      | The lesser of 200pp (market 150pp) or 1 DKP (levels 55–60). Forbidden spells go to DKP auction. |
-      | Spell: Lifetap   | a Necromancer | Level 1 spell. Ask a banker about price.                                                         |
+      | Cloak of Flames  | anyone        | 80% of the 1000pp Green median.                                                                  |
+      | Bone Chips       | anyone        | No recent Green sales to go by, so ask a banker.                                                 |
+      | Scaled Tunic     | anyone        | Set by a banker: 300p, 1dkp.                                                                      |
+      | Spell: Splurt    | a Necromancer | The set price for level 51–54 spells.                                                            |
+      | Spell: Aegolism  | a Cleric      | Level 55–60 spells: 200pp, or the Green median if lower. Or pay 1 DKP.                           |
+      | Spell: Lifetap   | a Necromancer | Level 1 spell. Ask a banker.                                                                     |
       | Pearl            | anyone        | Free for raid use.                                                                               |
       | Large Sewing Kit | anyone        | Bags aren't for sale.                                                                            |
 
@@ -105,6 +105,28 @@ Feature: Bank request pricing
     And I take one "Pearl" off my tab
     And I am told "Removed Pearl from your tab"
 
+  Scenario: An item's details add it to my tab and take it off
+    Given the bank holds the usual stock
+    And I have opened the bank page
+    And I have clicked "Bone Chips" in the bank
+    When I add one "Bone Chips" from its details
+    Then I am told "Added Bone Chips to your tab"
+    And I add one "Bone Chips" from its details
+    And I am told "Bone Chips ×2 on your tab"
+    And the details show "2/35" on my tab
+    And I take one "Bone Chips" off my tab from its details
+    And I am told "Bone Chips ×1 on your tab"
+    And the tab button shows "1 unknown"
+
+  Scenario: An item's details can't add more than the bank has
+    Given the bank holds the usual stock
+    And I have opened the bank page
+    And I have clicked "Cloak of Flames" in the bank
+    When I add one "Cloak of Flames" from its details
+    And I add one "Cloak of Flames" from its details
+    Then I am told "The bank only has one, and it's on your tab"
+    And the tab button shows "800pp"
+
   Scenario: Items a banker has to price are counted as unknown
     Given the bank holds the usual stock
     And I have opened the bank page
@@ -121,9 +143,55 @@ Feature: Bank request pricing
     And I play a Cleric
     When I add "Spell: Aegolism" to my tab
     And I open my tab
-    Then my tab says "Level 55+ spells can be paid with 1 DKP each instead."
+    Then my tab says "Some spells can be paid with 1 DKP each instead."
     And "Spell: Aegolism" can be paid with DKP for a Cleric
     And "Scaled Tunic" can be paid with DKP for anyone
+
+  Scenario Outline: The spell sheet's price beats the level rules
+    Given the bank holds the usual stock
+    And the bank also holds spells priced by the spell sheet
+    And I have opened the bank page
+    When I play <who>
+    Then "<item>" is priced "<price>"
+    And the price of "<item>" for <who> is explained as "<explanation>"
+
+    Examples:
+      | item                      | who           | price | explanation                              |
+      | Spell: Aegis              | a Cleric      | 50pp  | From the spell sheet.                    |
+      | Spell: Gift of Brilliance | an Enchanter  | 200pp | From the spell sheet. Or pay 1 DKP.      |
+
+  Scenario: A forbidden spell is a request for a DKP auction
+    Given the bank holds the usual stock
+    And the bank also holds spells priced by the spell sheet
+    And I have opened the bank page
+    Then "Spell: Bedlam" is priced "DKP auction"
+    And the price of "Spell: Bedlam" for anyone is explained as "A banker starts an auction at 1 DKP."
+    When I click "Spell: Bedlam" in the bank
+    Then the page says "A banker starts an auction at 1 DKP."
+
+  Scenario: A DKP auction is for one spell at a time
+    Given the bank holds the usual stock
+    And the bank also holds spells priced by the spell sheet
+    And I have opened the bank page
+    When I add 2 "Spell: Bedlam" to my tab
+    Then I am told "One DKP auction at a time for Spell: Bedlam"
+    And the tab button shows "1 DKP auction"
+
+  Scenario: A DKP auction is counted apart from platinum
+    Given the bank holds the usual stock
+    And the bank also holds spells priced by the spell sheet
+    And I have opened the bank page
+    When I add "Spell: Bedlam" to my tab
+    Then the tab button shows "1 DKP auction"
+    And I add "Cloak of Flames" to my tab
+    And I add "Bone Chips" to my tab
+    And the tab button shows "800pp + 1 DKP auction + 1 unknown"
+    And I open my tab
+    And my tab says "800pp + 1 DKP auction + 1 unknown"
+    And my tab says "A banker starts a DKP auction for each auction spell."
+    When I send my tab to Discord
+    Then the post reads "• Spell: Bedlam (DKP auction)"
+    And the post reads "Total: 800pp + 1 DKP auction + 1 unknown"
 
   Scenario: Seeing the request as it will look in Discord
     Given the bank holds the usual stock
@@ -181,7 +249,7 @@ Feature: Bank request pricing
     And I have added "Cloak of Flames" to my tab
     And I open my tab
     When I clear my tab
-    Then my tab says "Nothing yet. Open an item and choose Add to tab."
+    Then my tab says "Nothing yet. Double-click an item, or use its + button."
     And the tab button shows "0pp"
 
   Scenario: An item on my tab opens its details
@@ -190,7 +258,7 @@ Feature: Bank request pricing
     And I have added "Bone Chips" to my tab
     And I open my tab
     When I click "Bone Chips" on my tab
-    Then the page says "Count · 35"
+    Then the page says "Bank location · 35"
 
   Scenario: My tab is kept for next time
     Given the bank holds the usual stock

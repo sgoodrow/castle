@@ -54,9 +54,28 @@ export const PAYLOAD: Payload = {
   ],
   items,
   spells: {
-    500: { name: "Lifetap", lv: levels({ NEC: 1, SHD: 9 }) },
+    500: { name: "Lifetap", lv: levels({ NEC: 1, SHD: 9, BRD: 61 }) }, // a level past P99's 60 is EverQuest's, not ours
     501: { name: "Aegolism", lv: levels({ CLR: 60 }) },
     502: { name: "Splurt", lv: levels({ NEC: 52 }) },
     900: { name: "Flame Shield", lv: levels({}) },
+  },
+};
+
+// The usual stock plus scrolls the bankers' spell sheet prices: a forbidden spell, one cheaper than
+// the level rule, and one at the sheet's price though the market is lower.
+export const WITH_SHEET: Payload = {
+  ...PAYLOAD,
+  bank: [...PAYLOAD.bank, ["Mulec", "General1", 1011, 2], ["Mulec", "General2", 1012, 1], ["Mulec", "General3", 1013, 1]],
+  items: {
+    ...items,
+    1011: { name: "Spell: Bedlam", scroll: 503, sheet: { kind: "auction" } },
+    1012: { name: "Spell: Aegis", scroll: 504, sheet: { kind: "pp", pp: 50, dkp: null } },
+    1013: { name: "Spell: Gift of Brilliance", scroll: 505, sheet: { kind: "pp", pp: 200, dkp: 1 }, green: [["2026-05-01", "Dee", 150]] },
+  },
+  spells: {
+    ...PAYLOAD.spells,
+    503: { name: "Bedlam", lv: levels({ ENC: 60 }) },
+    504: { name: "Aegis", lv: levels({ CLR: 57 }) },
+    505: { name: "Gift of Brilliance", lv: levels({ ENC: 60 }) },
   },
 };

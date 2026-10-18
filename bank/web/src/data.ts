@@ -20,7 +20,11 @@ export interface RawItem {
   click?: number; proc?: number; worn?: number; focus?: number; scroll?: number;
   proclvl?: number; charges?: number;
   price?: string; // set by a banker with the bot, e.g. "250p" or "200p, 1dkp"
+  sheet?: SheetPrice; // a scroll's price on the bankers' spell sheet
 }
+
+// A spell's price on the bankers' spell sheet: platinum, maybe with a DKP alternative, or a DKP auction.
+export type SheetPrice = { kind: "pp"; pp: number; dkp: number | null } | { kind: "auction" };
 
 // What /api/bank sends: every filled slot (character, slot, item id, count), and the items in them.
 export interface Payload {
@@ -40,6 +44,8 @@ export type EqClassLevels = readonly [
 ];
 export interface RawSpell { name: string; lv: EqClassLevels }
 // A spell as the page uses it: the P99 classes that can scribe it, in CLASSES order.
+// P99 stops at level 60, so a later level (e.g. SHD 64) is a class that can't scribe it here.
+const MAX_LEVEL = 60;
 export interface SpellLevel { cls: ClassId; level: number }
 export interface Spell { name: string; levels: SpellLevel[] }
 
@@ -50,7 +56,7 @@ function toSpell(raw: RawSpell): Spell | null {
   if (!isEqClassLevels(raw.lv)) return null; // the payload is JSON, so the tuple type is only a promise
   const [WAR, CLR, PAL, RNG, SHD, DRU, MNK, BRD, ROG, SHM, NEC, WIZ, MAG, ENC] = raw.lv;
   const byClass: Record<ClassId, number> = { WAR, CLR, PAL, RNG, SHD, DRU, MNK, BRD, ROG, SHM, NEC, WIZ, MAG, ENC };
-  const levels = CLASSES.flatMap(({ id }) => (byClass[id] ? [{ cls: id, level: byClass[id] }] : []));
+  const levels = CLASSES.flatMap(({ id }) => (byClass[id] && byClass[id] <= MAX_LEVEL ? [{ cls: id, level: byClass[id] }] : []));
   return { name: raw.name, levels };
 }
 
@@ -213,8 +219,13 @@ export const iconUrl = (it: Item) => (it.icon != null ? `/icons/${it.icon}.png` 
 // ---------- rules ----------
 // null means any class or race.
 export interface Character { cls: ClassId | null; race: RaceId | null }
+// A scroll goes by its spell's levels, which drop the classes that only get it past 60.
+const canClass = (it: Item, cls: ClassId) => {
+  const sp = spellOf(it.scroll);
+  return sp ? sp.levels.some(l => l.cls === cls) : !!((it.classes ?? ALL_CLASSES) & CLASS_BIT[cls]);
+};
 export const usable = (it: Item, c: Character) =>
-  (!c.cls || !!((it.classes ?? ALL_CLASSES) & CLASS_BIT[c.cls])) && (!c.race || !!((it.races ?? ALL_RACES) & RACE_BIT[c.race]));
+  (!c.cls || canClass(it, c.cls)) && (!c.race || !!((it.races ?? ALL_RACES) & RACE_BIT[c.race]));
 export const fitsBit = (it: Item, bit: number) => !!((it.slots || 0) & (1 << bit));
 
 // ---------- formatting ----------
@@ -275,16 +286,49 @@ export function prettyLoc(loc: string) {
 
 // ---------- bank requests (formats from the bot's #bank-requests instructions) ----------
 const RAID_REAGENTS = /^(Peridot|Hate Stone|Pearl|Small Portal Fragment)s?$/i;
-// pp is the expected platinum cost; null means a banker has to quote it.
-// fromMarket: pp follows the Green median, so it is only as good as that data.
-export interface BankRequest { text: string | null; cost: string; pp: number | null; dkp?: boolean; fromMarket?: boolean }
+// What an item costs. Each screen handles every kind, so a new kind can't be left out of one.
+// dkp: it can be paid with 1 DKP instead. fromMarket: pp follows the Green median, so it is only
+// as good as that data.
+export type Price =
+  | { kind: "pp"; pp: number; dkp: boolean; fromMarket: boolean }
+  | { kind: "free" }
+  | { kind: "auction" } // the member asks a banker to start a DKP auction
+  | { kind: "ask" }; // a banker has to quote it
+// text is the line in the bot's #bank-requests format; an item with none isn't for sale.
+export type BankRequest = { text: null; cost: string } | { text: string; cost: string; price: Price };
+// A line's price as the tab and the post show it: "400pp", "free", "DKP auction" or "unknown".
+export function priceText(price: Price, qty = 1) {
+  switch (price.kind) {
+    case "pp": return `${(price.pp * qty).toLocaleString()}pp`;
+    case "free": return "free";
+    case "auction": return "DKP auction";
+    case "ask": return "unknown";
+  }
+}
+const pp = (pp: number, dkp = false, fromMarket = false): Price => ({ kind: "pp", pp, dkp, fromMarket });
+const AUCTION_COST = "A banker starts an auction at 1 DKP.";
+
+// A price a banker set with the bot beats the spell sheet, which beats the rules and the market.
 export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest {
   const req = ruleRequest(it, cls, qty);
-  // A price a banker set with the bot beats anything worked out from the rules or the market.
-  const pp = it.price?.match(/\d+/);
-  if (!it.price || req.text == null) return req;
-  return { text: req.text, pp: pp ? +pp[0] : null, dkp: /dkp/i.test(it.price), cost: `Banker's price: ${it.price}.` };
+  if (req.text == null) return req;
+  if (it.price) {
+    const n = it.price.match(/\d+/);
+    const price: Price = /auction/i.test(it.price) ? { kind: "auction" } : n ? pp(+n[0], /dkp/i.test(it.price)) : { kind: "ask" };
+    return { text: req.text, price, cost: `Set by a banker: ${it.price}.` };
+  }
+  if (it.sheet?.kind === "auction") return { text: req.text, price: { kind: "auction" }, cost: AUCTION_COST };
+  if (it.sheet?.kind === "pp")
+    return { text: req.text, price: pp(it.sheet.pp, it.sheet.dkp != null), cost: `From the spell sheet.${it.sheet.dkp != null ? ` Or pay ${it.sheet.dkp} DKP.` : ""}` };
+  return req;
 }
+// Whether a spell only goes to DKP auction. That doesn't depend on the member's class.
+export const auctionOnly = (it: Item) => {
+  const req = bankRequest(it, null);
+  return req.text != null && req.price.kind === "auction";
+};
+// The most a member can put on their tab: what the bank holds, or one auction at a time.
+export const tabLimit = (it: Item) => (auctionOnly(it) ? 1 : it.total);
 function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
   const [holder] = it.holders;
   const mule = holder.char || "Mule";
@@ -299,19 +343,17 @@ function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
     const level = pick?.level ?? null;
     const clsName = pick ? CLASS_NAME[pick.cls] : "Class";
     const text = `Dropped spell: ${clsName}, ${level ?? "Level"}, ${spellName} (${mule}, ${holder.count})${qty > 1 ? ` x${qty}` : ""}`;
-    if (level && level >= 51 && level <= 54) return { text, pp: 50, cost: "50pp (levels 51–54)." };
-    if (level && level >= 55) {
-      const pp = Math.min(200, mkt ?? 200);
-      return { text, pp, dkp: true, fromMarket: mkt != null && mkt < 200, cost: `The lesser of 200pp${mkt ? ` (market ${mkt}pp)` : ""} or 1 DKP (levels 55–60). Forbidden spells go to DKP auction.` };
-    }
-    return { text, pp: null, cost: level ? `Level ${level} spell. Ask a banker about price.` : "Check the dropped-spell rules in Discord." };
+    if (level && level >= 51 && level <= 54) return { text, price: pp(50), cost: "The set price for level 51–54 spells." };
+    if (level && level >= 55)
+      return { text, price: pp(Math.min(200, mkt ?? 200), true, mkt != null && mkt < 200), cost: "Level 55–60 spells: 200pp, or the Green median if lower. Or pay 1 DKP." };
+    return { text, price: { kind: "ask" }, cost: level ? `Level ${level} spell. Ask a banker.` : "Check the dropped-spell rules in Discord." };
   }
-  if (RAID_REAGENTS.test(it.name)) return { text: `Raid Reagents: ${it.name}, ${qty}`, pp: 0, cost: "Free for raid use." };
-  if (it.kind === "bag") return { text: null, pp: null, cost: "Bags aren't for sale." };
+  if (RAID_REAGENTS.test(it.name)) return { text: `Raid Reagents: ${it.name}, ${qty}`, price: { kind: "free" }, cost: "Free for raid use." };
+  if (it.kind === "bag") return { text: null, cost: "Bags aren't for sale." };
   const text = `Misc item: ${it.name} (${mule})${qty > 1 ? ` x${qty}` : ""}`;
   return mkt
-    ? { text, pp: Math.round(mkt * 0.8), fromMarket: true, cost: `About ${Math.round(mkt * 0.8)}pp: 80% of the ${mkt}pp Green median${it.auc.level === "thin" ? " (thin data)" : ""}.` }
-    : { text, pp: null, cost: "80% of market rate. No recent Green sales to go by, so ask a banker." };
+    ? { text, price: pp(Math.round(mkt * 0.8), false, true), cost: `80% of the ${mkt}pp Green median${it.auc.level === "thin" ? " (thin data)" : ""}.` }
+    : { text, price: { kind: "ask" }, cost: "No recent Green sales to go by, so ask a banker." };
 }
 
 // Classic class/race combinations; anything else can't be rolled.
