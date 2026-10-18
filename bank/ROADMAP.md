@@ -16,7 +16,7 @@ The guild bank offers many services. To a member they're all the same thing: an 
 |---|---|---|---|
 | 1 | Misc items | Stock on the mules, 80% of market, posted to #bank-requests | Done |
 | 2 | Dropped spells | Spells in stock, priced by level (51–54, 55–60) | Done |
-| 3 | Forbidden spells | A price of "Auction" instead of pp or DKP, and a tab total that allows for auction lines | Built, in review |
+| 3 | Forbidden spells | A price of "Auction" instead of pp or DKP, and a tab total that allows for auction lines | Released |
 | 4 | Plane of Sky | A second inventory, fixed prices, auctions, and "must have won X first" | Not started |
 | 5 | Jewelry | Made-to-order items, a discount for materials you bring, posted to #jewelry-requests | Not started |
 | — | Recharges, research spells, bounties, PP4DKP | Rarer, one-off services | Parked |
@@ -48,4 +48,5 @@ UX (agreed):
 
 - This file is the plan. Read it before planning bank work, and update it in the same PR that changes a phase's status or answers a question.
 - One phase at a time: settle the open questions, agree the UX with the user, build, then test it live.
+- Ship in small increments. Each PR targets `main` and leaves the page working, so it can be released on its own. Don't stack PRs on unreleased branches. A phase that isn't finished can still ship, as long as members only see what's ready.
 - Merging to `main` deploys to production. Every merge needs the user's go-ahead.
