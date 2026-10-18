@@ -2,7 +2,8 @@ import { IncomingMessage, ServerResponse } from "http";
 import { gunzipSync } from "zlib";
 import { redirect, send } from "./respond";
 
-const fakeReq = (headers: Record<string, string> = {}, method = "GET") => ({ method, headers } as unknown as IncomingMessage);
+const fakeReq = (headers: Record<string, string> = {}, method = "GET") =>
+  ({ method, headers }) as unknown as IncomingMessage;
 
 const fakeRes = () => {
   const r = {
@@ -29,7 +30,13 @@ const big = "x".repeat(2000);
 describe("send", () => {
   test("gzips a large text body when the client accepts gzip", () => {
     const res = fakeRes();
-    send(fakeReq({ "accept-encoding": "gzip, deflate, br" }), asRes(res), 200, "text/html", big);
+    send(
+      fakeReq({ "accept-encoding": "gzip, deflate, br" }),
+      asRes(res),
+      200,
+      "text/html",
+      big
+    );
     expect(res.status).toBe(200);
     expect(res.headers["Content-Encoding"]).toBe("gzip");
     expect(gunzipSync(res.body!).toString()).toBe(big);
@@ -37,13 +44,23 @@ describe("send", () => {
 
   test("does not gzip a body of 1KB or less", () => {
     const res = fakeRes();
-    send(fakeReq({ "accept-encoding": "gzip" }), asRes(res), 200, "text/plain", "x".repeat(1024));
+    send(
+      fakeReq({ "accept-encoding": "gzip" }),
+      asRes(res),
+      200,
+      "text/plain",
+      "x".repeat(1024)
+    );
     expect(res.headers["Content-Encoding"]).toBeUndefined();
     expect(res.body!.toString()).toBe("x".repeat(1024));
   });
 
   test("does not gzip when the client doesn't accept gzip", () => {
-    for (const headers of [{} as Record<string, string>, { "accept-encoding": "deflate, br" }, { "accept-encoding": "xgzip" }]) {
+    for (const headers of [
+      {} as Record<string, string>,
+      { "accept-encoding": "deflate, br" },
+      { "accept-encoding": "xgzip" },
+    ]) {
       const res = fakeRes();
       send(fakeReq(headers), asRes(res), 200, "text/plain", big);
       expect(res.headers["Content-Encoding"]).toBeUndefined();
@@ -54,14 +71,26 @@ describe("send", () => {
   test("does not gzip images", () => {
     const res = fakeRes();
     const png = Buffer.alloc(4096, 1);
-    send(fakeReq({ "accept-encoding": "gzip" }), asRes(res), 200, "image/png", png);
+    send(
+      fakeReq({ "accept-encoding": "gzip" }),
+      asRes(res),
+      200,
+      "image/png",
+      png
+    );
     expect(res.headers["Content-Encoding"]).toBeUndefined();
     expect(res.body).toBe(png);
   });
 
   test("HEAD sends headers but no body", () => {
     const res = fakeRes();
-    send(fakeReq({ "accept-encoding": "gzip" }, "HEAD"), asRes(res), 200, "text/html", big);
+    send(
+      fakeReq({ "accept-encoding": "gzip" }, "HEAD"),
+      asRes(res),
+      200,
+      "text/html",
+      big
+    );
     expect(res.status).toBe(200);
     expect(res.headers["Content-Type"]).toBe("text/html");
     expect(res.ended).toBe(true);
@@ -70,8 +99,14 @@ describe("send", () => {
 
   test("sets the default headers and lets callers override them", () => {
     const res = fakeRes();
-    send(fakeReq(), asRes(res), 200, "application/json", "{}", { "Cache-Control": "max-age=60" });
-    expect(res.headers).toMatchObject({ "Content-Type": "application/json", "Cache-Control": "max-age=60", "X-Content-Type-Options": "nosniff" });
+    send(fakeReq(), asRes(res), 200, "application/json", "{}", {
+      "Cache-Control": "max-age=60",
+    });
+    expect(res.headers).toMatchObject({
+      "Content-Type": "application/json",
+      "Cache-Control": "max-age=60",
+      "X-Content-Type-Options": "nosniff",
+    });
   });
 });
 
@@ -80,7 +115,10 @@ describe("redirect", () => {
     const res = fakeRes();
     redirect(asRes(res), "/somewhere", ["a=1", "b=2"]);
     expect(res.status).toBe(302);
-    expect(res.headers).toMatchObject({ Location: "/somewhere", "Set-Cookie": ["a=1", "b=2"] });
+    expect(res.headers).toMatchObject({
+      Location: "/somewhere",
+      "Set-Cookie": ["a=1", "b=2"],
+    });
     expect(res.ended).toBe(true);
   });
 

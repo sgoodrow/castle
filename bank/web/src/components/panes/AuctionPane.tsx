@@ -1,5 +1,4 @@
 import { Group, Modal, Stack, Text, Tooltip, UnstyledButton } from "@mantine/core";
-import { IconAlertTriangle } from "@tabler/icons-react";
 import { useState } from "react";
 import { NOW, type Item } from "../../data";
 

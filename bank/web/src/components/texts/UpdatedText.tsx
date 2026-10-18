@@ -14,7 +14,7 @@ function ago(from: Date, now: number) {
 
 // How fresh the page is, with the exact dates on hover.
 export function UpdatedText() {
-  const [now, setNow] = useState(Date.now());
+  const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = window.setInterval(() => setNow(Date.now()), 60000);
     return () => window.clearInterval(t);

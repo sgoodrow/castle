@@ -1,8 +1,8 @@
 import { Badge, Group, NativeSelect, Text, Tooltip, UnstyledButton } from "@mantine/core";
-import { IconAlertTriangle, IconArrowDown, IconArrowUp, IconMinus } from "@tabler/icons-react";
+import { IconArrowDown, IconArrowUp, IconMinus } from "@tabler/icons-react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { memo, useLayoutEffect, useRef, useState } from "react";
-import { bankRequest, statParts, type ClassId, type Item } from "../../data";
+import { statParts, type ClassId, type Item } from "../../data";
 import { nextSort, sortDesc, sortKey, SORTS, type Sort, type SortKey, type Tab } from "../../state";
 import { GuildPriceText } from "../texts/GuildPriceText";
 import { ItemImage } from "../ItemImage";
@@ -102,7 +102,9 @@ const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index
 export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAdd, onRemove, table, sort, onSort }: Props) {
   // Handlers go through a ref so rows never see a new function and stay memoized.
   const on = useRef({ onSelect, onAdd, onRemove });
-  on.current = { onSelect, onAdd, onRemove };
+  useLayoutEffect(() => {
+    on.current = { onSelect, onAdd, onRemove };
+  });
 
   // Only the rows on screen are rendered, but the list keeps its full height,
   // so the page scrollbar still reflects every item.

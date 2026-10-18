@@ -36,5 +36,7 @@ jobs:
 
       # The bank page. Same rule for coverage (bank/web/vite.config.ts).
       - run: npm ci --prefix bank/web
+      # Lint gates only the bank: its server (src/web) and its page (bank/web).
+      - run: yarn lint
       - run: npm --prefix bank/web run build
       - run: npm --prefix bank/web run test:ci

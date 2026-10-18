@@ -16,20 +16,25 @@ export class PageMap {
   constructor(private distDir: string) {
     try {
       const html = readFileSync(path.join(distDir, "index.html"), "utf-8");
-      const map = readdirSync(distDir).find(f => f.endsWith(".js.map"));
+      const map = readdirSync(distDir).find((f) => f.endsWith(".js.map"));
       const at = html.indexOf(SCRIPT_TAG);
       if (!map || at < 0) return;
       const before = html.slice(0, at + SCRIPT_TAG.length).split("\n");
       this.line0 = before.length;
       this.col0 = before[before.length - 1].length;
-      this.consumer = new SourceMapConsumer(JSON.parse(readFileSync(path.join(distDir, map), "utf-8")));
+      this.consumer = new SourceMapConsumer(
+        JSON.parse(readFileSync(path.join(distDir, map), "utf-8"))
+      );
     } catch {
       this.consumer = null; // no map: positions stay as page:line:col
     }
   }
 
   strip(stack: string) {
-    return stack.replace(PAGE_POS, (_, l: string, c: string) => `page:${l}:${c}`);
+    return stack.replace(
+      PAGE_POS,
+      (_, l: string, c: string) => `page:${l}:${c}`
+    );
   }
 
   // Each `<page url>:line:col` becomes `bank/web/src/file.tsx:line:col (name)`. Page URLs never
@@ -38,9 +43,15 @@ export class PageMap {
     return stack.replace(PAGE_POS, (_, l: string, c: string) => {
       const line = +l - this.line0 + 1;
       const column = +c - 1 - (line === 1 ? this.col0 : 0);
-      const pos = this.consumer && line >= 1 ? this.consumer.originalPositionFor({ line, column }) : null;
+      const pos =
+        this.consumer && line >= 1
+          ? this.consumer.originalPositionFor({ line, column })
+          : null;
       if (!pos?.source || pos.line == null) return `page:${l}:${c}`;
-      const file = path.relative(path.resolve(this.distDir, "../.."), path.resolve(this.distDir, pos.source));
+      const file = path.relative(
+        path.resolve(this.distDir, "../.."),
+        path.resolve(this.distDir, pos.source)
+      );
       return `${file}:${pos.line}:${(pos.column ?? 0) + 1}${pos.name ? ` (${pos.name})` : ""}`;
     });
   }

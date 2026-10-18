@@ -4,7 +4,7 @@ import { IconMoneybag } from "@tabler/icons-react";
 import { ToastNotification, type ToastMsg } from "../ToastNotification";
 import { OverflowTooltip } from "../OverflowTooltip";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ITEMS, bankRequest, RESISTS, STATS, usable, type Item } from "../../data";
+import { ITEMS, bankRequest, usable, type Item } from "../../data";
 import { filterItems } from "../../search";
 import { getRouteApi } from "@tanstack/react-router";
 import { toFilters, toSearch, useTab, type Filters } from "../../state";
