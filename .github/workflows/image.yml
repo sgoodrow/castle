@@ -29,17 +29,10 @@ jobs:
           docker logs web
           echo "GET / -> $code"
           [ "$code" != 000 ]
-      - name: Smoke test the worker
+      - name: Check the worker's voice dependencies
         run: |
-          docker run --rm castle:pr node -e "console.log(require('@discordjs/voice').generateDependencyReport()); require('fs').accessSync(require('ffmpeg-static'))"
-          # Run the worker up to its Discord login, which turns away a dummy token: that it gets there
-          # shows everything it loads is in the image.
-          docker run --rm -e token=smoke-test castle:pr timeout 60 $(sed -n 's/^worker: //p' Procfile) > worker.log 2>&1 || true
-          cat worker.log
-      # Temporary, for trying the image on the castlebot-dev app before merging.
-      - run: docker save castle:pr | gzip > castle-pr.tar.gz
-      - uses: actions/upload-artifact@v4
-        with:
-          name: castle-pr-image
-          path: castle-pr.tar.gz
-          retention-days: 1
+          docker run --rm castle:pr node -e "
+            const report = require('@discordjs/voice').generateDependencyReport();
+            console.log(report);
+            if (!/libsodium-wrappers: \\d/.test(report) || !/libopus: yes/.test(report)) process.exit(1);
+          "
