@@ -39,10 +39,22 @@ jobs:
         run: git show origin/main:.github/scripts/check-test-gap-scope.sh | bash -s origin/main
 
       - run: yarn install --frozen-lockfile
-      - run: yarn tsc
       - run: yarn test:ci
       # Lint gates only the bank: its server here, its page in the bank job (together, `yarn lint`).
       - run: yarn eslint src/web
+
+  # Type-checks the bot and the bank server, beside the tests: jest only transpiles.
+  types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+          cache: yarn
+          cache-dependency-path: yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn tsc
 
   # The bank page. Same rule for coverage (bank/web/vite.config.ts).
   bank:
@@ -61,11 +73,11 @@ jobs:
       - run: npm --prefix bank/web run build
       - run: npm --prefix bank/web run test:ci
 
-  # Branch protection on main requires a check named `test`: it passes only when both jobs do.
+  # Branch protection on main requires a check named `test`: it passes only when every job does.
   test:
-    needs: [bot, bank]
+    needs: [bot, types, bank]
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - if: needs.bot.result != 'success' || needs.bank.result != 'success'
+      - if: needs.bot.result != 'success' || needs.types.result != 'success' || needs.bank.result != 'success'
         run: exit 1
