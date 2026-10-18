@@ -29,6 +29,7 @@ export interface Payload {
   bank: [string, string, number, number][];
   items: Record<string, RawItem>;
   spells: Record<string, RawSpell>;
+  me: { name: string }; // who's signed in, for the request preview
 }
 
 // spells.json lists a spell's level for each of EverQuest's 15 classes, in the client's order.
@@ -81,6 +82,7 @@ export interface Item extends RawItem {
 export const SPELLS: Record<string, Spell> = {};
 export let SNAPSHOT_AT = new Date();
 export let NOW = new Date();
+export let ME = "";
 export const WINDOW_DAYS = 182;
 const DAY = 864e5;
 
@@ -190,6 +192,7 @@ export function loadBank(p: Payload) {
   if (bad.length) reportError(new Error(`Spell data without 15 class levels: ${bad.join(", ")}`));
   SNAPSHOT_AT = new Date(p.snapshot);
   NOW = new Date(p.today + "T00:00:00");
+  ME = p.me.name;
   for (const [char, loc, id, count] of p.bank) {
     const holder = { char, loc, count };
     const it = ITEMS[id];

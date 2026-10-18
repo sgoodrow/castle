@@ -1,19 +1,16 @@
-import { ActionIcon, Divider, Paper, Stack, Text, Tooltip } from "@mantine/core";
-import { IconFilterOff } from "@tabler/icons-react";
+import { Divider, Paper, Stack, Text } from "@mantine/core";
 import type { Item } from "../../data";
-import { activeChips, type Filters } from "../../state";
+import type { Filters } from "../../state";
 import { CharacterPickerPane } from "./CharacterPickerPane";
 import { DollPane } from "./DollPane";
 import { CollapsibleLayout } from "../CollapsibleLayout";
-
-
-const CLEARED: Partial<Filters> = { cls: null, race: null, kind: "all", slot: null, q: "" };
+import { ClearFiltersButton } from "../buttons/ClearFiltersButton";
 
 interface Props {
   f: Filters;
   set: (p: Partial<Filters>) => void;
   minimap: Item | null;
-  bare?: boolean; // inside the phone drawer
+  bare?: boolean; // inside the phone drawer, which has its own clear button
   bar?: boolean; // one horizontal strip above the list
   search?: React.ReactNode; // the search box, at the top of the strip
 }
@@ -25,14 +22,7 @@ export function FilterPane({ f, set, minimap, bare, bar, search }: Props) {
       onSlot={slot => set({ slot, ...(slot ? { kind: "all" as const } : {}) })}
       onKind={kind => set({ kind, slot: null })} />
   );
-  // Always rendered so the header never changes size.
-  const clear = (
-    <Tooltip label="Clear filters">
-      <ActionIcon variant="subtle" color="gray" size="sm" aria-label="Clear filters" disabled={!activeChips(f).length && !f.q} onClick={() => set(CLEARED)}>
-        <IconFilterOff size={16} />
-      </ActionIcon>
-    </Tooltip>
-  );
+  const clear = <ClearFiltersButton f={f} set={set} />;
 
   if (bar) {
     return (
@@ -59,7 +49,7 @@ export function FilterPane({ f, set, minimap, bare, bar, search }: Props) {
       {doll}
       <Divider />
       <CharacterPickerPane cls={f.cls} race={f.race} onChange={set} />
-      {clear}
+      {!bare && clear}
     </Stack>
   );
   return bare ? body : <Paper withBorder p="md" radius="md">{body}</Paper>;

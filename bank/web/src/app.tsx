@@ -1,6 +1,6 @@
 import "@mantine/core/styles.css";
 import "./theme.css";
-import { MantineProvider, Paper, Text, Tooltip, createTheme } from "@mantine/core";
+import { Drawer, MantineProvider, Paper, Text, Tooltip, createTheme } from "@mantine/core";
 import { RouterProvider, createBrowserHistory, createRootRoute, createRouter } from "@tanstack/react-router";
 import { useMemo, type ReactElement } from "react";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -21,6 +21,14 @@ const theme = createTheme({
     Tooltip: Tooltip.extend({
       defaultProps: { openDelay: 0, transitionProps: { duration: 0 }, radius: "sm" },
       styles: { tooltip: { background: "#000", color: "#fff", padding: "2px 6px", fontSize: "var(--mantine-font-size-xs)", lineHeight: 1.35 } },
+    }),
+    // The page's scrollbar stays while a drawer is open: its space is reserved anyway, so hiding it
+    // would only add a margin that reflows the whole list. A quick ease-out keeps the slide smooth.
+    Drawer: Drawer.extend({
+      defaultProps: {
+        removeScrollProps: { removeScrollBar: false },
+        transitionProps: { duration: 220, timingFunction: "cubic-bezier(0.32, 0.72, 0, 1)" },
+      },
     }),
     Paper: Paper.extend({ styles: { root: { background: "var(--surface)", boxShadow: "var(--shadow)" } } }),
   },

@@ -1,6 +1,8 @@
 import {
-  CommandInteraction,
+  Message,
+  MessageCreateOptions,
   MessageReaction,
+  PartialMessage,
   PartialMessageReaction,
   PartialUser,
   User,
@@ -16,6 +18,7 @@ import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../../shared/action/reaction-action";
+import { requesterId } from "../../../shared/bank-request-author";
 import { getMember, getTextChannel } from "../../..";
 
 export const tryBankRequestComplete = (
@@ -24,50 +27,83 @@ export const tryBankRequestComplete = (
 ) =>
   reactionActionExecutor(new BankRequestFinishedReactionAction(reaction, user));
 
+// A request is either posted from the bank page (embeds only, opening with its member's mention)
+// or by /bank request (content that @mentions its member).
+type BankRequest =
+  | { kind: "site"; requesterId: string; description: string }
+  | { kind: "command"; message: Message | PartialMessage };
+
+const parseBankRequest = (message: Message | PartialMessage): BankRequest => {
+  const description = message.embeds[0]?.description;
+  const id = requesterId(description);
+  return id && description
+    ? { kind: "site", requesterId: id, description }
+    : { kind: "command", message };
+};
+
+const isRequester = (request: BankRequest, userId: string) =>
+  request.kind === "site"
+    ? request.requesterId === userId
+    : request.message.mentions.users.has(userId);
+
+const transactionMessage = (
+  request: BankRequest,
+  banker: User | PartialUser
+): MessageCreateOptions => {
+  if (request.kind === "site") {
+    // Like the request itself, the copy never pings. Its lines stay in an embed, which holds
+    // twice what a message's content can.
+    return {
+      content: `✅ by ${banker}`,
+      embeds: [{ description: request.description }],
+      allowedMentions: { parse: [] },
+    };
+  }
+  const { message } = request;
+  const content = `${message.content} -- ✅ by ${banker}`;
+  return {
+    content: message.author?.bot ? content : `${message.author}: ${content}`,
+  };
+};
+
+const isBanker = async (userId: string) => {
+  const member = await getMember(userId);
+  return [bankerRoleId, officerRoleId, modRoleId].some((role) =>
+    member?.roles.cache.has(role)
+  );
+};
+
 class BankRequestFinishedReactionAction extends ReactionAction {
   public async execute() {
     // filter channel
     if (this.message.channel.id !== bankRequestsChannelId) {
       return;
     }
+    const request = parseBankRequest(this.message);
+
     // mark finished
     if (this.reaction.emoji.name === "✅") {
+      if (!(await isBanker(this.user.id))) {
+        return;
+      }
       const bankTransactionsChannel = await getTextChannel(
         bankTransactionsChannelId
       );
-      let transactionContent = this.message.content + ` -- ✅ by ${this.user}`;
-      if (!this.message.author?.bot) {
-        transactionContent = this.message.author?.toString() + ": " + transactionContent;
-      }
-      bankTransactionsChannel?.send(transactionContent);
-          // authorize user
-      const reactor = await getMember(this.user.id);
-      if (
-        !(
-          reactor?.roles.cache.has(bankerRoleId) ||
-          reactor?.roles.cache.has(officerRoleId) ||
-          reactor?.roles.cache.has(modRoleId)
-        )
-      ) {
-        return;
-      }
-      this.message.delete();
+      await bankTransactionsChannel.send(
+        transactionMessage(request, this.user)
+      );
+      await this.message.delete();
     }
 
-    // delete
+    // cancel
     if (this.reaction.emoji.name === "❌") {
-      const reactor = await getMember(this.user.id);
       if (
-        !(
-          reactor?.roles.cache.has(bankerRoleId) ||
-          reactor?.roles.cache.has(officerRoleId) ||
-          reactor?.roles.cache.has(modRoleId)
-        ) || this.message.mentions?.parsedUsers.hasAny(this.user.username ?? "")
+        !isRequester(request, this.user.id) &&
+        !(await isBanker(this.user.id))
       ) {
         return;
       }
-      this.message.delete();
+      await this.message.delete();
     }
-
   }
 }

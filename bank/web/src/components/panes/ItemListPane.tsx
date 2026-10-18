@@ -1,9 +1,10 @@
-import { Badge, Group, NativeSelect, Text, Tooltip, UnstyledButton } from "@mantine/core";
-import { IconArrowDown, IconArrowUp, IconMinus } from "@tabler/icons-react";
+import { Badge, Text, Tooltip, UnstyledButton, Group } from "@mantine/core";
+import { IconArrowDown, IconArrowUp } from "@tabler/icons-react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { memo, useLayoutEffect, useRef, useState } from "react";
+import { BuyPane } from "./BuyPane";
 import { statParts, type ClassId, type Item } from "../../data";
-import { nextSort, sortDesc, sortKey, SORTS, type Sort, type SortKey, type Tab } from "../../state";
+import { nextSort, sortDesc, sortKey, type Sort, type SortKey, type Tab } from "../../state";
 import { GuildPriceText } from "../texts/GuildPriceText";
 import { ItemImage } from "../ItemImage";
 import { CollapsibleLayout } from "../CollapsibleLayout";
@@ -20,19 +21,17 @@ interface Props {
   onSelect: (id: number) => void;
   onAdd?: (it: Item, row: HTMLElement) => void; // double-click: one more on the tab
   onRemove?: (it: Item) => void; // click the tab count: one fewer
-  table?: boolean; // one line per item in columns; phones get stacked rows
+  table?: boolean; // one line per item with a stats column; phones put the stats under the name
   sort: Sort;
   onSort: (sort: Sort) => void;
 }
 
-const SORT_LABELS: Record<Sort, string> = { name: "A–Z", "-name": "Z–A", price: "Cheapest", "-price": "Priciest" };
-
 // A column header that sorts the list; clicking it again flips the direction.
-function SortHeader({ k, sort, onSort, end, tip, children }: { k: SortKey; sort: Sort; onSort: (s: Sort) => void; end?: boolean; tip?: string; children: React.ReactNode }) {
+function SortHeader({ k, sort, onSort, className, tip, children }: { k: SortKey; sort: Sort; onSort: (s: Sort) => void; className?: string; tip?: string; children: React.ReactNode }) {
   const on = sortKey(sort) === k;
   const Arrow = sortDesc(sort) ? IconArrowDown : IconArrowUp;
   return (
-    <span className={end ? classes.end : undefined} aria-sort={on ? (sortDesc(sort) ? "descending" : "ascending") : "none"}>
+    <span className={className} aria-sort={on ? (sortDesc(sort) ? "descending" : "ascending") : "none"}>
       <Tooltip label={tip} disabled={!tip}>
         <UnstyledButton className={classes.sort} data-active={on || undefined} onClick={() => onSort(nextSort(sort, k))}>
           {children}
@@ -61,9 +60,11 @@ interface RowProps {
 
 // One item. Memoized: selecting or filtering only re-renders the rows that changed.
 const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index, start, measure }: RowProps) {
+  const btn = useRef<HTMLButtonElement>(null);
   return (
     <li ref={measure} data-index={index} className={classes.item} style={{ transform: `translateY(${start}px)` }}>
       <UnstyledButton
+        ref={btn}
         className={classes.row}
         data-selected={selected || undefined}
         data-unusable={!usable || undefined}
@@ -71,27 +72,18 @@ const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index
         onClick={() => on.current.onSelect(it.id)}
         onDoubleClick={e => on.current.onAdd?.(it, e.currentTarget)}
       >
-        <span className={classes.icon}><ItemImage it={it} size={table ? 24 : 32} /></span>
+        <span className={classes.icon}><ItemImage it={it} size={table ? 24 : 28} /></span>
         <Group gap={6} wrap="nowrap" className={classes.name}>
           {it.lore && <Badge size="xs" variant="outline" color="gray" style={{ flex: "none" }}>LORE</Badge>}
           <OverflowText fw={600} fz="sm" className={classes.nameText}>{it.name}</OverflowText>
           {!usable && <Badge size="xs" variant="outline" color="red" style={{ flex: "none" }}>CAN'T USE</Badge>}
         </Group>
-        {table
-          ? <OverflowText fz="xs" className={classes.stats}>{stats(it)}</OverflowText>
-          : <Text fz="xs" className={`${classes.stats} ${classes.wrap}`}>{stats(it)}</Text>}
+        <OverflowText fz="xs" className={classes.stats}>{stats(it)}</OverflowText>
         <span className={`${classes.price} ${classes.end}`}><GuildPriceText it={it} cls={cls} /></span>
-        {/* Space is always held so adding to the tab never reflows the row. */}
         <span className={`${classes.tab} ${classes.end}`}>
-          {/* Clicking it takes one off; on hover it turns into a minus so that's clear. */}
-          <Badge size="sm" variant="filled" className={classes.qty} role="button" aria-label={`Remove one ${it.name} from your tab`}
-            style={{ visibility: qty ? "visible" : "hidden" }}
-            onClick={e => { e.stopPropagation(); on.current.onRemove?.(it); }}
-            onDoubleClick={e => e.stopPropagation()}>
-            <IconMinus size={10} stroke={3} className={classes.minus} />
-            {/* Out of the bank's count, so it's clear when there are no more to add. */}
-            {table ? (it.total > 1 ? `${qty}/${it.total}` : qty) : `In tab ${qty}/${it.total}`}
-          </Badge>
+          <BuyPane it={it} qty={qty}
+            onAdd={() => btn.current && on.current.onAdd?.(it, btn.current)}
+            onRemove={() => on.current.onRemove?.(it)} />
         </span>
       </UnstyledButton>
     </li>
@@ -121,32 +113,23 @@ export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAd
   }, []);
   const v = useWindowVirtualizer({
     count: items.length,
-    estimateSize: () => (table ? 31 : 64),
+    estimateSize: () => (table ? 31 : 60),
     overscan: 12,
     scrollMargin: offset,
     getItemKey: i => items[i]?.id ?? i,
   });
   return (
     <CollapsibleLayout id="items" title="Items Available" className={classes.root} data-table={table || undefined}
-      actions={
-        <Group gap="sm" wrap="nowrap">
-          {/* Phones have no column headers to click, so they get a picker. */}
-          {!table && (
-            <NativeSelect size="xs" aria-label="Sort items" value={sort} onChange={e => onSort(SORTS.find(s => s === e.currentTarget.value) ?? "name")}
-              data={SORTS.map(s => ({ value: s, label: SORT_LABELS[s] }))} />
-          )}
-          <Text fz="sm" c="dimmed" style={{ whiteSpace: "nowrap" }}>{items.length} {items.length === 1 ? "item" : "items"}</Text>
-        </Group>
-      }>
-      {table && (
-        <div className={`${classes.row} ${classes.head}`}>
-          <span />
-          <SortHeader k="name" sort={sort} onSort={onSort}>Item</SortHeader>
-          <span>Stats</span>
-          <SortHeader k="price" sort={sort} onSort={onSort} end tip="80% of market price. Unknown prices sort as 0.">Guild price</SortHeader>
-          <span className={classes.end}>Buy</span>
-        </div>
-      )}
+      actions={<Text fz="sm" c="dimmed" style={{ whiteSpace: "nowrap" }}>{items.length} {items.length === 1 ? "item" : "items"}</Text>}>
+      <div className={`${classes.row} ${classes.head}`}>
+        <span className={classes.icon} />
+        <SortHeader k="name" sort={sort} onSort={onSort} className={classes.name}>Item</SortHeader>
+        {table && <span className={classes.stats}>Stats</span>}
+        <SortHeader k="price" sort={sort} onSort={onSort} className={`${classes.price} ${classes.end}`} tip="80% of market price. Unknown prices sort as 0.">
+          {table ? "Guild price" : "Price"}
+        </SortHeader>
+        <span className={`${classes.tab} ${classes.end}`}>Buy</span>
+      </div>
       {items.length === 0 && <Text p="md" c="dimmed">Nothing in the bank matches. Try clearing a filter.</Text>}
       <ul ref={listRef} aria-label="Items in the bank" className={classes.list} style={{ height: v.getTotalSize() }}>
         {v.getVirtualItems().map(r => {

@@ -15,14 +15,14 @@
   width: 100%;
 }
 
-/* Phones: icon on the left, name and stats stacked, price and tab on the right. */
+/* Phones: three columns (item, price, buy), with the stats under the item's name. */
 .row {
   display: grid;
-  grid-template-columns: 32px minmax(0, 1fr) 84px;
+  grid-template-columns: 28px minmax(0, 1fr) 64px 92px;
   grid-template-areas:
-    "icon name price"
-    "icon stats tab";
-  column-gap: var(--mantine-spacing-sm);
+    "icon name price tab"
+    "icon stats price tab";
+  column-gap: var(--mantine-spacing-xs);
   row-gap: 2px;
   align-items: center;
   width: 100%;
@@ -32,7 +32,7 @@
 
 /* Wide screens: one line per item, in columns. */
 .root[data-table] .row {
-  grid-template-columns: 24px minmax(0, 3fr) minmax(0, 2.4fr) 100px 76px;
+  grid-template-columns: 24px minmax(0, 3fr) minmax(0, 2.4fr) 100px 96px;
   grid-template-areas: "icon name stats price tab";
   padding-block: 2px;
   min-height: 30px;
@@ -49,11 +49,7 @@
   color: var(--mantine-color-dimmed);
 }
 
-.head > :nth-child(1) { grid-area: icon; }
-.head > :nth-child(2) { grid-area: name; }
-.head > :nth-child(3) { grid-area: stats; }
-.head > :nth-child(4) { grid-area: price; }
-.head > :nth-child(5) { grid-area: tab; }
+.root:not([data-table]) .head { grid-template-areas: "icon name price tab"; }
 
 .sort {
   display: inline-flex;
@@ -73,23 +69,11 @@
 .price { grid-area: price; }
 .tab { grid-area: tab; }
 
-/* The tab count: hover turns it red with a minus, click takes one off. */
-.qty { cursor: pointer; transition: background 100ms; }
-.qty:hover { --badge-bg: var(--mantine-color-red-filled) !important; }
-.minus { display: none; margin-right: 2px; vertical-align: -1px; }
-.qty:hover .minus { display: inline; }
-
 .root[data-table] .icon { align-self: center; }
 
 .end {
   display: flex;
   justify-content: flex-end;
-}
-
-.wrap {
-  display: flex;
-  flex-wrap: wrap;
-  column-gap: 10px;
 }
 
 .stats > span {
