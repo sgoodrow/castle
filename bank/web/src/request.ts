@@ -12,8 +12,13 @@ const BLURPLE = 0x5865f2;
 const GREY = 0x4e5058;
 
 // Where a banker finds it: up to six spots, then how many more as Discord's dim subtext (`-# `).
+// Sorted by character, then spot, so one character's spots sit together and a banker logs in
+// to each character once, in the same order on every card.
+const byCharThenSpot = (a: Item["holders"][number], b: Item["holders"][number]) =>
+  a.char.localeCompare(b.char) || a.loc.localeCompare(b.loc, undefined, { numeric: true });
+
 function spots(it: Item) {
-  const shown = it.holders.slice(0, 6).map(h => `• ${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
+  const shown = [...it.holders].sort(byCharThenSpot).slice(0, 6).map(h => `• ${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
   const more = it.holders.length - shown.length;
   return [...shown, ...(more > 0 ? [`-# …and ${more} more`] : [])].join("\n");
 }

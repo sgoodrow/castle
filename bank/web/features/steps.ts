@@ -30,6 +30,11 @@ export function reset() {
 }
 
 type Extra = { table: Record<string, string>[]; doc: string | null };
+const cell = (row: Record<string, string>, col: string) => {
+  const v = row[col];
+  if (v == null) throw new Error(`The table needs a ${col} column`);
+  return v;
+};
 type Fn = (x: Extra, ...args: string[]) => unknown;
 const steps: [RegExp, Fn][] = [];
 const step = (re: RegExp, fn: Fn) => steps.push([re, fn]);
@@ -90,6 +95,11 @@ const pressed = (el: HTMLElement) => el.getAttribute("aria-pressed") === "true";
 step(/^the bank holds the usual stock$/, () => { world.payload = PAYLOAD; });
 step(/^the bank also holds spells priced by the spell sheet$/, () => { world.payload = WITH_SHEET; });
 step(/^the bank is empty$/, () => { world.payload = { ...PAYLOAD, bank: [], items: {} }; });
+// Rows land after the usual stock, in the order given, the way the database may return them.
+step(/^the bank also holds:$/, ({ table }) => {
+  const id = (name: string) => +first(Object.entries(world.payload.items).filter(([, it]) => it.name === name), `item ${name}`)[0];
+  world.payload = { ...world.payload, bank: [...world.payload.bank, ...table.map((r): Payload["bank"][number] => [cell(r, "character"), cell(r, "spot"), id(cell(r, "item")), +cell(r, "count")])] };
+});
 step(/^the spell data for "(.*)" has only (\d+) class levels$/, (_, name, n) => {
   const [id, sp] = first(Object.entries(PAYLOAD.spells).filter(([, sp]) => sp.name === name), `spell ${name}`);
   // What a bad spells.json would send. The type rules it out, so it takes a cast; the page checks anyway.
@@ -206,6 +216,12 @@ step(/^the post reads "(.*)"$/, async (_, text) => {
 });
 step(/^the post doesn't read "(.*)"$/, async (_, text) => {
   expect(norm((await confirm()).textContent)).not.toContain(text);
+});
+step(/^the post reads, in order:$/, async ({ table }) => {
+  const text = norm((await confirm()).textContent);
+  const at = table.map(r => text.indexOf(cell(r, "line")));
+  expect(at).not.toContain(-1);
+  expect(at).toEqual([...at].sort((a, b) => a - b));
 });
 step(/^I send my tab to Discord$/, async () => { await world.user.click(within(await tab()).getByRole("button", { name: "Send to Discord" })); });
 step(/^I confirm the post$/, async () => { await world.user.click(within(await confirm()).getByRole("button", { name: "Send" })); });

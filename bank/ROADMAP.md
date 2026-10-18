@@ -43,6 +43,7 @@ UX (agreed):
 
 **Requests**
 - **Decided:** a request holds up to 9 different items, with any quantity of each. Discord posts at most 10 embeds a message: one for the summary and one per item. 9 item cards from the real bank use under half of Discord's 6,000-character limit. A tab saved before the limit keeps its first 9 items.
+- **Decided:** each item card lists its spots by character, then by spot (pack 2 before pack 10), so a banker logs in to each character once per card. Not yet: ordering across cards to minimise logins for the whole request.
 
 **Later phases**
 - Sky and jewelry data are in Google Sheets today. Read them as they are, or move them to something bankers manage from Discord?
