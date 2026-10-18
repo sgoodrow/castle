@@ -41,7 +41,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   }
 
   private async startRefreshLoop() {
-    await this.refresh();
+    await this.refreshOrLog();
     this.isReady = true;
     setInterval(async () => {
       // Refreshing private and public bot sheet on timer
@@ -49,8 +49,18 @@ export class PrismaPublicAccounts implements IPublicAccountService {
         log("SKIP - Refresh already in progress");
         return;
       }
-      await this.refresh();
+      await this.refreshOrLog();
     }, 15 * MINUTES);
+  }
+
+  // A failed refresh keeps the bot data already in the database and is retried
+  // on the next tick; it must not leave guardReady waiting forever.
+  private async refreshOrLog() {
+    try {
+      await this.refresh();
+    } catch (err) {
+      log(`FAILED - Refreshing bot data: ${err}`);
+    }
   }
 
   private async refresh() {
