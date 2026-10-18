@@ -27,12 +27,16 @@ jest.mock("../../..", () => ({
 
 const user = (id: string) => ({ id, toString: () => `<@${id}>` });
 
-const siteRequest = () => ({
+const siteRequest = (
+  embed: object = {
+    title: "@Alice has placed a bank request",
+    url: "https://discord.com/users/111",
+    description: "• Cloak of Flames (800pp)",
+  }
+) => ({
   channel: { id: "requests" },
   content: "",
-  embeds: [
-    { description: "<@111> has placed a bank request.\n\n1x Cloak of Flames" },
-  ],
+  embeds: [embed],
   mentions: { users: new Map() },
   author: { bot: true },
   delete: jest.fn(),
@@ -77,14 +81,47 @@ describe("✅", () => {
         content: "✅ by <@999>",
         embeds: [
           {
-            description:
-              "<@111> has placed a bank request.\n\n1x Cloak of Flames",
+            title: "@Alice has placed a bank request",
+            url: "https://discord.com/users/111",
+            description: "• Cloak of Flames (800pp)",
           },
         ],
         allowedMentions: { parse: [] },
       },
     ]);
     expect(message.delete).toHaveBeenCalled();
+  });
+
+  it("copies a request posted before titles named the member", async () => {
+    const message = siteRequest({
+      description: "<@111> has placed a bank request.\n\n• Pearl (free)",
+    });
+    await react(message, "✅", "999");
+    expect(sent).toEqual([
+      {
+        content: "✅ by <@999>",
+        embeds: [
+          {
+            description: "<@111> has placed a bank request.\n\n• Pearl (free)",
+          },
+        ],
+        allowedMentions: { parse: [] },
+      },
+    ]);
+  });
+
+  it("copies a bank-site request with no lines", async () => {
+    const message = siteRequest({
+      title: "@Alice has placed a bank request",
+      url: "https://discord.com/users/111",
+    });
+    await react(message, "✅", "999");
+    expect(sent[0]?.embeds).toEqual([
+      {
+        title: "@Alice has placed a bank request",
+        url: "https://discord.com/users/111",
+      },
+    ]);
   });
 
   it("copies a /bank request post's content", async () => {
@@ -119,6 +156,14 @@ describe("❌", () => {
     expect(sent).toEqual([]);
   });
 
+  it("lets the requester cancel a request posted before titles named the member", async () => {
+    const message = siteRequest({
+      description: "<@111> has placed a bank request.\n\n• Pearl (free)",
+    });
+    await react(message, "❌", "111");
+    expect(message.delete).toHaveBeenCalled();
+  });
+
   it("lets the requester cancel a /bank request post", async () => {
     const message = commandRequest();
     await react(message, "❌", "222");
@@ -128,6 +173,12 @@ describe("❌", () => {
   it("lets a banker cancel", async () => {
     const message = siteRequest();
     await react(message, "❌", "999");
+    expect(message.delete).toHaveBeenCalled();
+  });
+
+  it("treats a post whose embed names no one as a /bank request post", async () => {
+    const message = { ...commandRequest(), embeds: [{ title: "Pearl" }] };
+    await react(message, "❌", "222");
     expect(message.delete).toHaveBeenCalled();
   });
 

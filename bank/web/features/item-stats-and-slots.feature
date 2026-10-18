@@ -61,7 +61,7 @@ Feature: Item stats and slots
       | General2       | inventory 2        |
       | Bank3-Slot4    | bank bag 3, slot 4 |
       | Bank3          | bank 3             |
-      | Cursor         | slot: cursor       |
+      | Cursor         | cursor             |
 
   Scenario: A steady market shows its median and sales
     Given the bank holds the usual stock

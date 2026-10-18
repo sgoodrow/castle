@@ -17,7 +17,7 @@ const price = (pp: number | null, qty: number) => (pp == null ? "unknown" : pp =
 
 // Where a banker finds it: up to six spots, then how many more as Discord's dim subtext (`-# `).
 function spots(it: Item) {
-  const shown = it.holders.slice(0, 6).map(h => `${h.char}: ${prettyLoc(h.loc)}${h.count > 1 ? ` (${h.count})` : ""}`);
+  const shown = it.holders.slice(0, 6).map(h => `• ${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
   const more = it.holders.length - shown.length;
   return [...shown, ...(more > 0 ? [`-# …and ${more} more`] : [])].join("\n");
 }
@@ -29,11 +29,11 @@ export function requestMessage(tab: Tab, cls: ClassId | null): RequestMessage | 
   });
   if (!lines.length) return null;
   const total = totalText(tabTotal(tab, cls));
+  // The site swaps this title for one naming the member, linked to their Discord profile.
   const request: Embed = {
     title: "Bank request",
     description: [...lines.map(l => `• ${l.qty > 1 ? `${l.qty} × ` : ""}${l.it.name} (${price(l.req.pp, l.qty)})`), "", `**Total: ${total}**`].join("\n"),
     color: BLURPLE,
-    footer: "Sent from the bank site · ✅ when done, ❌ to cancel",
   };
   // One embed per item; past Discord's limit, the rest share the last one.
   const room = MAX_EMBEDS - 1;

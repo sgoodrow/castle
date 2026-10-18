@@ -1,7 +1,7 @@
 Feature: Posting a bank request
   Members send their tab to #bank-requests from the bank page. The page builds the post; the site
-  checks it fits in a Discord message, opens it by mentioning the member, and posts it as the bot
-  without pinging anyone. No one can flood the channel.
+  checks it fits in a Discord message, titles it with the member's name linked to their Discord
+  profile, and posts it as the bot without pinging anyone. No one can flood the channel.
 
   Background:
     Given the bank site is set up for Discord sign-in
@@ -15,15 +15,15 @@ Feature: Posting a bank request
     When Alice posts the bank request:
       """
       {"embeds": [
-        {"title": "Bank request", "description": "• Cloak of Flames (800pp)", "color": 5793266, "footer": "✅ when done"},
-        {"title": "Cloak of Flames", "description": "mulea: General1", "color": 0, "item": 11621}
+        {"title": "Bank request", "description": "• Cloak of Flames (800pp)", "color": 5793266, "footer": "Thanks"},
+        {"title": "Cloak of Flames", "description": "• mulea (inventory 1)", "color": 0, "item": 11621}
       ]}
       """
     Then the answer is 204
     And the bot posts in #bank-requests:
-      | title           | description                                                       | footer      | thumbnail                                 |
-      | Bank request    | <@id-Alice> has placed a bank request.\n\n• Cloak of Flames (800pp) | ✅ when done |                                           |
-      | Cloak of Flames | mulea: General1                                                   |             | https://bank.example.com/icons/77.png |
+      | title                               | url                               | description               | footer | thumbnail                             |
+      | @Alice has placed a bank request    | https://discord.com/users/id-Alice | • Cloak of Flames (800pp) | Thanks |                                       |
+      | Cloak of Flames                     |                                   | • mulea (inventory 1)     |        | https://bank.example.com/icons/77.png |
     And the log says "bank web: Alice (id-Alice) posted a bank request"
 
   Scenario: The bank tells the page who's signed in, for its preview
@@ -53,8 +53,8 @@ Feature: Posting a bank request
     Then the answer is 400 "Bad request"
     And the bot posts nothing
 
-  Scenario: An embed too long for Discord, once it names the member, is refused
-    When Alice posts a bank request with a 4040-character description
+  Scenario: An embed too long for Discord is refused
+    When Alice posts a bank request with a 4097-character description
     Then the answer is 400 "Bad request"
 
   Scenario: A post longer than Discord allows in all is refused

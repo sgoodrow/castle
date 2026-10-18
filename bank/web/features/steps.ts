@@ -190,6 +190,9 @@ const confirm = () => screen.findByRole("dialog", { name: "Post this in #bank-re
 step(/^the post reads "(.*)"$/, async (_, text) => {
   expect(norm((await confirm()).textContent)).toContain(text);
 });
+step(/^the post doesn't read "(.*)"$/, async (_, text) => {
+  expect(norm((await confirm()).textContent)).not.toContain(text);
+});
 step(/^I send my tab to Discord$/, async () => { await world.user.click(within(await tab()).getByRole("button", { name: "Send to Discord" })); });
 step(/^I confirm the post$/, async () => { await world.user.click(within(await confirm()).getByRole("button", { name: "Send" })); });
 step(/^I'm told "(.*)" before it posts$/, async (_, text) => { await within(await confirm()).findByText(text); });
