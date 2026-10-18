@@ -1,4 +1,4 @@
-import { fingerprint, reportError } from "./error-reports";
+import { commit, fingerprint, reportError } from "./error-reports";
 
 jest.mock("./logger", () => ({ log: jest.fn() }));
 
@@ -28,6 +28,19 @@ describe("fingerprint", () => {
     const a = { source: "page" as const, message: "boom", stack: "at f (bank/web/src/data.ts:1:1)" };
     expect(fingerprint(a)).not.toBe(fingerprint({ ...a, stack: "at g (bank/web/src/tab.ts:1:1)" }));
     expect(fingerprint(a)).not.toBe(fingerprint({ ...a, source: "web" }));
+  });
+});
+
+describe("commit", () => {
+  afterEach(() => delete process.env.SOURCE_REV);
+
+  it("prefers the commit baked into the image over Dokku's GIT_REV", () => {
+    process.env.SOURCE_REV = "def456";
+    expect(commit()).toBe("def456");
+  });
+
+  it("falls back to GIT_REV for a git push deploy", () => {
+    expect(commit()).toBe("abc123");
   });
 });
 

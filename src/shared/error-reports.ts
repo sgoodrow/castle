@@ -24,6 +24,10 @@ interface Known { issue: number | null; since: number; lastComment: number }
 const known = new Map<string, Known>();
 let opened: number[] = [];
 
+// The commit this code is from: baked into the image by its build (Dokku's own GIT_REV for an image
+// deploy is a commit Dokku makes), or GIT_REV from a git push deploy.
+export const commit = () => process.env.SOURCE_REV || process.env.GIT_REV || "";
+
 const clip = (s: string, n: number) => (s.length > n ? s.slice(0, n) + "…" : s);
 
 // The same error from anywhere in the same code: the message without numbers or quoted values,
@@ -58,7 +62,7 @@ function scrub(text: string) {
 const fence = (s: string) => "````\n" + scrub(s).replace(/````/g, "```") + "\n````";
 
 function body(fp: string, r: ErrorReport) {
-  const rev = (process.env.GIT_REV || "unknown").slice(0, 12);
+  const rev = (commit() || "unknown").slice(0, 12);
   const lines = [
     `**Where:** ${WHERE[r.source]}`,
     `**Commit:** ${rev}`,
@@ -77,7 +81,7 @@ async function file(fp: string, r: ErrorReport, k: Known) {
   const existing = found.items?.[0]?.number;
   if (existing) {
     k.issue = existing;
-    await github(`${REPO}/issues/${existing}/comments`, { method: "POST", body: { body: `Happened again on ${(process.env.GIT_REV || "unknown").slice(0, 12)} (${new Date().toISOString()}).` } });
+    await github(`${REPO}/issues/${existing}/comments`, { method: "POST", body: { body: `Happened again on ${(commit() || "unknown").slice(0, 12)} (${new Date().toISOString()}).` } });
     return;
   }
   opened = opened.filter(t => Date.now() - t < 864e5);

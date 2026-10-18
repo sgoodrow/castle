@@ -116,7 +116,7 @@ Feature: The bank site
     Then the answer is 404 "Not found"
     When Someone reports a page error:
       """
-      {"message": "boom"}
+      {"message": "boom", "rev": "abc123"}
       """
     Then the answer is 204
     And an issue is filed titled "[page] boom"

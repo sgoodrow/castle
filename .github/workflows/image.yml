@@ -1,0 +1,38 @@
+name: Image
+
+# Builds the deploy image for a pull request, without pushing it, and starts the web process the way
+# Dokku does, so a change that breaks the image shows up before it's merged rather than in Release.
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: castle:pr
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test
+        run: |
+          docker image ls castle:pr
+          docker run --rm castle:pr npx prisma -v
+          # Dokku runs Procfile commands as plain argv, without a shell.
+          docker run -d --name web -p 5000:5000 castle:pr $(sed -n 's/^web: //p' Procfile)
+          for i in $(seq 30); do code=$(curl -s -o /dev/null -w '%{http_code}' localhost:5000/ || true); [ "$code" != 000 ] && break; sleep 1; done
+          docker logs web
+          echo "GET / -> $code"
+          [ "$code" != 000 ]
+      - name: Check the worker's voice dependencies
+        run: |
+          docker run --rm castle:pr node -e "
+            const report = require('@discordjs/voice').generateDependencyReport();
+            console.log(report);
+            if (!/libsodium-wrappers: \\d/.test(report) || !/libopus: yes/.test(report)) process.exit(1);
+          "

@@ -1,14 +1,14 @@
 // The item list for the current filters: kind, slot, what the chosen class and race can use, and
-// the search box, where every word has to appear in the item's name or stats.
-import { ITEM_LIST, SLOT_CHIPS, statText, usable, type Item } from "./data";
-import type { Filters } from "./state";
+// the search box, where every word has to appear in the item's name or stats. Then the chosen sort.
+import { ITEM_LIST, SLOT_CHIPS, bankRequest, statText, usable, type Item } from "./data";
+import { sortDesc, sortKey, type Filters, type Sort } from "./state";
 
 export function filterItems(f: Filters, list: Item[] = ITEM_LIST) {
   const bits = f.slot ? SLOT_CHIPS.find(([l]) => l === f.slot)![1] : null;
   const terms = f.q.toLowerCase().split(/\s+/).filter(Boolean);
   const char = { cls: f.cls, race: f.race };
   const onlyUsable = f.cls >= 0 || f.race >= 0;
-  return list.filter(it => {
+  const found = list.filter(it => {
     if (f.kind !== "all" && it.kind !== f.kind) return false;
     if (bits && !bits.some(b => (it.slots || 0) & (1 << b))) return false;
     if (onlyUsable && (it.kind === "gear" || it.kind === "spell") && !usable(it, char)) return false;
@@ -17,5 +17,21 @@ export function filterItems(f: Filters, list: Item[] = ITEM_LIST) {
       if (!terms.every(t => hay.includes(t))) return false;
     }
     return true;
-  }).sort((a, b) => a.name.localeCompare(b.name));
+  });
+  return sortItems(found, f.sort, f.cls);
+}
+
+// Price is what this class would pay; an unknown price, or one that isn't for sale, counts as 0.
+function sortItems(items: Item[], sort: Sort, cls: number) {
+  const byName = (a: Item, b: Item) => a.name.localeCompare(b.name);
+  const dir = sortDesc(sort) ? -1 : 1;
+  switch (sortKey(sort)) {
+    case "name":
+      return items.sort((a, b) => dir * byName(a, b));
+    case "price":
+      return items
+        .map(it => ({ it, pp: bankRequest(it, cls).pp ?? 0 }))
+        .sort((a, b) => dir * (a.pp - b.pp) || byName(a.it, b.it))
+        .map(p => p.it);
+  }
 }

@@ -91,6 +91,11 @@ step(/^I play (?:an? )?(.+)$/, (_, name) => (/^any/.test(name) ? undefined : wor
 step(/^I pick the (\w+) slot$/, (_, slot) => world.user.click(slots(slot)[0]));
 step(/^I pick "(Spells|Bags|Other)"$/, (_, kind) => world.user.click(notWorn(kind)));
 
+const sortHeader = (column: string) => within(list().parentElement!).getByRole("button", { name: column });
+step(/^I (?:sort|have sorted) by "(Item|Guild price)"(?: again)?$/, (_, column) => world.user.click(sortHeader(column)));
+step(/^"(Item|Guild price)" is sorted (ascending|descending|none)$/, (_, column, how) => {
+  expect(sortHeader(column).closest("[aria-sort]")?.getAttribute("aria-sort")).toBe(how);
+});
 step(/^the bank lists (\d+) items?$/, (_, n) => { screen.getByText(`${n} ${n === "1" ? "item" : "items"}`); });
 step(/^the bank lists, in order:$/, ({ table }) => { expect(listed()).toEqual(table.map(r => r.item)); });
 step(/^the bank lists only (.*)$/, (_, names) => { expect(listed().sort()).toEqual(quoted(names).sort()); });

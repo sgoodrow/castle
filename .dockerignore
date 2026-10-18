@@ -1,0 +1,14 @@
+.git
+.github
+.claude
+.vscode
+**/node_modules
+dist
+bank/dist
+postgres-db
+coverage
+*.log
+.env
+.env.*
+Dockerfile
+.dockerignore

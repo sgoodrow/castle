@@ -32,7 +32,7 @@ export const SIGN_IN = {
   bankWebSessionSecret: "session-secret",
   bankWebUrl: "https://bank.example.com",
 };
-const SETTINGS = ["NODE_ENV", "GIT_REV", "PORT", "bankWebDevNoAuth", "bankCacheDir", "bankDistDir", "githubErrorToken", ...Object.keys(SIGN_IN)];
+const SETTINGS = ["NODE_ENV", "GIT_REV", "SOURCE_REV", "PORT", "bankWebDevNoAuth", "bankCacheDir", "bankDistDir", "githubErrorToken", ...Object.keys(SIGN_IN)];
 
 interface World {
   dir: string;
@@ -215,7 +215,7 @@ export const steps: StepDefinitions = ({ defineStep: step }) => {
   });
   step(/^the site is in dev mode without sign-in$/, () => { world.env.bankWebDevNoAuth = "true"; });
   step(/^the site is running in production$/, () => { world.env.NODE_ENV = "production"; });
-  step(/^the site is running commit "(.*)"$/, (rev: string) => { world.env.GIT_REV = rev; });
+  step(/^the site is running commit "(.*)"$/, (rev: string) => { world.env.SOURCE_REV = rev; });
   step(/^the site isn't told which commit it's running$/, () => undefined);
   step(/^the site is told to listen on a free port$/, async () => { world.env.PORT = String(await freePort()); });
   step(/^the site is given no cache folder$/, () => {
@@ -381,11 +381,12 @@ export const steps: StepDefinitions = ({ defineStep: step }) => {
   step(/^(\w+) reports a page error:$/, (who: string, json: string) =>
     request(who, "/api/errors", { method: "POST", body: json, headers: { "user-agent": "TestBrowser/1" } }));
   step(/^(\w+) reports a page error that isn't JSON$/, (who: string) => request(who, "/api/errors", { method: "POST", body: "not json" }));
-  step(/^(\w+) reports a page error with a (\d+)-character message$/, (who: string, n: string) =>
-    request(who, "/api/errors", { method: "POST", body: JSON.stringify({ message: "x".repeat(+n) }) }));
-  step(/^(\w+) reports (\d+) page errors$/, async (who: string, n: string) => {
+  // "From the current page" reports carry the commit the site is running, as a freshly loaded page's do.
+  step(/^(\w+) reports a page error( from the current page)? with a (\d+)-character message$/, (who: string, current: string | undefined, n: string) =>
+    request(who, "/api/errors", { method: "POST", body: JSON.stringify({ message: "x".repeat(+n), rev: current ? world.env.SOURCE_REV : undefined }) }));
+  step(/^(\w+) reports (\d+) page errors from the current page$/, async (who: string, n: string) => {
     world.answers = [];
-    for (let i = 0; i < +n; i++) await request(who, "/api/errors", { method: "POST", body: "{}" });
+    for (let i = 0; i < +n; i++) await request(who, "/api/errors", { method: "POST", body: JSON.stringify({ rev: world.env.SOURCE_REV }) });
   });
   step(/^an issue is filed titled "(.*)"$/, (title: string) => eventually(() => reportOf(title)));
   step(/^(\d+) issues? (?:is|are) filed$/, async (n: string) => {
