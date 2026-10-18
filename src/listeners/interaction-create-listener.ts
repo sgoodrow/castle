@@ -1,6 +1,26 @@
-import { CacheType, Interaction, MessageFlags } from "discord.js";
+import {
+  ButtonInteraction,
+  CacheType,
+  ChatInputCommandInteraction,
+  Interaction,
+  MessageFlags,
+} from "discord.js";
 import { getButton, getCommand } from "./register-commands";
 import { log } from "../shared/logger"
+
+// Errors can happen before the interaction was deferred (e.g. unknown command)
+const replyWithError = async (
+  interaction:
+    | ButtonInteraction<CacheType>
+    | ChatInputCommandInteraction<CacheType>,
+  content: string
+) => {
+  if (interaction.deferred || interaction.replied) {
+    await interaction.editReply({ content });
+  } else {
+    await interaction.reply({ content, flags: MessageFlags.Ephemeral });
+  }
+};
 
 export const interactionCreateListener = async (
   interaction: Interaction<CacheType>
@@ -17,7 +37,7 @@ export const interactionCreateListener = async (
       log(`/${interaction.customId} succeeded`);
     } catch (error) {
       console.error(`/${interaction.customId} ${error}`);
-      await interaction.editReply({ content: String(error) });
+      await replyWithError(interaction, String(error));
     }
     return;
   }
@@ -38,7 +58,7 @@ export const interactionCreateListener = async (
       log(`/${interaction.commandName} succeeded`);
     } catch (error) {
       console.error(`/${interaction.commandName} ${error}`);
-      await interaction.editReply(String(error));
+      await replyWithError(interaction, String(error));
     }
   }
 };
