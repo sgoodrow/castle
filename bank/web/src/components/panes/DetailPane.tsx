@@ -25,10 +25,15 @@ function byChar(it: Item) {
   return [...m];
 }
 
+// The heading style every part of the details shares.
+const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+  <Title order={3} fz="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: "0.06em" }}>{children}</Title>
+);
+
 const Section = ({ title, aside, children }: { title: string; aside?: React.ReactNode; children: React.ReactNode }) => (
   <Stack gap={6}>
     <Group justify="space-between" wrap="nowrap">
-      <Title order={3} fz="xs" tt="uppercase" c="dimmed" style={{ letterSpacing: "0.06em" }}>{title}</Title>
+      <SectionTitle>{title}</SectionTitle>
       {aside}
     </Group>
     {children}
@@ -50,8 +55,9 @@ export function DetailPane({ it, canUse, qty, onAdd, onRemove, onClose, bare }: 
         <Paper withBorder p="sm" radius="md" style={{ background: "var(--surface-head)", boxShadow: "none" }}>
           <StatPane it={it} />
         </Paper>
-        <Group ref={buy} role="group" aria-label="On your tab" justify="space-between" wrap="nowrap" px="xs" style={{ borderRadius: "var(--mantine-radius-sm)" }}>
-          <Text fz="sm" c="dimmed">On your tab</Text>
+        <Divider />
+        <Group ref={buy} role="group" aria-label="On your tab" justify="space-between" wrap="nowrap" style={{ borderRadius: "var(--mantine-radius-sm)" }}>
+          <SectionTitle>On your tab</SectionTitle>
           <BuyPane it={it} qty={qty} onAdd={() => buy.current && onAdd(it, buy.current)} onRemove={() => onRemove(it)} />
         </Group>
         {auctionOnly(it) && (
