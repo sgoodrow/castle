@@ -154,7 +154,10 @@ export function start() {
   refreshWiki();
   setInterval(refreshWiki, WIKI_EVERY);
 
-  process.on("unhandledRejection", (err: any) => reportError({ source: "web", message: String(err?.message || err), stack: err?.stack }));
+  process.on("unhandledRejection", (reason: unknown) => {
+    const err = reason instanceof Error ? reason : undefined;
+    reportError({ source: "web", message: String(err?.message || reason), stack: err?.stack });
+  });
   process.on("uncaughtException", err => {
     // Report, then exit as Node would have; Dokku starts the process again.
     const exit = () => process.exit(1);
