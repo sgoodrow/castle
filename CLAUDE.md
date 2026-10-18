@@ -6,12 +6,12 @@
 - Make bugs impossible through static analysis wherever possible. Prefer data models that don't need defensive checks, such as indexed lookups that can miss.
 - In `bank/web`, each file exports one component. Names end in `Button`, `Text` or `Pane`, and live under `components/buttons`, `components/texts` or `components/panes`.
 - To offer UX alternatives, never stack them on the page. List them in `OPTIONS` in `bank/web/src/devOptions.ts`, read the pick with `useDevOption`, and the user toggles them from the dev-only corner button. Once one is chosen, keep it and remove the option.
-- Tests are Gherkin features: `bank/web/features` for the page (vitest), `src/web/features` for the server (jest-cucumber).
+- Tests are Gherkin features: `bank/web/features` for the page (vitest), `src/web/features` for the server (vitest, one `<name>.test.ts` per feature).
 
 ## Checks before a PR
 
 ```
-nice -n 10 npx jest --coverage --maxWorkers=2
+nice -n 10 npx vitest run --coverage --minWorkers=1 --maxWorkers=2
 npx tsc --noEmit --skipLibCheck -p . && npm run lint
 cd bank/web && nice -n 10 npx vitest run --coverage --minWorkers=1 --maxWorkers=2
 cd bank/web && npx tsc --noEmit -p . && npm run lint

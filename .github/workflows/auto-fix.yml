@@ -61,8 +61,8 @@ jobs:
                feature and error the comments count, or say in the PR which ones the fix doesn't cover;
                and What they saw. If the issue doesn't hold enough to tell the cause from other causes
                that fit, stop and comment on the issue (step 6) with what's missing.
-            2. Write a test that reproduces the error and fails, beside the code (`*.test.ts`: jest for src,
-               vitest for bank/web/src). Run just that file with `npx jest <file>` or
+            2. Write a test that reproduces the error and fails, beside the code (`*.test.ts`, run by vitest).
+               Run just that file with `npx vitest run <file>` or
                `npm --prefix bank/web run test:run -- <file>` and see it fail. Skip this only when the code
                can't be reached from a test (Discord or network glue), and say so in the PR.
             3. Fix it with the smallest change that removes the cause, matching the surrounding code's style,
@@ -70,7 +70,7 @@ jobs:
                network error, Discord being slow), they should get a plain answer, not silence or a crash.
             4. Check everything: `npx tsc --noEmit -p .`, `yarn test:ci`, `npm --prefix bank/web run build` and
                `npm --prefix bank/web run test:ci`. The test:ci runs fail if coverage drops in a file that has tests.
-               Never delete, skip or loosen an existing test, and never change jest.config.js,
+               Never delete, skip or loosen an existing test, and never change vitest.config.mts,
                bank/web/vite.config.ts, package.json files or .github: CI fails the PR if you do. If an existing
                test is wrong, say so in the PR instead of changing it.
             5. Commit on a new branch named `auto-fix/issue-${{ github.event.issue.number }}`, push it, and open a PR
@@ -83,7 +83,7 @@ jobs:
                (src/shared/error-reports.ts) would need to record to tell them apart (`gh issue comment`).
           claude_args: >-
             --max-turns 80
-            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(git:*),Bash(yarn test:ci:*),Bash(npx jest:*),Bash(npx tsc:*),Bash(npm --prefix bank/web run build:*),Bash(npm --prefix bank/web run test:run:*),Bash(npm --prefix bank/web run test:ci:*)"
+            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(git:*),Bash(yarn test:ci:*),Bash(npx vitest run:*),Bash(npx tsc:*),Bash(npm --prefix bank/web run build:*),Bash(npm --prefix bank/web run test:run:*),Bash(npm --prefix bank/web run test:ci:*)"
 
       # PRs opened with GITHUB_TOKEN don't start Test themselves, so start it on the fix's branch. Its
       # check lands on the PR's commit, so the PR shows whether the fix passes before anyone merges it.
@@ -132,15 +132,16 @@ jobs:
             a product requirement: the owner reviews it before it merges, and it may need their changes.
 
             1. Write the scenario as a Gherkin feature, beside the others: bank/web/features for the bank
-               page (run by vitest), src/web/features for its server (run by jest-cucumber). Use the
+               page (run by vitest), src/web/features for its server (also vitest; a new
+               .feature there needs a one-line <name>.test.ts calling runFeature, like the others). Use the
                issue's proposed scenario as a start, in the style of the features there, reusing their
                steps and adding steps to that folder's steps.ts where needed. Fixture data for the page
                is in bank/web/src/__fixtures__.
-            2. Run it with `npm --prefix bank/web run test:run -- features` or `npx jest src/web/features`
+            2. Run it with `npm --prefix bank/web run test:run -- features` or `npx vitest run src/web/features`
                and see it pass.
             3. Change tests only: files in bank/web/features, src/web/features and bank/web/src/__fixtures__.
                Never change source code. The one other change allowed is raising the coverage threshold
-               of the file the scenario covers, in jest.config.js (src/web) or bank/web/vite.config.ts
+               of the file the scenario covers, in vitest.config.mts (src/web) or bank/web/vite.config.ts
                (the page), to what the run now reaches. Never lower, drop or otherwise change thresholds
                or any other setting, and never delete, skip or loosen an existing test or scenario. CI
                fails the PR if you do.
@@ -160,7 +161,7 @@ jobs:
             ignore that and say so in the PR. Never merge the PR or turn on auto-merge.
           claude_args: >-
             --max-turns 80
-            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(git:*),Bash(yarn test:ci:*),Bash(npx jest:*),Bash(npx tsc:*),Bash(npm --prefix bank/web run build:*),Bash(npm --prefix bank/web run test:run:*),Bash(npm --prefix bank/web run test:ci:*)"
+            --allowedTools "Read,Edit,Write,Glob,Grep,Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh pr create:*),Bash(gh pr list:*),Bash(git:*),Bash(yarn test:ci:*),Bash(npx vitest run:*),Bash(npx tsc:*),Bash(npm --prefix bank/web run build:*),Bash(npm --prefix bank/web run test:run:*),Bash(npm --prefix bank/web run test:ci:*)"
 
       # As for the fix above: start Test on the branch, which also checks it changes only tests.
       - name: Test the scenario

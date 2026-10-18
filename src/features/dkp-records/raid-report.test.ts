@@ -1,9 +1,9 @@
-jest.mock("../../redis/client", () => ({ redisChannels: {}, redisClient: {} }));
-jest.mock("../../services/openDkpService", () => ({
+vi.mock("../../redis/client", () => ({ redisChannels: {}, redisClient: {} }));
+vi.mock("../../services/openDkpService", () => ({
   odkpCharacterCache: new Map(),
   openDkpService: {},
 }));
-jest.mock("../../config", () => ({}));
+vi.mock("../../config", () => ({}));
 
 import { RaidReport, withRaidReportLock } from "./raid-report";
 

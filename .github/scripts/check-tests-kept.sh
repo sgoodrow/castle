@@ -13,7 +13,7 @@ fail=0
 problem() { echo "::error::$1"; fail=1; }
 
 TESTS='\.test\.(ts|tsx)$'
-SETTINGS='^(jest\.config\.js|bank/web/vite\.config\.ts|package\.json|bank/web/package\.json|\.github/)'
+SETTINGS='^(vitest\.config\.mts|bank/web/vite\.config\.ts|package\.json|bank/web/package\.json|\.github/)'
 if [[ "${THRESHOLDS_CHECKED:-}" == true ]]; then SETTINGS='^(package\.json|bank/web/package\.json|\.github/)'; fi
 CASE='^\s*(it|test)(\.each\(.*\))?\(' # one test case per line, as the tests here are written
 FEATURES='\.feature$'

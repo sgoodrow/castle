@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # The bot and the bank web server. Coverage can't drop in any file with tests (jest.config.js).
+  # The bot and the bank web server. Coverage can't drop in any file with tests (vitest.config.mts).
   bot:
     runs-on: ubuntu-latest
     steps:
@@ -43,7 +43,7 @@ jobs:
       # Lint gates only the bank: its server here, its page in the bank job (together, `yarn lint`).
       - run: yarn eslint src/web
 
-  # Type-checks the bot and the bank server, beside the tests: jest only transpiles.
+  # Type-checks the bot and the bank server, beside the tests: vitest only transpiles.
   types:
     runs-on: ubuntu-latest
     steps:

@@ -15,7 +15,6 @@ import { AddressInfo, createServer as netServer } from "net";
 import os from "os";
 import path from "path";
 import { SourceMapGenerator } from "source-map";
-import { StepDefinitions } from "jest-cucumber";
 import { CLASS_TABS, FORBIDDEN_TAB } from "../spell-sheet";
 
 type Slot = {
@@ -276,7 +275,7 @@ export async function reset() {
     exits: [],
     restore: [],
   };
-  const log = jest
+  const log = vi
     .spyOn(console, "log")
     .mockImplementation((s: unknown) => void world.logs.push(String(s)));
   world.restore.push(() => log.mockRestore());
@@ -330,20 +329,17 @@ const freePort = () =>
   });
 
 // The server reads its settings when it loads, so each scenario loads its own copy.
-function load() {
+async function load() {
   for (const k of SETTINGS) delete process.env[k];
   Object.assign(process.env, world.env);
-  jest.isolateModules(() => {
-    // isolateModules is synchronous, so this can't be an import().
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    world.mod = require("../server");
-  });
-  return world.mod!;
+  vi.resetModules();
+  world.mod = await import("../server");
+  return world.mod;
 }
 
 async function site() {
   if (world.base) return world.base;
-  const server = http.createServer(load().handle);
+  const server = http.createServer((await load()).handle);
   world.servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
   return (world.base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`);
@@ -407,7 +403,13 @@ const reportOf = (title: string) => {
 };
 const settle = () => new Promise((r) => setTimeout(r, 100));
 
-export const steps: StepDefinitions = ({ defineStep: step }) => {
+// A step gets its pattern's groups, then its table or doc string, if it has one.
+export type Step = (...args: never[]) => unknown;
+export const steps = ({
+  defineStep: step,
+}: {
+  defineStep: (pattern: RegExp, fn: Step) => void;
+}) => {
   // ---------- how the site is set up ----------
   step(/^the bank site is set up for Discord sign-in$/, () =>
     Object.assign(world.env, SIGN_IN)
@@ -887,7 +889,7 @@ export const steps: StepDefinitions = ({ defineStep: step }) => {
   );
 
   // ---------- the process ----------
-  step(/^the web process's code is loaded$/, () => void load());
+  step(/^the web process's code is loaded$/, async () => void (await load()));
   step(/^nothing listens on that port$/, async () => {
     await expect(
       fetch(`http://127.0.0.1:${world.env.PORT}/healthz`)
@@ -895,21 +897,21 @@ export const steps: StepDefinitions = ({ defineStep: step }) => {
   });
   step(/^the web process (?:starts|has started)$/, async () => {
     const real = http.createServer;
-    const create = jest.spyOn(http, "createServer").mockImplementation(((
+    const create = vi.spyOn(http, "createServer").mockImplementation(((
       ...args: Parameters<typeof real>
     ) => {
       const s = real(...args);
       world.servers.push(s);
       return s;
     }) as typeof real);
-    const every = jest.spyOn(global, "setInterval").mockImplementation(((
+    const every = vi.spyOn(global, "setInterval").mockImplementation(((
       _: unknown,
       ms?: number
     ) => {
       world.every.push(ms ?? 0);
       return 0;
     }) as unknown as typeof setInterval);
-    const on = jest.spyOn(process, "on").mockImplementation(((
+    const on = vi.spyOn(process, "on").mockImplementation(((
       event: string,
       fn: (err: unknown) => void
     ) => {
@@ -917,7 +919,7 @@ export const steps: StepDefinitions = ({ defineStep: step }) => {
       return process;
     }) as typeof process.on);
     try {
-      load().start();
+      (await load()).start();
     } finally {
       [create, every, on].forEach((s) => s.mockRestore());
     }

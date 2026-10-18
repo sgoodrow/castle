@@ -15,8 +15,8 @@
     "build:bank": "cd bank/web && npm ci --include=dev && npm run build && rm -rf node_modules",
     "predev": "docker-compose up -d --wait",
     "dev": "nodemon",
-    "test": "jest --watch",
-    "test:ci": "jest --coverage"
+    "test": "vitest",
+    "test:ci": "vitest run --coverage"
   },
   "engines": {
     "node": ">=22.22.0"
@@ -53,22 +53,24 @@
     "ytdl-core": "^4.11.5"
   },
   "devDependencies": {
+    "@cucumber/gherkin": "29.0.0",
+    "@cucumber/messages": "24.1.0",
+    "@swc/core": "1.7.26",
     "@types/google-spreadsheet": "^3.3.1",
-    "@types/jest": "29",
     "@types/lodash": "^4.17.24",
     "@types/node": "^22",
     "@types/node-fetch": "^2.6.3",
     "@typescript-eslint/eslint-plugin": "^8.57.1",
     "@typescript-eslint/parser": "^8.57.1",
+    "@vitest/coverage-v8": "2.1.9",
     "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.7",
-    "jest": "29",
-    "jest-cucumber": "4.5.0",
     "nodemon": "^2.0.15",
     "prettier": "^3.9.10",
-    "ts-jest": "29",
     "ts-node": "^10.7.0",
-    "typescript": "5.7"
+    "typescript": "5.7",
+    "unplugin-swc": "1.5.1",
+    "vitest": "2.1.9"
   }
 }

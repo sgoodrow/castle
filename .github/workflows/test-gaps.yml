@@ -35,9 +35,7 @@ jobs:
         run: npm --prefix bank/web run test:ci 2>&1 | tee page-coverage.txt || true
       - name: Server coverage
         run: >-
-          npx jest --coverage src/web
-          --collectCoverageFrom='src/web/**/*.ts' --collectCoverageFrom='!src/web/**/*.test.ts'
-          --collectCoverageFrom='!src/web/features/**' --coverageThreshold='{}'
+          npx vitest run --coverage src/web --coverage.include='src/web/**/*.ts'
           2>&1 | tee server-coverage.txt || true
 
       - name: Labels
@@ -62,7 +60,7 @@ jobs:
             until they say so.
 
             The bank is its page, bank/web (React; scenarios in bank/web/features, run by vitest), and its
-            server, src/web (scenarios in src/web/features, run by jest-cucumber). Ignore the rest of the bot.
+            server, src/web (scenarios in src/web/features, run by vitest). Ignore the rest of the bot.
             Coverage from this morning is in page-coverage.txt and server-coverage.txt. Read bank/ROADMAP.md
             for what the bank is meant to do.
 

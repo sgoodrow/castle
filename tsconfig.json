@@ -10,7 +10,7 @@
     "esModuleInterop": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "types": ["jest", "node"]
+    "types": ["node"]
   },
-  "exclude": ["./node_modules", "**/*.test.ts", "src/web/features", "./bank"]
+  "exclude": ["./node_modules", "./vitest.config.mts", "**/*.test.ts", "src/web/features", "./bank"]
 }
