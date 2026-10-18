@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
 
-  # Auto-fix PRs are opened with GITHUB_TOKEN, which doesn't start pull_request runs, so
+  # Auto-fix and test-gap PRs are opened with GITHUB_TOKEN, which doesn't start pull_request runs, so
   # .github/workflows/auto-fix.yml starts this on their branch instead.
   workflow_dispatch:
 
@@ -26,8 +26,16 @@ jobs:
       # Claude's fixes have to fix the code, not the tests. main's copy of the check runs, so the
       # branch can't change what it checks.
       - name: Tests kept
-        if: startsWith(github.head_ref || github.ref_name, 'auto-fix/')
+        if: startsWith(github.head_ref || github.ref_name, 'auto-fix/') || startsWith(github.head_ref || github.ref_name, 'test-gap/')
+        env:
+          THRESHOLDS_CHECKED: ${{ startsWith(github.head_ref || github.ref_name, 'test-gap/') }}
         run: git show origin/main:.github/scripts/check-tests-kept.sh | bash -s origin/main
+
+      # A test gap states a requirement as a scenario: it changes tests and raises coverage
+      # thresholds, never the code or anything else.
+      - name: Test gap in scope
+        if: startsWith(github.head_ref || github.ref_name, 'test-gap/')
+        run: git show origin/main:.github/scripts/check-test-gap-scope.sh | bash -s origin/main
 
       # The bot and the bank web server. Coverage can't drop in any file with tests (jest.config.js).
       - run: yarn install --frozen-lockfile

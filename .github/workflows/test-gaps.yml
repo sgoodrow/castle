@@ -1,0 +1,92 @@
+name: Test gaps
+
+# Once a day Claude reads the bank's coverage and features and files up to 3 issues labelled
+# `test-gap`, each a behaviour of the bank no scenario covers, written as a product requirement.
+# They're proposals: the repo owner reads each one, closes it if it isn't a requirement, or adds
+# `fix-test-gap` to send it to the fixer (.github/workflows/auto-fix.yml), whose PR they review too.
+# Only the bank counts: its page (bank/web) and its server (src/web).
+on:
+  schedule:
+    - cron: "17 9 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: test-gaps
+
+jobs:
+  find:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.22.2
+          cache: yarn
+          cache-dependency-path: yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: npm ci --prefix bank/web
+
+      # Coverage for Claude to read. The thresholds are Test's job, so a miss here doesn't stop the run.
+      - name: Page coverage
+        run: npm --prefix bank/web run test:ci 2>&1 | tee page-coverage.txt || true
+      - name: Server coverage
+        run: >-
+          npx jest --coverage src/web
+          --collectCoverageFrom='src/web/**/*.ts' --collectCoverageFrom='!src/web/**/*.test.ts'
+          --collectCoverageFrom='!src/web/features/**' --coverageThreshold='{}'
+          2>&1 | tee server-coverage.txt || true
+
+      - name: Labels
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh label create test-gap --force --color FBCA04 \
+            --description "A bank behaviour no test covers, proposed as a product requirement"
+          gh label create fix-test-gap --force --color 0E8A16 \
+            --description "Owner only: write the scenario for this test gap and open a PR"
+
+      - uses: anthropics/claude-code-action@v1
+        env:
+          GH_TOKEN: ${{ github.token }}
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          prompt: |
+            Find behaviours of the guild bank in ${{ github.repository }} that no test covers, and file
+            the most important as issues. Each one you file proposes a product requirement: the repo owner
+            reads it and decides whether the bank should behave that way. Nothing you file is accepted
+            until they say so.
+
+            The bank is its page, bank/web (React; scenarios in bank/web/features, run by vitest), and its
+            server, src/web (scenarios in src/web/features, run by jest-cucumber). Ignore the rest of the bot.
+            Coverage from this morning is in page-coverage.txt and server-coverage.txt. Read bank/ROADMAP.md
+            for what the bank is meant to do.
+
+            1. Read what's already filed: `gh issue list --label test-gap --state all --limit 200 --json number,title,state,closedAt,body`.
+               Don't file anything an open issue covers, or one closed in the last 180 days. A closed
+               issue means the owner decided it isn't a requirement, or it's covered now.
+            2. Find real gaps: something a member or a banker would notice if it broke, that no scenario
+               covers. Untested pricing and tab rules, filters, sorting, sign-in, error paths and branches
+               in the bank's rules are what count. Use the coverage to find unrun lines and branches, then
+               read the features to be sure no scenario covers the behaviour. Skip glue code a test can't
+               reach (Discord, network, process start-up) and anything only a developer would see.
+            3. File at most 3, the ones that matter most to members and bankers; fewer, or none, is fine.
+               File each with `gh issue create --label test-gap --title "<the behaviour, in a few plain words>" --body-file <file>`,
+               writing the body to a file in ${{ runner.temp }} first. The body has:
+               - **Requirement**: the behaviour in plain words, as a member or banker would describe it.
+                 No code names here.
+               - **Proposed scenario**: a Gherkin scenario in a ```gherkin block, in the style of the
+                 features in that folder, reusing their steps where they fit.
+               - **Where**: the source file and lines it covers, and the feature file it would go in.
+               - **Why it's a gap**: what's uncovered (the coverage numbers) and why no scenario covers it.
+               - A last line: "This is a proposed requirement. Close this issue if the bank shouldn't
+                 behave this way; add the `fix-test-gap` label to have the scenario written."
+
+            Don't change any file in the repo.
+          claude_args: >-
+            --max-turns 60
+            --allowedTools "Read,Glob,Grep,Write(/${{ runner.temp }}/**),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*)"

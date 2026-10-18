@@ -2,7 +2,9 @@
 # Fails when a branch weakens the tests instead of fixing the code: it deletes a test or feature
 # file, has fewer test cases, scenarios or examples in one, skips or focuses tests, or edits the
 # test and coverage settings.
-# The Test workflow runs it on auto-fix/* branches, which Claude writes (.github/workflows/auto-fix.yml).
+# The Test workflow runs it on auto-fix/* and test-gap/* branches, which Claude writes
+# (.github/workflows/auto-fix.yml). With THRESHOLDS_CHECKED=true the two coverage configs may change,
+# because check-test-gap-scope.sh checks that a test-gap branch only raises their thresholds.
 set -euo pipefail
 
 base="${1:-origin/main}"
@@ -12,6 +14,7 @@ problem() { echo "::error::$1"; fail=1; }
 
 TESTS='\.test\.(ts|tsx)$'
 SETTINGS='^(jest\.config\.js|bank/web/vite\.config\.ts|package\.json|bank/web/package\.json|\.github/)'
+if [[ "${THRESHOLDS_CHECKED:-}" == true ]]; then SETTINGS='^(package\.json|bank/web/package\.json|\.github/)'; fi
 CASE='^\s*(it|test)(\.each\(.*\))?\(' # one test case per line, as the tests here are written
 FEATURES='\.feature$'
 SCENARIO='^\s*(Scenario|Scenario Outline|Scenario Template|Example):'
