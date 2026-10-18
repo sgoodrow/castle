@@ -29,10 +29,10 @@ export function useDevOption(key: string): string {
   const get = () => (import.meta.env.DEV && load()[key]) || def;
   const [v, setV] = useState(get);
   useEffect(() => {
-    const on = () => setV(get());
+    const on = () => setV((import.meta.env.DEV && load()[key]) || def);
     window.addEventListener(EVENT, on);
     return () => window.removeEventListener(EVENT, on);
-  }, []);
+  }, [key, def]);
   return v;
 }
 
