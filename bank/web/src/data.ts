@@ -270,7 +270,7 @@ export function prettyLoc(loc: string) {
   if ((m = loc.match(/^General(\d+)$/))) return `inventory ${m[1]}`;
   if ((m = loc.match(/^Bank(\d+)-Slot(\d+)$/))) return `bank bag ${m[1]}, slot ${m[2]}`;
   if ((m = loc.match(/^Bank(\d+)$/))) return `bank ${m[1]}`;
-  return "slot: " + loc.toLowerCase();
+  return loc.toLowerCase(); // a worn slot: "primary", "ear"
 }
 
 // ---------- bank requests (formats from the bot's #bank-requests instructions) ----------

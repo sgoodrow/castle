@@ -1,19 +1,20 @@
 // Members post their tab to #bank-requests from the bank page. The page builds the post, since it
-// has the pricing rules; the server checks it fits Discord, opens it by mentioning the member, and
+// has the pricing rules; the server checks it fits Discord, titles it with the member's name, and
 // posts it as the bot with every ping turned off. Prices are the member's claim, as they are
 // with /bank request, and a banker checks them before handing anything over.
 import { log } from "../shared/logger";
-import { requestOpening } from "../shared/bank-request-author";
+import { requestTitle, requesterUrl } from "../shared/bank-request-author";
 
 const DISCORD = "https://discord.com/api/v10";
 
-// Discord's limits for one message, with room kept for the opening line the server adds.
-const OPENING = 64;
+// Discord's limits for one message, with room kept for the title the server puts on the first
+// embed (a Discord display name is at most 32 characters).
+const TITLE = 64;
 const MAX_EMBEDS = 10;
 const MAX_TITLE = 256;
-const MAX_DESCRIPTION = 4096 - OPENING;
+const MAX_DESCRIPTION = 4096;
 const MAX_FOOTER = 2048;
-const MAX_TOTAL = 6000 - OPENING;
+const MAX_TOTAL = 6000 - TITLE;
 
 export interface PostEmbed {
   title: string;
@@ -81,11 +82,10 @@ export async function postRequest(
       embeds: embeds.map((e, i) => {
         const icon = e.item != null ? p.icon(e.item) : undefined;
         return {
-          title: e.title,
-          description:
-            i === 0
-              ? `${requestOpening(me.id)}\n\n${e.description}`
-              : e.description,
+          ...(i === 0
+            ? { title: requestTitle(me.name), url: requesterUrl(me.id) }
+            : { title: e.title }),
+          description: e.description,
           color: e.color,
           ...(e.footer ? { footer: { text: e.footer } } : {}),
           ...(icon != null

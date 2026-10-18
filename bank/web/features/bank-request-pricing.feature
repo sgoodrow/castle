@@ -134,11 +134,13 @@ Feature: Bank request pricing
     When I open my tab
     Then my tab lists "Cloak of Flames", "3 × Pearl" and "Bone Chips"
     When I send my tab to Discord
-    Then the post reads "@Alice has placed a bank request."
+    Then the post reads "@Alice has placed a bank request"
     And the post reads "• Cloak of Flames (800pp)"
     And the post reads "• 3 × Pearl (free)"
     And the post reads "Total: 800pp + 1 unknown"
-    And the post reads "Pearl"
+    And the post reads "• Mulea (pack 1, slot 2)"
+    And the post reads "• Muleb (bank 2) ×4"
+    And the post doesn't read "✅"
 
   Scenario: Sending my tab to #bank-requests
     Given the bank holds the usual stock

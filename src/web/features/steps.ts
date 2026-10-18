@@ -114,6 +114,7 @@ interface Post {
     title: string;
     description: string;
     color: number;
+    url?: string;
     footer?: { text: string };
     thumbnail?: { url: string };
   }[];
@@ -756,6 +757,7 @@ export const steps: StepDefinitions = ({ defineStep: step }) => {
       expect(
         post.body.embeds.map((e) => ({
           title: e.title,
+          url: e.url ?? "",
           description: e.description,
           footer: e.footer?.text ?? "",
           thumbnail: e.thumbnail?.url ?? "",

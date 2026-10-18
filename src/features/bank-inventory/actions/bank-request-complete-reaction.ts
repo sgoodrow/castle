@@ -1,4 +1,5 @@
 import {
+  Embed,
   Message,
   MessageCreateOptions,
   MessageReaction,
@@ -27,17 +28,17 @@ export const tryBankRequestComplete = (
 ) =>
   reactionActionExecutor(new BankRequestFinishedReactionAction(reaction, user));
 
-// A request is either posted from the bank page (embeds only, opening with its member's mention)
-// or by /bank request (content that @mentions its member).
+// A request is either posted from the bank page (embeds only, the first titled with its member
+// and linking to them) or by /bank request (content that @mentions its member).
 type BankRequest =
-  | { kind: "site"; requesterId: string; description: string }
+  | { kind: "site"; requesterId: string; embed: Embed }
   | { kind: "command"; message: Message | PartialMessage };
 
 const parseBankRequest = (message: Message | PartialMessage): BankRequest => {
-  const description = message.embeds[0]?.description;
-  const id = requesterId(description);
-  return id && description
-    ? { kind: "site", requesterId: id, description }
+  const embed = message.embeds[0];
+  const id = embed && requesterId(embed);
+  return embed && id
+    ? { kind: "site", requesterId: id, embed }
     : { kind: "command", message };
 };
 
@@ -51,11 +52,18 @@ const transactionMessage = (
   banker: User | PartialUser
 ): MessageCreateOptions => {
   if (request.kind === "site") {
-    // Like the request itself, the copy never pings. Its lines stay in an embed, which holds
-    // twice what a message's content can.
+    // Like the request itself, the copy never pings. Its title and lines stay in an embed, which
+    // holds twice what a message's content can.
+    const { title, url, description } = request.embed;
     return {
       content: `✅ by ${banker}`,
-      embeds: [{ description: request.description }],
+      embeds: [
+        {
+          ...(title ? { title } : {}),
+          ...(url ? { url } : {}),
+          ...(description ? { description } : {}),
+        },
+      ],
       allowedMentions: { parse: [] },
     };
   }
