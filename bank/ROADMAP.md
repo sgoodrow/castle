@@ -32,6 +32,14 @@ Each phase starts by answering its questions with the user and recording the ans
 - **Decided:** requests for forbidden spells go to #bank-requests like everything else. A banker starts the auction.
 - **Decided:** a member doesn't buy a forbidden spell, they ask the bank to start a DKP auction for it. The page and the post say that, with no price, minimum bid or bidding rules.
 
+UX (agreed):
+- Catalog row: a gold "DKP auction" badge where the price goes. Sorted after priced items.
+- Details pane, and lightly on the tab: one short line about the process, e.g. "A banker starts a DKP auction for it." Fuller instructions live elsewhere (Discord), not on the page.
+- Tab: the line shows "DKP auction" instead of a price; the total counts auctions separately, e.g. "450pp + 1 DKP auction".
+- Post: just the request. "• Spell: Bedlam (DKP auction)" and the same total. No process or instructions.
+- Other spells use the sheet's cost as written, e.g. Aegis 50pp, and "200p OR 1DKP" is no longer lowered to the market price.
+- Built on: the sheet's public CSV export, cached on the server and refreshed about hourly; sheet names that match no item are logged. The page gets one price type with a case per kind (pp, pp or DKP, auction, free, ask a banker), so every screen must handle auctions.
+
 **Later phases**
 - Sky and jewelry data are in Google Sheets today. Read them as they are, or move them to something bankers manage from Discord?
 
