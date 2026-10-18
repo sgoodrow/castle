@@ -76,7 +76,8 @@ Feature: The bank site
     When Alice visits "/api/bank?q=dragon"
     Then the answer is 500 "Something went wrong"
     And an issue is filed titled "[web] db down"
-    And the issue "[web] db down" says "**Path:** /api/bank"
+    And the issue "[web] db down" says "**Feature:** GET /api/bank"
+    And the issue "[web] db down" says "**What they saw:** The request got a 500"
     And the issue "[web] db down" doesn't say "dragon"
 
     Examples:
