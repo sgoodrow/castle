@@ -1,3 +1,4 @@
+import type { Mock } from "vitest";
 import {
   mkdtempSync,
   readFileSync,
@@ -9,7 +10,7 @@ import { tmpdir } from "os";
 import path from "path";
 import { parseTracker, WikiCache, WikiItem } from "./wiki-cache";
 
-jest.mock("../shared/logger", () => ({ log: jest.fn() }));
+vi.mock("../shared/logger", () => ({ log: vi.fn() }));
 
 const NAME = "Zzz Not A Real Item";
 const ID = 777;
@@ -43,7 +44,7 @@ describe("parseTracker", () => {
 describe("WikiCache", () => {
   const realFetch = global.fetch;
   let dir: string;
-  let fetchMock: jest.Mock;
+  let fetchMock: Mock;
   const file = () => path.join(dir, "wiki", `${ID}.json`);
   // fetchItem is private; refresh() would also sleep between pages.
   const fetchItem = (cache: WikiCache) =>
@@ -53,7 +54,7 @@ describe("WikiCache", () => {
 
   beforeEach(() => {
     dir = mkdtempSync(path.join(tmpdir(), "wiki-cache-test-"));
-    fetchMock = jest.fn();
+    fetchMock = vi.fn();
     global.fetch = fetchMock as unknown as typeof fetch;
   });
   afterEach(() => {

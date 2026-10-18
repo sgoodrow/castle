@@ -1,6 +1,6 @@
 import { commit, describeError, fingerprint, remember, reportError, stopping } from "./error-reports";
 
-jest.mock("./logger", () => ({ log: jest.fn() }));
+vi.mock("./logger", () => ({ log: vi.fn() }));
 
 const calls: { url: string; method: string; body: any }[] = [];
 let searchHits: number[] = [];
@@ -11,7 +11,7 @@ beforeEach(() => {
   searchHits = [];
   process.env.githubErrorToken = "ghp_testtoken1234";
   process.env.GIT_REV = "abc123";
-  global.fetch = jest.fn(async (url: string, init: any) => {
+  global.fetch = vi.fn(async (url: string, init: any) => {
     calls.push({ url, method: init.method, body: init.body && JSON.parse(init.body) });
     const json = url.includes("/search/") ? { items: searchHits.map(number => ({ number })) } : { number: 42 };
     return { ok: true, status: 200, json: async () => json } as Response;
@@ -102,7 +102,7 @@ describe("what an issue says", () => {
 
   it("says which features and errors a repeat was, in its periodic comment", async () => {
     const now = Date.now();
-    const spy = jest.spyOn(Date, "now").mockReturnValue(now);
+    const spy = vi.spyOn(Date, "now").mockReturnValue(now);
     const r = { source: "worker" as const, message: "repeats", stack: "at f (src/r.ts:1:1)", outcome: "Nothing shown." };
     await reportError({ ...r, feature: "/bot request" });
     await reportError({ ...r, feature: "/bot request" });

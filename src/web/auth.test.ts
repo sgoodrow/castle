@@ -1,8 +1,9 @@
+import type { Mock } from "vitest";
 import { createHmac } from "crypto";
 import { IncomingMessage, ServerResponse } from "http";
 import { Auth, AuthConfig, cookies, Session } from "./auth";
 
-jest.mock("../shared/logger", () => ({ log: jest.fn() }));
+vi.mock("../shared/logger", () => ({ log: vi.fn() }));
 
 const config: AuthConfig = {
   clientId: "client-id",
@@ -196,7 +197,7 @@ describe("Auth.logout", () => {
 
 describe("Auth.callback", () => {
   const realFetch = global.fetch;
-  let fetchMock: jest.Mock;
+  let fetchMock: Mock;
 
   const json = (status: number, body: unknown) =>
     ({
@@ -211,7 +212,7 @@ describe("Auth.callback", () => {
   });
 
   beforeEach(() => {
-    fetchMock = jest.fn();
+    fetchMock = vi.fn();
     global.fetch = fetchMock as unknown as typeof fetch;
   });
   afterEach(() => {

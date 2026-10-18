@@ -11,7 +11,7 @@ fail=0
 problem() { echo "::error::$1"; fail=1; }
 
 TESTS='^(bank/web/features|src/web/features|bank/web/src/__fixtures__)/'
-CONFIGS='^(jest\.config\.js|bank/web/vite\.config\.ts)$'
+CONFIGS='^(vitest\.config\.mts|bank/web/vite\.config\.ts)$'
 # One file's thresholds on one line, as both configs write them:
 #   './src/web/auth.ts': { lines: 100, branches: 100, functions: 100 },
 THRESHOLD="^[[:space:]]*['\"][^'\"]+['\"]: \{ lines: [0-9]+, branches: [0-9]+, functions: [0-9]+ \},?[[:space:]]*$"

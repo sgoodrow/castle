@@ -1,7 +1,7 @@
 import { MessageCreateOptions, MessageReaction, User } from "discord.js";
 import { tryBankRequestComplete } from "./bank-request-complete-reaction";
 
-jest.mock("../../../config", () => ({
+vi.mock("../../../config", () => ({
   bankRequestsChannelId: "requests",
   bankTransactionsChannelId: "transactions",
   bankerRoleId: "banker",
@@ -14,7 +14,7 @@ const sent: MessageCreateOptions[] = [];
 // The executor replies to the request with any error the handler throws.
 const errors: string[] = [];
 
-jest.mock("../../..", () => ({
+vi.mock("../../..", () => ({
   getMember: async (id: string) => ({
     roles: {
       cache: { has: (role: string) => (roles[id] ?? []).includes(role) },
@@ -39,7 +39,7 @@ const siteRequest = (
   embeds: [embed],
   mentions: { users: new Map() },
   author: { bot: true },
-  delete: jest.fn(),
+  delete: vi.fn(),
   reply: (err: string) => errors.push(err),
 });
 
@@ -49,7 +49,7 @@ const commandRequest = () => ({
   embeds: [],
   mentions: { users: new Map([["222", {}]]) },
   author: { bot: true },
-  delete: jest.fn(),
+  delete: vi.fn(),
   reply: (err: string) => errors.push(err),
 });
 

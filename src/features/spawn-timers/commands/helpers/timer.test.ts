@@ -1,4 +1,4 @@
-jest.mock("../../../../db/timer-client", () => ({
+vi.mock("../../../../db/timer-client", () => ({
   timerPrismaClient: {},
 }));
 
