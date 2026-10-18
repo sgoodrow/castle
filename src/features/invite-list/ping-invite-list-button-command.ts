@@ -35,10 +35,7 @@ export const getAttentionMessage = async (users: string[]) => {
 
   const statuses = await Promise.all(
     users.map(async (user) => {
-      const { presence } = await getMember(
-        user,
-        true
-      );
+      const { presence } = await getMember(user, true);
       return {
         user,
         status: getPresenceIcon(presence?.status),
@@ -73,9 +70,9 @@ class PingInviteListCommand extends ButtonCommand {
 
 ${attention}`;
     if (interaction.channel?.isTextBased() && !interaction.channel.isDMBased())
-    await interaction.channel
-      ?.send(alert)
-      .then((m) => setTimeout(() => m.delete(), 1 * HOURS));
+      await interaction.channel
+        ?.send(alert)
+        .then((m) => setTimeout(() => m.delete(), 1 * HOURS));
 
     await interaction.editReply("The invite list has been notified.");
   }

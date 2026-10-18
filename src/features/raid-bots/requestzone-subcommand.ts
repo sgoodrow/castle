@@ -39,9 +39,7 @@ export class RequestZoneSubcommand extends Subcommand {
     const release = await this.mutex.acquire();
     const publicAccounts = PublicAccountsFactory.getService();
 
-    const guildUser = await getMember(
-      interaction.user.id
-    );
+    const guildUser = await getMember(interaction.user.id);
 
     if (!guildUser) {
       throw new Error("Couldn't identify user requesting bot");

@@ -13,10 +13,8 @@ const TIMEZONE_OFFSETS: Record<string, number> = {
   UTC: 0,
 };
 
-const TZ_REGEX =
-  /\b(PST|PDT|MST|MDT|CST|CDT|EST|EDT|GMT|UTC)\b/i;
-const TZ_REGEX_GLOBAL =
-  /\b(PST|PDT|MST|MDT|CST|CDT|EST|EDT|GMT|UTC)\b/gi;
+const TZ_REGEX = /\b(PST|PDT|MST|MDT|CST|CDT|EST|EDT|GMT|UTC)\b/i;
+const TZ_REGEX_GLOBAL = /\b(PST|PDT|MST|MDT|CST|CDT|EST|EDT|GMT|UTC)\b/gi;
 
 /**
  * Parse a time string into a Date object.
@@ -59,10 +57,14 @@ export function parseTime(
   }
 
   // Use chrono to parse the time string
-  const results = chrono.parse(str, {
-    instant: referenceDate,
-    timezone: tzOffset !== null ? tzOffset * 60 : undefined,
-  }, { forwardDate: false });
+  const results = chrono.parse(
+    str,
+    {
+      instant: referenceDate,
+      timezone: tzOffset !== null ? tzOffset * 60 : undefined,
+    },
+    { forwardDate: false }
+  );
 
   if (results.length === 0) return null;
 
@@ -74,5 +76,3 @@ export function parseTime(
 
   return parsedDate;
 }
-
-

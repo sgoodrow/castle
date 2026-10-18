@@ -246,9 +246,9 @@ export const castledkp = {
     //   });
 
     return {
-      eventUrlSlug: tick.data.eqdkpEvent?.name || "Unknown"
-        .toLowerCase()
-        .replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
+      eventUrlSlug:
+        tick.data.eqdkpEvent?.name ||
+        "Unknown".toLowerCase().replace(CASTLE_DKP_EVENT_URL_STRIP, "-"),
       id: data.raid_id,
       tick: tick,
       invalidNames,

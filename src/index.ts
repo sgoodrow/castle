@@ -1,4 +1,11 @@
-import { ChannelType, Client, Events, GatewayIntentBits, Guild, Partials } from "discord.js";
+import {
+  ChannelType,
+  Client,
+  Events,
+  GatewayIntentBits,
+  Guild,
+  Partials,
+} from "discord.js";
 import { interactionCreateListener } from "./listeners/interaction-create-listener";
 import { guildId, token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
@@ -77,7 +84,7 @@ export const getMembers = async () => {
 
 export const getMember = async (userId: string, withPresences = false) => {
   const guild = await getGuild();
-  
+
   const cached = guild.members.cache.get(userId);
   if (cached && (!withPresences || cached.presence !== null)) {
     return cached;
@@ -102,14 +109,22 @@ setInterval(() => {
 process.on("unhandledRejection", (reason: unknown, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
   const err = reason instanceof Error ? reason : undefined;
-  reportError({ source: "worker", message: String(err?.message || reason), stack: err?.stack });
+  reportError({
+    source: "worker",
+    message: String(err?.message || reason),
+    stack: err?.stack,
+  });
 });
 process.on("uncaughtException", (err) => {
   // Report, then exit as Node would have; Dokku starts the bot again.
   console.error(err);
   const exit = () => process.exit(1);
   setTimeout(exit, 5000).unref();
-  reportError({ source: "worker", message: err.message, stack: err.stack }).finally(exit);
+  reportError({
+    source: "worker",
+    message: err.message,
+    stack: err.stack,
+  }).finally(exit);
 });
 
 const shutdown = async (signal: string) => {

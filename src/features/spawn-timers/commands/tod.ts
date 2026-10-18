@@ -3,7 +3,13 @@ import { SimpleCommand } from "../../../shared/command/simple-command";
 import { timerPrismaClient } from "../../../db/timer-client";
 import { forgetEndedTimers } from "./helpers/ended-timers";
 import { formatDateFull } from "./helpers/format";
-import { findTimerByMob, lastSpawnTimeStart, nextSpawnTimeStart, nextSpawnTimeEnd, hasWindow } from "./helpers/timer";
+import {
+  findTimerByMob,
+  lastSpawnTimeStart,
+  nextSpawnTimeStart,
+  nextSpawnTimeEnd,
+  hasWindow,
+} from "./helpers/timer";
 import { parseTime } from "./parsers/time-parser";
 
 class TodCommand extends SimpleCommand {
@@ -18,7 +24,9 @@ class TodCommand extends SimpleCommand {
       .addStringOption((opt) =>
         opt
           .setName("time")
-          .setDescription('Time of death (e.g. "10 hours ago", "-20", "May 26 12pm"). Defaults to now.')
+          .setDescription(
+            'Time of death (e.g. "10 hours ago", "-20", "May 26 12pm"). Defaults to now.'
+          )
           .setRequired(false)
       )
       .addIntegerOption((opt) =>
@@ -41,7 +49,9 @@ class TodCommand extends SimpleCommand {
     // If a bare time (no date component) parses to the future, assume the previous day
     if (tod && tod > now && timeStr) {
       const hasDateComponent =
-        /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*|yesterday|today|tomorrow|ago|last\s+\w+|next\s+\w+|\d{1,2}[\/\-.]\d{1,2}([\/\-.]\d{2,4})?/i.test(timeStr);
+        /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*|yesterday|today|tomorrow|ago|last\s+\w+|next\s+\w+|\d{1,2}[\/\-.]\d{1,2}([\/\-.]\d{2,4})?/i.test(
+          timeStr
+        );
       if (!hasDateComponent) {
         tod = new Date(tod.getTime() - 24 * 60 * 60 * 1000);
       }
@@ -87,7 +97,8 @@ class TodCommand extends SimpleCommand {
     // Validation: future dates
     if (tod > now) {
       await interaction.editReply({
-        content: "Time of death unable to be recorded due to time in the future.",
+        content:
+          "Time of death unable to be recorded due to time in the future.",
       });
       return;
     }
@@ -104,14 +115,16 @@ class TodCommand extends SimpleCommand {
       (now < lastSpawn! || nextSpawnEnd < now)
     ) {
       await interaction.editReply({
-        content: "Current time is outside of potential window and would have expired by now. Please try again.",
+        content:
+          "Current time is outside of potential window and would have expired by now. Please try again.",
       });
       return;
     }
 
     if (!hasWindow(timer) && lastSpawn && timeStr && tod < lastSpawn) {
       await interaction.editReply({
-        content: "Time of death is older than potential spawn timer. Please try again.",
+        content:
+          "Time of death is older than potential spawn timer. Please try again.",
       });
       return;
     }
@@ -190,4 +203,8 @@ class TodCommand extends SimpleCommand {
   }
 }
 
-export const todCommand = new TodCommand("tod", "Record a time of death for a registered timer", false);
+export const todCommand = new TodCommand(
+  "tod",
+  "Record a time of death for a registered timer",
+  false
+);

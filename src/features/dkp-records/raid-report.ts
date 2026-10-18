@@ -164,11 +164,12 @@ export class RaidReport {
     const emoji = this.finished ? "✅" : this.allTicksHaveEvent ? "❕" : "❔";
     const label = every(this.ticks, (t) => t.hasEvent)
       ? uniq(this.ticks.map(({ eventAbreviation }) => eventAbreviation)).join(
-        ", "
-      )
+          ", "
+        )
       : `${this.filename.replace(/[^a-zA-Z]+/g, "")}?`;
-    return `${emoji} ${this.ticks[0].shortDate} (${Math.round(this.netDkp)}) ${label || "Unidentified"
-      }`;
+    return `${emoji} ${this.ticks[0].shortDate} (${Math.round(this.netDkp)}) ${
+      label || "Unidentified"
+    }`;
   }
 
   public getCreditCommands(): string[] {
@@ -285,8 +286,9 @@ Kill bonus values: https://docs.google.com/spreadsheets/d/1cZdD1HOtDutOvxkEp0-up
     if (failed.length > 0) {
       embeds.push(
         new EmbedBuilder({
-          title: `${failed.length} problem${failed.length > 1 ? "s" : ""
-            } with the upload.`,
+          title: `${failed.length} problem${
+            failed.length > 1 ? "s" : ""
+          } with the upload.`,
           description: failed.join("\n"),
         })
       );
@@ -462,13 +464,16 @@ ${p}${code}`,
   }
 
   private getAttendanceMap() {
-    return this.allAttendees.reduce((m, a) => {
-      m[a] = this.ticks
-        .map((tick, tickIndex) => ({ tick, tickNumber: tickIndex + 1 }))
-        .filter(({ tick }) => tick.data.attendees.includes(a))
-        .map(({ tickNumber }) => tickNumber);
-      return m;
-    }, {} as { [attendee: string]: number[] });
+    return this.allAttendees.reduce(
+      (m, a) => {
+        m[a] = this.ticks
+          .map((tick, tickIndex) => ({ tick, tickNumber: tickIndex + 1 }))
+          .filter(({ tick }) => tick.data.attendees.includes(a))
+          .map(({ tickNumber }) => tickNumber);
+        return m;
+      },
+      {} as { [attendee: string]: number[] }
+    );
   }
 
   private get attendance(): string {
@@ -482,10 +487,10 @@ ${p}${code}`,
     );
     return `--- Attendance (${sorted.length}) ---
 ${sorted
-        .map((name, i) =>
-          this.renderAttendee(labels[i].padEnd(width), attendanceMap[name])
-        )
-        .join("\n")}`;
+  .map((name, i) =>
+    this.renderAttendee(labels[i].padEnd(width), attendanceMap[name])
+  )
+  .join("\n")}`;
   }
 
   /**
@@ -504,9 +509,7 @@ ${sorted
 
   // e.g. "Iceburgh [Pumped]" when Iceburgh replaced their bot Pumped
   private labelAttendee(name: string): string {
-    const replaced = uniq(
-      compact(this.ticks.map((t) => t.getReplaced(name)))
-    );
+    const replaced = uniq(compact(this.ticks.map((t) => t.getReplaced(name))));
     return replaced.length > 0 ? `${name} [${replaced.join(", ")}]` : name;
   }
 

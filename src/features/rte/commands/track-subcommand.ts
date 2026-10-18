@@ -23,15 +23,26 @@ export class TrackSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const characterName = this.getRequiredOptionValue<string>(Option.Character, interaction);
-    const target = this.getRequiredOptionValue<string>(Option.Target, interaction);
-    const startTimeStr = this.getOptionValue<string>(Option.StartTime, interaction);
+    const characterName = this.getRequiredOptionValue<string>(
+      Option.Character,
+      interaction
+    );
+    const target = this.getRequiredOptionValue<string>(
+      Option.Target,
+      interaction
+    );
+    const startTimeStr = this.getOptionValue<string>(
+      Option.StartTime,
+      interaction
+    );
 
     let startTime: Date | null = null;
     if (startTimeStr) {
       startTime = parseTime(startTimeStr);
       if (!startTime) {
-        await interaction.editReply("I couldn't understand that start time. Try something like `30 minutes ago` or `3:30 PM`.");
+        await interaction.editReply(
+          "I couldn't understand that start time. Try something like `30 minutes ago` or `3:30 PM`."
+        );
         return;
       }
       if (startTime.getTime() > Date.now()) {
@@ -51,8 +62,12 @@ export class TrackSubcommand extends Subcommand {
 
     await refreshRteStatusEmbed();
 
-    const backdateMsg = startTime ? ` (started at ${startTime.toLocaleTimeString()})` : "";
-    await interaction.editReply(`You are now tracking **${target}** on **${characterName}**${backdateMsg}. Check your DMs for the session controls.`);
+    const backdateMsg = startTime
+      ? ` (started at ${startTime.toLocaleTimeString()})`
+      : "";
+    await interaction.editReply(
+      `You are now tracking **${target}** on **${characterName}**${backdateMsg}. Check your DMs for the session controls.`
+    );
   }
 
   public get command() {
@@ -74,12 +89,17 @@ export class TrackSubcommand extends Subcommand {
       .addStringOption((o) =>
         o
           .setName(Option.StartTime)
-          .setDescription("When the session started (e.g., '30 minutes ago'). Defaults to now.")
+          .setDescription(
+            "When the session started (e.g., '30 minutes ago'). Defaults to now."
+          )
           .setRequired(false)
       );
   }
 
-  public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction<CacheType>) {
+  public async getOptionAutocomplete(
+    option: string,
+    interaction: AutocompleteInteraction<CacheType>
+  ) {
     switch (option) {
       case Option.Character: {
         const chars = await openDkpService.getCharacters();
@@ -89,11 +109,16 @@ export class TrackSubcommand extends Subcommand {
         }));
       }
       case Option.Target:
-        return await RaidValuesService.getInstance().getTargetOptions(interaction.user.id);
+        return await RaidValuesService.getInstance().getTargetOptions(
+          interaction.user.id
+        );
       default:
         return;
     }
   }
 }
 
-export const trackSubcommand = new TrackSubcommand("track", "Indicate you are tracking a raid target.");
+export const trackSubcommand = new TrackSubcommand(
+  "track",
+  "Indicate you are tracking a raid target."
+);

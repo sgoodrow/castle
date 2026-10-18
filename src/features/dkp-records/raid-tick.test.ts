@@ -32,7 +32,14 @@ describe("creditCommands", () => {
   it("adds the bot with the reason before the rep when it is not in attendance", () => {
     const commands = tick(
       ["Someone"],
-      [{ type: "PILOT", character: "Pumped", pilot: "Iceburgh", reason: "dead" }]
+      [
+        {
+          type: "PILOT",
+          character: "Pumped",
+          pilot: "Iceburgh",
+          reason: "dead",
+        },
+      ]
     ).creditCommands;
     expect(commands).toEqual([
       "!add Pumped 2 (dead)",
@@ -132,7 +139,10 @@ describe("renderClasses", () => {
 
   it("wraps into rows and aligns counts", () => {
     const many = ["Aa", "Bb", "Cc", "Dd", "Unknown"];
-    const t = tick([...many, ...Array.from({ length: 9 }, (_, i) => `X${i}`)], []);
+    const t = tick(
+      [...many, ...Array.from({ length: 9 }, (_, i) => `X${i}`)],
+      []
+    );
     expect(t.renderClasses((n) => classes[n], 2)).toEqual(
       ["?   10   CLR  2", "SHD  1   WAR  1"].join("\n")
     );

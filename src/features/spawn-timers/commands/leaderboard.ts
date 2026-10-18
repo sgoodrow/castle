@@ -11,13 +11,13 @@ class LeaderboardCommand extends SimpleCommand {
       .addStringOption((opt) =>
         opt
           .setName("start_date")
-          .setDescription("Start date filter (e.g. \"2 weeks ago\")")
+          .setDescription('Start date filter (e.g. "2 weeks ago")')
           .setRequired(false)
       )
       .addStringOption((opt) =>
         opt
           .setName("end_date")
-          .setDescription("End date filter (e.g. \"yesterday\")")
+          .setDescription('End date filter (e.g. "yesterday")')
           .setRequired(false)
       );
   }
@@ -103,7 +103,10 @@ class LeaderboardCommand extends SimpleCommand {
       lines.push(`Rank  ${"Name".padEnd(30)}Count`);
 
       tods.forEach((tod, index) => {
-        const name = (userNames.get(tod.userId ?? "") ?? "Unknown").slice(0, 29);
+        const name = (userNames.get(tod.userId ?? "") ?? "Unknown").slice(
+          0,
+          29
+        );
         const rank = String(index + 1).padStart(4);
         lines.push(`${rank}  ${name.padEnd(30)}${tod._count.userId}`);
       });
@@ -115,4 +118,8 @@ class LeaderboardCommand extends SimpleCommand {
   }
 }
 
-export const leaderboardCommand = new LeaderboardCommand("leaderboard", "Display leaderboard of TOD recordings by user", false);
+export const leaderboardCommand = new LeaderboardCommand(
+  "leaderboard",
+  "Display leaderboard of TOD recordings by user",
+  false
+);

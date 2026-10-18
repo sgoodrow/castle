@@ -11,18 +11,10 @@ class HelpCommand extends SimpleCommand {
     lines.push(
       "/register         - Register a new timer that you want to start tracking."
     );
-    lines.push(
-      "/unregister       - Removes a previously registered timer."
-    );
-    lines.push(
-      "/alias            - Adds or removes an alias on a timer."
-    );
-    lines.push(
-      "/show             - Displays configuration about a timer."
-    );
-    lines.push(
-      "/rename           - Renames an existing timer."
-    );
+    lines.push("/unregister       - Removes a previously registered timer.");
+    lines.push("/alias            - Adds or removes an alias on a timer.");
+    lines.push("/show             - Displays configuration about a timer.");
+    lines.push("/rename           - Renames an existing timer.");
     lines.push(
       "/tod              - Record a time of death for a registered timer."
     );
@@ -56,16 +48,15 @@ class HelpCommand extends SimpleCommand {
     lines.push(
       "/schedule         - Outputs a human-readable schedule for the next 7 days."
     );
-    lines.push(
-      "/leaderboard      - Displays leaderboard of TOD by user."
-    );
-    lines.push(
-      "/earthquake       - Resets the TOD for all timers. Warning!!!"
-    );
+    lines.push("/leaderboard      - Displays leaderboard of TOD by user.");
+    lines.push("/earthquake       - Resets the TOD for all timers. Warning!!!");
     lines.push("```");
 
     await interaction.editReply({ content: lines.join("\n") });
   }
 }
 
-export const helpCommand = new HelpCommand("help", "Display the help menu with all available commands");
+export const helpCommand = new HelpCommand(
+  "help",
+  "Display the help menu with all available commands"
+);

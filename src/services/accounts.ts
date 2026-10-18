@@ -19,7 +19,7 @@ import { some } from "lodash";
 import { checkGoogleCredentials } from "./gdrive";
 import moment from "moment";
 import { getClassAbreviation } from "../shared/classes";
-import { log } from "../shared/logger"
+import { log } from "../shared/logger";
 import { Mutex } from "async-mutex";
 
 enum SPREADSHEET_COLUMNS {
@@ -96,7 +96,7 @@ const getAccounts = async () => {
     }
     await accounts.refreshAccountData();
     return cache;
-  })
+  });
 };
 
 export const accounts = {
@@ -123,7 +123,6 @@ export const accounts = {
     });
     const end = moment.now();
     log(`Took ${end - start}ms to refresh bot data (${cache.size} bots)`);
-
   },
   getAccountsForRole: async (roleId: string): Promise<Account[]> => {
     const accounts = await getAccounts();
@@ -164,7 +163,9 @@ export const accounts = {
     if (!d) {
       d = accounts.find((a) => a.characters.includes(toSentenceCase(name)));
       if (!d) {
-        throw new Error(`${name} was not found in the private bot sheet (account details).`);
+        throw new Error(
+          `${name} was not found in the private bot sheet (account details).`
+        );
       }
     }
     const hasRole = some(

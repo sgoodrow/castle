@@ -22,17 +22,20 @@ class JeweleryCleanupCommand extends ButtonCommand {
       .filter(
         (m) => !(m.member?.roles.cache.has(jewelerRoleId) || m.member?.user.bot)
       )
-      .reduce((map, message) => {
-        const id = message.author.id;
-        if (!map[id]) {
-          map[id] = {
-            messages: [],
-            user: message.author,
-          };
-        }
-        map[id].messages.push(message);
-        return map;
-      }, {} as { [userId: string]: { messages: Message[]; user: User } });
+      .reduce(
+        (map, message) => {
+          const id = message.author.id;
+          if (!map[id]) {
+            map[id] = {
+              messages: [],
+              user: message.author,
+            };
+          }
+          map[id].messages.push(message);
+          return map;
+        },
+        {} as { [userId: string]: { messages: Message[]; user: User } }
+      );
 
     // nothing to do
     if (!Object.keys(nonJewelerMessagesMap).length) {

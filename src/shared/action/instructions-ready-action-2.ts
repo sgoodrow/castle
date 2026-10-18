@@ -90,7 +90,11 @@ export class InstructionsReadyAction {
       return await channel.messages.fetch(instructions.id);
     } catch (error) {
       if (error instanceof DiscordAPIError) {
-        if (error.status === 404 || error.code === 50001 || error.code === 50013) {
+        if (
+          error.status === 404 ||
+          error.code === 50001 ||
+          error.code === 50013
+        ) {
           console.error(
             `Could not access message ${instructions.id} in channel ${this.channelId} for ${this.constructor.name} instructions. Was it deleted or are permissions missing?`
           );

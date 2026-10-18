@@ -1,7 +1,9 @@
 import { timerPrismaClient } from "../../../../db/timer-client";
 
 export async function getSettingByKey(key: string): Promise<string | null> {
-  const setting = await timerPrismaClient.setting.findUnique({ where: { key } });
+  const setting = await timerPrismaClient.setting.findUnique({
+    where: { key },
+  });
   return setting?.value ?? null;
 }
 

@@ -12,7 +12,6 @@ import { parseInventoryFile, uploadToGDrive } from "../inventory-files";
 
 const supportedFormat = "text/plain; charset=utf-8";
 
-
 export const tryParseInventoryAction = (message: Message) =>
   messageActionExecutor(new UploadInventoryMessageAction(message));
 
@@ -45,5 +44,4 @@ class UploadInventoryMessageAction extends MessageAction {
     await bankData.setInventory(inventory);
     message.react("✅");
   }
-
 }

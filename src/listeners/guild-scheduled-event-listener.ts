@@ -1,4 +1,8 @@
-import { GuildScheduledEvent, GuildScheduledEventStatus, PartialGuildScheduledEvent } from "discord.js";
+import {
+  GuildScheduledEvent,
+  GuildScheduledEventStatus,
+  PartialGuildScheduledEvent,
+} from "discord.js";
 import { client } from "..";
 import { recordRaidStarted } from "../features/raid-schedule-info/raid-started";
 import { updateRaidSchedule } from "../features/raid-schedule-info/update-action";

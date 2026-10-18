@@ -38,7 +38,9 @@ describe("recently ended timers", () => {
 
   it("drops a timer once it has a new tod", () => {
     recordEndedTimer(1, endsAt);
-    expect(getRecentlyEndedAt(makeTimer({ lastTod: 1 }), minutesAfter(20))).toBeNull();
+    expect(
+      getRecentlyEndedAt(makeTimer({ lastTod: 1 }), minutesAfter(20))
+    ).toBeNull();
     expect(getRecentlyEndedAt(makeTimer(), minutesAfter(20))).toBeNull();
   });
 
@@ -46,8 +48,12 @@ describe("recently ended timers", () => {
     recordEndedTimer(1, endsAt);
     recordEndedTimer(2, endsAt);
     forgetEndedTimers([1]);
-    expect(getRecentlyEndedAt(makeTimer({ id: 1 }), minutesAfter(20))).toBeNull();
-    expect(getRecentlyEndedAt(makeTimer({ id: 2 }), minutesAfter(20))).toEqual(endsAt);
+    expect(
+      getRecentlyEndedAt(makeTimer({ id: 1 }), minutesAfter(20))
+    ).toBeNull();
+    expect(getRecentlyEndedAt(makeTimer({ id: 2 }), minutesAfter(20))).toEqual(
+      endsAt
+    );
   });
 
   it("ignores timers that were never recorded", () => {

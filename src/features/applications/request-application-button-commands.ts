@@ -25,9 +25,8 @@ export class RequestApplication extends ButtonCommand {
       content: `You have been DM'd the **${this.label}**.`,
     });
 
-    const channel = await interaction.guild?.channels.fetch(
-      requestDumpThreadId
-    );
+    const channel =
+      await interaction.guild?.channels.fetch(requestDumpThreadId);
     if (!channel) {
       throw new Error("Could not locate the request dump channel");
     }

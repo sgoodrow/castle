@@ -8,10 +8,7 @@ class ScheduleCommand extends SimpleCommand {
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
     const timers = await timerPrismaClient.timer.findMany();
 
-    const days = new Map<
-      string,
-      Array<{ name: string; time: Date }>
-    >();
+    const days = new Map<string, Array<{ name: string; time: Date }>>();
 
     for (const timer of timers) {
       const nextSpawn = nextSpawnTimeStart(timer);
@@ -53,4 +50,8 @@ class ScheduleCommand extends SimpleCommand {
   }
 }
 
-export const scheduleCommand = new ScheduleCommand("schedule", "Show a human-readable schedule for the next 7 days", false);
+export const scheduleCommand = new ScheduleCommand(
+  "schedule",
+  "Show a human-readable schedule for the next 7 days",
+  false
+);

@@ -5,13 +5,9 @@ import { findTimerByMob, hasWindow } from "./helpers/timer";
 
 class AutotodCommand extends SimpleCommand {
   public get command() {
-    return super.command
-      .addStringOption((opt) =>
-        opt
-          .setName("mob")
-          .setDescription("Name of the mob/NPC")
-          .setRequired(true)
-      );
+    return super.command.addStringOption((opt) =>
+      opt.setName("mob").setDescription("Name of the mob/NPC").setRequired(true)
+    );
   }
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
@@ -53,4 +49,7 @@ class AutotodCommand extends SimpleCommand {
   }
 }
 
-export const autotodCommand = new AutotodCommand("autotod", "Enable/disable automatic TOD when a timer expires (no-window timers only)");
+export const autotodCommand = new AutotodCommand(
+  "autotod",
+  "Enable/disable automatic TOD when a timer expires (no-window timers only)"
+);

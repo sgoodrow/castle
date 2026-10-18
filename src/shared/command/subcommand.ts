@@ -10,8 +10,7 @@ export const getOption = (
   subcommandName: string,
   option: string,
   interaction:
-    | AutocompleteInteraction<CacheType>
-    | CommandInteraction<CacheType>
+    AutocompleteInteraction<CacheType> | CommandInteraction<CacheType>
 ) => {
   if (interaction.isAutocomplete()) {
     const subcommand = interaction.options.data.find(
@@ -39,8 +38,7 @@ export abstract class Subcommand extends BaseCommand {
   protected getOption(
     name: string,
     interaction:
-      | CommandInteraction<CacheType>
-      | AutocompleteInteraction<CacheType>
+      CommandInteraction<CacheType> | AutocompleteInteraction<CacheType>
   ) {
     return getOption(this.name, name, interaction);
   }
@@ -48,8 +46,7 @@ export abstract class Subcommand extends BaseCommand {
   protected getOptionValue<T>(
     name: string,
     interaction:
-      | CommandInteraction<CacheType>
-      | AutocompleteInteraction<CacheType>
+      CommandInteraction<CacheType> | AutocompleteInteraction<CacheType>
   ) {
     const o = this.getOption(name, interaction);
     if (o?.value === undefined) {
@@ -61,8 +58,7 @@ export abstract class Subcommand extends BaseCommand {
   protected getRequiredOptionValue<T>(
     name: string,
     interaction:
-      | CommandInteraction<CacheType>
-      | AutocompleteInteraction<CacheType>
+      CommandInteraction<CacheType> | AutocompleteInteraction<CacheType>
   ) {
     const o = this.getOption(name, interaction);
     if (!o) {

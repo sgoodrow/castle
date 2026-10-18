@@ -31,7 +31,7 @@ import { botCommand } from "../features/raid-bots/command";
 import { batphoneCommand } from "../features/bp/bp-command";
 import { wakeupCommand } from "../features/wakeup/wakeup-command";
 import { requestBotButtonCommand } from "../features/bp/request-bot-button-command";
-import { parkBotButtonCommand } from "../features/raid-bots/park-bot-button-command"
+import { parkBotButtonCommand } from "../features/raid-bots/park-bot-button-command";
 import { odkpCommand } from "../features/odkp/odkp-command";
 import { rteCommand } from "../features/rte/command";
 import { eqnotifyCommand } from "../features/eqnotify/command";
@@ -118,8 +118,7 @@ const buttonCommands = [
 
 export const getCommand = (
   interaction:
-    | CommandInteraction<CacheType>
-    | AutocompleteInteraction<CacheType>
+    CommandInteraction<CacheType> | AutocompleteInteraction<CacheType>
 ) => {
   const command = slashCommands.find((c) => c.name === interaction.commandName);
   if (!command) {

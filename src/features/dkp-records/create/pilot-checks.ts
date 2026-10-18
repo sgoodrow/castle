@@ -28,9 +28,7 @@ export const getPilotWarnings = async (
   const warnings = await Promise.all(
     unique.map(async ({ bot, pilot }) => {
       const said = `${bot} said botpilot ${pilot}`;
-      const exists = await lookups
-        .characterExists(pilot)
-        .catch(() => true);
+      const exists = await lookups.characterExists(pilot).catch(() => true);
       if (!exists) {
         return `⚠️ ${said}, but there is no character named ${pilot} in OpenDKP`;
       }

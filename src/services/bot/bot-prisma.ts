@@ -9,9 +9,7 @@ import {
   ComponentType,
 } from "discord.js";
 import { Moment } from "moment";
-import {
-  BOT_SPREADSHEET_COLUMNS
-} from "../sheet-updater/public-sheet";
+import { BOT_SPREADSHEET_COLUMNS } from "../sheet-updater/public-sheet";
 import { IPublicAccountService } from "./public-accounts.i";
 import { bot } from "@prisma/client";
 import moment from "moment";
@@ -33,10 +31,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   private refreshing: boolean = false;
   private isReady: boolean = false;
 
-  
-
   constructor() {
-
     this.startRefreshLoop();
   }
 
@@ -66,7 +61,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   }
 
   public async guardReady() {
-    const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+    const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
     while (!this.isReady || this.refreshing) {
       await sleep(100);
     }
@@ -119,7 +114,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
           new ParkBotButtonCommand(`parkbot_${name}`).getButtonBuilder(bot)
         );
       }
-    } catch { }
+    } catch {}
     return components;
   }
 
@@ -146,7 +141,10 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
       const foundBot = details.characters;
       const prismaBot = await this.getBotByName(foundBot);
-      if (prismaBot?.class === Class.Wizard && roles.cache.has(noBotWizardsRoleId)) {
+      if (
+        prismaBot?.class === Class.Wizard &&
+        roles.cache.has(noBotWizardsRoleId)
+      ) {
         throw new Error("You do not have permission to request Wizard bots");
       }
       const currentPilot = await this.getCurrentBotPilot(foundBot);
@@ -181,13 +179,13 @@ Password: ${spoiler(details.password)}
 
       if (await this.isBotPublic(foundBot)) {
         try {
-          const guildUser = await getMember(
-            interaction.user.id
-          );
+          const guildUser = await getMember(interaction.user.id);
 
           log(
-            `${guildUser?.nickname || guildUser?.user.username
-            } requested ${name} and got ${details.characters} ${currentPilot ? `who is checked out by ${currentPilot}` : ""
+            `${
+              guildUser?.nickname || guildUser?.user.username
+            } requested ${name} and got ${details.characters} ${
+              currentPilot ? `who is checked out by ${currentPilot}` : ""
             }`
           );
 

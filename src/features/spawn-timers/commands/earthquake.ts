@@ -1,8 +1,16 @@
-import { ChatInputCommandInteraction, CacheType, TextChannel } from "discord.js";
+import {
+  ChatInputCommandInteraction,
+  CacheType,
+  TextChannel,
+} from "discord.js";
 import { SimpleCommand } from "../../../shared/command/simple-command";
 import { timerPrismaClient } from "../../../db/timer-client";
 import { forgetEndedTimers } from "./helpers/ended-timers";
-import { EARTHQUAKE_ALERT_CHANNEL_ID, EARTHQUAKE_ALERT_MESSAGE, TIMER_ALERT_CHANNEL_ID } from "../../../config";
+import {
+  EARTHQUAKE_ALERT_CHANNEL_ID,
+  EARTHQUAKE_ALERT_MESSAGE,
+  TIMER_ALERT_CHANNEL_ID,
+} from "../../../config";
 
 class EarthquakeCommand extends SimpleCommand {
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
@@ -39,9 +47,7 @@ class EarthquakeCommand extends SimpleCommand {
           EARTHQUAKE_ALERT_CHANNEL_ID
         )) as TextChannel;
         if (quakeChannel) {
-          await quakeChannel.send(
-            EARTHQUAKE_ALERT_MESSAGE || "QUAKE"
-          );
+          await quakeChannel.send(EARTHQUAKE_ALERT_MESSAGE || "QUAKE");
         }
       } catch {
         // Channel may not be accessible
@@ -50,4 +56,8 @@ class EarthquakeCommand extends SimpleCommand {
   }
 }
 
-export const earthquakeCommand = new EarthquakeCommand("earthquake", "Reset the TOD for ALL timers. Warning: this clears everything!", false);
+export const earthquakeCommand = new EarthquakeCommand(
+  "earthquake",
+  "Reset the TOD for ALL timers. Warning: this clears everything!",
+  false
+);

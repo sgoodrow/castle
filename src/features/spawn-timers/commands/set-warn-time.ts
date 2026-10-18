@@ -15,7 +15,9 @@ class SetWarnTimeCommand extends SimpleCommand {
       .addStringOption((opt) =>
         opt
           .setName("interval")
-          .setDescription('Warning interval (e.g. "20 minutes", "-1" to disable)')
+          .setDescription(
+            'Warning interval (e.g. "20 minutes", "-1" to disable)'
+          )
           .setRequired(true)
       );
   }
@@ -52,4 +54,7 @@ class SetWarnTimeCommand extends SimpleCommand {
   }
 }
 
-export const setWarnTimeCommand = new SetWarnTimeCommand("set_warn_time", "Set how long before a timer expires to send a warning alert. -1 disables warnings.");
+export const setWarnTimeCommand = new SetWarnTimeCommand(
+  "set_warn_time",
+  "Set how long before a timer expires to send a warning alert. -1 disables warnings."
+);

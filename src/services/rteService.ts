@@ -37,7 +37,9 @@ export const rteService = {
 
     if (!openTarget) {
       if (rteRequireOpenTarget) {
-        throw new Error(`Target ${input.target} is not currently open for RTE.`);
+        throw new Error(
+          `Target ${input.target} is not currently open for RTE.`
+        );
       }
       // Auto-create the target as open so the embed can display it.
       openTarget = await prismaClient.rte_target.create({
@@ -82,7 +84,10 @@ export const rteService = {
       .setLabel("End Session (pop)")
       .setStyle(ButtonStyle.Danger);
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(endButton, popButton);
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      endButton,
+      popButton
+    );
 
     const dm = await user.send({
       content: `You have started a **${formatType(input.type)}** session for **${input.target}** on **${input.characterName}**.\n\nClick the button below to end your session when you are done.`,
@@ -99,7 +104,12 @@ export const rteService = {
     return session;
   },
 
-  endSessionById: async (sessionId: number, endedByDiscordId: string, endTime?: Date, roundUp = false) => {
+  endSessionById: async (
+    sessionId: number,
+    endedByDiscordId: string,
+    endTime?: Date,
+    roundUp = false
+  ) => {
     const session = await prismaClient.rte.findUnique({
       where: { id: sessionId },
     });
@@ -184,7 +194,9 @@ export const rteService = {
           content: `Your **${formatType(session.type)}** session for **${session.target}** has been ended because the target was closed.\n\n**Summary:**\n- Character: ${session.characterName}\n- Duration: ${formatDuration(summary.elapsedMinutes)}\n- Rounded Duration: ${formatDuration(summary.roundedMinutes)}\n- Hourly Rate: ${summary.hourlyRate} DKP\n- **DKP Earned: ${summary.dkpEarned.toFixed(2)}**`,
         });
       } catch (err) {
-        log(`Failed to DM user ${session.discordId} about closed target: ${err}`);
+        log(
+          `Failed to DM user ${session.discordId} about closed target: ${err}`
+        );
       }
     }
 
@@ -212,13 +224,15 @@ export const rteService = {
   },
 
   canManageTargets: (roles: GuildMemberRoleManager) => {
-    return (
-      roles.cache.has(knightRoleId) || roles.cache.has(officerRoleId)
-    );
+    return roles.cache.has(knightRoleId) || roles.cache.has(officerRoleId);
   },
 };
 
-async function calculateDkp(session: { type: RteType; startTime: Date; target: string }, endTime: Date, roundUp = false): Promise<SessionSummary> {
+async function calculateDkp(
+  session: { type: RteType; startTime: Date; target: string },
+  endTime: Date,
+  roundUp = false
+): Promise<SessionSummary> {
   const elapsedMs = endTime.getTime() - session.startTime.getTime();
   const elapsedMinutes = elapsedMs / 1000 / 60;
   const roundedMinutes = roundUp

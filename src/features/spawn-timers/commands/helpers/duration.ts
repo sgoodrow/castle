@@ -21,13 +21,9 @@ export function parseDuration(input: string): number | null {
     const value = parseFloat(match[1]);
     const unit = match[2].toLowerCase();
 
-    if (
-      unit.startsWith("y")
-    ) {
+    if (unit.startsWith("y")) {
       totalSeconds += value * 365.25 * 24 * 3600;
-    } else if (
-      unit.startsWith("mo")
-    ) {
+    } else if (unit.startsWith("mo")) {
       totalSeconds += value * 30 * 24 * 3600;
     } else if (
       unit === "w" ||
@@ -35,10 +31,7 @@ export function parseDuration(input: string): number | null {
       unit.startsWith("wk")
     ) {
       totalSeconds += value * 7 * 24 * 3600;
-    } else if (
-      unit === "d" ||
-      unit.startsWith("day")
-    ) {
+    } else if (unit === "d" || unit.startsWith("day")) {
       totalSeconds += value * 24 * 3600;
     } else if (
       unit === "h" ||
@@ -46,15 +39,9 @@ export function parseDuration(input: string): number | null {
       unit.startsWith("hr")
     ) {
       totalSeconds += value * 3600;
-    } else if (
-      unit === "m" ||
-      unit.startsWith("min")
-    ) {
+    } else if (unit === "m" || unit.startsWith("min")) {
       totalSeconds += value * 60;
-    } else if (
-      unit === "s" ||
-      unit.startsWith("sec")
-    ) {
+    } else if (unit === "s" || unit.startsWith("sec")) {
       totalSeconds += value;
     }
   }
@@ -105,7 +92,11 @@ export function formatDuration(
       parts.push(`${secs} ${secs === 1 ? "second" : "seconds"}`);
   }
 
-  return parts.length > 0 ? parts.join(" ") : format === "short" ? "0s" : "0 seconds";
+  return parts.length > 0
+    ? parts.join(" ")
+    : format === "short"
+      ? "0s"
+      : "0 seconds";
 }
 
 /**
@@ -132,8 +123,13 @@ export function formatTimeAgo(time: Date, now: Date = new Date()): string {
 /**
  * Format how long ago a time was as "Xm Ys ago", always including both units.
  */
-export function formatMinutesSecondsAgo(time: Date, now: Date = new Date()): string {
-  const diffSeconds = Math.floor(Math.max(0, now.getTime() - time.getTime()) / 1000);
+export function formatMinutesSecondsAgo(
+  time: Date,
+  now: Date = new Date()
+): string {
+  const diffSeconds = Math.floor(
+    Math.max(0, now.getTime() - time.getTime()) / 1000
+  );
   const minutes = Math.floor(diffSeconds / 60);
   const seconds = diffSeconds % 60;
   return `${minutes}m ${seconds}s ago`;

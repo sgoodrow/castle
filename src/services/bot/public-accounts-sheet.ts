@@ -156,9 +156,8 @@ export class SheetPublicAccountService implements IPublicAccountService {
         }
       }
     } catch {
-        log(`ERROR - Failed to update public bot sheet data for ${botName}`);
+      log(`ERROR - Failed to update public bot sheet data for ${botName}`);
     }
-
   }
 
   /**
@@ -224,10 +223,10 @@ export class SheetPublicAccountService implements IPublicAccountService {
       log(`Looking for ${botClass} and found ${classRows.length} available.`);
       const matches = location
         ? availableClassRows.filter((r) =>
-          (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
-            ?.toUpperCase()
-            .includes(location.toUpperCase())
-        )
+            (r[BOT_SPREADSHEET_COLUMNS.CurrentLocation] as string)
+              ?.toUpperCase()
+              .includes(location.toUpperCase())
+          )
         : availableClassRows;
       // todo: get a random match instead of first to reduce race condition assigning same bot to multiple people
       const first = matches[0];

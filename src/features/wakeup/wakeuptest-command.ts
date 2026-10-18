@@ -16,7 +16,6 @@ import { container } from "tsyringe";
 import { WakeupService } from "./wakeup.service";
 
 export class WakeupTestSubcommand extends Subcommand {
-  
   constructor(name: string, description: string) {
     super(name, description);
   }

@@ -13,7 +13,6 @@ export enum SetSongOption {
   URL = "url",
 }
 export class SetSongSubcommand extends Subcommand {
-  
   constructor(name: string, description: string) {
     super(name, description);
   }

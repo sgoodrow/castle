@@ -6,13 +6,9 @@ import { findTimerByMob } from "./helpers/timer";
 
 class TodHistoryCommand extends SimpleCommand {
   public get command() {
-    return super.command
-      .addStringOption((opt) =>
-        opt
-          .setName("mob")
-          .setDescription("Name of the mob/NPC")
-          .setRequired(true)
-      );
+    return super.command.addStringOption((opt) =>
+      opt.setName("mob").setDescription("Name of the mob/NPC").setRequired(true)
+    );
   }
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
@@ -56,4 +52,8 @@ class TodHistoryCommand extends SimpleCommand {
   }
 }
 
-export const todHistoryCommand = new TodHistoryCommand("todhistory", "Show last 10 TODs recorded for a registered timer", false);
+export const todHistoryCommand = new TodHistoryCommand(
+  "todhistory",
+  "Show last 10 TODs recorded for a registered timer",
+  false
+);

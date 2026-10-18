@@ -21,7 +21,9 @@ class RenameCommand extends SimpleCommand {
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
     const mob = interaction.options.getString("mob", true);
-    const newName = interaction.options.getString("new_name", true).replace(/`/g, "'");
+    const newName = interaction.options
+      .getString("new_name", true)
+      .replace(/`/g, "'");
 
     const timer = await timerPrismaClient.timer.findFirst({
       where: { name: { equals: mob, mode: "insensitive" } },
@@ -45,4 +47,8 @@ class RenameCommand extends SimpleCommand {
   }
 }
 
-export const renameCommand = new RenameCommand("rename", "Rename an existing timer", false);
+export const renameCommand = new RenameCommand(
+  "rename",
+  "Rename an existing timer",
+  false
+);

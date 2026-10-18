@@ -63,9 +63,7 @@ class Remove extends Subcommand {
   ) {
     const weeklyBankAvailabilities = dataSource.getRepository(BankHour);
     const bankHour = await weeklyBankAvailabilities.findBy({});
-    await Promise.all(
-      bankHour.map(async (h) => getMember(h.userId))
-    );
+    await Promise.all(bankHour.map(async (h) => getMember(h.userId)));
     return bankHour?.map((h) => ({
       name: `${
         interaction.guild?.members.cache.get(h.userId)?.displayName

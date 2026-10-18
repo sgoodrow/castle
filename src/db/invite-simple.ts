@@ -29,8 +29,10 @@ export class InviteSimple {
   }
 
   public getDiscordDisplayName(members: GuildMember[]) {
-    const member = members?.find(m => m.id === this.discordId);
-    return member ? `**${member.displayName}** (<@${member.id}>)` : `**Left the server** (<@${this.discordId}>)`;
+    const member = members?.find((m) => m.id === this.discordId);
+    return member
+      ? `**${member.displayName}** (<@${member.id}>)`
+      : `**Left the server** (<@${this.discordId}>)`;
   }
 
   public getRichLabel(members: GuildMember[]) {

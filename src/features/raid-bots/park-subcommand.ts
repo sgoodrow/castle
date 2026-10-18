@@ -4,7 +4,7 @@ import { IPublicAccountService } from "../../services/bot/public-accounts.i";
 import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-sheet";
-import { log } from "../../shared/logger"
+import { log } from "../../shared/logger";
 import { getMember } from "../..";
 
 export enum Option {
@@ -46,9 +46,7 @@ export class ParkSubcommand extends Subcommand {
           `${name} was released in its previous location`
         );
       }
-      const guildUser = await getMember(
-        interaction.user.id
-      );
+      const guildUser = await getMember(interaction.user.id);
       log(
         `${guildUser?.nickname || guildUser?.user.username} parked ${name} ${
           location ? `in ${location}` : ""

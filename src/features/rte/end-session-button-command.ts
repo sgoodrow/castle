@@ -14,7 +14,9 @@ export class EndRteButtonCommand extends ButtonCommand {
     super(name);
   }
 
-  public async execute(interaction: ButtonInteraction<CacheType>): Promise<void> {
+  public async execute(
+    interaction: ButtonInteraction<CacheType>
+  ): Promise<void> {
     const sessionIdStr = interaction.customId.split("_")[2];
     const sessionId = Number.parseInt(sessionIdStr, 10);
 
@@ -26,7 +28,9 @@ export class EndRteButtonCommand extends ButtonCommand {
     try {
       await rteService.endSessionById(sessionId, interaction.user.id);
       await refreshRteStatusEmbed();
-      await interaction.editReply({ content: "Your session has been ended. Check your DMs for a summary." });
+      await interaction.editReply({
+        content: "Your session has been ended. Check your DMs for a summary.",
+      });
     } catch (err: unknown) {
       log(`Failed to end RTE session ${sessionId}: ${err}`);
       await interaction.editReply({ content: `Failed to end session: ${err}` });

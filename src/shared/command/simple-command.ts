@@ -1,4 +1,7 @@
-import { SlashCommandBuilder, type SlashCommandOptionsOnlyBuilder } from "@discordjs/builders";
+import {
+  SlashCommandBuilder,
+  type SlashCommandOptionsOnlyBuilder,
+} from "@discordjs/builders";
 import {
   ApplicationCommandOptionChoiceData,
   AutocompleteInteraction,

@@ -5,13 +5,9 @@ import { findTimerByMob } from "./helpers/timer";
 
 class ShowCommand extends SimpleCommand {
   public get command() {
-    return super.command
-      .addStringOption((opt) =>
-        opt
-          .setName("mob")
-          .setDescription("Name of the mob/NPC")
-          .setRequired(true)
-      );
+    return super.command.addStringOption((opt) =>
+      opt.setName("mob").setDescription("Name of the mob/NPC").setRequired(true)
+    );
   }
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
@@ -38,4 +34,8 @@ class ShowCommand extends SimpleCommand {
   }
 }
 
-export const showCommand = new ShowCommand("show", "Display configuration about a timer", false);
+export const showCommand = new ShowCommand(
+  "show",
+  "Display configuration about a timer",
+  false
+);

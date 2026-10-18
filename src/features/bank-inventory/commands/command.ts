@@ -5,14 +5,10 @@ import { bankSearch } from "./bank-search-subcommand";
 import { getItem } from "./bank-get-item-data-subcommand";
 import { setItem } from "./bank-set-item-data-subcommand";
 
-export const bankCommand = new Command(
-  "bank",
-  "Use the guild bank.",
-  [
-    bankRequest, 
-    syncBankDb, 
-    bankSearch,
-    getItem,
-    setItem
-  ] 
-);
+export const bankCommand = new Command("bank", "Use the guild bank.", [
+  bankRequest,
+  syncBankDb,
+  bankSearch,
+  getItem,
+  setItem,
+]);

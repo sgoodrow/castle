@@ -120,7 +120,7 @@ export function displayWindow(
   const windowEnd = getWindowEnd(timer);
   const variance = getVariance(timer);
 
-  const parsedVariance = variance ? parseDuration(variance) ?? 0 : 0;
+  const parsedVariance = variance ? (parseDuration(variance) ?? 0) : 0;
 
   let duration: number | null = null;
 
@@ -161,7 +161,7 @@ export function nextSpawnTimeStart(
   if (!windowStart) return tod;
 
   const windowStartSeconds = parseDuration(windowStart) ?? 0;
-  const varianceSeconds = variance ? parseDuration(variance) ?? 0 : 0;
+  const varianceSeconds = variance ? (parseDuration(variance) ?? 0) : 0;
 
   if (varianceSeconds > 0) {
     return new Date(
@@ -187,7 +187,7 @@ export function nextSpawnTimeEnd(
   const windowEnd = getWindowEnd(timer);
   const variance = getVariance(timer);
 
-  const varianceSeconds = variance ? parseDuration(variance) ?? 0 : 0;
+  const varianceSeconds = variance ? (parseDuration(variance) ?? 0) : 0;
 
   if (windowEnd && varianceSeconds > 0) {
     const windowEndSeconds = parseDuration(windowEnd) ?? 0;
@@ -225,7 +225,7 @@ export function lastSpawnTimeStart(
   if (!windowStart) return tod;
 
   const windowStartSeconds = parseDuration(windowStart) ?? 0;
-  const varianceSeconds = variance ? parseDuration(variance) ?? 0 : 0;
+  const varianceSeconds = variance ? (parseDuration(variance) ?? 0) : 0;
 
   if (varianceSeconds > 0) {
     return new Date(

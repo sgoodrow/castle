@@ -10,18 +10,13 @@
  * - "vessel June 1, 2022 4:09 AM" -> ["vessel", "June 1, 2022 4:09 AM"]
  * - "nortlav the scalekeeper|2022-06-01 00:23:11 -0400" -> [name, time]
  */
-export function parseArguments(
-  args: string
-): [string, string | null] {
+export function parseArguments(args: string): [string, string | null] {
   const input = args.trim();
 
   // First, try splitting by pipe only (unambiguous separator)
   const pipeSplit = input.split("|", 2);
   if (pipeSplit.length === 2 && pipeSplit[1].trim().length > 0) {
-    return [
-      pipeSplit[0].trim().replace(/`/g, "'"),
-      pipeSplit[1].trim(),
-    ];
+    return [pipeSplit[0].trim().replace(/`/g, "'"), pipeSplit[1].trim()];
   }
 
   // Try to find the boundary between mob name and time using regex patterns.
@@ -53,8 +48,7 @@ export function parseArguments(
   }
 
   // Try space-separated numeric time (e.g. "bob 10 am", "something 5/3 10:58 pm")
-  const numericTimePattern =
-    /(\s+|,\s*)(\d{1,2}[\s:\/])/;
+  const numericTimePattern = /(\s+|,\s*)(\d{1,2}[\s:\/])/;
   const numMatch = input.match(numericTimePattern);
   if (numMatch) {
     const matchIndex = numMatch.index!;
@@ -69,10 +63,7 @@ export function parseArguments(
   // Comma split as last resort (for "bob, something" where something isn't a date)
   const commaSplit = input.split(",", 2);
   if (commaSplit.length === 2 && commaSplit[1].trim().length > 0) {
-    return [
-      commaSplit[0].trim().replace(/`/g, "'"),
-      commaSplit[1].trim(),
-    ];
+    return [commaSplit[0].trim().replace(/`/g, "'"), commaSplit[1].trim()];
   }
 
   // Just a mob name, no time

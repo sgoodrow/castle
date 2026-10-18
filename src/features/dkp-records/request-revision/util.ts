@@ -11,7 +11,9 @@ export const getRaidRevisionMessageContent = async (
   message: Message | PartialMessage
 ) => {
   if (!message) {
-    throw new Error("Tried to get raid revision message content but the message was undefined. Fetch?");
+    throw new Error(
+      "Tried to get raid revision message content but the message was undefined. Fetch?"
+    );
   }
   const thread = message.channel.isThread();
   if (!thread) {

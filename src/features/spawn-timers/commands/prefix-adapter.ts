@@ -29,7 +29,10 @@ export class PrefixInteractionAdapter {
   public user: User;
   private message: Message;
 
-  constructor(message: Message, optionsMap: Map<string, string | number | null>) {
+  constructor(
+    message: Message,
+    optionsMap: Map<string, string | number | null>
+  ) {
     this.message = message;
     this.user = message.author;
     this.options = new PrefixOptions(optionsMap);

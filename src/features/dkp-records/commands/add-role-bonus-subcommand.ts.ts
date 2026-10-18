@@ -14,7 +14,7 @@ import { RaidValuesService } from "../../../services/raidValuesService";
 enum Option {
   Event = "event",
   Role = "role",
-  Value = "value"
+  Value = "value",
 }
 
 export class AddRoleBonusSubcommand extends Subcommand {

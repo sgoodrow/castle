@@ -17,7 +17,6 @@ import { BOT_SPREADSHEET_COLUMNS } from "../../services/sheet-updater/public-she
 import { log } from "../../shared/logger";
 import { getMember } from "../..";
 
-
 export enum Option {
   Class = "class",
   Location = "location",
@@ -49,9 +48,7 @@ export class RequestClassSubcommand extends Subcommand {
     const release = await this.mutex.acquire();
     const publicAccounts = PublicAccountsFactory.getService();
 
-    const guildUser = await getMember(
-      interaction.user.id
-    );
+    const guildUser = await getMember(interaction.user.id);
 
     if (!guildUser) {
       throw new Error("Couldn't identify user requesting bot");

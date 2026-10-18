@@ -36,12 +36,10 @@ class GatehouseReactionAction extends ReactionAction {
 
     // authorize user
     const reactor = await getMember(this.user.id);
-    if (
-      !(
-        reactor?.roles.cache.has(guardRoleId) ||
-        reactor?.roles.cache.has(officerRoleId)
-      )
-    ) {
+    if (!(
+      reactor?.roles.cache.has(guardRoleId) ||
+      reactor?.roles.cache.has(officerRoleId)
+    )) {
       return;
     }
 
@@ -71,7 +69,11 @@ class GatehouseReactionAction extends ReactionAction {
 
     author.roles.add(this.roleIds);
 
-    if (this.roleIds.includes(competitorRoleId) && this.message.channel.isTextBased() && !this.message.channel.isDMBased()) {
+    if (
+      this.roleIds.includes(competitorRoleId) &&
+      this.message.channel.isTextBased() &&
+      !this.message.channel.isDMBased()
+    ) {
       return this.message.channel.send(
         `Thanks for introducing yourself, ${author}! Unfortunately, we do not grant access to our private Discord channels to players who are not in Castle or an allied guild. You're welcome to chat with us in our public channels, though -- don't be a stranger!`
       );

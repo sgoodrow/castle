@@ -27,8 +27,12 @@ describe("replacePlayer", () => {
   it("treats a re-approved !rep that already went through as a no-op", () => {
     const r = report(["Aprilokneel", "Someone"]);
     r.replacePlayer("Rousdowerr", "Aprilokneel", [1]);
-    expect(() => r.replacePlayer("Rousdowerr", "Aprilokneel", [1])).not.toThrow();
-    expect(() => r.replacePlayer("Rousdowerr", "Aprilokneel", [])).not.toThrow();
+    expect(() =>
+      r.replacePlayer("Rousdowerr", "Aprilokneel", [1])
+    ).not.toThrow();
+    expect(() =>
+      r.replacePlayer("Rousdowerr", "Aprilokneel", [])
+    ).not.toThrow();
   });
 
   it("still rejects a !rep of someone who was never there", () => {
@@ -42,14 +46,16 @@ describe("replacePlayer", () => {
 describe("withRaidReportLock", () => {
   it("runs edits to one thread one at a time, even after a failure", async () => {
     const order: string[] = [];
-    const edit = (name: string, fail = false) => async () => {
-      order.push(`start ${name}`);
-      await new Promise((r) => setTimeout(r, 10));
-      order.push(`end ${name}`);
-      if (fail) {
-        throw new Error(name);
-      }
-    };
+    const edit =
+      (name: string, fail = false) =>
+      async () => {
+        order.push(`start ${name}`);
+        await new Promise((r) => setTimeout(r, 10));
+        order.push(`end ${name}`);
+        if (fail) {
+          throw new Error(name);
+        }
+      };
     await Promise.allSettled([
       withRaidReportLock("t", edit("a", true)),
       withRaidReportLock("t", edit("b")),

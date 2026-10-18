@@ -1,6 +1,4 @@
-import {
-  type TextChannel,
-} from "discord.js";
+import { type TextChannel } from "discord.js";
 import { client } from "../../index";
 import {
   inWindow,
@@ -12,7 +10,12 @@ import {
 } from "./commands/helpers/timer";
 import { formatHammertime } from "./commands/helpers/duration";
 import { updateTimersChannel } from "./commands/helpers/channel-update";
-import { TIMER_ALERT_CHANNEL_ID, TIMER_ALERT_CHANNEL_REFRESH_RATE, TIMER_CHANNEL_REFRESH_RATE, USE_EVERYONE_ALERT } from "../../config";
+import {
+  TIMER_ALERT_CHANNEL_ID,
+  TIMER_ALERT_CHANNEL_REFRESH_RATE,
+  TIMER_CHANNEL_REFRESH_RATE,
+  USE_EVERYONE_ALERT,
+} from "../../config";
 import { timerPrismaClient } from "../../db/timer-client";
 import { Prisma } from "@prisma/client";
 import { recordEndedTimer } from "./commands/helpers/ended-timers";
@@ -36,145 +39,147 @@ export async function spawnTimerLoop(): Promise<void> {
   try {
     const now = new Date();
 
-  // Check if we should update alerts
-  const shouldCheckAlerts =
-    !lastAlertUpdate ||
-    now.getTime() >= lastAlertUpdate.getTime() + (Number(TIMER_ALERT_CHANNEL_REFRESH_RATE) || 10) * 1000;
+    // Check if we should update alerts
+    const shouldCheckAlerts =
+      !lastAlertUpdate ||
+      now.getTime() >=
+        lastAlertUpdate.getTime() +
+          (Number(TIMER_ALERT_CHANNEL_REFRESH_RATE) || 10) * 1000;
 
-  // Check if we should update the timer channel
-  const shouldUpdateChannel =
-    !lastTimerUpdate ||
-    now.getTime() >= lastTimerUpdate.getTime() + (Number(TIMER_CHANNEL_REFRESH_RATE) || 10) * 1000;
+    // Check if we should update the timer channel
+    const shouldUpdateChannel =
+      !lastTimerUpdate ||
+      now.getTime() >=
+        lastTimerUpdate.getTime() +
+          (Number(TIMER_CHANNEL_REFRESH_RATE) || 10) * 1000;
 
-  if (shouldUpdateChannel) {
-    lastTimerUpdate = now;
-    sendTimerChannelUpdate = true;
-  }
+    if (shouldUpdateChannel) {
+      lastTimerUpdate = now;
+      sendTimerChannelUpdate = true;
+    }
 
-  if (shouldCheckAlerts) {
-    lastAlertUpdate = now;
+    if (shouldCheckAlerts) {
+      lastAlertUpdate = now;
 
-    try {
-      const timers = await timerPrismaClient.timer.findMany();
-      const everyoneAlert = USE_EVERYONE_ALERT?.toLowerCase() === "true" ? "@everyone " : "";
+      try {
+        const timers = await timerPrismaClient.timer.findMany();
+        const everyoneAlert =
+          USE_EVERYONE_ALERT?.toLowerCase() === "true" ? "@everyone " : "";
 
-      for (const timer of timers) {
-        let canAutoTod = false;
-        let saveTimer = false;
-        const updates: Prisma.TimerUpdateInput = {};
+        for (const timer of timers) {
+          let canAutoTod = false;
+          let saveTimer = false;
+          const updates: Prisma.TimerUpdateInput = {};
 
-        if (!timer.alerted) {
-          const nextSpawnEnd = nextSpawnTimeEnd(timer);
+          if (!timer.alerted) {
+            const nextSpawnEnd = nextSpawnTimeEnd(timer);
 
-          if (inWindow(timer, now)) {
-            if (hasWindow(timer)) {
-              // Has window - show "in window" message
-              if (TIMER_ALERT_CHANNEL_ID) {
-                try {
-                  const channel = (await client.channels.fetch(
-                    TIMER_ALERT_CHANNEL_ID
-                  )) as TextChannel;
-                  if (channel && nextSpawnEnd) {
-                    await channel.send(
-                      `${everyoneAlert}**${timer.name}** is in window, ending ${formatHammertime(nextSpawnEnd)}!`
-                    );
-                  }
-                } catch {
-                  // Channel may not be accessible
-                }
-              }
-            } else {
-              // No window - timer is up
-              if (TIMER_ALERT_CHANNEL_ID) {
-                try {
-                  const channel = (await client.channels.fetch(
-                    TIMER_ALERT_CHANNEL_ID
-                  )) as TextChannel;
-                  if (channel) {
-                    await channel.send(
-                      `${everyoneAlert}**${timer.name}** timer is up!`
-                    );
-                  }
-                } catch {
-                  // Channel may not be accessible
-                }
-              }
-              canAutoTod = true;
-            }
-            updates.alerted = true;
-            saveTimer = true;
-          } else if (
-            alertingSoon(timer, now) &&
-            !timer.alertingSoon
-          ) {
-            if (timer.warnTime !== "-1") {
-              const nextSpawnStart = nextSpawnTimeStart(timer);
-              if (TIMER_ALERT_CHANNEL_ID && nextSpawnStart) {
-                try {
-                  const channel = (await client.channels.fetch(
-                    TIMER_ALERT_CHANNEL_ID
-                  )) as TextChannel;
-                  if (channel) {
-                    if (hasWindow(timer)) {
+            if (inWindow(timer, now)) {
+              if (hasWindow(timer)) {
+                // Has window - show "in window" message
+                if (TIMER_ALERT_CHANNEL_ID) {
+                  try {
+                    const channel = (await client.channels.fetch(
+                      TIMER_ALERT_CHANNEL_ID
+                    )) as TextChannel;
+                    if (channel && nextSpawnEnd) {
                       await channel.send(
-                        `${everyoneAlert}**${timer.name}** will be in window ${formatHammertime(nextSpawnStart)}!`
-                      );
-                    } else {
-                      await channel.send(
-                        `${everyoneAlert}**${timer.name}** is up ${formatHammertime(nextSpawnStart)}!`
+                        `${everyoneAlert}**${timer.name}** is in window, ending ${formatHammertime(nextSpawnEnd)}!`
                       );
                     }
+                  } catch {
+                    // Channel may not be accessible
                   }
-                } catch {
-                  // Channel may not be accessible
+                }
+              } else {
+                // No window - timer is up
+                if (TIMER_ALERT_CHANNEL_ID) {
+                  try {
+                    const channel = (await client.channels.fetch(
+                      TIMER_ALERT_CHANNEL_ID
+                    )) as TextChannel;
+                    if (channel) {
+                      await channel.send(
+                        `${everyoneAlert}**${timer.name}** timer is up!`
+                      );
+                    }
+                  } catch {
+                    // Channel may not be accessible
+                  }
+                }
+                canAutoTod = true;
+              }
+              updates.alerted = true;
+              saveTimer = true;
+            } else if (alertingSoon(timer, now) && !timer.alertingSoon) {
+              if (timer.warnTime !== "-1") {
+                const nextSpawnStart = nextSpawnTimeStart(timer);
+                if (TIMER_ALERT_CHANNEL_ID && nextSpawnStart) {
+                  try {
+                    const channel = (await client.channels.fetch(
+                      TIMER_ALERT_CHANNEL_ID
+                    )) as TextChannel;
+                    if (channel) {
+                      if (hasWindow(timer)) {
+                        await channel.send(
+                          `${everyoneAlert}**${timer.name}** will be in window ${formatHammertime(nextSpawnStart)}!`
+                        );
+                      } else {
+                        await channel.send(
+                          `${everyoneAlert}**${timer.name}** is up ${formatHammertime(nextSpawnStart)}!`
+                        );
+                      }
+                    }
+                  } catch {
+                    // Channel may not be accessible
+                  }
                 }
               }
+              updates.alertingSoon = true;
+              saveTimer = true;
             }
-            updates.alertingSoon = true;
-            saveTimer = true;
           }
-        }
 
-        if (pastPossibleSpawnTime(timer, now)) {
-          updates.alerted = null;
-          updates.alertingSoon = false;
-          updates.lastTod = null;
-          saveTimer = true;
-        }
-
-        if (saveTimer) {
-          if (canAutoTod && timer.autoTod) {
-            const todEpoch = now.getTime() / 1000;
-            updates.lastTod = todEpoch;
+          if (pastPossibleSpawnTime(timer, now)) {
             updates.alerted = null;
             updates.alertingSoon = false;
-            updates.skipCount = 0;
+            updates.lastTod = null;
+            saveTimer = true;
+          }
 
-            await timerPrismaClient.tod.create({
-              data: {
-                timerId: timer.id,
-                tod: todEpoch,
-              },
+          if (saveTimer) {
+            if (canAutoTod && timer.autoTod) {
+              const todEpoch = now.getTime() / 1000;
+              updates.lastTod = todEpoch;
+              updates.alerted = null;
+              updates.alertingSoon = false;
+              updates.skipCount = 0;
+
+              await timerPrismaClient.tod.create({
+                data: {
+                  timerId: timer.id,
+                  tod: todEpoch,
+                },
+              });
+            }
+
+            await timerPrismaClient.timer.update({
+              where: { id: timer.id },
+              data: updates,
             });
+
+            const endedAt = nextSpawnTimeEnd(timer);
+            if (updates.lastTod === null && endedAt) {
+              recordEndedTimer(timer.id, endedAt);
+            }
+
+            sendTimerChannelUpdate = true;
           }
-
-          await timerPrismaClient.timer.update({
-            where: { id: timer.id },
-            data: updates,
-          });
-
-          const endedAt = nextSpawnTimeEnd(timer);
-          if (updates.lastTod === null && endedAt) {
-            recordEndedTimer(timer.id, endedAt);
-          }
-
-          sendTimerChannelUpdate = true;
         }
+      } catch (err) {
+        console.error("Error in timer alert loop:", err);
       }
-    } catch (err) {
-      console.error("Error in timer alert loop:", err);
     }
-  }
 
     if (sendTimerChannelUpdate) {
       try {

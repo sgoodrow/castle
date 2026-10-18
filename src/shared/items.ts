@@ -1,4 +1,3 @@
-
 export const itemsData = {
   "10 dose adrenaline tap": "/10_Dose_Adrenaline_Tap",
   "10 dose ant's potion": "/10_Dose_Ant%27s_Potion",
@@ -10862,18 +10861,21 @@ export interface Item {
 }
 
 export const mapFromData = (data: { [id: string]: string }, prefix = "") =>
-  Object.entries(data).reduce((map, [id, url]) => {
-    map[id] = {
-      id,
-      url: `https://wiki.project1999.com${url}`,
-      name: `${prefix}${id
-        .toLowerCase()
-        .replace(/`/g, "'")
-        .split(/\s+/)
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(" ")}`,
-    };
-    return map;
-  }, {} as { [id: string]: Item });
+  Object.entries(data).reduce(
+    (map, [id, url]) => {
+      map[id] = {
+        id,
+        url: `https://wiki.project1999.com${url}`,
+        name: `${prefix}${id
+          .toLowerCase()
+          .replace(/`/g, "'")
+          .split(/\s+/)
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ")}`,
+      };
+      return map;
+    },
+    {} as { [id: string]: Item }
+  );
 
 export const itemsMapById = mapFromData(itemsData);

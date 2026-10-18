@@ -1,7 +1,4 @@
-import {
-  CacheType,
-  CommandInteraction,
-} from "discord.js";
+import { CacheType, CommandInteraction } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { IPublicAccountService } from "../../services/bot/public-accounts.i";

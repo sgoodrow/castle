@@ -24,11 +24,16 @@ export class CloseSubcommand extends Subcommand {
       throw new Error("Must be a Knight or Officer to close targets.");
     }
 
-    const target = this.getRequiredOptionValue<string>(Option.Target, interaction);
+    const target = this.getRequiredOptionValue<string>(
+      Option.Target,
+      interaction
+    );
     const endedCount = await rteService.endSessionsForTarget(target);
     await rteService.closeTarget(target);
     await refreshRteStatusEmbed();
-    await interaction.editReply(`Target **${target}** is now closed. ${endedCount} active session(s) were ended and users were notified via DM.`);
+    await interaction.editReply(
+      `Target **${target}** is now closed. ${endedCount} active session(s) were ended and users were notified via DM.`
+    );
   }
 
   public get command() {
@@ -41,14 +46,22 @@ export class CloseSubcommand extends Subcommand {
     );
   }
 
-  public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction<CacheType>) {
+  public async getOptionAutocomplete(
+    option: string,
+    interaction: AutocompleteInteraction<CacheType>
+  ) {
     switch (option) {
       case Option.Target:
-        return await RaidValuesService.getInstance().getTargetOptions(interaction.user.id);
+        return await RaidValuesService.getInstance().getTargetOptions(
+          interaction.user.id
+        );
       default:
         return;
     }
   }
 }
 
-export const closeSubcommand = new CloseSubcommand("close", "Close a target for RTE.");
+export const closeSubcommand = new CloseSubcommand(
+  "close",
+  "Close a target for RTE."
+);

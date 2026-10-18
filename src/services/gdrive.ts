@@ -23,10 +23,7 @@ export const findFiles = async (query: string) => {
   return files;
 };
 
-export const uploadFileToFolder = async (
-  file: DriveFile,
-  folder: string
-) => {
+export const uploadFileToFolder = async (file: DriveFile, folder: string) => {
   const auth = await authorize();
   const drive = google.drive({ version: "v3", auth });
   drive.files.create(
@@ -81,14 +78,14 @@ export const getFile = async (fileId: string) => {
   try {
     const file = await drive.files.get({
       fileId: fileId,
-      alt: 'media',
+      alt: "media",
     });
     return file.data;
   } catch (err) {
     // TODO(developer) - Handle error
     throw err;
   }
-}
+};
 
 export const checkGoogleCredentials = () => {
   if (!GOOGLE_CLIENT_EMAIL || !GOOGLE_PRIVATE_KEY) {

@@ -1,6 +1,6 @@
 import { CacheType, Interaction, MessageFlags } from "discord.js";
 import { getButton, getCommand } from "./register-commands";
-import { log } from "../shared/logger"
+import { log } from "../shared/logger";
 
 export const interactionCreateListener = async (
   interaction: Interaction<CacheType>
@@ -28,8 +28,8 @@ export const interactionCreateListener = async (
       const subcommandName = interaction.options.getSubcommand(false);
 
       const ephemeral = subcommandName
-      ? (command.subcommands[subcommandName]?.ephemeral ?? command.ephemeral)
-      : command.ephemeral;
+        ? (command.subcommands[subcommandName]?.ephemeral ?? command.ephemeral)
+        : command.ephemeral;
 
       const flags = ephemeral ? MessageFlags.Ephemeral : undefined;
 

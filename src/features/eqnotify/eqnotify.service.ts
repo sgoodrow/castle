@@ -3,12 +3,7 @@ import { getMember, prismaClient } from "../..";
 import { raiderRoleId } from "../../config";
 import { log } from "../../shared/logger";
 import { notify } from "./notifiers";
-import {
-  DEFAULT_TAGS,
-  isFiltered,
-  matchesTags,
-  normalizeTag,
-} from "./matcher";
+import { DEFAULT_TAGS, isFiltered, matchesTags, normalizeTag } from "./matcher";
 
 export { DEFAULT_TAGS } from "./matcher";
 

@@ -25,12 +25,10 @@ export abstract class RaidBonusRequest {
     await this.validateArgs();
 
     // authorize execution
-    if (
-      !(
-        actor?.roles.cache.has(dkpDeputyRoleId) ||
-        actor?.roles.cache.has(officerRoleId)
-      )
-    ) {
+    if (!(
+      actor?.roles.cache.has(dkpDeputyRoleId) ||
+      actor?.roles.cache.has(officerRoleId)
+    )) {
       return false;
     }
 

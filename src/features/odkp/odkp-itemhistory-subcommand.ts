@@ -7,10 +7,7 @@ import {
   GuildMemberRoleManager,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import {
-  openDkpService,
-  odkpItemDb,
-} from "../../services/openDkpService";
+import { openDkpService, odkpItemDb } from "../../services/openDkpService";
 import moment from "moment";
 import { raiderRoleId } from "../../config";
 
@@ -37,7 +34,7 @@ export class OdkpItemHistorySubcommand extends Subcommand {
     interaction: CommandInteraction<CacheType>
   ): Promise<void> {
     const roles = interaction.member?.roles as GuildMemberRoleManager;
-    if (!(roles.cache.has(raiderRoleId))) {
+    if (!roles.cache.has(raiderRoleId)) {
       throw new Error("Must be a raider to use this command");
     }
     try {

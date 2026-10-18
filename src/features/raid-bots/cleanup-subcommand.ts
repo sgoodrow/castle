@@ -31,9 +31,8 @@ export class CleanupSubcommand extends Subcommand {
         Option.Hours,
         interaction
       ) as number;
-      const cleanupCount = await this.publicAccountService.cleanupCheckouts(
-        hours
-      );
+      const cleanupCount =
+        await this.publicAccountService.cleanupCheckouts(hours);
       if (hours) {
         await interaction.editReply(
           `Checkouts older than ${hours} hour(s) have been cleaned up`

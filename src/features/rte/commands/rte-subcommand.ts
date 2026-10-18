@@ -25,16 +25,30 @@ export class RteSubcommand extends Subcommand {
   }
 
   public async execute(interaction: CommandInteraction<CacheType>) {
-    const characterName = this.getRequiredOptionValue<string>(Option.Character, interaction);
-    const target = this.getRequiredOptionValue<string>(Option.Target, interaction);
-    const charClass = this.getRequiredOptionValue<string>(Option.Class, interaction);
-    const startTimeStr = this.getOptionValue<string>(Option.StartTime, interaction);
+    const characterName = this.getRequiredOptionValue<string>(
+      Option.Character,
+      interaction
+    );
+    const target = this.getRequiredOptionValue<string>(
+      Option.Target,
+      interaction
+    );
+    const charClass = this.getRequiredOptionValue<string>(
+      Option.Class,
+      interaction
+    );
+    const startTimeStr = this.getOptionValue<string>(
+      Option.StartTime,
+      interaction
+    );
 
     let startTime: Date | null = null;
     if (startTimeStr) {
       startTime = parseTime(startTimeStr);
       if (!startTime) {
-        await interaction.editReply("I couldn't understand that start time. Try something like `30 minutes ago` or `3:30 PM`.");
+        await interaction.editReply(
+          "I couldn't understand that start time. Try something like `30 minutes ago` or `3:30 PM`."
+        );
         return;
       }
       if (startTime.getTime() > Date.now()) {
@@ -55,8 +69,12 @@ export class RteSubcommand extends Subcommand {
 
     await refreshRteStatusEmbed();
 
-    const backdateMsg = startTime ? ` (started at ${startTime.toLocaleTimeString()})` : "";
-    await interaction.editReply(`You are now RTE for **${target}** on **${characterName}** (${charClass})${backdateMsg}. Check your DMs for the session controls.`);
+    const backdateMsg = startTime
+      ? ` (started at ${startTime.toLocaleTimeString()})`
+      : "";
+    await interaction.editReply(
+      `You are now RTE for **${target}** on **${characterName}** (${charClass})${backdateMsg}. Check your DMs for the session controls.`
+    );
   }
 
   public get command() {
@@ -85,12 +103,17 @@ export class RteSubcommand extends Subcommand {
       .addStringOption((o) =>
         o
           .setName(Option.StartTime)
-          .setDescription("When the session started (e.g., '30 minutes ago'). Defaults to now.")
+          .setDescription(
+            "When the session started (e.g., '30 minutes ago'). Defaults to now."
+          )
           .setRequired(false)
       );
   }
 
-  public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction<CacheType>) {
+  public async getOptionAutocomplete(
+    option: string,
+    interaction: AutocompleteInteraction<CacheType>
+  ) {
     switch (option) {
       case Option.Character: {
         const chars = await openDkpService.getCharacters();
@@ -100,7 +123,9 @@ export class RteSubcommand extends Subcommand {
         }));
       }
       case Option.Target:
-        return await RaidValuesService.getInstance().getTargetOptions(interaction.user.id);
+        return await RaidValuesService.getInstance().getTargetOptions(
+          interaction.user.id
+        );
       case Option.Class:
         return Object.values(Class).map((c) => ({
           name: c,
@@ -112,4 +137,7 @@ export class RteSubcommand extends Subcommand {
   }
 }
 
-export const rteSubcommand = new RteSubcommand("rte", "Indicate you are ready to engage a target.");
+export const rteSubcommand = new RteSubcommand(
+  "rte",
+  "Indicate you are ready to engage a target."
+);

@@ -52,7 +52,10 @@ export class CreditParser {
     this.raw = stripped.slice(credit);
     const words = this.raw.split(" ");
     words.shift();
-    this.record = words.join(" ").trim().replace(PILOT_KEYWORD_VARIANTS, PILOT_KEYWORD);
+    this.record = words
+      .join(" ")
+      .trim()
+      .replace(PILOT_KEYWORD_VARIANTS, PILOT_KEYWORD);
   }
 
   public getCredit(): CreditData {

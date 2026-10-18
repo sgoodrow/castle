@@ -1,4 +1,8 @@
-import { ApplicationCommandOptionChoiceData, CacheType, CommandInteraction } from "discord.js";
+import {
+  ApplicationCommandOptionChoiceData,
+  CacheType,
+  CommandInteraction,
+} from "discord.js";
 import { bankerRoleId } from "../../config";
 import { dataSource } from "../../db/data-source";
 import { updateBankRequestInfo } from "../bank-request-info/update-action";

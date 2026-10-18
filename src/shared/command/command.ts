@@ -24,10 +24,13 @@ export class Command extends BaseCommand {
   }
 
   public get subcommands() {
-    return this._subcommands.reduce((m, s) => {
-      m[s.name] = s;
-      return m;
-    }, {} as { [name: string]: Subcommand });
+    return this._subcommands.reduce(
+      (m, s) => {
+        m[s.name] = s;
+        return m;
+      },
+      {} as { [name: string]: Subcommand }
+    );
   }
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {

@@ -4,7 +4,9 @@ import { autoBindSteps, loadFeatures } from "jest-cucumber";
 import { exit, findMany, outside, reset, steps, teardown } from "./steps";
 
 const mockFindMany = () => findMany();
-jest.mock("@prisma/client", () => ({ PrismaClient: jest.fn(() => ({ slot: { findMany: () => mockFindMany() } })) }));
+jest.mock("@prisma/client", () => ({
+  PrismaClient: jest.fn(() => ({ slot: { findMany: () => mockFindMany() } })),
+}));
 jest.mock("dotenv", () => ({ config: jest.fn() }));
 jest.setTimeout(20000);
 

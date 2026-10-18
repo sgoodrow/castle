@@ -45,7 +45,10 @@ class AuctionFinishedReactionAction extends ReactionAction {
     }
 
     // filter non-finish emoji reactions
-    if (!finishedEmojis.includes(this.reaction.emoji.name || "") && this.reaction.emoji.name !== "🔒") {
+    if (
+      !finishedEmojis.includes(this.reaction.emoji.name || "") &&
+      this.reaction.emoji.name !== "🔒"
+    ) {
       return;
     }
 
@@ -57,13 +60,11 @@ class AuctionFinishedReactionAction extends ReactionAction {
 
     // authorize user
     const reactor = await getMember(this.user.id);
-    if (
-      !(
-        reactor?.roles.cache.has(dkpDeputyRoleId) ||
-        reactor?.roles.cache.has(officerRoleId) ||
-        reactor?.roles.cache.has(bankerRoleId)
-      )
-    ) {
+    if (!(
+      reactor?.roles.cache.has(dkpDeputyRoleId) ||
+      reactor?.roles.cache.has(officerRoleId) ||
+      reactor?.roles.cache.has(bankerRoleId)
+    )) {
       return;
     }
 
@@ -134,13 +135,12 @@ class AuctionFinishedReactionAction extends ReactionAction {
     }
     const openDkpRaidId = Number.parseInt(openDkpRaidIdStr, 10);
 
-
-
     // add item to raid
     await openDkpService.addItem(
       character.Name,
       item,
-      `Auction - ${item || this.getCleanThreadName(this.message.thread?.name || "")
+      `Auction - ${
+        item || this.getCleanThreadName(this.message.thread?.name || "")
       } - ${this.message.createdAt.toDateString()}`,
       price,
       openDkpRaidId
@@ -232,10 +232,13 @@ ${this.example}`
 
   getCleanThreadName(threadName: string): string {
     function escapeRegExp(str: string): string {
-      return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     }
-    const emojiPattern = new RegExp(allEmojis.map(escapeRegExp).join('|'), 'gu');
-    const cleanedName = threadName.replace(emojiPattern, '').trim();
+    const emojiPattern = new RegExp(
+      allEmojis.map(escapeRegExp).join("|"),
+      "gu"
+    );
+    const cleanedName = threadName.replace(emojiPattern, "").trim();
     return cleanedName;
   }
 }

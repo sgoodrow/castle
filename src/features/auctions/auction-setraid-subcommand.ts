@@ -7,7 +7,12 @@ import {
 import { Subcommand } from "../../shared/command/subcommand";
 import { openDkpService } from "../../services/openDkpService";
 import { redisClient } from "../../redis/client";
-import { auctionChannelId, bankerRoleId, dkpDeputyRoleId, officerRoleId } from "../../config";
+import {
+  auctionChannelId,
+  bankerRoleId,
+  dkpDeputyRoleId,
+  officerRoleId,
+} from "../../config";
 import { truncate } from "lodash";
 import { log } from "../../shared/logger";
 
@@ -22,13 +27,21 @@ export class AuctionSetRaidSubcommand extends Subcommand {
 
   public async execute(interaction: CommandInteraction<CacheType>) {
     const channel = interaction.channel;
-    if (!channel || channel.type !== ChannelType.PublicThread && channel.type !== ChannelType.PrivateThread) {
-      await interaction.editReply("This command can only be used in an auction thread.");
+    if (
+      !channel ||
+      (channel.type !== ChannelType.PublicThread &&
+        channel.type !== ChannelType.PrivateThread)
+    ) {
+      await interaction.editReply(
+        "This command can only be used in an auction thread."
+      );
       return;
     }
 
     if (channel.parentId !== auctionChannelId) {
-      await interaction.editReply("This command can only be used in an auction thread.");
+      await interaction.editReply(
+        "This command can only be used in an auction thread."
+      );
       return;
     }
 
@@ -38,11 +51,16 @@ export class AuctionSetRaidSubcommand extends Subcommand {
       !roles?.cache.has(officerRoleId) &&
       !roles?.cache.has(bankerRoleId)
     ) {
-      await interaction.editReply("You must be a banker, officer, or DKP deputy to use this command.");
+      await interaction.editReply(
+        "You must be a banker, officer, or DKP deputy to use this command."
+      );
       return;
     }
 
-    const raidIdStr = this.getRequiredOptionValue<string>(Option.Raid, interaction);
+    const raidIdStr = this.getRequiredOptionValue<string>(
+      Option.Raid,
+      interaction
+    );
     const raidId = Number.parseInt(raidIdStr, 10);
     if (Number.isNaN(raidId)) {
       await interaction.editReply("Invalid raid ID.");
@@ -53,7 +71,9 @@ export class AuctionSetRaidSubcommand extends Subcommand {
 
     await redisClient.set(`auction:raid:${channel.id}`, raidIdStr);
 
-    await interaction.editReply(`Raid ${truncate(raid.Name, {length: 100})} (${raidId}) has been set for this auction.`);
+    await interaction.editReply(
+      `Raid ${truncate(raid.Name, { length: 100 })} (${raidId}) has been set for this auction.`
+    );
   }
 
   public get command() {

@@ -2,7 +2,10 @@ import { EmbedBuilder } from "discord.js";
 import { trackingStatusChannelId } from "../../config";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action-2";
-import { readyActionExecutor, Options } from "../../shared/action/ready-action-2";
+import {
+  readyActionExecutor,
+  Options,
+} from "../../shared/action/ready-action-2";
 import { rteService } from "../../services/rteService";
 import { RteType } from "@prisma/client";
 import moment from "moment";
@@ -38,9 +41,7 @@ export const refreshRteStatusEmbed = async () => {
   const embed = new EmbedBuilder({
     title: `RTE Status — last updated ${moment().format("h:mm:ss A")}`,
     description:
-      activeSessions.length === 0
-        ? "No active RTE sessions."
-        : undefined,
+      activeSessions.length === 0 ? "No active RTE sessions." : undefined,
   });
 
   // Get all unique targets that have active sessions
@@ -54,7 +55,7 @@ export const refreshRteStatusEmbed = async () => {
       .map((s) => {
         const elapsed = moment.duration(moment().diff(s.startTime));
         const elapsedStr = `${Math.floor(elapsed.asHours())}h ${elapsed.minutes()}m`;
-        return `${typeIcon(s.type)} **${s.characterName}**${s.class ? ' - ' + s.class : ''} (<@${s.discordId}>) — ${elapsedStr}`;
+        return `${typeIcon(s.type)} **${s.characterName}**${s.class ? " - " + s.class : ""} (<@${s.discordId}>) — ${elapsedStr}`;
       })
       .join("\n");
 

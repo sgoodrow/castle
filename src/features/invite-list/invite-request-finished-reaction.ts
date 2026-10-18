@@ -34,12 +34,10 @@ class InviteRequestFinishedReactionAction extends ReactionAction {
 
     // authorize user
     const reactor = await getMember(this.user.id);
-    if (
-      !(
-        reactor?.roles.cache.has(guardRoleId) ||
-        reactor?.roles.cache.has(officerRoleId)
-      )
-    ) {
+    if (!(
+      reactor?.roles.cache.has(guardRoleId) ||
+      reactor?.roles.cache.has(officerRoleId)
+    )) {
       return;
     }
 

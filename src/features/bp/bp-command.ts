@@ -10,7 +10,7 @@ import {
 import { Command } from "../../shared/command/command";
 import { Subcommand } from "../../shared/command/subcommand";
 import { getTextChannel, prismaClient } from "../..";
-import { Prisma } from "@prisma/client"
+import { Prisma } from "@prisma/client";
 import {
   batphoneChannelId,
   raiderRoleId,
@@ -26,7 +26,7 @@ import { truncate } from "lodash";
 import { RequestBotButtonCommand } from "./request-bot-button-command";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { LocationService } from "../../services/location";
-import { log } from "../../shared/logger"
+import { log } from "../../shared/logger";
 import { SECONDS } from "../../shared/time";
 
 const BOT_BUTTON_THROTTLE_MS = 30 * SECONDS;
@@ -69,7 +69,8 @@ class sendBp extends Subcommand {
           shouldIncludeButtons
             ? await getBotButtonComponents(savedBp.location)
             : [];
-        const firstComponents = buttonMessages.length > 0 ? buttonMessages[0] : undefined;
+        const firstComponents =
+          buttonMessages.length > 0 ? buttonMessages[0] : undefined;
         await bpChannel.send({
           content:
             `[${interaction.user}] <@&${raiderRoleId}>
@@ -129,9 +130,8 @@ class sendBp extends Subcommand {
 }
 
 export const getBotButtonComponents = async (location: string) => {
-  const bots = await PublicAccountsFactory.getService().getBotsForBatphone(
-    location
-  );
+  const bots =
+    await PublicAccountsFactory.getService().getBotsForBatphone(location);
   log(
     `loading bots for batphone in ${location} - ${bots
       .map((b) => b.name)
@@ -186,8 +186,8 @@ class setBp extends Subcommand {
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
-        const location = this.getOption("location", interaction)
-          ?.value as string || "";
+        const location =
+          (this.getOption("location", interaction)?.value as string) || "";
         key = truncate(String(key), { length: 100 }); // max option length = 100
         await prismaClient.batphone.create({
           data: {
@@ -209,8 +209,8 @@ class setBp extends Subcommand {
       console.error(err);
       let errMsg = err;
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        if (err.code === 'P2002') {
-            errMsg = "Key already exists";
+        if (err.code === "P2002") {
+          errMsg = "Key already exists";
         } else {
           errMsg = err.code;
         }
@@ -328,7 +328,7 @@ class getBp extends Subcommand {
       if (!message) {
         throw new Error(`No batphone with key ${val}`);
       }
-      
+
       if (typeof message === "string") {
         const formattedMessage = message.replace(
           /\\n/g,
@@ -351,8 +351,13 @@ To change this message, use \`/bp update\` to set a new message.
         }
         const buttonMessages: ActionRowBuilder<MessageActionRowComponentBuilder>[][] =
           await getBotButtonComponents(savedMsg?.location || "");
-        const firstComponents = buttonMessages.length > 0 ? buttonMessages[0] : undefined;
-        if (interaction.channel && interaction.channel.isTextBased() && !interaction.channel.isDMBased()) {
+        const firstComponents =
+          buttonMessages.length > 0 ? buttonMessages[0] : undefined;
+        if (
+          interaction.channel &&
+          interaction.channel.isTextBased() &&
+          !interaction.channel.isDMBased()
+        ) {
           const channel = interaction.channel;
           await channel.send({
             content: replyMsg,
@@ -417,26 +422,26 @@ class updateBp extends Subcommand {
         if (!key) {
           key = message.split(" ")[0].toLowerCase();
         }
-        const location = this.getOption("location", interaction)
-          ?.value as string || "";
+        const location =
+          (this.getOption("location", interaction)?.value as string) || "";
         key = truncate(String(key), { length: 100 }); // max option length = 100
 
         let updateNoLocation = {
-          message: message
+          message: message,
         };
 
         let updateWithLocation = {
           message: message,
-          location: location
+          location: location,
         };
 
-        let update = location ?  updateWithLocation : updateNoLocation;
+        let update = location ? updateWithLocation : updateNoLocation;
 
         await prismaClient.batphone.update({
           where: {
-            key: key
+            key: key,
           },
-          data: update
+          data: update,
         });
 
         log(
@@ -452,8 +457,8 @@ class updateBp extends Subcommand {
       console.error(err);
       let errMsg = err;
       if (err instanceof Prisma.PrismaClientKnownRequestError) {
-        if (err.code === 'P2025') {
-            errMsg = "No batphone found with the provided key";
+        if (err.code === "P2025") {
+          errMsg = "No batphone found with the provided key";
         } else {
           errMsg = err.code;
         }
@@ -510,6 +515,6 @@ export const batphoneCommand = new Command(
     new setBp("set", "save a BP preset"),
     new unsetBp("unset", "remove BP preset"),
     new getBp("get", "show BP message in this channel"),
-    new updateBp("update", "update a BP")
+    new updateBp("update", "update a BP"),
   ]
 );

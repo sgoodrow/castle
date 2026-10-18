@@ -52,9 +52,8 @@ export class BonusesThreadSubcommand extends Subcommand {
     const name = this.getRequiredOptionValue<string>(Option.Name, interaction);
 
     // create thread
-    const channel = await interaction.guild?.channels.fetch(
-      dkpBonusesChannelId
-    );
+    const channel =
+      await interaction.guild?.channels.fetch(dkpBonusesChannelId);
     if (!channel) {
       throw new Error("Could not find DKP bonuses channel");
     }

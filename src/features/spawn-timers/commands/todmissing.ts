@@ -30,4 +30,8 @@ class TodMissingCommand extends SimpleCommand {
   }
 }
 
-export const todMissingCommand = new TodMissingCommand("todmissing", "List mobs that don't have an active timer recorded", false);
+export const todMissingCommand = new TodMissingCommand(
+  "todmissing",
+  "List mobs that don't have an active timer recorded",
+  false
+);

@@ -31,11 +31,10 @@ export class RequestBotButtonCommand extends ButtonCommand {
 
     const name = interaction.customId.split("_")[1];
     try {
-      const guildUser = await getMember(
-        interaction.user.id
-      );
+      const guildUser = await getMember(interaction.user.id);
       log(
-        `${guildUser?.nickname || guildUser?.user.username
+        `${
+          guildUser?.nickname || guildUser?.user.username
         } clicked batphone button for ${name}`
       );
       await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
@@ -61,7 +60,9 @@ export class RequestBotButtonCommand extends ButtonCommand {
           return builder;
         });
 
-        return new ActionRowBuilder<ButtonBuilder>().addComponents(updatedButtons);
+        return new ActionRowBuilder<ButtonBuilder>().addComponents(
+          updatedButtons
+        );
       });
 
     await interaction.message.edit({ components: updatedComponents });

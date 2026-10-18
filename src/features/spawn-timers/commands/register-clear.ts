@@ -58,4 +58,7 @@ class RegisterClearCommand extends SimpleCommand {
   }
 }
 
-export const registerClearCommand = new RegisterClearCommand("register_clear", "Register/unregister a timer to be cleared when another timer's TOD is recorded (toggle)");
+export const registerClearCommand = new RegisterClearCommand(
+  "register_clear",
+  "Register/unregister a timer to be cleared when another timer's TOD is recorded (toggle)"
+);

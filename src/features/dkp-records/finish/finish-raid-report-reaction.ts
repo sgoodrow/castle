@@ -57,12 +57,10 @@ class RaidReportFinishedReactionAction extends ReactionAction {
 
     // authorize user
     const reactor = await getMember(this.user.id);
-    if (
-      !(
-        reactor?.roles.cache.has(dkpDeputyRoleId) ||
-        reactor?.roles.cache.has(officerRoleId)
-      )
-    ) {
+    if (!(
+      reactor?.roles.cache.has(dkpDeputyRoleId) ||
+      reactor?.roles.cache.has(officerRoleId)
+    )) {
       return;
     }
 

@@ -22,7 +22,7 @@ export class OdkpTopSubcommand extends Subcommand {
     interaction: CommandInteraction<CacheType>
   ): Promise<void> {
     const roles = interaction.member?.roles as GuildMemberRoleManager;
-    if (!(roles.cache.has(raiderRoleId))) {
+    if (!roles.cache.has(raiderRoleId)) {
       throw new Error("Must be a raider to use this command");
     }
     try {
@@ -40,10 +40,17 @@ export class OdkpTopSubcommand extends Subcommand {
 
       const description = top
         .map((c, i) => {
-          const emoji = i === 0 ? "👑" :
-            c.CurrentDKP > 2000 ? "👾" : c.CurrentDKP > 1000 ? "🐋" : "";
-          return `${i + 1}. ${emoji} **${c.CharacterName}** (${c.CharacterClass
-            }) — ${c.CurrentDKP.toFixed(1)} DKP`;
+          const emoji =
+            i === 0
+              ? "👑"
+              : c.CurrentDKP > 2000
+                ? "👾"
+                : c.CurrentDKP > 1000
+                  ? "🐋"
+                  : "";
+          return `${i + 1}. ${emoji} **${c.CharacterName}** (${
+            c.CharacterClass
+          }) — ${c.CurrentDKP.toFixed(1)} DKP`;
         })
         .join("\n");
 

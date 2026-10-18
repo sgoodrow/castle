@@ -8,6 +8,6 @@ export const raidCommand = new Command("raid", "Work with raids.", [
   setTickSubcommand,
   bonusesThreadSubcommand,
   getValuesSubcommand,
-  infoSubcommand
+  infoSubcommand,
   //getPlayerDkpSubcommand,
 ]);

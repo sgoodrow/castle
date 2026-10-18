@@ -100,7 +100,8 @@ export class PublicSheetService {
     await this.authorize();
     await this.publicBotSheet.loadInfo();
     try {
-      const locationSheet = this.publicBotSheet.sheetsByTitle[this.LOCATION_SHEET_NAME];
+      const locationSheet =
+        this.publicBotSheet.sheetsByTitle[this.LOCATION_SHEET_NAME];
       if (locationSheet) {
         this.locationSheetRows = await locationSheet.getRows();
       }
@@ -116,7 +117,8 @@ export class PublicSheetService {
     await this.authorize();
     await this.raidValuesSheet.loadInfo();
     try {
-      const raidValuesSheet = this.raidValuesSheet.sheetsByTitle[this.RAID_VALUES_SHEET];
+      const raidValuesSheet =
+        this.raidValuesSheet.sheetsByTitle[this.RAID_VALUES_SHEET];
       if (raidValuesSheet) {
         this.raidValueRows = await raidValuesSheet.getRows();
       }
@@ -132,7 +134,8 @@ export class PublicSheetService {
     await this.authorize();
     await this.raidValuesSheet.loadInfo();
     try {
-      const raidRolesSheet = this.raidValuesSheet.sheetsByTitle[this.RAID_ROLES_SHEET];
+      const raidRolesSheet =
+        this.raidValuesSheet.sheetsByTitle[this.RAID_ROLES_SHEET];
       if (raidRolesSheet) {
         this.raidRolesRows = await raidRolesSheet.getRows();
       }

@@ -1,4 +1,10 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync, existsSync } from "fs";
+import {
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+  existsSync,
+} from "fs";
 import { tmpdir } from "os";
 import path from "path";
 import { parseTracker, WikiCache, WikiItem } from "./wiki-cache";
@@ -14,7 +20,12 @@ const page = `<div class="itemicon"><img src="/images/Item_1234.png"></div>
 <tr><td>2026-01-01</td><td>Other</td><td>200</td></tr>
 </table>Last 20 Recorded Auctions`;
 
-const textRes = (status: number, body = "") => ({ ok: status >= 200 && status < 300, status, text: async () => body } as Response);
+const textRes = (status: number, body = "") =>
+  ({
+    ok: status >= 200 && status < 300,
+    status,
+    text: async () => body,
+  }) as Response;
 
 describe("parseTracker", () => {
   test("reads the rows for the server", () => {
@@ -35,7 +46,10 @@ describe("WikiCache", () => {
   let fetchMock: jest.Mock;
   const file = () => path.join(dir, "wiki", `${ID}.json`);
   // fetchItem is private; refresh() would also sleep between pages.
-  const fetchItem = (cache: WikiCache) => (cache as unknown as { fetchItem(id: number, name: string): Promise<void> }).fetchItem(ID, NAME);
+  const fetchItem = (cache: WikiCache) =>
+    (
+      cache as unknown as { fetchItem(id: number, name: string): Promise<void> }
+    ).fetchItem(ID, NAME);
 
   beforeEach(() => {
     dir = mkdtempSync(path.join(tmpdir(), "wiki-cache-test-"));
@@ -79,23 +93,31 @@ describe("WikiCache", () => {
   test.each([
     ["a server error", () => Promise.resolve(textRes(503))],
     ["a network error", () => Promise.reject(new Error("ECONNRESET"))],
-  ])("%s keeps the previous record and leaves the cache file alone", async (_, failure) => {
-    new WikiCache(dir);
-    const had: WikiItem = { url: "u", icon: 99, green: [["2025-01-01", "S", 10]], fetchedAt: 1 };
-    const onDisk = JSON.stringify(had);
-    writeFileSync(file(), onDisk);
-    const cache = new WikiCache(dir);
+  ])(
+    "%s keeps the previous record and leaves the cache file alone",
+    async (_, failure) => {
+      new WikiCache(dir);
+      const had: WikiItem = {
+        url: "u",
+        icon: 99,
+        green: [["2025-01-01", "S", 10]],
+        fetchedAt: 1,
+      };
+      const onDisk = JSON.stringify(had);
+      writeFileSync(file(), onDisk);
+      const cache = new WikiCache(dir);
 
-    fetchMock.mockImplementationOnce(failure);
-    await fetchItem(cache);
+      fetchMock.mockImplementationOnce(failure);
+      await fetchItem(cache);
 
-    const rec = cache.get(ID)!;
-    expect(rec).toMatchObject({ url: "u", icon: 99, green: had.green });
-    // Retried in about a day, not right away and not after a full week.
-    expect(rec.fetchedAt).toBeGreaterThan(1);
-    expect(rec.fetchedAt).toBeLessThan(Date.now());
-    expect(readFileSync(file(), "utf-8")).toBe(onDisk);
-  });
+      const rec = cache.get(ID)!;
+      expect(rec).toMatchObject({ url: "u", icon: 99, green: had.green });
+      // Retried in about a day, not right away and not after a full week.
+      expect(rec.fetchedAt).toBeGreaterThan(1);
+      expect(rec.fetchedAt).toBeLessThan(Date.now());
+      expect(readFileSync(file(), "utf-8")).toBe(onDisk);
+    }
+  );
 
   test("a failure with nothing cached records an empty entry but writes no file", async () => {
     fetchMock.mockRejectedValueOnce(new Error("timeout"));

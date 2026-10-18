@@ -5,13 +5,9 @@ import { findTimerByMob } from "./helpers/timer";
 
 class UnskipCommand extends SimpleCommand {
   public get command() {
-    return super.command
-      .addStringOption((opt) =>
-        opt
-          .setName("mob")
-          .setDescription("Name of the mob/NPC")
-          .setRequired(true)
-      );
+    return super.command.addStringOption((opt) =>
+      opt.setName("mob").setDescription("Name of the mob/NPC").setRequired(true)
+    );
   }
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
@@ -58,4 +54,8 @@ class UnskipCommand extends SimpleCommand {
   }
 }
 
-export const unskipCommand = new UnskipCommand("unskip", "Remove the last skip for a registered timer", false);
+export const unskipCommand = new UnskipCommand(
+  "unskip",
+  "Remove the last skip for a registered timer",
+  false
+);

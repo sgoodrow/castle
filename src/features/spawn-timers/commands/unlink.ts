@@ -4,13 +4,12 @@ import { timerPrismaClient } from "../../../db/timer-client";
 
 class UnlinkCommand extends SimpleCommand {
   public get command() {
-    return super.command
-      .addStringOption((opt) =>
-        opt
-          .setName("mob")
-          .setDescription("Name of the timer to remove the link from")
-          .setRequired(true)
-      );
+    return super.command.addStringOption((opt) =>
+      opt
+        .setName("mob")
+        .setDescription("Name of the timer to remove the link from")
+        .setRequired(true)
+    );
   }
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
@@ -49,4 +48,8 @@ class UnlinkCommand extends SimpleCommand {
   }
 }
 
-export const unlinkCommand = new UnlinkCommand("unlink", "Remove a link from a timer", false);
+export const unlinkCommand = new UnlinkCommand(
+  "unlink",
+  "Remove a link from a timer",
+  false
+);

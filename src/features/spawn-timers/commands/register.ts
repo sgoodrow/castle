@@ -16,7 +16,9 @@ class RegisterCommand extends SimpleCommand {
       .addStringOption((opt) =>
         opt
           .setName("window_start")
-          .setDescription('Respawn time or window start (e.g. "1 day", "18 hours")')
+          .setDescription(
+            'Respawn time or window start (e.g. "1 day", "18 hours")'
+          )
           .setRequired(true)
       )
       .addStringOption((opt) =>
@@ -35,8 +37,11 @@ class RegisterCommand extends SimpleCommand {
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
     const mob = interaction.options.getString("mob", true).replace(/`/g, "'");
-    const windowStart = interaction.options.getString("window_start", true).trim();
-    const windowEnd = interaction.options.getString("window_end")?.trim() ?? null;
+    const windowStart = interaction.options
+      .getString("window_start", true)
+      .trim();
+    const windowEnd =
+      interaction.options.getString("window_end")?.trim() ?? null;
     const variance = interaction.options.getString("variance")?.trim() ?? null;
 
     // Validate formats
@@ -47,14 +52,20 @@ class RegisterCommand extends SimpleCommand {
       return;
     }
 
-    if (windowEnd && (!windowEnd.match(/^\d/) || parseDuration(windowEnd) === null)) {
+    if (
+      windowEnd &&
+      (!windowEnd.match(/^\d/) || parseDuration(windowEnd) === null)
+    ) {
       await interaction.editReply({
         content: `Window End [${windowEnd}] is an invalid format. Please use something like '8 hours' or '6 minutes'.`,
       });
       return;
     }
 
-    if (variance && (!variance.match(/^\d/) || parseDuration(variance) === null)) {
+    if (
+      variance &&
+      (!variance.match(/^\d/) || parseDuration(variance) === null)
+    ) {
       await interaction.editReply({
         content: `Variance [${variance}] is an invalid format. Please use something like '8 hours' or '6 minutes'.`,
       });
@@ -106,4 +117,8 @@ class RegisterCommand extends SimpleCommand {
   }
 }
 
-export const registerCommand = new RegisterCommand("register", "Register a new spawn timer to track", false);
+export const registerCommand = new RegisterCommand(
+  "register",
+  "Register a new spawn timer to track",
+  false
+);

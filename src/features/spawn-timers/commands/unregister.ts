@@ -5,13 +5,12 @@ import { findTimerByMob } from "./helpers/timer";
 
 class UnregisterCommand extends SimpleCommand {
   public get command() {
-    return super.command
-      .addStringOption((opt) =>
-        opt
-          .setName("mob")
-          .setDescription("Name of the mob/NPC to unregister")
-          .setRequired(true)
-      );
+    return super.command.addStringOption((opt) =>
+      opt
+        .setName("mob")
+        .setDescription("Name of the mob/NPC to unregister")
+        .setRequired(true)
+    );
   }
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
@@ -26,8 +25,12 @@ class UnregisterCommand extends SimpleCommand {
     }
 
     if (foundTimer) {
-      await timerPrismaClient.tod.deleteMany({ where: { timerId: foundTimer.id } });
-      await timerPrismaClient.alias.deleteMany({ where: { timerId: foundTimer.id } });
+      await timerPrismaClient.tod.deleteMany({
+        where: { timerId: foundTimer.id },
+      });
+      await timerPrismaClient.alias.deleteMany({
+        where: { timerId: foundTimer.id },
+      });
       await timerPrismaClient.timer.delete({ where: { id: foundTimer.id } });
       await interaction.editReply({
         content: `Registered timer for [${foundTimer.name}] removed.`,
@@ -40,4 +43,8 @@ class UnregisterCommand extends SimpleCommand {
   }
 }
 
-export const unregisterCommand = new UnregisterCommand("unregister", "Remove a previously registered timer", false);
+export const unregisterCommand = new UnregisterCommand(
+  "unregister",
+  "Remove a previously registered timer",
+  false
+);

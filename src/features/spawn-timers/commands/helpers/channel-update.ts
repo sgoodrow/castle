@@ -1,8 +1,4 @@
-import {
-  EmbedBuilder,
-  type Client,
-  type TextChannel,
-} from "discord.js";
+import { EmbedBuilder, type Client, type TextChannel } from "discord.js";
 
 import {
   nextSpawnTimeStart,
@@ -42,7 +38,11 @@ function getDisplayName(name: string, skipCount: number | null): string {
   return `${name}${stars}`;
 }
 
-function getColumnWidths(rows: TableRow[]): { nameWidth: number; timeWidth: number; windowWidth: number } {
+function getColumnWidths(rows: TableRow[]): {
+  nameWidth: number;
+  timeWidth: number;
+  windowWidth: number;
+} {
   return {
     nameWidth: Math.max(4, ...rows.map((r) => r.name.length)),
     timeWidth: Math.max(3, ...rows.map((r) => r.time.length)),
@@ -72,7 +72,11 @@ function renderTable(
   return "```\n" + lines.join("\n") + "\n```";
 }
 
-function chunkRows<T>(rows: T[], maxLen: number, render: (rows: T[]) => string): string[] {
+function chunkRows<T>(
+  rows: T[],
+  maxLen: number,
+  render: (rows: T[]) => string
+): string[] {
   const chunks: string[] = [];
   let currentRows: T[] = [];
 
@@ -94,7 +98,10 @@ function chunkRows<T>(rows: T[], maxLen: number, render: (rows: T[]) => string):
   return chunks;
 }
 
-function getEndedColumnWidths(rows: EndedRow[]): { nameWidth: number; timeWidth: number } {
+function getEndedColumnWidths(rows: EndedRow[]): {
+  nameWidth: number;
+  timeWidth: number;
+} {
   return {
     nameWidth: Math.max(5, ...rows.map((r) => r.name.length)),
     timeWidth: Math.max(5, ...rows.map((r) => r.time.length)),
@@ -113,7 +120,9 @@ function renderEndedTable(
   const lines = [
     header,
     divider,
-    ...rows.map((r) => `${pad(r.name, nameWidth)}${sep}${pad(r.time, timeWidth)}`),
+    ...rows.map(
+      (r) => `${pad(r.name, nameWidth)}${sep}${pad(r.time, timeWidth)}`
+    ),
   ];
 
   return "```\n" + lines.join("\n") + "\n```";
@@ -127,7 +136,9 @@ export async function updateTimersChannel(client: Client): Promise<void> {
 
   const timers = await timerPrismaClient.timer.findMany();
 
-  const channel = await client.channels.fetch(TIMER_CHANNEL_ID) as TextChannel | null;
+  const channel = (await client.channels.fetch(
+    TIMER_CHANNEL_ID
+  )) as TextChannel | null;
   if (!channel) return;
 
   const now = new Date();
@@ -171,9 +182,13 @@ export async function updateTimersChannel(client: Client): Promise<void> {
       const remainingMs = endsAt.getTime() - now.getTime();
       const windowDurationMs = endsAt.getTime() - startsAt.getTime();
       const elapsedMs = now.getTime() - startsAt.getTime();
-      const pct = windowDurationMs > 0
-        ? Math.min(100, Math.max(0, Math.round((elapsedMs / windowDurationMs) * 100)))
-        : 0;
+      const pct =
+        windowDurationMs > 0
+          ? Math.min(
+              100,
+              Math.max(0, Math.round((elapsedMs / windowDurationMs) * 100))
+            )
+          : 0;
       inWindowRows.push({
         name: getDisplayName(timer.name, timer.skipCount),
         time: formatTimeDistance(endsAt, now, true),
@@ -226,7 +241,9 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   // Future window embed(s)
   if (SHOW_FUTURE_WINDOW?.toLowerCase() === "true" && futureRows.length > 0) {
     const widths = getColumnWidths(futureRows);
-    const descChunks = chunkRows(futureRows, MAX_DESCRIPTION_LENGTH, (rs) => renderTable(rs, widths));
+    const descChunks = chunkRows(futureRows, MAX_DESCRIPTION_LENGTH, (rs) =>
+      renderTable(rs, widths)
+    );
     for (let i = 0; i < descChunks.length; i++) {
       const embed = new EmbedBuilder().setDescription(descChunks[i]);
       if (i === 0) embed.setTitle("Future Windows");
@@ -237,7 +254,9 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   // Upcoming embed(s)
   if (upcomingRows.length > 0) {
     const widths = getColumnWidths(upcomingRows);
-    const descChunks = chunkRows(upcomingRows, MAX_DESCRIPTION_LENGTH, (rs) => renderTable(rs, widths));
+    const descChunks = chunkRows(upcomingRows, MAX_DESCRIPTION_LENGTH, (rs) =>
+      renderTable(rs, widths)
+    );
     for (let i = 0; i < descChunks.length; i++) {
       const embed = new EmbedBuilder().setDescription(descChunks[i]);
       if (i === 0) embed.setTitle("Mobs Entering Window In The Next 24 Hours");
@@ -248,11 +267,16 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   // In-window embed(s)
   if (anyInWindow) {
     const widths = getColumnWidths(inWindowRows);
-    const descChunks = chunkRows(inWindowRows, MAX_DESCRIPTION_LENGTH, (rs) => renderTable(rs, widths, "%"));
+    const descChunks = chunkRows(inWindowRows, MAX_DESCRIPTION_LENGTH, (rs) =>
+      renderTable(rs, widths, "%")
+    );
     for (let i = 0; i < descChunks.length; i++) {
-      const embed = new EmbedBuilder().setColor(0xe67e22).setDescription(descChunks[i]);
+      const embed = new EmbedBuilder()
+        .setColor(0xe67e22)
+        .setDescription(descChunks[i]);
       if (i === 0) embed.setTitle("Mobs In Window");
-      if (i === descChunks.length - 1) embed.setFooter({ text: inWindowFooter });
+      if (i === descChunks.length - 1)
+        embed.setFooter({ text: inWindowFooter });
       embeds.push(embed);
     }
   } else {
@@ -267,9 +291,13 @@ export async function updateTimersChannel(client: Client): Promise<void> {
   // Ended recently embed(s)
   if (endedRows.length > 0) {
     const widths = getEndedColumnWidths(endedRows);
-    const descChunks = chunkRows(endedRows, MAX_DESCRIPTION_LENGTH, (rs) => renderEndedTable(rs, widths));
+    const descChunks = chunkRows(endedRows, MAX_DESCRIPTION_LENGTH, (rs) =>
+      renderEndedTable(rs, widths)
+    );
     for (let i = 0; i < descChunks.length; i++) {
-      const embed = new EmbedBuilder().setColor(0x95a5a6).setDescription(descChunks[i]);
+      const embed = new EmbedBuilder()
+        .setColor(0x95a5a6)
+        .setDescription(descChunks[i]);
       if (i === 0) embed.setTitle("Ended Recently");
       embeds.push(embed);
     }
@@ -290,8 +318,13 @@ export async function updateTimersChannel(client: Client): Promise<void> {
         const message = await channel.messages.fetch(timerMessageId);
         await message.edit({ embeds });
       } catch (caught) {
-        const err = caught as { status?: number; message?: string; code?: number } | undefined;
-        if (err?.status === 404 || err?.message?.includes("404") || err?.code === 10008) {
+        const err = caught as
+          { status?: number; message?: string; code?: number } | undefined;
+        if (
+          err?.status === 404 ||
+          err?.message?.includes("404") ||
+          err?.code === 10008
+        ) {
           const result = await channel.send({ embeds });
           await saveSettingByKey("timer_message_id", result.id);
         } else {

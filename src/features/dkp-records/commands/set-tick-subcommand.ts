@@ -11,7 +11,10 @@ import {
 } from "../../../config";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { getRaidReport, withRaidReportLock } from "../raid-report";
-import { RaidValue, RaidValuesService } from "../../../services/raidValuesService";
+import {
+  RaidValue,
+  RaidValuesService,
+} from "../../../services/raidValuesService";
 
 enum Option {
   Tick = "tick",
@@ -47,10 +50,12 @@ export class SetTickSubcommand extends Subcommand {
       Option.Event,
       interaction
     );
-    let dkpEvent = await RaidValuesService.getInstance().getRaidValue(
+    let dkpEvent =
+      await RaidValuesService.getInstance().getRaidValue(eventName);
+    await RaidValuesService.getInstance().recordRecentEvent(
+      interaction.user.id,
       eventName
     );
-    await RaidValuesService.getInstance().recordRecentEvent(interaction.user.id, eventName);
     if (!dkpEvent) {
       console.log("Using manual event " + eventName);
       dkpEvent = {
@@ -131,10 +136,15 @@ export class SetTickSubcommand extends Subcommand {
       );
   }
 
-  public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction<CacheType>) {
+  public async getOptionAutocomplete(
+    option: string,
+    interaction: AutocompleteInteraction<CacheType>
+  ) {
     switch (option) {
       case Option.Event:
-        return await RaidValuesService.getInstance().getRaidValueOptions(interaction.user.id);
+        return await RaidValuesService.getInstance().getRaidValueOptions(
+          interaction.user.id
+        );
       default:
         return;
     }

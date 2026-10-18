@@ -28,7 +28,9 @@ export const messageCreateListener = async (message: Message) => {
     try {
       const adapter = buildTodAdapter(message);
       // The adapter has the parts of an interaction that /tod uses.
-      await todCommand.execute(adapter as unknown as ChatInputCommandInteraction);
+      await todCommand.execute(
+        adapter as unknown as ChatInputCommandInteraction
+      );
     } catch (error) {
       console.error(`!tod ${error}`);
       await message.reply(String(error));

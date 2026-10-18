@@ -6,15 +6,11 @@ import { odkpGetRaidAttendanceSubcommand } from "./odkp-getraidattendance-subcom
 import { odkpItemHistorySubcommand } from "./odkp-itemhistory-subcommand";
 import { odkpTopSubcommand } from "./odkp-top-subcommand";
 
-export const odkpCommand = new Command(
-  "odkp",
-  "OpenDKP commands",
-  [
-    odkpAddCharacterSubcommand,
-    odkpItemHistorySubcommand,
-    odkpGetSubcommand,
-    odkpGetRaidAttendanceSubcommand,
-    odkpSummarySubcommand,
-    odkpTopSubcommand,
-  ]
-);
+export const odkpCommand = new Command("odkp", "OpenDKP commands", [
+  odkpAddCharacterSubcommand,
+  odkpItemHistorySubcommand,
+  odkpGetSubcommand,
+  odkpGetRaidAttendanceSubcommand,
+  odkpSummarySubcommand,
+  odkpTopSubcommand,
+]);

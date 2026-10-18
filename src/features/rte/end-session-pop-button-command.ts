@@ -14,7 +14,9 @@ export class EndRtePopButtonCommand extends ButtonCommand {
     super(name);
   }
 
-  public async execute(interaction: ButtonInteraction<CacheType>): Promise<void> {
+  public async execute(
+    interaction: ButtonInteraction<CacheType>
+  ): Promise<void> {
     const sessionIdStr = interaction.customId.split("_")[3];
     const sessionId = Number.parseInt(sessionIdStr, 10);
 
@@ -24,9 +26,17 @@ export class EndRtePopButtonCommand extends ButtonCommand {
     }
 
     try {
-      await rteService.endSessionById(sessionId, interaction.user.id, undefined, true);
+      await rteService.endSessionById(
+        sessionId,
+        interaction.user.id,
+        undefined,
+        true
+      );
       await refreshRteStatusEmbed();
-      await interaction.editReply({ content: "Your session has been ended (popped). Check your DMs for a summary." });
+      await interaction.editReply({
+        content:
+          "Your session has been ended (popped). Check your DMs for a summary.",
+      });
     } catch (err: unknown) {
       log(`Failed to end RTE session (pop) ${sessionId}: ${err}`);
       await interaction.editReply({ content: `Failed to end session: ${err}` });

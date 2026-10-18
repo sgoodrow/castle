@@ -6,13 +6,9 @@ import { findTimerByMob } from "./helpers/timer";
 
 class TodRemoveCommand extends SimpleCommand {
   public get command() {
-    return super.command
-      .addStringOption((opt) =>
-        opt
-          .setName("mob")
-          .setDescription("Name of the mob/NPC")
-          .setRequired(true)
-      );
+    return super.command.addStringOption((opt) =>
+      opt.setName("mob").setDescription("Name of the mob/NPC").setRequired(true)
+    );
   }
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
@@ -51,4 +47,8 @@ class TodRemoveCommand extends SimpleCommand {
   }
 }
 
-export const todRemoveCommand = new TodRemoveCommand("todremove", "Remove the current time of death for a registered timer", false);
+export const todRemoveCommand = new TodRemoveCommand(
+  "todremove",
+  "Remove the current time of death for a registered timer",
+  false
+);

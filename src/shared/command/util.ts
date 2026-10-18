@@ -63,8 +63,7 @@ export const getChannel = async (
 export const getRole = (
   roleId: string,
   interaction:
-    | CommandInteraction<CacheType>
-    | AutocompleteInteraction<CacheType>
+    CommandInteraction<CacheType> | AutocompleteInteraction<CacheType>
 ) => {
   return interaction.guild?.roles.cache.get(roleId);
 };
@@ -73,8 +72,7 @@ export const requireUserRole = (
   userId: string,
   roleId: string,
   interaction:
-    | CommandInteraction<CacheType>
-    | AutocompleteInteraction<CacheType>
+    CommandInteraction<CacheType> | AutocompleteInteraction<CacheType>
 ) => {
   const role = getRole(roleId, interaction);
   if (!role?.members.get(userId)) {

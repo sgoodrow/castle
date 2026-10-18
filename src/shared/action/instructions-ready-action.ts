@@ -17,11 +17,7 @@ import { ReadyAction } from "./ready-action";
  */
 export abstract class InstructionsReadyAction extends ReadyAction {
   protected abstract get channel():
-    | DMChannel
-    | PartialDMChannel
-    | NewsChannel
-    | TextChannel
-    | ThreadChannel;
+    DMChannel | PartialDMChannel | NewsChannel | TextChannel | ThreadChannel;
 
   protected async createOrUpdateInstructions(
     options: BaseMessageOptions,

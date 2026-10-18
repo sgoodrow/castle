@@ -13,7 +13,7 @@ export class OdkpAddCharacterSubcommand extends Subcommand {
   constructor(name: string, description: string) {
     super(name, description, true);
   }
-  
+
   public async getOptionAutocomplete(
     option: string,
     _interaction: AutocompleteInteraction<CacheType>
@@ -32,7 +32,7 @@ export class OdkpAddCharacterSubcommand extends Subcommand {
     interaction: CommandInteraction<CacheType>
   ): Promise<void> {
     const roles = interaction.member?.roles as GuildMemberRoleManager;
-    if (!(roles.cache.has(raiderRoleId))) {
+    if (!roles.cache.has(raiderRoleId)) {
       throw new Error("Must be a raider to use this command");
     }
     try {

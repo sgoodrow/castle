@@ -21,8 +21,12 @@ class RegisterLinkCommand extends SimpleCommand {
   }
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
-    const linkedMob = interaction.options.getString("timer", true).replace(/`/g, "'");
-    const mob = interaction.options.getString("link_to", true).replace(/`/g, "'");
+    const linkedMob = interaction.options
+      .getString("timer", true)
+      .replace(/`/g, "'");
+    const mob = interaction.options
+      .getString("link_to", true)
+      .replace(/`/g, "'");
 
     const [, foundTimer] = await findTimerByMob(mob);
     const [, foundLinkedTimer] = await findTimerByMob(linkedMob);
@@ -54,4 +58,7 @@ class RegisterLinkCommand extends SimpleCommand {
   }
 }
 
-export const registerLinkCommand = new RegisterLinkCommand("register_link", "Link a timer to auto-set TOD when another timer's TOD is set (toggle)");
+export const registerLinkCommand = new RegisterLinkCommand(
+  "register_link",
+  "Link a timer to auto-set TOD when another timer's TOD is set (toggle)"
+);

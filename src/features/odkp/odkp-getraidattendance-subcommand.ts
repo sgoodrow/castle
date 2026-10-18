@@ -39,7 +39,7 @@ export class OdkpGetRaidAttendanceSubcommand extends Subcommand {
     interaction: CommandInteraction<CacheType>
   ): Promise<void> {
     const roles = interaction.member?.roles as GuildMemberRoleManager;
-    if (!(roles.cache.has(raiderRoleId))) {
+    if (!roles.cache.has(raiderRoleId)) {
       throw new Error("Must be a raider to use this command");
     }
     try {

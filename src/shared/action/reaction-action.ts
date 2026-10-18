@@ -21,10 +21,10 @@ export abstract class ReactionAction {
 
   public async initialize() {
     if (this.reaction.partial) {
-        await this.reaction.fetch().catch((err) => {
-          console.error(err);
-          this.replyError(err);
-        });
+      await this.reaction.fetch().catch((err) => {
+        console.error(err);
+        this.replyError(err);
+      });
     }
     return this;
   }
@@ -32,9 +32,9 @@ export abstract class ReactionAction {
   public abstract execute(): Promise<void>;
 
   public async replyError(err: string) {
-      await this.message.reply(`⚠️${err}`).catch((err) => {
-        console.error(err);
-      });
+    await this.message.reply(`⚠️${err}`).catch((err) => {
+      console.error(err);
+    });
   }
 
   protected get authorId() {

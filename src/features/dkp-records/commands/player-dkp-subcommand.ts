@@ -34,8 +34,8 @@ export class PlayerDkpSubcommand extends Subcommand {
       net === 0
         ? "0"
         : net > 0
-        ? `+                     ${net}`
-        : `-                     ${net}`;
+          ? `+                     ${net}`
+          : `-                     ${net}`;
     const content = `**${points.characterName}** DKP as of ${time(
       Date.now(),
       TimestampStyles.ShortDateTime
@@ -46,13 +46,15 @@ export class PlayerDkpSubcommand extends Subcommand {
 ${result}${code}`;
 
     if (spam) {
-      if (interaction.channel?.isTextBased() && !interaction.channel.isDMBased()) {
-      await interaction.channel.send({ content });
-      await interaction.editReply({
-
-        content: "Done.",
-     });
-    }
+      if (
+        interaction.channel?.isTextBased() &&
+        !interaction.channel.isDMBased()
+      ) {
+        await interaction.channel.send({ content });
+        await interaction.editReply({
+          content: "Done.",
+        });
+      }
     } else {
       await interaction.editReply({
         content,

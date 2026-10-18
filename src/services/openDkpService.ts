@@ -459,26 +459,29 @@ export const openDkpService = {
   },
 
   summarizeByCharacter: (data: ODKPDkpEntry[]): ODKPDkpTotals[] => {
-    const totals = data.reduce((acc, { CharacterName, SourceType, Value }) => {
-      if (!acc[CharacterName]) {
-        acc[CharacterName] = {
-          CharacterName,
-          Raid: 0,
-          Adjustments: 0,
-          Items: 0,
-          Total: 0,
-        };
-      }
+    const totals = data.reduce(
+      (acc, { CharacterName, SourceType, Value }) => {
+        if (!acc[CharacterName]) {
+          acc[CharacterName] = {
+            CharacterName,
+            Raid: 0,
+            Adjustments: 0,
+            Items: 0,
+            Total: 0,
+          };
+        }
 
-      if (SourceType === "Raid") acc[CharacterName].Raid += Value;
-      else if (SourceType === "Adjustment")
-        acc[CharacterName].Adjustments += Value;
-      else if (SourceType === "Item") acc[CharacterName].Items += Value;
+        if (SourceType === "Raid") acc[CharacterName].Raid += Value;
+        else if (SourceType === "Adjustment")
+          acc[CharacterName].Adjustments += Value;
+        else if (SourceType === "Item") acc[CharacterName].Items += Value;
 
-      acc[CharacterName].Total += Value;
+        acc[CharacterName].Total += Value;
 
-      return acc;
-    }, {} as Record<string, ODKPDkpTotals>);
+        return acc;
+      },
+      {} as Record<string, ODKPDkpTotals>
+    );
 
     return Object.values(totals).sort((a, b) =>
       a.CharacterName.localeCompare(b.CharacterName)
@@ -549,15 +552,25 @@ export const openDkpService = {
         `${(characterDkpSummary.Calculated_30 * 100).toFixed(1)}%`.padStart(8),
         `${(characterDkpSummary.Calculated_60 * 100).toFixed(1)}%`.padStart(10),
         `${(characterDkpSummary.Calculated_90 * 100).toFixed(1)}%`.padStart(12),
-        `${(characterDkpSummary.Calculated_Life * 100).toFixed(1)}%`.padStart(12),
+        `${(characterDkpSummary.Calculated_Life * 100).toFixed(1)}%`.padStart(
+          12
+        ),
       ].join(" ");
 
       const ticksRow = [
         "Ticks".padEnd(10),
-        `${characterDkpSummary.AttendedTicks_30}/${characterDkpSummary.TotalTicks_30}`.padStart(8),
-        `${characterDkpSummary.AttendedTicks_60}/${characterDkpSummary.TotalTicks_60}`.padStart(10),
-        `${characterDkpSummary.AttendedTicks_90}/${characterDkpSummary.TotalTicks_90}`.padStart(12),
-        `${characterDkpSummary.AttendedTicks_Life}/${characterDkpSummary.TotalTicks_Life}`.padStart(12),
+        `${characterDkpSummary.AttendedTicks_30}/${characterDkpSummary.TotalTicks_30}`.padStart(
+          8
+        ),
+        `${characterDkpSummary.AttendedTicks_60}/${characterDkpSummary.TotalTicks_60}`.padStart(
+          10
+        ),
+        `${characterDkpSummary.AttendedTicks_90}/${characterDkpSummary.TotalTicks_90}`.padStart(
+          12
+        ),
+        `${characterDkpSummary.AttendedTicks_Life}/${characterDkpSummary.TotalTicks_Life}`.padStart(
+          12
+        ),
       ].join(" ");
 
       overview =
@@ -567,7 +580,9 @@ export const openDkpService = {
     }
 
     return (
-      "```\n" + [header, divider, ...rows, divider, footer].join("\n") + "\n```" +
+      "```\n" +
+      [header, divider, ...rows, divider, footer].join("\n") +
+      "\n```" +
       overview
     );
   },
@@ -617,8 +632,10 @@ export const openDkpService = {
       );
     } catch (error) {
       log(error);
-      const safeItemName = itemName.replaceAll('`', "'");
-      log(`Item search was invalid, probably backticks. Replacing ${itemName} with ${safeItemName} and trying again.`);
+      const safeItemName = itemName.replaceAll("`", "'");
+      log(
+        `Item search was invalid, probably backticks. Replacing ${itemName} with ${safeItemName} and trying again.`
+      );
       try {
         config.url = `https://api.opendkp.com/items/autocomplete?item=${safeItemName}`;
         const response = await axios(config);
@@ -630,7 +647,9 @@ export const openDkpService = {
           }
         );
       } catch {
-        log(`Returning ${safeItemName}, couldn't find item in OpenDKP database`);
+        log(
+          `Returning ${safeItemName}, couldn't find item in OpenDKP database`
+        );
         return {
           GameItemId: -1,
           ItemID: -1,
@@ -681,9 +700,11 @@ export const openDkpService = {
       );
 
       if (unregisteredCharacters.length > 0) {
-        const errorMsg = `Character${unregisteredCharacters.length > 1 ? "s" : ""
-          } not found on OpenDKP for tick ${tick.name
-          }: ${unregisteredCharacters.join(", ")}`;
+        const errorMsg = `Character${
+          unregisteredCharacters.length > 1 ? "s" : ""
+        } not found on OpenDKP for tick ${
+          tick.name
+        }: ${unregisteredCharacters.join(", ")}`;
         log(errorMsg);
         failures.push(errorMsg);
       }
@@ -779,8 +800,8 @@ export const openDkpService = {
       const notIncluded =
         invalidNames.length > 0
           ? `These characters were not included because they do not exist ${invalidNames.join(
-            ", "
-          )}`
+              ", "
+            )}`
           : "";
       return new EmbedBuilder({
         title: `${embedTitle}`,
@@ -884,9 +905,7 @@ ${result}${code}${notIncluded}`,
       if (!resp.data?.[0]) {
         throw new Error(`No data in adjustment response`);
       }
-      log(
-        `OpenDKP - added adjustment: ${JSON.stringify(resp.data[0])}`
-      );
+      log(`OpenDKP - added adjustment: ${JSON.stringify(resp.data[0])}`);
       openDkpService.logIfVerbose(resp);
       return resp.data[0];
     } catch (err: unknown) {
@@ -1082,7 +1101,7 @@ ${result}${code}${notIncluded}`,
       // The API now returns a paginated envelope
       // ({ Raids, TotalRaids, TotalPages, CurrentPage }); older deployments
       // returned a bare array. Support both.
-      const raids = Array.isArray(data) ? data : data?.Raids ?? [];
+      const raids = Array.isArray(data) ? data : (data?.Raids ?? []);
       return raids as ODKPRaidData[];
     } catch (err: unknown) {
       log(err);
@@ -1194,14 +1213,17 @@ ${result}${code}${notIncluded}`,
           }
         );
 
-        const groups = eqdkpChars.reduce((acc, item) => {
-          const key = item.AccountId;
-          if (!acc[key]) {
-            acc[key] = [];
-          }
-          acc[key].push(item);
-          return acc;
-        }, {} as Record<string, LinkInfo[]>);
+        const groups = eqdkpChars.reduce(
+          (acc, item) => {
+            const key = item.AccountId;
+            if (!acc[key]) {
+              acc[key] = [];
+            }
+            acc[key].push(item);
+            return acc;
+          },
+          {} as Record<string, LinkInfo[]>
+        );
 
         for (const characters of Object.values(groups)) {
           if (characters) {

@@ -27,8 +27,7 @@ export class LocationService implements ILocationService {
     ttl: 5 * MINUTES,
   });
 
-  private constructor() {
-  }
+  private constructor() {}
 
   public static getInstance() {
     if (!this._instance) {

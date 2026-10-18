@@ -24,7 +24,10 @@ export class OpenSubcommand extends Subcommand {
       throw new Error("Must be a Knight or Officer to open targets.");
     }
 
-    const target = this.getRequiredOptionValue<string>(Option.Target, interaction);
+    const target = this.getRequiredOptionValue<string>(
+      Option.Target,
+      interaction
+    );
     await rteService.openTarget(target, interaction.user.id);
     await refreshRteStatusEmbed();
     await interaction.editReply(`Target **${target}** is now open for RTE.`);
@@ -40,14 +43,22 @@ export class OpenSubcommand extends Subcommand {
     );
   }
 
-  public async getOptionAutocomplete(option: string, interaction: AutocompleteInteraction<CacheType>) {
+  public async getOptionAutocomplete(
+    option: string,
+    interaction: AutocompleteInteraction<CacheType>
+  ) {
     switch (option) {
       case Option.Target:
-        return await RaidValuesService.getInstance().getTargetOptions(interaction.user.id);
+        return await RaidValuesService.getInstance().getTargetOptions(
+          interaction.user.id
+        );
       default:
         return;
     }
   }
 }
 
-export const openSubcommand = new OpenSubcommand("open", "Open a target for RTE.");
+export const openSubcommand = new OpenSubcommand(
+  "open",
+  "Open a target for RTE."
+);

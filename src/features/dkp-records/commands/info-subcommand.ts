@@ -15,7 +15,7 @@ export class InfoSubcommand extends Subcommand {
   public async execute(interaction: CommandInteraction<CacheType>) {
     // authorize user
     const roles = interaction.member?.roles as GuildMemberRoleManager;
-    if (!(roles.cache.has(raiderRoleId))) {
+    if (!roles.cache.has(raiderRoleId)) {
       throw new Error("Must be a raider to use this command");
     }
     const links = [

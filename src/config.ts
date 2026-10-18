@@ -93,7 +93,6 @@ export const {
   RTE_REQUIRE_OPEN_TARGET,
   eqnotifyChannelId,
   TELEGRAM_BOT_TOKEN,
-
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.

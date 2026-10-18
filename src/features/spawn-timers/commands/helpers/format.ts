@@ -22,8 +22,12 @@ export function formatDateFull(date: Date): string {
  * Format a date in short form, e.g. "05/27 01:57:00 AM EDT"
  */
 export function formatDateShort(date: Date): string {
-  const month = String(date.toLocaleString("en-US", { month: "2-digit", timeZone: TZ }));
-  const day = String(date.toLocaleString("en-US", { day: "2-digit", timeZone: TZ }));
+  const month = String(
+    date.toLocaleString("en-US", { month: "2-digit", timeZone: TZ })
+  );
+  const day = String(
+    date.toLocaleString("en-US", { day: "2-digit", timeZone: TZ })
+  );
   const time = date.toLocaleString("en-US", {
     hour: "2-digit",
     minute: "2-digit",

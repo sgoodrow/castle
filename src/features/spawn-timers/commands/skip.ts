@@ -5,13 +5,9 @@ import { findTimerByMob, nextSpawnTimeEnd } from "./helpers/timer";
 
 class SkipCommand extends SimpleCommand {
   public get command() {
-    return super.command
-      .addStringOption((opt) =>
-        opt
-          .setName("mob")
-          .setDescription("Name of the mob/NPC")
-          .setRequired(true)
-      );
+    return super.command.addStringOption((opt) =>
+      opt.setName("mob").setDescription("Name of the mob/NPC").setRequired(true)
+    );
   }
 
   public async execute(interaction: ChatInputCommandInteraction<CacheType>) {
@@ -59,4 +55,8 @@ class SkipCommand extends SimpleCommand {
   }
 }
 
-export const skipCommand = new SkipCommand("skip", "Record a skipped spawn for a registered timer", false);
+export const skipCommand = new SkipCommand(
+  "skip",
+  "Record a skipped spawn for a registered timer",
+  false
+);
