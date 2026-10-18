@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { CLASSES, RACES, SLOT_CHIPS, type Kind } from "./data";
+import { CLASSES, CLASS_NAME, RACES, RACE_NAME, SLOT_CHIPS, type ClassId, type Kind, type RaceId, type SlotChip } from "./data";
 
 export interface Filters {
-  cls: number;
-  race: number;
+  cls: ClassId | null; // null means any
+  race: RaceId | null;
   q: string;
   kind: "all" | Kind;
-  slot: string | null;
+  slot: SlotChip | null;
   sort: Sort;
 }
 // What the list is ordered by; a leading "-" is high to low. Unknown prices count as 0.
@@ -20,12 +20,12 @@ export const nextSort = (s: Sort, key: SortKey): Sort => (sortKey(s) !== key ? k
 // Item id -> quantity on the tab.
 export type Tab = Record<number, number>;
 
-export const DEFAULT_FILTERS: Filters = { cls: -1, race: -1, q: "", kind: "all", slot: null, sort: "name" };
+export const DEFAULT_FILTERS: Filters = { cls: null, race: null, q: "", kind: "all", slot: null, sort: "name" };
 
 // ---------- filters live in the URL, readable: ?class=NEC&race=IKS&slot=head ----------
 export interface Search {
-  class?: string;
-  race?: string;
+  class?: ClassId;
+  race?: RaceId;
   kind?: Kind;
   slot?: string;
   q?: string;
@@ -38,10 +38,10 @@ const oneOf = <T extends string>(v: unknown, ok: readonly T[]) => ok.find(o => o
 // Anything unknown in the URL is dropped rather than trusted.
 export function validateSearch(raw: Record<string, unknown>): Search {
   return {
-    class: oneOf(raw.class, CLASSES.map(c => c[0])),
-    race: oneOf(raw.race, RACES.map(r => r[0])),
+    class: oneOf(raw.class, CLASSES.map(c => c.id)),
+    race: oneOf(raw.race, RACES.map(r => r.id)),
     kind: oneOf(raw.kind, KINDS),
-    slot: oneOf(raw.slot, SLOT_CHIPS.map(s => s[0]))?.toLowerCase(),
+    slot: oneOf(raw.slot, SLOT_CHIPS.map(c => c.id))?.toLowerCase(),
     q: str(raw.q),
     sort: oneOf(raw.sort, SORTS),
   };
@@ -49,11 +49,11 @@ export function validateSearch(raw: Record<string, unknown>): Search {
 
 export function toFilters(s: Search): Filters {
   return {
-    cls: CLASSES.findIndex(c => c[0] === s.class),
-    race: RACES.findIndex(r => r[0] === s.race),
+    cls: s.class ?? null,
+    race: s.race ?? null,
     q: s.q ?? "",
     kind: s.kind ?? "all",
-    slot: SLOT_CHIPS.find(c => c[0].toLowerCase() === s.slot)?.[0] ?? null,
+    slot: SLOT_CHIPS.find(c => c.id.toLowerCase() === s.slot)?.id ?? null,
     sort: s.sort ?? "name",
   };
 }
@@ -61,8 +61,8 @@ export function toFilters(s: Search): Filters {
 // Defaults are left out so a plain visit has a plain URL.
 export function toSearch(f: Filters): Search {
   return {
-    class: CLASSES[f.cls]?.[0],
-    race: RACES[f.race]?.[0],
+    class: f.cls ?? undefined,
+    race: f.race ?? undefined,
     kind: f.kind === "all" ? undefined : f.kind,
     slot: f.slot?.toLowerCase() || undefined,
     q: f.q || undefined,
@@ -99,17 +99,14 @@ export function useTab() {
   return [tab, setTab] as const;
 }
 
-export const KIND_OPTIONS = [
-  { value: "all", label: "All" }, { value: "gear", label: "Gear" }, { value: "spell", label: "Spells" },
-  { value: "bag", label: "Bags" }, { value: "other", label: "Other" },
-];
+export const KIND_LABEL: Record<Filters["kind"], string> = { all: "All", gear: "Gear", spell: "Spells", bag: "Bags", other: "Other" };
 
 // The active filters, each with what clears it.
 export function activeChips(f: Filters): { label: string; clear: Partial<Filters> }[] {
   const out: { label: string; clear: Partial<Filters> }[] = [];
-  if (f.cls >= 0) out.push({ label: CLASSES[f.cls][1], clear: { cls: -1 } });
-  if (f.race >= 0) out.push({ label: RACES[f.race][1], clear: { race: -1 } });
-  if (f.kind !== "all") out.push({ label: KIND_OPTIONS.find(k => k.value === f.kind)!.label, clear: { kind: "all" } });
+  if (f.cls) out.push({ label: CLASS_NAME[f.cls], clear: { cls: null } });
+  if (f.race) out.push({ label: RACE_NAME[f.race], clear: { race: null } });
+  if (f.kind !== "all") out.push({ label: KIND_LABEL[f.kind], clear: { kind: "all" } });
   if (f.slot) out.push({ label: `Slot: ${f.slot}`, clear: { slot: null } });
   return out;
 }

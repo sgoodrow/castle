@@ -2,7 +2,7 @@ import { Badge, Group, NativeSelect, Text, Tooltip, UnstyledButton } from "@mant
 import { IconAlertTriangle, IconArrowDown, IconArrowUp, IconMinus } from "@tabler/icons-react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { memo, useLayoutEffect, useRef, useState } from "react";
-import { bankRequest, statParts, type Item } from "../../data";
+import { bankRequest, statParts, type ClassId, type Item } from "../../data";
 import { nextSort, sortDesc, sortKey, SORTS, type Sort, type SortKey, type Tab } from "../../state";
 import { GuildPriceText } from "../texts/GuildPriceText";
 import { ItemImage } from "../ItemImage";
@@ -15,11 +15,11 @@ interface Props {
   items: Item[];
   selected: number | null;
   tab: Tab;
-  cls: number;
+  cls: ClassId | null;
   canUse: (it: Item) => boolean;
   onSelect: (id: number) => void;
-  onAdd?: (id: number, row: HTMLElement) => void; // double-click: one more on the tab
-  onRemove?: (id: number) => void; // click the tab count: one fewer
+  onAdd?: (it: Item, row: HTMLElement) => void; // double-click: one more on the tab
+  onRemove?: (it: Item) => void; // click the tab count: one fewer
   table?: boolean; // one line per item in columns; phones get stacked rows
   sort: Sort;
   onSort: (sort: Sort) => void;
@@ -52,7 +52,7 @@ interface RowProps {
   usable: boolean;
   qty: number;
   table?: boolean;
-  cls: number;
+  cls: ClassId | null;
   on: { current: Pick<Props, "onSelect" | "onAdd" | "onRemove"> };
   index: number;
   start: number; // px from the top of the list
@@ -69,7 +69,7 @@ const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index
         data-unusable={!usable || undefined}
         aria-current={selected || undefined}
         onClick={() => on.current.onSelect(it.id)}
-        onDoubleClick={e => on.current.onAdd?.(it.id, e.currentTarget)}
+        onDoubleClick={e => on.current.onAdd?.(it, e.currentTarget)}
       >
         <span className={classes.icon}><ItemImage it={it} size={table ? 24 : 32} /></span>
         <Group gap={6} wrap="nowrap" className={classes.name}>
@@ -86,7 +86,7 @@ const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index
           {/* Clicking it takes one off; on hover it turns into a minus so that's clear. */}
           <Badge size="sm" variant="filled" className={classes.qty} role="button" aria-label={`Remove one ${it.name} from your tab`}
             style={{ visibility: qty ? "visible" : "hidden" }}
-            onClick={e => { e.stopPropagation(); on.current.onRemove?.(it.id); }}
+            onClick={e => { e.stopPropagation(); on.current.onRemove?.(it); }}
             onDoubleClick={e => e.stopPropagation()}>
             <IconMinus size={10} stroke={3} className={classes.minus} />
             {/* Out of the bank's count, so it's clear when there are no more to add. */}
@@ -122,7 +122,7 @@ export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAd
     estimateSize: () => (table ? 31 : 64),
     overscan: 12,
     scrollMargin: offset,
-    getItemKey: i => items[i].id,
+    getItemKey: i => items[i]?.id ?? i,
   });
   return (
     <CollapsibleLayout id="items" title="Items Available" className={classes.root} data-table={table || undefined}
@@ -149,6 +149,8 @@ export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAd
       <ul ref={listRef} aria-label="Items in the bank" className={classes.list} style={{ height: v.getTotalSize() }}>
         {v.getVirtualItems().map(r => {
           const it = items[r.index];
+          // The virtualizer only hands out indexes below count, so a miss is our bug: say so, don't hide it.
+          if (!it) throw new Error(`Virtualizer row ${r.index} is past the ${items.length} items`);
           return (
             <Row key={it.id} it={it} selected={selected === it.id} usable={canUse(it)} qty={tab[it.id] || 0} table={table} cls={cls} on={on}
               index={r.index} start={r.start - offset} measure={v.measureElement} />

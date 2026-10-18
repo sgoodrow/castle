@@ -6,10 +6,10 @@ import { http, HttpResponse } from "msw";
 import { expect } from "vitest";
 import { PAYLOAD } from "../src/__fixtures__/bank";
 import { bankPage } from "../src/app";
-import { ALL_CLASSES, CLASSES, ITEM_LIST, bankRequest, maskText, prettyLoc, type Payload } from "../src/data";
+import { ALL_CLASSES, CLASS_BIT, CLASSES, ITEM_LIST, bankRequest, maskText, prettyLoc, type EqClassLevels, type Payload } from "../src/data";
 import { server } from "./support/setup";
 
-interface World { payload: Payload; status: number; user: UserEvent }
+interface World { payload: Payload; status: number; user: UserEvent; reports: string[] }
 let world: World;
 
 // A fresh page, bank and browser for every scenario.
@@ -18,7 +18,11 @@ export function reset() {
   server.resetHandlers();
   localStorage.clear();
   history.replaceState(null, "", "/");
-  world = { payload: PAYLOAD, status: 200, user: userEvent.setup() };
+  world = { payload: PAYLOAD, status: 200, user: userEvent.setup(), reports: [] };
+  server.use(http.post("/api/errors", async ({ request }) => {
+    world.reports.push(((await request.json()) as { message: string }).message);
+    return new HttpResponse(null, { status: 204 });
+  }));
 }
 
 type Extra = { table: Record<string, string>[]; doc: string | null };
@@ -27,10 +31,13 @@ const steps: [RegExp, Fn][] = [];
 const step = (re: RegExp, fn: Fn) => steps.push([re, fn]);
 
 export async function runStep(text: string, x: Extra) {
-  const hits = steps.map(([re, fn]) => [text.match(re), fn] as const).filter(([m]) => m);
-  if (hits.length !== 1) throw new Error(`${hits.length ? "More than one step matches" : "No step matches"}: ${text}`);
-  const [[m, fn]] = hits;
-  await fn(x, ...m!.slice(1));
+  const hits = steps.flatMap(([re, fn]) => {
+    const m = text.match(re);
+    return m ? [{ fn, args: m.slice(1) }] : [];
+  });
+  const [hit, ...more] = hits;
+  if (!hit || more.length) throw new Error(`${hit ? "More than one step matches" : "No step matches"}: ${text}`);
+  await hit.fn(x, ...hit.args);
 }
 
 // ---------- reading the page ----------
@@ -38,7 +45,14 @@ const norm = (s: string | null | undefined) => (s ?? "").replace(/\s+/g, " ").tr
 // Elements reading exactly this, however the text is split across tags.
 const reading = (text: string) => (_: string, el: Element | null) =>
   norm(el?.textContent) === text && ![...(el?.children ?? [])].some(c => norm(c.textContent) === text);
-const quoted = (s: string) => [...s.matchAll(/"([^"]*)"/g)].map(m => m[1]);
+// Every "quoted" part: the odd pieces between quote marks.
+const quoted = (s: string) => s.split('"').filter((_, i) => i % 2);
+// The first match, or a failure naming what was looked for.
+const first = <T>(found: T[], what: string) => {
+  const [it] = found;
+  if (!it) throw new Error(`Found no ${what}`);
+  return it;
+};
 
 const list = () => screen.getByRole("list", { name: "Items in the bank" });
 const rows = () => within(list()).queryAllByRole("listitem");
@@ -47,7 +61,7 @@ const row = (name: string) => {
   if (!r) throw new Error(`The bank doesn't list ${name}`);
   return r;
 };
-const rowButton = (name: string) => within(row(name)).getAllByRole("button")[0];
+const rowButton = (name: string) => first(within(row(name)).getAllByRole("button"), `button on the row for ${name}`);
 const listed = () => rows().map(li => ITEM_LIST.find(it => within(li).queryByText(it.name, { exact: true }))?.name);
 const group = (name: string) => screen.getByRole("group", { name });
 const picker = (kind: string, name: string) => within(group(`Filter by ${kind}`)).getByRole("button", { name });
@@ -55,7 +69,12 @@ const slots = (slot: string) => within(group("Filter by slot")).getAllByRole("bu
 const notWorn = (name: string) => within(group("Not worn")).getByRole("button", { name });
 const searchBox = () => screen.getByRole("textbox", { name: "Search the bank" });
 const tab = () => screen.findByRole("dialog", { name: "Your tab" });
-const cls = (name: string) => (/^any/.test(name) ? -1 : CLASSES.findIndex(c => c[1] === name.replace(/^an? /, "")));
+const classId = (match: (c: (typeof CLASSES)[number]) => boolean, what: string) => {
+  const c = CLASSES.find(match);
+  if (!c) throw new Error(`No class ${what}`);
+  return c.id;
+};
+const cls = (who: string) => (/^any/.test(who) ? null : classId(c => c.name === who.replace(/^an? /, ""), `called ${who}`));
 const item = (name: string) => {
   const it = ITEM_LIST.find(i => i.name === name);
   if (!it) throw new Error(`The bank doesn't hold ${name}`);
@@ -66,6 +85,13 @@ const pressed = (el: HTMLElement) => el.getAttribute("aria-pressed") === "true";
 // ---------- the bank ----------
 step(/^the bank holds the usual stock$/, () => { world.payload = PAYLOAD; });
 step(/^the bank is empty$/, () => { world.payload = { ...PAYLOAD, bank: [], items: {} }; });
+step(/^the spell data for "(.*)" has only (\d+) class levels$/, (_, name, n) => {
+  const [id, sp] = first(Object.entries(PAYLOAD.spells).filter(([, sp]) => sp.name === name), `spell ${name}`);
+  // What a bad spells.json would send. The type rules it out, so it takes a cast; the page checks anyway.
+  const lv = sp.lv.slice(0, +n) as unknown as EqClassLevels;
+  world.payload = { ...PAYLOAD, spells: { ...PAYLOAD.spells, [id]: { ...sp, lv } } };
+});
+step(/^the page reports one error: "(.*)"$/, (_, message) => waitFor(() => expect(world.reports).toEqual([message])));
 step(/^the bank server answers (\d+)$/, (_, status) => { world.status = +status; });
 
 async function open(link: string) {
@@ -88,7 +114,7 @@ step(/^I clear the search$/, () => world.user.click(screen.getByRole("button", {
 step(/^I clear the filters$/, () => world.user.click(screen.getByRole("button", { name: "Clear filters" })));
 step(/^I (?:pick|have picked) the (class|race) "(.*)"$/, (_, kind, name) => world.user.click(picker(kind, name)));
 step(/^I play (?:an? )?(.+)$/, (_, name) => (/^any/.test(name) ? undefined : world.user.click(picker("class", name))));
-step(/^I pick the (\w+) slot$/, (_, slot) => world.user.click(slots(slot)[0]));
+step(/^I pick the (\w+) slot$/, (_, slot) => world.user.click(first(slots(slot), `${slot} slot`)));
 step(/^I pick "(Spells|Bags|Other)"$/, (_, kind) => world.user.click(notWorn(kind)));
 
 const sortHeader = (column: string) => within(list().parentElement!).getByRole("button", { name: column });
@@ -125,7 +151,12 @@ step(/^"(.*)" is marked "(.*)"$/, (_, name, badge) => { within(row(name)).getByT
 step(/^"(.*)" isn't marked "(.*)"$/, (_, name, badge) => { expect(within(row(name)).queryByText(badge)).toBeNull(); });
 step(/^the page says "(.*)"$/, async (_, text) => { await screen.findAllByText(reading(text)); });
 step(/^the page doesn't say "(.*)"$/, (_, text) => { expect(screen.queryAllByText(reading(text))).toEqual([]); });
-step(/^the page says:$/, async ({ table }) => { for (const r of table) await screen.findAllByText(reading(r.text)); });
+step(/^the page says:$/, async ({ table }) => {
+  for (const { text } of table) {
+    if (text == null) throw new Error("The table needs a text column");
+    await screen.findAllByText(reading(text));
+  }
+});
 step(/^the doll shows "(.*)" fits the (.+) slots?$/, (_, name, slot) => {
   for (const s of slot.split(/ and /)) {
     const fit = slots(s);
@@ -174,9 +205,9 @@ step(/^"(.*)" can be paid with DKP for (.+)$/, (_, name, who) => { expect(bankRe
 const mask = (who: string) => {
   if (who === "everyone") return undefined;
   if (who === "no one") return 0;
-  const bits = (codes: string) => codes.split(" ").reduce((m, c) => m | (1 << CLASSES.findIndex(x => x[0] === c)), 0);
-  const but = who.match(/^everyone except (.+)$/);
-  return but ? ALL_CLASSES & ~bits(but[1]) : bits(who);
+  const bits = (codes: string) => codes.split(" ").reduce((m, code) => m | CLASS_BIT[classId(c => c.id === code, code)], 0);
+  const [, except] = who.match(/^everyone except (.+)$/) ?? [];
+  return except ? ALL_CLASSES & ~bits(except) : bits(who);
 };
 step(/^an item for (.+) lists its classes as "(.*)"$/, (_, who, text) => { expect(maskText(mask(who), CLASSES, ALL_CLASSES)).toBe(text); });
 step(/^the bank spot "(.*)" reads "(.*)"$/, (_, loc, text) => { expect(prettyLoc(loc)).toBe(text); });

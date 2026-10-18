@@ -58,7 +58,7 @@ export function DetailPane({ it, canUse, onBack, onClose }: Props) {
             {byChar(it).map(([char, spots]) => (
               <Tooltip key={char} multiline label={spots.map(h => <div key={h.loc}>{prettyLoc(h.loc)}{h.count > 1 ? ` · ×${h.count}` : ""}</div>)}>
                 <Badge variant="default" size="lg" radius="sm" tt="none" fw={500} style={{ cursor: "help" }}>
-                  {char}{spots.length > 1 || spots[0].count > 1 ? <Text span c="dimmed" inherit> ×{spots.reduce((n, h) => n + h.count, 0)}</Text> : null}
+                  {char}{spots.length > 1 || spots.some(h => h.count > 1) ? <Text span c="dimmed" inherit> ×{spots.reduce((n, h) => n + h.count, 0)}</Text> : null}
                 </Badge>
               </Tooltip>
             ))}

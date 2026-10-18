@@ -1,5 +1,7 @@
 // The bank, as the bot's web server sends it from /api/bank, plus the EverQuest rules needed to read it.
 
+import { reportError } from "./errors";
+
 export interface RawItem {
   name: string;
   unknown?: boolean;
@@ -26,15 +28,40 @@ export interface Payload {
   today: string; // the server's date, which auction windows count back from
   bank: [string, string, number, number][];
   items: Record<string, RawItem>;
-  spells: Record<string, { name: string; lv: number[] }>;
+  spells: Record<string, RawSpell>;
+}
+
+// spells.json lists a spell's level for each of EverQuest's 15 classes, in the client's order.
+// The 15th is Beastlord, which P99 doesn't have, so it isn't one of CLASSES.
+export type EqClassLevels = readonly [
+  war: number, clr: number, pal: number, rng: number, shd: number, dru: number, mnk: number, brd: number,
+  rog: number, shm: number, nec: number, wiz: number, mag: number, enc: number, bst: number,
+];
+export interface RawSpell { name: string; lv: EqClassLevels }
+// A spell as the page uses it: the P99 classes that can scribe it, in CLASSES order.
+export interface SpellLevel { cls: ClassId; level: number }
+export interface Spell { name: string; levels: SpellLevel[] }
+
+const isEqClassLevels = (lv: unknown): lv is EqClassLevels =>
+  Array.isArray(lv) && lv.length === 15 && lv.every(l => typeof l === "number");
+
+function toSpell(raw: RawSpell): Spell | null {
+  if (!isEqClassLevels(raw.lv)) return null; // the payload is JSON, so the tuple type is only a promise
+  const [WAR, CLR, PAL, RNG, SHD, DRU, MNK, BRD, ROG, SHM, NEC, WIZ, MAG, ENC] = raw.lv;
+  const byClass: Record<ClassId, number> = { WAR, CLR, PAL, RNG, SHD, DRU, MNK, BRD, ROG, SHM, NEC, WIZ, MAG, ENC };
+  const levels = CLASSES.flatMap(({ id }) => (byClass[id] ? [{ cls: id, level: byClass[id] }] : []));
+  return { name: raw.name, levels };
 }
 
 export interface Holder { char: string; loc: string; count: number }
+// An item is only listed because someone holds it, so there's always a first holder.
+export type Holders = [Holder, ...Holder[]];
 export type Kind = "gear" | "spell" | "bag" | "other";
 export type MarketLevel = "solid" | "thin" | "none";
 export interface Listing { d: Date; seller: string; price: number }
 export interface Auctions {
-  rows: Listing[];
+  rows: Listing[]; // newest first
+  latest: Listing | null;
   recent: Listing[];
   sellers: Map<string, number>;
   median: number | null;
@@ -44,22 +71,44 @@ export interface Auctions {
 }
 export interface Item extends RawItem {
   id: number;
-  holders: Holder[];
+  holders: Holders;
   total: number;
   kind: Kind;
   auc: Auctions;
 }
 
 // Set once by loadBank, before the first render.
-export const SPELLS: Payload["spells"] = {};
+export const SPELLS: Record<string, Spell> = {};
 export let SNAPSHOT_AT = new Date();
 export let NOW = new Date();
 export const WINDOW_DAYS = 182;
 const DAY = 864e5;
 
 // ---------- EQ constants ----------
-export const CLASSES = [["WAR","Warrior"],["CLR","Cleric"],["PAL","Paladin"],["RNG","Ranger"],["SHD","Shadow Knight"],["DRU","Druid"],["MNK","Monk"],["BRD","Bard"],["ROG","Rogue"],["SHM","Shaman"],["NEC","Necromancer"],["WIZ","Wizard"],["MAG","Magician"],["ENC","Enchanter"]] as const;
-export const RACES = [["HUM","Human"],["BAR","Barbarian"],["ERU","Erudite"],["ELF","Wood Elf"],["HIE","High Elf"],["DEF","Dark Elf"],["HEF","Half Elf"],["DWF","Dwarf"],["TRL","Troll"],["OGR","Ogre"],["HFL","Halfling"],["GNM","Gnome"],["IKS","Iksar"]] as const;
+// An item's class and race masks have bit i set for the i-th entry here, so the order matters.
+export const CLASSES = [
+  { id: "WAR", name: "Warrior" }, { id: "CLR", name: "Cleric" }, { id: "PAL", name: "Paladin" }, { id: "RNG", name: "Ranger" },
+  { id: "SHD", name: "Shadow Knight" }, { id: "DRU", name: "Druid" }, { id: "MNK", name: "Monk" }, { id: "BRD", name: "Bard" },
+  { id: "ROG", name: "Rogue" }, { id: "SHM", name: "Shaman" }, { id: "NEC", name: "Necromancer" }, { id: "WIZ", name: "Wizard" },
+  { id: "MAG", name: "Magician" }, { id: "ENC", name: "Enchanter" },
+] as const;
+export type ClassId = (typeof CLASSES)[number]["id"];
+export const RACES = [
+  { id: "HUM", name: "Human" }, { id: "BAR", name: "Barbarian" }, { id: "ERU", name: "Erudite" }, { id: "ELF", name: "Wood Elf" },
+  { id: "HIE", name: "High Elf" }, { id: "DEF", name: "Dark Elf" }, { id: "HEF", name: "Half Elf" }, { id: "DWF", name: "Dwarf" },
+  { id: "TRL", name: "Troll" }, { id: "OGR", name: "Ogre" }, { id: "HFL", name: "Halfling" }, { id: "GNM", name: "Gnome" },
+  { id: "IKS", name: "Iksar" },
+] as const;
+export type RaceId = (typeof RACES)[number]["id"];
+
+// A lookup with an entry for every id in the list. The cast holds because the list supplies every key.
+function byId<T extends { readonly id: string }, V>(list: readonly T[], value: (t: T, i: number) => V) {
+  return Object.fromEntries(list.map((t, i) => [t.id, value(t, i)])) as Record<T["id"], V>;
+}
+export const CLASS_NAME = byId(CLASSES, c => c.name);
+export const RACE_NAME = byId(RACES, r => r.name);
+export const CLASS_BIT = byId(CLASSES, (_, i) => 1 << i);
+export const RACE_BIT = byId(RACES, (_, i) => 1 << i);
 export const ALL_CLASSES = (1 << CLASSES.length) - 1;
 export const ALL_RACES = (1 << RACES.length) - 1;
 // Slot bits as stored in the item database.
@@ -68,14 +117,22 @@ const SLOT_NAMES = ["Charm","Ear","Head","Face","Ear","Neck","Shoulders","Arms",
 export interface Slot { key: string; label: string; bit: number }
 // Paper doll, laid out like the classic inventory window. null = empty cell.
 export const DOLL: (Slot | null)[][] = [
-  [null, ["ear1","Ear",1], ["neck","Neck",5], ["face","Face",3], ["head","Head",2], ["ear2","Ear",4]],
-  [["fing1","Finger",15], ["wrist1","Wrist",9], ["arms","Arms",7], ["hands","Hands",12], ["wrist2","Wrist",10], ["fing2","Finger",16]],
-  [["shoul","Shoulder",6], ["chest","Chest",17], ["back","Back",8], ["waist","Waist",20], ["legs","Legs",18], ["feet","Feet",19]],
-  [null, null, ["prim","Primary",13], ["sec","Second",14], ["range","Range",11], ["ammo","Ammo",21]],
-].map(row => row.map(c => (c ? { key: c[0] as string, label: c[1] as string, bit: c[2] as number } : null)));
+  [null, { key: "ear1", label: "Ear", bit: 1 }, { key: "neck", label: "Neck", bit: 5 }, { key: "face", label: "Face", bit: 3 }, { key: "head", label: "Head", bit: 2 }, { key: "ear2", label: "Ear", bit: 4 }],
+  [{ key: "fing1", label: "Finger", bit: 15 }, { key: "wrist1", label: "Wrist", bit: 9 }, { key: "arms", label: "Arms", bit: 7 }, { key: "hands", label: "Hands", bit: 12 }, { key: "wrist2", label: "Wrist", bit: 10 }, { key: "fing2", label: "Finger", bit: 16 }],
+  [{ key: "shoul", label: "Shoulder", bit: 6 }, { key: "chest", label: "Chest", bit: 17 }, { key: "back", label: "Back", bit: 8 }, { key: "waist", label: "Waist", bit: 20 }, { key: "legs", label: "Legs", bit: 18 }, { key: "feet", label: "Feet", bit: 19 }],
+  [null, null, { key: "prim", label: "Primary", bit: 13 }, { key: "sec", label: "Second", bit: 14 }, { key: "range", label: "Range", bit: 11 }, { key: "ammo", label: "Ammo", bit: 21 }],
+];
 export const SLOTS: Record<string, Slot> = Object.fromEntries(DOLL.flat().filter((s): s is Slot => !!s).map(s => [s.key, s]));
 // Slot filter chips merge the paired slots.
-export const SLOT_CHIPS: [string, number[]][] = [["Ear",[1,4]],["Neck",[5]],["Face",[3]],["Head",[2]],["Finger",[15,16]],["Wrist",[9,10]],["Arms",[7]],["Hands",[12]],["Shoulders",[6]],["Chest",[17]],["Back",[8]],["Waist",[20]],["Legs",[18]],["Feet",[19]],["Primary",[13]],["Secondary",[14]],["Range",[11]],["Ammo",[21]]];
+export const SLOT_CHIPS = [
+  { id: "Ear", bits: [1, 4] }, { id: "Neck", bits: [5] }, { id: "Face", bits: [3] }, { id: "Head", bits: [2] },
+  { id: "Finger", bits: [15, 16] }, { id: "Wrist", bits: [9, 10] }, { id: "Arms", bits: [7] }, { id: "Hands", bits: [12] },
+  { id: "Shoulders", bits: [6] }, { id: "Chest", bits: [17] }, { id: "Back", bits: [8] }, { id: "Waist", bits: [20] },
+  { id: "Legs", bits: [18] }, { id: "Feet", bits: [19] }, { id: "Primary", bits: [13] }, { id: "Secondary", bits: [14] },
+  { id: "Range", bits: [11] }, { id: "Ammo", bits: [21] },
+] as const;
+export type SlotChip = (typeof SLOT_CHIPS)[number]["id"];
+export const SLOT_CHIP_BITS = byId(SLOT_CHIPS, c => c.bits);
 export const TYPES: Record<number, string> = {0:"1H Slashing",1:"2H Slashing",2:"Piercing",3:"1H Blunt",4:"2H Blunt",5:"Archery",7:"Throwing",8:"Shield",10:"Armor",11:"Misc",12:"Lockpicks",14:"Food",15:"Drink",16:"Light",17:"Combinable",18:"Bandages",19:"Throwing",20:"Scroll",21:"Potion",23:"Wind Instrument",24:"Stringed Instrument",25:"Brass Instrument",26:"Percussion Instrument",27:"Arrow",29:"Jewelry",35:"2H Piercing",45:"Hand to Hand"};
 export const WEAPON = new Set([0,1,2,3,4,5,7,19,35,45]);
 export const SIZES = ["TINY","SMALL","MEDIUM","LARGE","GIANT"];
@@ -91,6 +148,15 @@ function kindOf(it: RawItem): Kind {
   return "other";
 }
 
+// The middle of a sorted list, or the rounded mean of the middle two.
+function medianOf(sorted: number[]): number | null {
+  const mid = sorted.length >> 1;
+  const hi = sorted[mid];
+  if (hi == null) return null;
+  const lo = sorted.length % 2 ? hi : sorted[mid - 1] ?? hi;
+  return Math.round((lo + hi) / 2);
+}
+
 // Green auctions within the last ~6 months, judged against the build date.
 function auctions(it: RawItem): Auctions {
   const rows = (it.green || []).map(([d, seller, price]) => ({ d: new Date(d + "T00:00:00"), seller, price }));
@@ -99,11 +165,11 @@ function auctions(it: RawItem): Auctions {
   const sellers = new Map<string, number>();
   for (const r of recent) sellers.set(r.seller, (sellers.get(r.seller) || 0) + 1);
   const p = recent.map(r => r.price).sort((a, b) => a - b);
-  const median = p.length ? (p.length % 2 ? p[(p.length - 1) / 2] : Math.round((p[p.length / 2 - 1] + p[p.length / 2]) / 2)) : null;
+  const median = medianOf(p);
   // A steady market also needs a listing in the last two months, not just a burst long ago.
   const fresh = recent.some(r => r.d >= new Date(+NOW - 60 * DAY));
   const level: MarketLevel = recent.length >= 5 && sellers.size >= 3 && fresh ? "solid" : recent.length ? "thin" : "none";
-  return { rows, recent, sellers, median, level, older: rows.length - recent.length, hasTracker: it.green != null };
+  return { rows, latest: rows[0] ?? null, recent, sellers, median, level, older: rows.length - recent.length, hasTracker: it.green != null };
 }
 
 export const ITEMS: Record<number, Item> = {};
@@ -114,19 +180,27 @@ export function loadBank(p: Payload) {
   for (const k of Object.keys(SPELLS)) delete SPELLS[k];
   for (const k of Object.keys(ITEMS)) delete ITEMS[+k];
   ITEM_LIST.length = 0;
-  Object.assign(SPELLS, p.spells);
+  const bad: string[] = [];
+  for (const [id, raw] of Object.entries(p.spells)) {
+    const sp = toSpell(raw);
+    if (sp) SPELLS[id] = sp;
+    else bad.push(id);
+  }
+  // One report for the lot: the page still works without those scrolls' levels, but the data needs fixing.
+  if (bad.length) reportError(new Error(`Spell data without 15 class levels: ${bad.join(", ")}`));
   SNAPSHOT_AT = new Date(p.snapshot);
   NOW = new Date(p.today + "T00:00:00");
   for (const [char, loc, id, count] of p.bank) {
-    let it = ITEMS[id];
-    if (!it) {
-      const raw = p.items[id];
-      if (!raw || raw.nodrop) continue; // NO DROP items can't leave the bank, so they're never shown.
-      it = ITEMS[id] = { ...raw, id, holders: [], total: 0, kind: kindOf(raw), auc: auctions(raw) };
-      ITEM_LIST.push(it);
+    const holder = { char, loc, count };
+    const it = ITEMS[id];
+    if (it) {
+      it.holders.push(holder);
+      it.total += count;
+      continue;
     }
-    it.holders.push({ char, loc, count });
-    it.total += count;
+    const raw = p.items[id];
+    if (!raw || raw.nodrop) continue; // NO DROP items can't leave the bank, so they're never shown.
+    ITEM_LIST.push(ITEMS[id] = { ...raw, id, holders: [holder], total: count, kind: kindOf(raw), auc: auctions(raw) });
   }
 }
 
@@ -134,18 +208,20 @@ export function loadBank(p: Payload) {
 export const iconUrl = (it: Item) => (it.icon != null ? `/icons/${it.icon}.png` : undefined);
 
 // ---------- rules ----------
-export interface Character { cls: number; race: number }
+// null means any class or race.
+export interface Character { cls: ClassId | null; race: RaceId | null }
 export const usable = (it: Item, c: Character) =>
-  (c.cls < 0 || !!((it.classes ?? ALL_CLASSES) & (1 << c.cls))) && (c.race < 0 || !!((it.races ?? ALL_RACES) & (1 << c.race)));
+  (!c.cls || !!((it.classes ?? ALL_CLASSES) & CLASS_BIT[c.cls])) && (!c.race || !!((it.races ?? ALL_RACES) & RACE_BIT[c.race]));
 export const fitsBit = (it: Item, bit: number) => !!((it.slots || 0) & (1 << bit));
 
 // ---------- formatting ----------
 export const signed = (v: number) => (v > 0 ? "+" : "") + v;
 
-export function maskText(mask: number | undefined, list: readonly (readonly [string, string])[], all: number) {
+// list is CLASSES or RACES, whose order gives the mask's bits.
+export function maskText(mask: number | undefined, list: readonly { id: string }[], all: number) {
   if (mask == null || (mask & all) === all) return "ALL";
-  const on = list.filter((_, i) => mask & (1 << i)).map(x => x[0]);
-  const off = list.filter((_, i) => !(mask & (1 << i))).map(x => x[0]);
+  const on = list.filter((_, i) => mask & (1 << i)).map(x => x.id);
+  const off = list.filter((_, i) => !(mask & (1 << i))).map(x => x.id);
   if (!on.length) return "NONE";
   return off.length < on.length ? "ALL except " + off.join(" ") : on.join(" ");
 }
@@ -161,21 +237,28 @@ export function statParts(it: Item): StatPart[] {
   if (it.dmg) parts.push({ label: "DMG", value: `${it.dmg}/${it.dly}` });
   if (it.hp) parts.push({ label: "HP", value: signed(it.hp) });
   if (it.mana) parts.push({ label: "MANA", value: signed(it.mana) });
-  for (const [k, l] of STATS) if (it[k]) parts.push({ label: l, value: signed(it[k]!) });
-  const res = RESISTS.filter(([k]) => it[k]).map(([k, l]) => `${l[0]}R ${signed(it[k]!)}`);
+  for (const [k, l] of STATS) {
+    const v = it[k];
+    if (v) parts.push({ label: l, value: signed(v) });
+  }
+  const res = RESISTS.flatMap(([k, l]) => {
+    const v = it[k];
+    return v ? [`${l[0]}R ${signed(v)}`] : [];
+  });
   if (res.length) parts.push({ label: "", value: res.join(" ") });
-  const sp = SPELLS;
-  if (it.worn && sp[it.worn]) parts.push({ label: "Worn:", value: sp[it.worn].name });
-  if (it.proc && sp[it.proc]) parts.push({ label: "Proc:", value: sp[it.proc].name });
-  if (it.focus && sp[it.focus]) parts.push({ label: "Focus:", value: sp[it.focus].name });
-  if (it.click && sp[it.click]) parts.push({ label: "Click:", value: sp[it.click].name });
-  if (it.scroll && sp[it.scroll]) {
-    const lv = sp[it.scroll].lv.map((l, i) => (l && CLASSES[i] ?`${CLASSES[i][0]} ${l}` : null)).filter(Boolean);
+  for (const [k, label] of [["worn", "Worn:"], ["proc", "Proc:"], ["focus", "Focus:"], ["click", "Click:"]] as const) {
+    const sp = spellOf(it[k]);
+    if (sp) parts.push({ label, value: sp.name });
+  }
+  const scroll = spellOf(it.scroll);
+  if (scroll) {
+    const lv = scroll.levels.map(c => `${c.cls} ${c.level}`);
     if (lv.length) parts.push({ label: "", value: lv.join(", ") });
   }
   if (it.bagslots) parts.push({ label: "", value: `${it.bagslots} slots, ${SIZES[it.bagsize ?? 0] || ""}` });
   return parts;
 }
+export const spellOf = (id: number | undefined) => (id ? SPELLS[id] : undefined);
 export const statText = (it: Item) => statParts(it).map(p => `${p.label} ${p.value}`).join(" ");
 
 export function prettyLoc(loc: string) {
@@ -192,25 +275,27 @@ const RAID_REAGENTS = /^(Peridot|Hate Stone|Pearl|Small Portal Fragment)s?$/i;
 // pp is the expected platinum cost; null means a banker has to quote it.
 // fromMarket: pp follows the Green median, so it is only as good as that data.
 export interface BankRequest { text: string | null; cost: string; pp: number | null; dkp?: boolean; fromMarket?: boolean }
-export function bankRequest(it: Item, cls: number, qty = 1): BankRequest {
+export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest {
   const req = ruleRequest(it, cls, qty);
   // A price a banker set with the bot beats anything worked out from the rules or the market.
   const pp = it.price?.match(/\d+/);
   if (!it.price || req.text == null) return req;
   return { text: req.text, pp: pp ? +pp[0] : null, dkp: /dkp/i.test(it.price), cost: `Banker's price: ${it.price}.` };
 }
-function ruleRequest(it: Item, cls: number, qty: number): BankRequest {
-  const holder = it.holders[0];
-  const mule = holder?.char || "Mule";
-  const sp = it.scroll ? SPELLS[it.scroll] : undefined;
+function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
+  const [holder] = it.holders;
+  const mule = holder.char || "Mule";
+  const sp = spellOf(it.scroll);
   const mkt = it.auc.level !== "none" ? it.auc.median : null;
   if (sp || it.kind === "spell") {
     const spellName = it.name.replace(/^Spell: /, "");
-    const lv = sp ? sp.lv : [];
-    const ci = cls >= 0 && lv[cls] ? cls : lv.findIndex(l => l > 0);
-    const level = ci >= 0 ? lv[ci] : null;
-    const clsName = ci >= 0 ? CLASSES[ci][1] : "Class";
-    const text = `Dropped spell: ${clsName}, ${level ?? "Level"}, ${spellName} (${mule}, ${holder?.count ?? 1})${qty > 1 ? ` x${qty}` : ""}`;
+    // The member's class if it can use the spell, otherwise the first class that can.
+    // A scroll with no spell data, or one no P99 class can scribe, has no pick.
+    const can = sp?.levels ?? [];
+    const pick = can.find(c => c.cls === cls) ?? can[0];
+    const level = pick?.level ?? null;
+    const clsName = pick ? CLASS_NAME[pick.cls] : "Class";
+    const text = `Dropped spell: ${clsName}, ${level ?? "Level"}, ${spellName} (${mule}, ${holder.count})${qty > 1 ? ` x${qty}` : ""}`;
     if (level && level >= 51 && level <= 54) return { text, pp: 50, cost: "50pp (levels 51–54)." };
     if (level && level >= 55) {
       const pp = Math.min(200, mkt ?? 200);
@@ -227,7 +312,7 @@ function ruleRequest(it: Item, cls: number, qty: number): BankRequest {
 }
 
 // Classic class/race combinations; anything else can't be rolled.
-const CAN_BE: Record<string, string[]> = {
+const CAN_BE: Record<ClassId, readonly RaceId[]> = {
   WAR: ["BAR", "DEF", "DWF", "GNM", "HEF", "HFL", "HUM", "IKS", "OGR", "TRL", "ELF"],
   CLR: ["DEF", "DWF", "ERU", "GNM", "HIE", "HFL", "HUM"],
   PAL: ["DWF", "ERU", "HEF", "HIE", "HFL", "HUM"],
@@ -243,8 +328,8 @@ const CAN_BE: Record<string, string[]> = {
   MAG: ["DEF", "ERU", "GNM", "HIE", "HUM"],
   ENC: ["DEF", "ERU", "GNM", "HIE", "HUM"],
 };
-export const validCombo = (cls: number, race: number) =>
-  cls < 0 || race < 0 || CAN_BE[CLASSES[cls][0]].includes(RACES[race][0]);
+// null means "any", so it always fits.
+export const validCombo = (cls: ClassId | null, race: RaceId | null) => !cls || !race || CAN_BE[cls].includes(race);
 
 // The slot filter a paper-doll cell belongs to.
-export const chipForBit = (bit: number) => SLOT_CHIPS.find(([, bits]) => bits.includes(bit))?.[0] ?? null;
+export const chipForBit = (bit: number): SlotChip | null => SLOT_CHIPS.find(c => (c.bits as readonly number[]).includes(bit))?.id ?? null;

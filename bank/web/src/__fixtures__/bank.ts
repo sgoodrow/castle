@@ -1,12 +1,15 @@
 // A small bank, shaped like /api/bank's answer, for the page's tests.
-import type { Payload, RawItem } from "../data";
+import { CLASS_BIT, RACE_BIT, type ClassId, type EqClassLevels, type Payload, type RawItem } from "../data";
 
-// Class and race mask bits, in CLASSES and RACES order.
-export const WAR = 1 << 0, CLR = 1 << 1, PAL = 1 << 2;
-const IKS = 1 << 12;
+const { WAR, CLR, PAL } = CLASS_BIT;
+const { IKS } = RACE_BIT;
 
-// A spell's level for each of the 14 classes, 0 where the class can't scribe it.
-const levels = (byClass: Record<number, number>) => Array.from({ length: 14 }, (_, i) => byClass[i] ?? 0);
+// A spell's levels as spells.json holds them: EverQuest's 15 classes in order, Beastlord last,
+// 0 where the class can't scribe it.
+const levels = (lv: Partial<Record<ClassId, number>>): EqClassLevels => {
+  const l = (cls: ClassId) => lv[cls] ?? 0;
+  return [l("WAR"), l("CLR"), l("PAL"), l("RNG"), l("SHD"), l("DRU"), l("MNK"), l("BRD"), l("ROG"), l("SHM"), l("NEC"), l("WIZ"), l("MAG"), l("ENC"), 0];
+};
 
 const items: Record<string, RawItem> = {
   // Back slot, everyone, a steady Green market: 5 sales from 3 sellers, one in the last two months.
@@ -50,9 +53,9 @@ export const PAYLOAD: Payload = {
   ],
   items,
   spells: {
-    500: { name: "Lifetap", lv: levels({ 10: 1, 4: 9 }) },
-    501: { name: "Aegolism", lv: levels({ 1: 60 }) },
-    502: { name: "Splurt", lv: levels({ 10: 52 }) },
+    500: { name: "Lifetap", lv: levels({ NEC: 1, SHD: 9 }) },
+    501: { name: "Aegolism", lv: levels({ CLR: 60 }) },
+    502: { name: "Splurt", lv: levels({ NEC: 52 }) },
     900: { name: "Flame Shield", lv: levels({}) },
   },
 };

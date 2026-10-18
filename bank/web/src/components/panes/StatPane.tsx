@@ -2,8 +2,8 @@ import { Anchor, Box, Group, Stack, Text } from "@mantine/core";
 import { IconExternalLink } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import {
-  ALL_CLASSES, ALL_RACES, CLASSES, ELEM, RACES, RESISTS, SIZES, SPELLS, STATS, TYPES, WEAPON,
-  maskText, signed, slotText, type Item,
+  ALL_CLASSES, ALL_RACES, CLASSES, ELEM, RACES, RESISTS, SIZES, STATS, TYPES, WEAPON,
+  maskText, spellOf, signed, slotText, type Item,
 } from "../../data";
 import { ItemImage } from "../ItemImage";
 
@@ -22,13 +22,16 @@ const K = ({ children }: { children: ReactNode }) => (
 // The in-game item inspect window, line for line.
 export function StatPane({ it, header = true }: { it: Item; header?: boolean }) {
   const flags = [it.magic && "MAGIC ITEM", it.lore && "LORE ITEM", it.nodrop && "NO DROP", it.norent && "NO RENT"].filter(Boolean).join("  ");
-  const stats = STATS.filter(([k]) => it[k]).map(([k, l]) => `${l}: ${signed(it[k]!)}`);
+  const stats = STATS.flatMap(([k, l]) => (it[k] ? [`${l}: ${signed(it[k])}`] : []));
   if (it.hp) stats.push(`HP: ${signed(it.hp)}`);
   if (it.mana) stats.push(`MANA: ${signed(it.mana)}`);
-  const resists = RESISTS.filter(([k]) => it[k]).map(([k, l]) => `SV ${l}: ${signed(it[k]!)}`);
+  const resists = RESISTS.flatMap(([k, l]) => (it[k] ? [`SV ${l}: ${signed(it[k])}`] : []));
   const effects = ([["worn", "Worn Effect"], ["proc", "Combat Effect"], ["focus", "Focus Effect"], ["click", "Effect"]] as const)
-    .filter(([k]) => it[k] && SPELLS[it[k]!]);
-  const sp = it.scroll ? SPELLS[it.scroll] : undefined;
+    .flatMap(([k, l]) => {
+      const spell = spellOf(it[k]);
+      return spell ? [{ k, l, spell }] : [];
+    });
+  const sp = spellOf(it.scroll);
   const gear = !!((it.slots || 0) & ~1);
 
   return (
@@ -44,9 +47,9 @@ export function StatPane({ it, header = true }: { it: Item; header?: boolean }) 
       )}
       {!header && flags && <Text fz="xs" c="dimmed" style={{ whiteSpace: "pre" }}>{flags}</Text>}
       {gear && <div><K>Slot:</K> {slotText(it)}</div>}
-      {WEAPON.has(it.type ?? -1) && !!it.dmg && (
+      {it.type != null && WEAPON.has(it.type) && !!it.dmg && (
         <>
-          <div><K>Skill:</K> {TYPES[it.type!]} &nbsp;<K>Atk Delay:</K> {it.dly}</div>
+          <div><K>Skill:</K> {TYPES[it.type]} &nbsp;<K>Atk Delay:</K> {it.dly}</div>
           <div><K>DMG:</K> {it.dmg}{it.rng ? <> &nbsp;<K>Range:</K> {it.rng}</> : null}</div>
         </>
       )}
@@ -60,17 +63,17 @@ export function StatPane({ it, header = true }: { it: Item; header?: boolean }) 
         </Group>
       )}
       {resists.length > 0 && <Pairs items={resists} />}
-      {effects.map(([k, l]) => (
+      {effects.map(({ k, l, spell }) => (
         <div key={k}>
-          <K>{l}:</K> <Wiki href={spellWiki(SPELLS[it[k]!].name)}>{SPELLS[it[k]!].name}</Wiki>
+          <K>{l}:</K> <Wiki href={spellWiki(spell.name)}>{spell.name}</Wiki>
           {k === "proc" && it.proclvl ? ` (lvl ${it.proclvl})` : ""}
         </div>
       ))}
-      {!!it.click && SPELLS[it.click] && (it.charges ?? 0) > 0 && <div><K>Charges:</K> {it.charges}</div>}
+      {spellOf(it.click) && (it.charges ?? 0) > 0 && <div><K>Charges:</K> {it.charges}</div>}
       {sp && (
         <div>
           <K>Spell:</K> {sp.name}
-          {" · "}{sp.lv.map((l, i) => (l && CLASSES[i] ?`${CLASSES[i][0]}(${l})` : null)).filter(Boolean).join(" ")}
+          {" · "}{sp.levels.map(c => `${c.cls}(${c.level})`).join(" ")}
         </div>
       )}
       {!!it.bagslots && (

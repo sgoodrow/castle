@@ -2,32 +2,38 @@ import { ActionIcon, Button, Code, Group, Stack, Text, UnstyledButton } from "@m
 import { OverflowText } from "../texts/OverflowText";
 import { IconCheck, IconCopy, IconX } from "@tabler/icons-react";
 import { useRef, useState } from "react";
-import { ITEMS, bankRequest } from "../../data";
+import { ITEMS, bankRequest, type ClassId, type Item } from "../../data";
 import { tabTotal, totalText } from "../../tab";
 import type { Tab } from "../../state";
 import { ItemImage } from "../ItemImage";
 
 interface Props {
   tab: Tab;
-  cls: number;
+  cls: ClassId | null;
   onSelect: (id: number) => void;
   onRemove: (id: number) => void;
   onClear: () => void;
 }
 
 
-type Line = { it: (typeof ITEMS)[number]; qty: number; pp: number | null };
+type Line = { it: Item; qty: number; pp: number | null };
 // The tab as a plain-text table, for pasting into Discord as a code block.
 function tabTable(lines: Line[]) {
-  const head = ["Item", "Location", "Count", "Each", "Total"];
-  const rows = lines.map(({ it, qty, pp }) => [it.name, it.holders[0]?.char ?? "", String(qty), pp == null ? "ask" : String(pp), pp == null ? "ask" : String(pp * qty)]);
   // Known prices still add up when some lines need a banker's quote.
   const sum = lines.reduce((t, l) => t + (l.pp ?? 0) * l.qty, 0);
-  const foot = ["GRAND TOTAL", "", "", "", lines.some(l => l.pp == null) ? (sum ? `${sum} + ask` : "ask") : String(sum)];
-  const w = head.map((h, i) => Math.max(h.length, ...[...rows, foot].map(r => r[i].length)));
-  const fmt = (r: string[]) => r.map((c, i) => (i < 2 ? c.padEnd(w[i]) : c.padStart(w[i]))).join(" | ").trimEnd();
-  const rule = w.map(n => "-".repeat(n)).join("-|-");
-  return [fmt(head), rule, ...rows.map(fmt), rule, fmt(foot)].join("\n");
+  const grand = lines.some(l => l.pp == null) ? (sum ? `${sum} + ask` : "ask") : String(sum);
+  const columns: { head: string; right?: boolean; cell: (l: Line) => string; foot: string }[] = [
+    { head: "Item", cell: l => l.it.name, foot: "GRAND TOTAL" },
+    { head: "Location", cell: l => l.it.holders[0].char, foot: "" },
+    { head: "Count", right: true, cell: l => String(l.qty), foot: "" },
+    { head: "Each", right: true, cell: l => (l.pp == null ? "ask" : String(l.pp)), foot: "" },
+    { head: "Total", right: true, cell: l => (l.pp == null ? "ask" : String(l.pp * l.qty)), foot: grand },
+  ];
+  const sized = columns.map(c => ({ ...c, width: Math.max(c.head.length, c.foot.length, ...lines.map(l => c.cell(l).length)) }));
+  const fmt = (text: (c: (typeof sized)[number]) => string) =>
+    sized.map(c => (c.right ? text(c).padStart(c.width) : text(c).padEnd(c.width))).join(" | ").trimEnd();
+  const rule = sized.map(c => "-".repeat(c.width)).join("-|-");
+  return [fmt(c => c.head), rule, ...lines.map(l => fmt(c => c.cell(l))), rule, fmt(c => c.foot)].join("\n");
 }
 
 // The running tab: every request line ready to paste into #bank-requests, with a total.
@@ -35,7 +41,10 @@ export function TabPane({ tab, cls, onSelect, onRemove, onClear }: Props) {
   const [copied, setCopied] = useState(false);
   const codeRef = useRef<HTMLPreElement>(null);
   // Ids the bank no longer shows (sold, or NO DROP) are skipped.
-  const lines = Object.entries(tab).filter(([id]) => ITEMS[+id]).map(([id, qty]) => ({ it: ITEMS[+id], qty, req: bankRequest(ITEMS[+id], cls, qty) }));
+  const lines = Object.entries(tab).flatMap(([id, qty]) => {
+    const it = ITEMS[+id];
+    return it ? [{ it, qty, req: bankRequest(it, cls, qty) }] : [];
+  });
   const total = tabTotal(tab, cls);
   const quotes = lines.filter(l => l.req.pp == null).length;
   const dkp = lines.filter(l => l.req.dkp).length;
@@ -45,8 +54,9 @@ export function TabPane({ tab, cls, onSelect, onRemove, onClear }: Props) {
     const done = () => { setCopied(true); setTimeout(() => setCopied(false), 1500); };
     navigator.clipboard?.writeText("```\n" + text + "\n```").then(done, () => {
       // Clipboard refused: select the text so Ctrl/Cmd+C works.
+      if (!codeRef.current) return;
       const r = document.createRange();
-      r.selectNodeContents(codeRef.current!);
+      r.selectNodeContents(codeRef.current);
       const sel = getSelection();
       sel?.removeAllRanges();
       sel?.addRange(r);
