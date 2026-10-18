@@ -17,7 +17,7 @@ import { updateRaidReport } from "./features/dkp-records/update/update-raid-repo
 import { guildMemberUpdateListener } from "./listeners/guild-member-update-listener";
 import "reflect-metadata";
 import { PrismaClient } from "@prisma/client";
-import { reportError } from "./shared/error-reports";
+import { describeError, reportError, stopping } from "./shared/error-reports";
 import { log } from "./shared/logger";
 import { openDkpService } from "./services/openDkpService";
 import { accounts } from "./services/accounts";
@@ -103,18 +103,29 @@ setInterval(() => {
 
 process.on("unhandledRejection", (reason: any, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
-  reportError({ source: "worker", message: String(reason?.message || reason), stack: reason?.stack });
+  reportError({
+    source: "worker",
+    ...describeError(reason),
+    feature: "unknown: it escaped every handler (see Just before for what led up to it)",
+    outcome: "Unknown: the bot kept running, but whatever was waiting on this gave up partway.",
+  });
 });
 process.on("uncaughtException", (err) => {
   // Report, then exit as Node would have; Dokku starts the bot again.
   console.error(err);
   const exit = () => process.exit(1);
   setTimeout(exit, 5000).unref();
-  reportError({ source: "worker", message: err.message, stack: err.stack }).finally(exit);
+  reportError({
+    source: "worker",
+    ...describeError(err),
+    feature: "unknown: it escaped every handler (see Just before for what led up to it)",
+    outcome: "The bot crashed and Dokku restarted it: every member's command was dropped until it was back.",
+  }).finally(exit);
 });
 
 const shutdown = async (signal: string) => {
   log(`Received ${signal}, shutting down gracefully...`);
+  stopping(signal);
 
   try {
     client.destroy();

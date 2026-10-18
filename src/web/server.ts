@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import { readFileSync } from "fs";
 import { createServer, IncomingMessage, ServerResponse } from "http";
 import path from "path";
-import { commit, reportError } from "../shared/error-reports";
+import { commit, describeError, reportError } from "../shared/error-reports";
 import { log } from "../shared/logger";
 import { Auth, Session } from "./auth";
 import { BankApi } from "./bank-api";
@@ -165,6 +165,10 @@ async function pageError(
       source: "page",
       message,
       stack: pageMap.map(stack),
+      feature: "the bank page",
+      outcome: str(e.componentStack)
+        ? "The page replaced itself with its error screen."
+        : "Unknown: an error escaped the page's code; the page may have kept working.",
       details: { Browser: str(req.headers["user-agent"]).slice(0, 200) },
     });
   }
@@ -290,9 +294,9 @@ export function handle(req: IncomingMessage, res: ServerResponse) {
   return route(req, res).catch((err) => {
     reportError({
       source: "web",
-      message: String(err?.message || err),
-      stack: err?.stack,
-      details: { Path: (req.url || "").split("?")[0] },
+      ...describeError(err),
+      feature: `${req.method} ${(req.url || "").split("?")[0]}`,
+      outcome: 'The request got a 500 "Something went wrong".',
     });
     // Every route answers in one send or redirect, so nothing throws once headers are out; ending
     // the response is only a guard in case a route someday streams.
@@ -318,13 +322,17 @@ export function start() {
   // Keep icons, auctions and spell prices current in the background; the page never waits on the
   // wiki or the spell sheet.
   const inBackground = (what: string, run: () => Promise<unknown>) => () =>
-    run().catch((err) =>
+    run().catch((err) => {
+      const { message, stack } = describeError(err);
       reportError({
         source: "web",
-        message: `${what} failed: ${err?.message || err}`,
-        stack: err?.stack,
-      })
-    );
+        message: `${what} failed: ${message}`,
+        stack,
+        feature: what,
+        outcome:
+          "The bank page kept showing what it had before: icons, auctions or spell prices go stale until a refresh works.",
+      });
+    });
   for (const refresh of [
     inBackground("wiki refresh", () => api.refreshWiki()),
     inBackground("spell sheet refresh", readSpellSheet),
@@ -334,11 +342,13 @@ export function start() {
   }
 
   process.on("unhandledRejection", (reason: unknown) => {
-    const err = reason instanceof Error ? reason : undefined;
     reportError({
       source: "web",
-      message: String(err?.message || reason),
-      stack: err?.stack,
+      ...describeError(reason),
+      feature:
+        "unknown: it escaped every handler (see Just before for what led up to it)",
+      outcome:
+        "Unknown: the bank site kept running, but whatever was waiting on this gave up partway.",
     });
   });
   process.on("uncaughtException", (err) => {
@@ -347,8 +357,11 @@ export function start() {
     setTimeout(exit, 5000).unref();
     reportError({
       source: "web",
-      message: err.message,
-      stack: err.stack,
+      ...describeError(err),
+      feature:
+        "unknown: it escaped every handler (see Just before for what led up to it)",
+      outcome:
+        "The bank site crashed and Dokku restarted it: pages and requests failed until it was back.",
     }).finally(exit);
   });
 }
