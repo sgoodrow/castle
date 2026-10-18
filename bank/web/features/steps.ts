@@ -175,7 +175,7 @@ step(/^I point at "(.*)" among the holders$/, (_, char) => world.user.hover(scre
 step(/^I (?:add|have added) (?:(\d+) )?"(.*)" to my tab$/, async (_, n, name) => {
   for (let i = 0; i < +(n || 1); i++) await world.user.dblClick(rowButton(name));
 });
-const details = () => first(screen.getAllByRole("group", { name: "Price and tab" }), "price and tab in the details");
+const details = () => first(screen.getAllByRole("group", { name: "On your tab" }), "tab count in the details");
 step(/^I add one "(.*)" from its details$/, (_, name) =>
   world.user.click(within(details()).getByRole("button", { name: `Add one ${name} to your tab` })));
 step(/^I take one "(.*)" off my tab from its details$/, (_, name) =>

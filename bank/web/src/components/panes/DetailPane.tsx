@@ -1,8 +1,7 @@
 import { Alert, Badge, CloseButton, Divider, Group, Paper, Stack, Text, Title, Tooltip } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { useRef } from "react";
-import { bankRequest, prettyLoc, type ClassId, type Holder, type Item } from "../../data";
-import { GuildPriceText } from "../texts/GuildPriceText";
+import { bankRequest, prettyLoc, type Holder, type Item } from "../../data";
 import { BuyPane } from "./BuyPane";
 import { AuctionPane } from "./AuctionPane";
 import { MarketWarningText } from "../texts/MarketWarningText";
@@ -12,7 +11,6 @@ import { StatPane } from "./StatPane";
 interface Props {
   it: Item | null;
   canUse: boolean;
-  cls: ClassId | null; // what the member's class pays
   qty: number; // how many are on the tab
   onAdd: (it: Item, el: HTMLElement) => void;
   onRemove: (it: Item) => void;
@@ -44,7 +42,7 @@ const Section = ({ title, aside, children }: { title: string; aside?: React.Reac
 );
 
 // The product page: everything about one item.
-export function DetailPane({ it, canUse, cls, qty, onAdd, onRemove, onClose, bare }: Props) {
+export function DetailPane({ it, canUse, qty, onAdd, onRemove, onClose, bare }: Props) {
   const buy = useRef<HTMLDivElement>(null);
   if (!it) {
     return (
@@ -58,8 +56,8 @@ export function DetailPane({ it, canUse, cls, qty, onAdd, onRemove, onClose, bar
         <Paper withBorder p="sm" radius="md" style={{ background: "var(--surface-head)", boxShadow: "none" }}>
           <StatPane it={it} />
         </Paper>
-        <Group ref={buy} role="group" aria-label="Price and tab" justify="space-between" wrap="nowrap" px="xs" style={{ borderRadius: "var(--mantine-radius-sm)" }}>
-          <GuildPriceText it={it} cls={cls} />
+        <Group ref={buy} role="group" aria-label="On your tab" justify="space-between" wrap="nowrap" px="xs" style={{ borderRadius: "var(--mantine-radius-sm)" }}>
+          <Text fz="sm" c="dimmed">On your tab</Text>
           <BuyPane it={it} qty={qty} onAdd={() => buy.current && onAdd(it, buy.current)} onRemove={() => onRemove(it)} />
         </Group>
         {isAuction(it) && (
