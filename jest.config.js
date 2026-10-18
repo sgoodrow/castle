@@ -24,7 +24,7 @@ module.exports = {
     './src/features/spawn-timers/commands/helpers/timer.ts': { lines: 83, branches: 57, functions: 66 },
     './src/features/spawn-timers/commands/parsers/argument-parser.ts': { lines: 96, branches: 88, functions: 100 },
     './src/features/spawn-timers/commands/parsers/time-parser.ts': { lines: 100, branches: 81, functions: 100 },
-    './src/shared/error-reports.ts': { lines: 89, branches: 77, functions: 100 },
+    './src/shared/error-reports.ts': { lines: 98, branches: 93, functions: 100 },
     './src/web/auth.ts': { lines: 100, branches: 100, functions: 100 },
     './src/web/bank-api.ts': { lines: 100, branches: 92, functions: 100 },
     './src/web/respond.ts': { lines: 100, branches: 100, functions: 100 },

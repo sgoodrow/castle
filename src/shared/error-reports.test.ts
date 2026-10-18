@@ -109,6 +109,40 @@ describe("reportError", () => {
     ]);
   });
 
+  it("comments again on its issue at most every six hours", async () => {
+    const now = jest.spyOn(Date, "now").mockReturnValue(1e12);
+    const r = {
+      source: "web" as const,
+      message: "again",
+      stack: "at f (src/b.ts:1:1)",
+    };
+    await reportError(r);
+    await reportError(r);
+    await reportError(r);
+    now.mockReturnValue(1e12 + 6 * 3600e3 + 1);
+    await reportError(r);
+    now.mockRestore();
+    const comments = calls.filter((c) => c.url.endsWith("/issues/42/comments"));
+    expect(comments).toHaveLength(1);
+    expect(comments[0].body.body).toMatch(/^Happened 3 more times/);
+  });
+
+  it("tries again next time when GitHub fails", async () => {
+    jest
+      .mocked(global.fetch)
+      .mockResolvedValueOnce({ ok: false, status: 502 } as Response);
+    const r = {
+      source: "web" as const,
+      message: "flaky",
+      stack: "at f (src/c.ts:1:1)",
+    };
+    await reportError(r); // the search fails, so nothing is filed
+    await reportError(r);
+    expect(calls.filter((c) => c.url.endsWith("/castle/issues"))).toHaveLength(
+      1
+    );
+  });
+
   it("keeps secrets and URL passwords out of the issue", async () => {
     process.env.DATABASE_URL = "postgres://castle:hunter22@db:5432/castle";
     await reportError({
