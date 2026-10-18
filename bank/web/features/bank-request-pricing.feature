@@ -116,7 +116,7 @@ Feature: Bank request pricing
     And the details show "2/35" on my tab
     And I take one "Bone Chips" off my tab from its details
     And I am told "Bone Chips ×1 on your tab"
-    And the tab button shows "1 unknown"
+    And the tab button shows "1 unknown cost"
 
   Scenario: An item's details can't add more than the bank has
     Given the bank holds the usual stock
@@ -127,15 +127,15 @@ Feature: Bank request pricing
     Then I am told "The bank only has one, and it's on your tab"
     And the tab button shows "800pp"
 
-  Scenario: Items a banker has to price are counted as unknown
+  Scenario: Items a banker has to price are counted as unknown costs
     Given the bank holds the usual stock
     And I have opened the bank page
     When I add "Bone Chips" to my tab
-    Then the tab button shows "1 unknown"
+    Then the tab button shows "1 unknown cost"
     And I add "Cloak of Flames" to my tab
-    And the tab button shows "800pp + 1 unknown"
+    And the tab button shows "800pp + 1 unknown cost"
     And I open my tab
-    And my tab says "800pp + 1 unknown"
+    And my tab says "800pp + 1 unknown cost"
 
   Scenario: Level 55 and up spells can be paid with DKP
     Given the bank holds the usual stock
@@ -185,13 +185,13 @@ Feature: Bank request pricing
     Then the tab button shows "1 DKP auction"
     And I add "Cloak of Flames" to my tab
     And I add "Bone Chips" to my tab
-    And the tab button shows "800pp + 1 DKP auction + 1 unknown"
+    And the tab button shows "800pp + 1 DKP auction + 1 unknown cost"
     And I open my tab
-    And my tab says "800pp + 1 DKP auction + 1 unknown"
+    And my tab says "800pp + 1 DKP auction + 1 unknown cost"
     And my tab says "A banker starts a DKP auction for each auction spell."
     When I send my tab to Discord
     Then the post reads "• Spell: Bedlam (DKP auction)"
-    And the post reads "Total: 800pp + 1 DKP auction + 1 unknown"
+    And the post reads "Total: 800pp + 1 DKP auction + 1 unknown cost"
 
   Scenario: Seeing the request as it will look in Discord
     Given the bank holds the usual stock
@@ -205,7 +205,7 @@ Feature: Bank request pricing
     Then the post reads "@Alice has placed a bank request"
     And the post reads "• Cloak of Flames (800pp)"
     And the post reads "• 3 × Pearl (free)"
-    And the post reads "Total: 800pp + 1 unknown"
+    And the post reads "Total: 800pp + 1 unknown cost"
     And the post reads "• Mulea (pack 1, slot 2)"
     And the post reads "• Muleb (bank 2) ×4"
     And the post doesn't read "✅"

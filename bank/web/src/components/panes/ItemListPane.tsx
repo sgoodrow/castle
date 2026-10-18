@@ -113,7 +113,7 @@ export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAd
   }, []);
   const v = useWindowVirtualizer({
     count: items.length,
-    estimateSize: () => (table ? 31 : 60),
+    estimateSize: () => (table ? 30 : 59), // the rows' real heights, so measuring them moves nothing
     overscan: 12,
     scrollMargin: offset,
     getItemKey: i => items[i]?.id ?? i,

@@ -20,13 +20,13 @@ export function tabTotal(tab: Tab, cls: ClassId | null): TabTotal {
   }
   return t;
 }
-// The parts besides platinum: "1 DKP auction", "3 unknown".
+// The parts besides platinum: "1 DKP auction", "3 unknown costs".
 const extras = (t: TabTotal) => [
   ...(t.auctions ? [`${t.auctions} DKP auction${t.auctions > 1 ? "s" : ""}`] : []),
-  ...(t.unknown ? [`${t.unknown} unknown`] : []),
+  ...(t.unknown ? [`${t.unknown} unknown cost${t.unknown > 1 ? "s" : ""}`] : []),
 ];
 const pp = (t: TabTotal) => `${t.pp.toLocaleString()}pp`;
-// "450pp + 1 DKP auction + 3 unknown", leaving out 0pp when there's something else.
+// "450pp + 1 DKP auction + 3 unknown costs", leaving out 0pp when there's something else.
 export const totalText = (t: TabTotal) => {
   const more = extras(t);
   return [...(t.pp || !more.length ? [pp(t)] : []), ...more].join(" + ");
