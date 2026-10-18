@@ -28,8 +28,8 @@ Each phase starts by answering its questions with the user and recording the ans
 **Phase 3: Forbidden spells**
 - What we know: the scrolls themselves are in the database as stock, from the mules' inventory uploads. Nothing in the database marks them as forbidden. The "Kunark/Velious Spells" Google Sheet has a Forbidden Spells tab listing them by class, and a Cost column on each class tab ("50p", "200p OR 1DKP", "DKP Auction only", with some prices reduced).
 - **Decided:** the sheet's Forbidden Spells tab is the source of truth for which spells are forbidden. The database stays the source of truth for stock (the sheet's "All Items" tab is a copy of the same mule uploads).
-- Should the sheet's Cost column also override the page's level rules? Today the page gets some wrong, e.g. Aegis (57) is 50p on the sheet, and Burnout IV (55) is auction-only.
-- Where does a request for one go: #bank-requests for a banker to start the auction, #auctions, or does it start the auction itself?
+- **Decided:** the sheet's Cost column overrides the page's level rules for spells. This fixes prices the page gets wrong today, e.g. Aegis (57) is 50p on the sheet, and Burnout IV (55) is auction-only. A banker's price in the database still wins over both.
+- **Decided:** requests for forbidden spells go to #bank-requests like everything else. A banker starts the auction.
 - What should a member see besides "Goes to DKP auction": a minimum bid, who can bid, limits?
 
 **Later phases**
