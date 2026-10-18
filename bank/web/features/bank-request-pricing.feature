@@ -89,6 +89,30 @@ Feature: Bank request pricing
       | 2     | Cloak of Flames | The bank only has one, and it's on your tab |
       | 5     | Pearl           | The bank only has 4, all on your tab       |
 
+  Scenario: A request holds up to 9 different items
+    Given the bank holds the usual stock
+    And the bank also holds spells priced by the spell sheet
+    And I have opened the bank page
+    And I have added one each of "Cloak of Flames", "Fine Steel Long Sword", "Spell: Lifetap", "Spell: Aegolism", "Bone Chips", "Pearl", "Scaled Tunic", "Spell: Splurt", "Spell: Bedlam" to my tab
+    When I add "Spell: Aegis" to my tab
+    Then I am told "Up to 9 different items per request"
+    And I add "Pearl" to my tab
+    And I am told "Pearl ×2 on your tab"
+    When I open my tab
+    And I send my tab to Discord
+    And I confirm the post
+    Then #bank-requests gets my request for "Cloak of Flames", "Fine Steel Long Sword", "Spell: Lifetap", "Spell: Aegolism", "Bone Chips", "Pearl", "Scaled Tunic", "Spell: Splurt", "Spell: Bedlam"
+
+  Scenario: A tab saved before the limit keeps its first 9 items
+    Given the bank holds the usual stock
+    And the bank also holds spells priced by the spell sheet
+    And my tab from last time holds one of each of "Cloak of Flames", "Fine Steel Long Sword", "Spell: Lifetap", "Spell: Aegolism", "Bone Chips", "Pearl", "Scaled Tunic", "Spell: Splurt", "Spell: Bedlam", "Spell: Aegis", "Spell: Gift of Brilliance"
+    And I have opened the bank page
+    When I add "Spell: Aegis" to my tab
+    Then I am told "Up to 9 different items per request"
+    And I open my tab
+    And my tab lists "Cloak of Flames" and "Spell: Bedlam"
+
   Scenario: Bags aren't for sale
     Given the bank holds the usual stock
     And I have opened the bank page

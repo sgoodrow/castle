@@ -8,8 +8,6 @@ import { tabTotal, totalText } from "./tab";
 export interface Embed { title: string; description: string; color: number; item?: number; footer?: string }
 export interface RequestMessage { embeds: Embed[] }
 
-// Discord's limits: ten embeds a message, and a description of 4096 characters.
-const MAX_EMBEDS = 10;
 const BLURPLE = 0x5865f2;
 const GREY = 0x4e5058;
 
@@ -33,14 +31,7 @@ export function requestMessage(tab: Tab, cls: ClassId | null): RequestMessage | 
     description: [...lines.map(l => `• ${l.qty > 1 ? `${l.qty} × ` : ""}${l.it.name} (${l.req.text == null ? "not for sale" : priceText(l.req.price, l.qty)})`), "", `**Total: ${total}**`].join("\n"),
     color: BLURPLE,
   };
-  // One embed per item; past Discord's limit, the rest share the last one.
-  const room = MAX_EMBEDS - 1;
-  const own = lines.length <= room ? lines : lines.slice(0, room - 1);
-  const rest = lines.slice(own.length);
-  const embeds: Embed[] = [
-    request,
-    ...own.map(l => ({ title: l.it.name, description: spots(l.it), color: GREY, item: l.it.id })),
-    ...(rest.length ? [{ title: `${rest.length} more items`, description: rest.map(l => `**${l.it.name}**\n${spots(l.it)}`).join("\n\n"), color: GREY }] : []),
-  ];
+  // One embed per item. The tab holds at most MAX_TAB_ITEMS, so this fits Discord's ten.
+  const embeds: Embed[] = [request, ...lines.map(l => ({ title: l.it.name, description: spots(l.it), color: GREY, item: l.it.id }))];
   return { embeds };
 }

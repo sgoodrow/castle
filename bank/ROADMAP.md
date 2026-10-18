@@ -41,6 +41,9 @@ UX (agreed):
 - Sorting by price puts DKP auctions above any platinum price.
 - Built on: the sheet's public CSV export, cached on the server and refreshed about hourly; sheet names that match no item are logged. The page gets one price type with a case per kind (pp, pp or DKP, auction, free, ask a banker), so every screen must handle auctions.
 
+**Requests**
+- **Decided:** a request holds up to 9 different items, with any quantity of each. Discord posts at most 10 embeds a message: one for the summary and one per item. 9 item cards from the real bank use under half of Discord's 6,000-character limit. A tab saved before the limit keeps its first 9 items.
+
 **Later phases**
 - Sky and jewelry data are in Google Sheets today. Read them as they are, or move them to something bankers manage from Discord?
 
