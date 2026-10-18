@@ -41,7 +41,7 @@ Feature: Item stats and slots
     When I click "Bone Chips" in the bank
     Then the page says:
       | text       |
-      | Count · 35 |
+      | Bank location · 35 |
       | Mulea ×20  |
       | Muleb ×15  |
 

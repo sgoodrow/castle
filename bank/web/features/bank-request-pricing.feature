@@ -258,7 +258,7 @@ Feature: Bank request pricing
     And I have added "Bone Chips" to my tab
     And I open my tab
     When I click "Bone Chips" on my tab
-    Then the page says "Count · 35"
+    Then the page says "Bank location · 35"
 
   Scenario: My tab is kept for next time
     Given the bank holds the usual stock

@@ -71,7 +71,7 @@ export function DetailPane({ it, canUse, qty, onAdd, onRemove, onClose, bare }: 
           </Alert>
         )}
         <Divider />
-        <Section title={`Count · ${it.total}`}>
+        <Section title={`Bank location · ${it.total}`}>
           <Group gap={6}>
             {byChar(it).map(([char, spots]) => (
               <Tooltip key={char} multiline label={spots.map(h => <div key={h.loc}>{prettyLoc(h.loc)}{h.count > 1 ? ` · ×${h.count}` : ""}</div>)}>
