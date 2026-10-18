@@ -1,9 +1,11 @@
 // Everything the bank page shows, read from the bot's database: who holds what, plus stats
-// (the item DB in bank/data), banker prices, and icons and auctions from the wiki cache.
+// (the item DB in bank/data), banker prices, icons and auctions from the wiki cache, and spell
+// prices from the bankers' spell sheet.
 import { readFileSync } from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { WikiCache } from "./wiki-cache";
+import { SpellSheet, spellKey } from "./spell-sheet";
 
 type DbItem = {
   name: string;
@@ -22,7 +24,8 @@ export class BankApi {
 
   constructor(
     dataDir: string,
-    private wiki: WikiCache
+    private wiki: WikiCache,
+    private sheet: SpellSheet
   ) {
     this.itemdb = JSON.parse(
       readFileSync(path.join(dataDir, "itemdb.json"), "utf-8")
@@ -61,6 +64,16 @@ export class BankApi {
     await this.wiki.refresh([...seen.values()]);
   }
 
+  // Every scroll the item database knows, so the sheet's misspellings can be told apart.
+  refreshSheet() {
+    const known = new Set(
+      Object.values(this.itemdb)
+        .filter((it) => /^(Spell|Song): /i.test(it.name))
+        .map((it) => spellKey(it.name))
+    );
+    return this.sheet.refresh(known);
+  }
+
   async bank() {
     let latest = 0;
     const rows: [string, string, number, number][] = [];
@@ -74,10 +87,12 @@ export class BankApi {
       rows.push([titleCase(s.charName), s.slot, id, s.count || 1]);
       if (items[id]) continue;
       const w = this.wiki.get(id);
+      const sheet = this.sheet.get(s.item.name);
       items[id] = {
         ...(db || { unknown: true }),
         name: s.item.name, // the inventory file's spelling matches the P99 client
         ...(s.item.price ? { price: s.item.price } : {}),
+        ...(sheet ? { sheet } : {}),
         ...(w
           ? {
               wiki: w.url,

@@ -43,6 +43,25 @@ Feature: Sorting the list
       | Pearl            |
       | Spell: Lifetap   |
 
+  Scenario: Spells that go to DKP auction sort above any platinum price
+    Given the bank holds the usual stock
+    And the bank also holds spells priced by the spell sheet
+    And I have opened the bank page
+    And I play a Necromancer
+    When I sort by "Guild price"
+    Then the bank lists, in order:
+      | item                      |
+      | Bone Chips                |
+      | Large Sewing Kit          |
+      | Pearl                     |
+      | Spell: Lifetap            |
+      | Spell: Aegis              |
+      | Spell: Splurt             |
+      | Spell: Gift of Brilliance |
+      | Scaled Tunic              |
+      | Cloak of Flames           |
+      | Spell: Bedlam             |
+
   Scenario: Sorting by name again goes Z to A, and once more back to A to Z
     Given the bank holds the usual stock
     And I have opened the bank page

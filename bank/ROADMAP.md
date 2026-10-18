@@ -16,7 +16,7 @@ The guild bank offers many services. To a member they're all the same thing: an 
 |---|---|---|---|
 | 1 | Misc items | Stock on the mules, 80% of market, posted to #bank-requests | Done |
 | 2 | Dropped spells | Spells in stock, priced by level (51–54, 55–60) | Done |
-| 3 | Forbidden spells | A price of "Auction" instead of pp or DKP, and a tab total that allows for auction lines | Next |
+| 3 | Forbidden spells | A price of "Auction" instead of pp or DKP, and a tab total that allows for auction lines | Built, in review |
 | 4 | Plane of Sky | A second inventory, fixed prices, auctions, and "must have won X first" | Not started |
 | 5 | Jewelry | Made-to-order items, a discount for materials you bring, posted to #jewelry-requests | Not started |
 | — | Recharges, research spells, bounties, PP4DKP | Rarer, one-off services | Parked |
@@ -38,6 +38,7 @@ UX (agreed):
 - Tab: the line shows "DKP auction" instead of a price; the total counts auctions separately, e.g. "450pp + 1 DKP auction".
 - Post: just the request. "• Spell: Bedlam (DKP auction)" and the same total. No process or instructions.
 - Other spells use the sheet's cost as written, e.g. Aegis 50pp, and "200p OR 1DKP" is no longer lowered to the market price.
+- Sorting by price puts DKP auctions above any platinum price.
 - Built on: the sheet's public CSV export, cached on the server and refreshed about hourly; sheet names that match no item are logged. The page gets one price type with a case per kind (pp, pp or DKP, auction, free, ask a banker), so every screen must handle auctions.
 
 **Later phases**

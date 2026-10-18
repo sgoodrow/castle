@@ -18,7 +18,7 @@
 /* Phones: three columns (item, price, buy), with the stats under the item's name. */
 .row {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) 64px 92px;
+  grid-template-columns: 28px minmax(0, 1fr) 72px 92px;
   grid-template-areas:
     "icon name price tab"
     "icon stats price tab";

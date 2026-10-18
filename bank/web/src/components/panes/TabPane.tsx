@@ -1,7 +1,7 @@
 import { ActionIcon, Anchor, Divider, Group, Stack, Text } from "@mantine/core";
 import { OverflowText } from "../texts/OverflowText";
 import { IconTrash } from "@tabler/icons-react";
-import { ITEMS, bankRequest, type ClassId } from "../../data";
+import { ITEMS, bankRequest, priceText, type ClassId } from "../../data";
 import { tabTotal, totalText } from "../../tab";
 import type { Tab } from "../../state";
 import { ItemImage } from "../ItemImage";
@@ -21,10 +21,12 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
   // Ids the bank no longer shows (sold, or NO DROP) are skipped.
   const lines = Object.entries(tab).flatMap(([id, qty]) => {
     const it = ITEMS[+id];
-    return it ? [{ it, qty, req: bankRequest(it, cls, qty) }] : [];
+    const req = it && bankRequest(it, cls, qty);
+    return it && req?.text != null ? [{ it, qty, price: req.price }] : []; // what isn't for sale can't be on it
   });
   const total = tabTotal(tab, cls);
-  const dkp = lines.filter(l => l.req.dkp).length;
+  const dkp = lines.some(l => l.price.kind === "pp" && l.price.dkp);
+  const auction = lines.some(l => l.price.kind === "auction");
   const msg = requestMessage(tab, cls);
 
   return (
@@ -34,15 +36,15 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
       ) : (
         <Stack gap="sm">
           <Stack gap={4} component="ul" style={{ listStyle: "none", margin: 0, padding: 0 }}>
-            {lines.map(({ it, qty, req }) => (
+            {lines.map(({ it, qty, price }) => (
               <Group key={it.id} component="li" gap="xs" wrap="nowrap">
                 {/* A link, since it opens the item's details. */}
                 <Anchor component="button" underline="always" onClick={() => onSelect(it.id)} style={{ display: "flex", gap: 8, alignItems: "center", flex: 1, minWidth: 0, textAlign: "left" }}>
                   <ItemImage it={it} size={28} />
                   <OverflowText fz="sm" style={{ color: "inherit" }}>{qty > 1 ? `${qty} × ` : ""}{it.name}</OverflowText>
                 </Anchor>
-                <Text fz="sm" c={req.pp == null ? "dimmed" : undefined} style={{ flex: "none" }}>
-                  {req.pp == null ? "unknown" : req.pp === 0 ? "free" : `${req.pp * qty}pp`}
+                <Text fz="sm" c={price.kind === "ask" ? "dimmed" : price.kind === "auction" ? "yellow" : undefined} style={{ flex: "none" }}>
+                  {priceText(price, qty)}
                 </Text>
                 <ActionIcon variant="subtle" color="red" size="sm" aria-label={`Remove ${it.name}`} onClick={() => onRemove(it.id)}>
                   <IconTrash size={14} />
@@ -54,9 +56,14 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
             <Text fw={600}>Total</Text>
             <Text fw={600}>{totalText(total)}</Text>
           </Group>
-          {dkp > 0 && (
+          {dkp && (
             <Text fz="xs" c="dimmed">
-              Level 55+ spells can be paid with 1 DKP each instead.
+              Some spells can be paid with 1 DKP each instead.
+            </Text>
+          )}
+          {auction && (
+            <Text fz="xs" c="dimmed">
+              A banker starts a DKP auction for each auction spell.
             </Text>
           )}
           {msg && (

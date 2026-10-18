@@ -16,6 +16,7 @@ import os from "os";
 import path from "path";
 import { SourceMapGenerator } from "source-map";
 import { StepDefinitions } from "jest-cucumber";
+import { CLASS_TABS, FORBIDDEN_TAB } from "../spell-sheet";
 
 type Slot = {
   charName: string;
@@ -91,6 +92,9 @@ interface World {
   wiki: string[]; // what the wiki was asked for
   wikiPage: string;
   wikiIcon: number | null;
+  sheet: Record<string, string>; // the spell sheet's tabs as CSV, by tab id
+  sheetStatus: number;
+  sheetAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
   postStatus: number;
   logs: string[];
@@ -197,6 +201,19 @@ const ROUTES: Route[] = [
     },
   ],
 ];
+// The spell sheet's tabs: the scenario's, or empty ones with their headers.
+ROUTES.push([
+  "GET",
+  /^https:\/\/docs\.google\.com\/spreadsheets\/d\/[\w-]+\/export\?format=csv&gid=(\d+)$/,
+  (_, m) => {
+    world.sheetAsked++;
+    const empty =
+      m[1] === FORBIDDEN_TAB ? "Magician,Necromancer\n" : "Level,Name,Cost\n";
+    return new Response(world.sheet[m[1]] ?? empty, {
+      status: world.sheetStatus,
+    });
+  },
+]);
 const realFetch = global.fetch;
 export async function outside(
   input: string | URL | Request,
@@ -248,6 +265,9 @@ export async function reset() {
     wiki: [],
     wikiPage: "",
     wikiIcon: null,
+    sheet: {},
+    sheetStatus: 200,
+    sheetAsked: 0,
     posts: [],
     postStatus: 200,
     logs: [],
@@ -598,6 +618,9 @@ export const steps: StepDefinitions = ({ defineStep: step }) => {
       for (const r of rows) expect(it[r.field]).toEqual(JSON.parse(r.value));
     }
   );
+  step(/^the bank sends no sheet price for "(.*)"$/, (name: string) =>
+    expect(bank().items[itemId(name)]).not.toHaveProperty("sheet")
+  );
   step(/^the bank sends the spells (".*)$/, (names: string) => {
     expect(
       Object.values(bank().spells)
@@ -690,6 +713,35 @@ export const steps: StepDefinitions = ({ defineStep: step }) => {
         ).toBe(true);
     }, 10000).then(settle)
   );
+
+  // ---------- the spell sheet ----------
+  const TAB_IDS: Record<string, string> = {
+    ...CLASS_TABS,
+    "Forbidden Spells": FORBIDDEN_TAB,
+  };
+  step(/^the spell sheet's "(.*)" tab is:$/, (tab: string, csv: string) => {
+    const gid = TAB_IDS[tab];
+    if (!gid) throw new Error(`The spell sheet has no tab ${tab}`);
+    world.sheet[gid] = csv;
+  });
+  step(/^Google answers the spell sheet with (\d+)$/, (status: string) => {
+    world.sheetStatus = +status;
+  });
+  step(
+    /^a saved copy of the spell sheet prices "(.*)" at (.*)$/,
+    (name: string, price: string) => {
+      mkdirSync(path.join(world.dir, "cache"), { recursive: true });
+      writeFileSync(
+        path.join(world.dir, "cache/spell-sheet.json"),
+        JSON.stringify([[name.toLowerCase(), JSON.parse(price)]])
+      );
+    }
+  );
+  step(/^the site reads the spell sheet$/, async () => {
+    await site();
+    await world.mod!.readSpellSheet();
+    expect(world.sheetAsked).toBe(Object.keys(TAB_IDS).length);
+  });
 
   // ---------- bank requests ----------
   step(/^posting bank requests is set up$/, () => {
@@ -878,8 +930,9 @@ export const steps: StepDefinitions = ({ defineStep: step }) => {
       ).toBe(true)
     );
   });
-  step(/^the wiki is refreshed again every (\d+) minutes$/, (min: string) =>
-    expect(world.every).toEqual([+min * 60e3])
+  step(
+    /^the wiki and the spell sheet are refreshed again every (\d+) minutes$/,
+    (min: string) => expect(world.every).toEqual([+min * 60e3, +min * 60e3])
   );
   step(
     /^a promise fails with (an error|the bare value) "(.*)" and nothing catches it$/,

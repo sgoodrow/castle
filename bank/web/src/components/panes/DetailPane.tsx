@@ -1,6 +1,6 @@
 import { Alert, Badge, CloseButton, Divider, Group, Paper, Stack, Text, Title, Tooltip } from "@mantine/core";
 import { IconAlertTriangle } from "@tabler/icons-react";
-import { prettyLoc, type Holder, type Item } from "../../data";
+import { bankRequest, prettyLoc, type Holder, type Item } from "../../data";
 import { AuctionPane } from "./AuctionPane";
 import { MarketWarningText } from "../texts/MarketWarningText";
 import { CollapsibleLayout } from "../CollapsibleLayout";
@@ -19,6 +19,12 @@ function byChar(it: Item) {
   for (const h of it.holders) m.set(h.char, [...(m.get(h.char) ?? []), h]);
   return [...m];
 }
+
+// Whether a spell only goes to DKP auction. The bankers' list doesn't depend on the member's class.
+const isAuction = (it: Item) => {
+  const req = bankRequest(it, null);
+  return req.text != null && req.price.kind === "auction";
+};
 
 const Section = ({ title, aside, children }: { title: string; aside?: React.ReactNode; children: React.ReactNode }) => (
   <Stack gap={6}>
@@ -44,6 +50,11 @@ export function DetailPane({ it, canUse, onClose, bare }: Props) {
         <Paper withBorder p="sm" radius="md" style={{ background: "var(--surface-head)", boxShadow: "none" }}>
           <StatPane it={it} />
         </Paper>
+        {isAuction(it) && (
+          <Alert color="yellow" variant="light" p="xs" title="DKP auction only">
+            A banker starts a DKP auction for it.
+          </Alert>
+        )}
         {!canUse && (
           <Alert color="red" variant="light" icon={<IconAlertTriangle size={18} />} p="xs">
             Your character can't use this.

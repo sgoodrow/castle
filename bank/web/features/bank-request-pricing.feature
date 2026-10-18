@@ -44,7 +44,7 @@ Feature: Bank request pricing
       | Bone Chips       | anyone        | 80% of market rate. No recent Green sales to go by, so ask a banker.                             |
       | Scaled Tunic     | anyone        | Banker's price: 300p, 1dkp.                                                                      |
       | Spell: Splurt    | a Necromancer | 50pp (levels 51–54).                                                                             |
-      | Spell: Aegolism  | a Cleric      | The lesser of 200pp (market 150pp) or 1 DKP (levels 55–60). Forbidden spells go to DKP auction. |
+      | Spell: Aegolism  | a Cleric      | The lesser of 200pp (market 150pp) or 1 DKP (levels 55–60).                                    |
       | Spell: Lifetap   | a Necromancer | Level 1 spell. Ask a banker about price.                                                         |
       | Pearl            | anyone        | Free for raid use.                                                                               |
       | Large Sewing Kit | anyone        | Bags aren't for sale.                                                                            |
@@ -121,9 +121,47 @@ Feature: Bank request pricing
     And I play a Cleric
     When I add "Spell: Aegolism" to my tab
     And I open my tab
-    Then my tab says "Level 55+ spells can be paid with 1 DKP each instead."
+    Then my tab says "Some spells can be paid with 1 DKP each instead."
     And "Spell: Aegolism" can be paid with DKP for a Cleric
     And "Scaled Tunic" can be paid with DKP for anyone
+
+  Scenario Outline: The spell sheet's price beats the level rules
+    Given the bank holds the usual stock
+    And the bank also holds spells priced by the spell sheet
+    And I have opened the bank page
+    When I play <who>
+    Then "<item>" is priced "<price>"
+    And the price of "<item>" for <who> is explained as "<explanation>"
+
+    Examples:
+      | item                      | who           | price | explanation                              |
+      | Spell: Aegis              | a Cleric      | 50pp  | Spell sheet price: 50pp.                 |
+      | Spell: Gift of Brilliance | an Enchanter  | 200pp | Spell sheet price: 200pp or 1 DKP.       |
+
+  Scenario: A forbidden spell is a request for a DKP auction
+    Given the bank holds the usual stock
+    And the bank also holds spells priced by the spell sheet
+    And I have opened the bank page
+    Then "Spell: Bedlam" is priced "DKP auction"
+    And the price of "Spell: Bedlam" for anyone is explained as "DKP auction only. A banker starts a DKP auction for it."
+    When I click "Spell: Bedlam" in the bank
+    Then the page says "A banker starts a DKP auction for it."
+
+  Scenario: A DKP auction is counted apart from platinum
+    Given the bank holds the usual stock
+    And the bank also holds spells priced by the spell sheet
+    And I have opened the bank page
+    When I add "Spell: Bedlam" to my tab
+    Then the tab button shows "1 DKP auction"
+    And I add "Cloak of Flames" to my tab
+    And I add "Bone Chips" to my tab
+    And the tab button shows "800pp + 1 DKP auction + 1 unknown"
+    And I open my tab
+    And my tab says "800pp + 1 DKP auction + 1 unknown"
+    And my tab says "A banker starts a DKP auction for each auction spell."
+    When I send my tab to Discord
+    Then the post reads "• Spell: Bedlam (DKP auction)"
+    And the post reads "Total: 800pp + 1 DKP auction + 1 unknown"
 
   Scenario: Seeing the request as it will look in Discord
     Given the bank holds the usual stock
