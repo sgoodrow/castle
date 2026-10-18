@@ -16,7 +16,7 @@ The guild bank offers many services. To a member they're all the same thing: an 
 |---|---|---|---|
 | 1 | Misc items | Stock on the mules, 80% of market, posted to #bank-requests | Done |
 | 2 | Dropped spells | Spells in stock, priced by level (51–54, 55–60) | Done |
-| 3 | Forbidden spells | A price of "Auction" instead of pp or DKP, and a tab total that allows for auction lines | Released |
+| 3 | Forbidden spells | A price of "Auction" instead of pp or DKP, and a tab total that allows for auction lines | Done |
 | 4 | Plane of Sky | A second inventory, fixed prices, auctions, and "must have won X first" | Not started |
 | 5 | Jewelry | Made-to-order items, a discount for materials you bring, posted to #jewelry-requests | Not started |
 | — | Recharges, research spells, bounties, PP4DKP | Rarer, one-off services | Parked |
