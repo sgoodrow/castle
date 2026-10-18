@@ -27,6 +27,21 @@ const noteFailure = (interaction: ButtonInteraction<CacheType> | ChatInputComman
       (error instanceof DiscordAPIError ? describeError(error).message : `a ${error instanceof Error ? error.name : typeof error} from the command`)
   );
 
+// Tells the member what went wrong, if there is anyone to tell. When Discord dropped the interaction
+// before the bot deferred (10062), there is nothing to edit and editReply itself throws; an error
+// escaping the listener crashes the worker, so a failed reply is only logged.
+const tellFailure = async (
+  interaction: ButtonInteraction<CacheType> | ChatInputCommandInteraction<CacheType>,
+  content: string
+) => {
+  if (!interaction.deferred && !interaction.replied) return;
+  try {
+    await interaction.editReply({ content });
+  } catch (error) {
+    console.error(`Could not tell the member about the failure: ${error}`);
+  }
+};
+
 export const interactionCreateListener = async (
   interaction: Interaction<CacheType>
 ) => {
@@ -43,7 +58,7 @@ export const interactionCreateListener = async (
     } catch (error) {
       console.error(`/${interaction.customId} ${error}`);
       noteFailure(interaction, error);
-      await interaction.editReply({ content: String(error) });
+      await tellFailure(interaction, String(error));
     }
     return;
   }
@@ -65,7 +80,7 @@ export const interactionCreateListener = async (
     } catch (error) {
       console.error(`/${interaction.commandName} ${error}`);
       noteFailure(interaction, error);
-      await interaction.editReply(String(error));
+      await tellFailure(interaction, String(error));
     }
   }
 };
