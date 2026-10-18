@@ -175,6 +175,13 @@ step(/^I point at "(.*)" among the holders$/, (_, char) => world.user.hover(scre
 step(/^I (?:add|have added) (?:(\d+) )?"(.*)" to my tab$/, async (_, n, name) => {
   for (let i = 0; i < +(n || 1); i++) await world.user.dblClick(rowButton(name));
 });
+step(/^I have added one each of (".*") to my tab$/, async (_, names) => {
+  for (const name of quoted(names)) await world.user.dblClick(rowButton(name));
+});
+step(/^my tab from last time holds one of each of (".*")$/, (_, names) => {
+  const ids = quoted(names).map(n => first(Object.entries(world.payload.items).filter(([, it]) => it.name === n), `item ${n}`)[0]);
+  localStorage.setItem("castle-bank-tab", JSON.stringify(Object.fromEntries(ids.map(id => [id, 1]))));
+});
 const details = () => first(screen.getAllByRole("group", { name: "On your tab" }), "tab count in the details");
 step(/^I add one "(.*)" from its details$/, (_, name) =>
   world.user.click(within(details()).getByRole("button", { name: `Add one ${name} to your tab` })));

@@ -4,7 +4,7 @@ import { IconArrowLeft, IconMoneybag } from "@tabler/icons-react";
 import { ToastNotification, type ToastMsg } from "../ToastNotification";
 import { OverflowTooltip } from "../OverflowTooltip";
 import { useMemo, useRef, useState } from "react";
-import { ITEMS, bankRequest, tabLimit, usable, type Item } from "../../data";
+import { ITEMS, MAX_TAB_ITEMS, bankRequest, tabLimit, usable, type Item } from "../../data";
 import { filterItems } from "../../search";
 import { getRouteApi } from "@tanstack/react-router";
 import { toFilters, toSearch, useTab, type Filters } from "../../state";
@@ -55,6 +55,7 @@ export function AppPane() {
   const addOne = (it: Item, row: HTMLElement) => {
     if (bankRequest(it, f.cls).text == null) return say(`${it.name} isn't for sale`, false);
     const have = tab[it.id] || 0;
+    if (!have && Object.keys(tab).length >= MAX_TAB_ITEMS) return say(`Up to ${MAX_TAB_ITEMS} different items per request`, false);
     const max = tabLimit(it);
     if (have >= max) {
       // Shake the count so it's clear it has hit the ceiling. Transform only, so nothing moves.

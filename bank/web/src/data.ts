@@ -328,6 +328,9 @@ export const auctionOnly = (it: Item) => {
   return req.text != null && req.price.kind === "auction";
 };
 // The most a member can put on their tab: what the bank holds, or one auction at a time.
+// Different items one request can hold: Discord posts ten embeds a message, one for the summary
+// and one per item.
+export const MAX_TAB_ITEMS = 9;
 export const tabLimit = (it: Item) => (auctionOnly(it) ? 1 : it.total);
 function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
   const [holder] = it.holders;
