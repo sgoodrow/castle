@@ -3,7 +3,7 @@ process.env.TZ = "UTC";
 
 /** @type {import('ts-jest/dist/types').InitialOptionsTsJest} */
 module.exports = {
-  preset: 'ts-jest',
+  preset: 'ts-jest', // transpiles only (isolatedModules in tsconfig.json); CI's types job type-checks
   testEnvironment: 'node',
   roots: ['<rootDir>/src'], // bank/web has its own tests, run by vitest
   // Count every file, not just the ones a test imports, so the total is honest.
