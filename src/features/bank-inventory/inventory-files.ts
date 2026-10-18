@@ -59,7 +59,7 @@ export const uploadToGDrive = async (filename: string, contents: string) => {
       }
     });
     return outputfiles;
-  } catch (err) {
+  } catch {
     // if not found, upload it to to be sorted folder
     await uploadFileToFolder(file, defaultUploadsFolderId);
   }

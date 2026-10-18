@@ -21,7 +21,6 @@ import { IPublicAccountService } from "./public-accounts.i";
 import { BOT_SPREADSHEET_COLUMNS } from "../sheet-updater/public-sheet";
 import { bot } from "@prisma/client";
 import { log } from "../../shared/logger";
-import { debug } from "console";
 
 export const SHEET_TITLE = "Bot Info";
 
@@ -43,17 +42,17 @@ export class SheetPublicAccountService implements IPublicAccountService {
     this.sheet = new GoogleSpreadsheet(publicCharactersGoogleSheetId);
   }
   doBotCheckout(
-    name: string,
-    interaction: MessageComponentInteraction | CommandInteraction
+    _name: string,
+    _interaction: MessageComponentInteraction | CommandInteraction
   ): Promise<void> {
     throw new Error("Method not implemented.");
   }
-  getBotsForBatphone(location: string): Promise<bot[]> {
+  getBotsForBatphone(_location: string): Promise<bot[]> {
     throw new Error("Method not implemented.");
   }
   getFirstAvailableBotByLocation(
-    location: string,
-    roles: GuildMemberRoleManager
+    _location: string,
+    _roles: GuildMemberRoleManager
   ): Promise<string> {
     throw new Error("Method not implemented.");
   }
@@ -103,7 +102,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
   private async updatePublicAccountSheet(
     botName: string,
     cell: BOT_SPREADSHEET_COLUMNS,
-    value: any
+    value: string
   ) {
     await this.loadBots();
     if (this.sheet) {
@@ -132,7 +131,6 @@ export class SheetPublicAccountService implements IPublicAccountService {
   ) {
     try {
       log(`START - update public bot sheet data for ${botName}`);
-      const currentPilot = rowDataMap[BOT_SPREADSHEET_COLUMNS.CurrentPilot] || "";
       await this.loadBots();
       if (this.sheet) {
         const rows = await this.botInfoSheet.getRows();
@@ -157,7 +155,7 @@ export class SheetPublicAccountService implements IPublicAccountService {
           throw Error(`Bot ${botName} not found.`);
         }
       }
-    } catch (err: unknown) {
+    } catch {
         log(`ERROR - Failed to update public bot sheet data for ${botName}`);
     }
 

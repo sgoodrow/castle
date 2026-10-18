@@ -1,4 +1,4 @@
-import { Message } from "discord.js";
+import { ChatInputCommandInteraction, Message } from "discord.js";
 import { tryCreateRaidReportThreadAction } from "../features/dkp-records/create/create-raid-report-thread";
 import { tryRaidBonusMessageAction } from "../features/dkp-records/request-bonus/request-bonus-message-action";
 import { tryRaidReportRevisionMessageAction } from "../features/dkp-records/request-revision/raid-report-revision-message-action";
@@ -27,7 +27,8 @@ export const messageCreateListener = async (message: Message) => {
   if (lowerContent === "!tod" || lowerContent.startsWith("!tod ")) {
     try {
       const adapter = buildTodAdapter(message);
-      await todCommand.execute(adapter as any);
+      // The adapter has the parts of an interaction that /tod uses.
+      await todCommand.execute(adapter as unknown as ChatInputCommandInteraction);
     } catch (error) {
       console.error(`!tod ${error}`);
       await message.reply(String(error));

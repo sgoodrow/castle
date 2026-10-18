@@ -20,7 +20,7 @@ export const getOption = (
     if (!subcommand || !subcommand.options) {
       throw new Error("Subcommand has no options");
     }
-    return subcommand.options.find((o: any) => o.name === option);
+    return subcommand.options.find((o) => o.name === option);
   } else if (interaction.isChatInputCommand()) {
     return interaction.options.get(option);
   }

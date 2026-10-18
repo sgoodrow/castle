@@ -4,7 +4,6 @@ import {
   PartialUser,
   User,
 } from "discord.js";
-import { getMembers } from "../..";
 
 export const reactionActionExecutor = async (action: ReactionAction) => {
   await action.initialize();

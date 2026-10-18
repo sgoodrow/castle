@@ -14,6 +14,7 @@ import { formatHammertime } from "./commands/helpers/duration";
 import { updateTimersChannel } from "./commands/helpers/channel-update";
 import { TIMER_ALERT_CHANNEL_ID, TIMER_ALERT_CHANNEL_REFRESH_RATE, TIMER_CHANNEL_REFRESH_RATE, USE_EVERYONE_ALERT } from "../../config";
 import { timerPrismaClient } from "../../db/timer-client";
+import { Prisma } from "@prisma/client";
 import { recordEndedTimer } from "./commands/helpers/ended-timers";
 
 // Timer tracking state
@@ -60,7 +61,7 @@ export async function spawnTimerLoop(): Promise<void> {
       for (const timer of timers) {
         let canAutoTod = false;
         let saveTimer = false;
-        const updates: Record<string, any> = {};
+        const updates: Prisma.TimerUpdateInput = {};
 
         if (!timer.alerted) {
           const nextSpawnEnd = nextSpawnTimeEnd(timer);

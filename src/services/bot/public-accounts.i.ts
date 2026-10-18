@@ -1,13 +1,11 @@
 import {
   ApplicationCommandOptionChoiceData,
-  ButtonInteraction,
   CommandInteraction,
   GuildMemberRoleManager,
   MessageComponentInteraction,
-  MessageInteraction,
 } from "discord.js";
 import { Bot } from "./public-accounts-sheet";
-import { bot, Prisma } from "@prisma/client";
+import { bot } from "@prisma/client";
 
 export interface IPublicAccountService {
   getBotsForBatphone(location: string): Promise<bot[]>;

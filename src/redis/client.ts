@@ -13,7 +13,6 @@ const onError = (err: Error) =>
 export const redisClient = createClient({ url: REDIS_URL });
 try {
   redisClient.connect();
-  SocketClosedUnexpectedlyError;
   redisClient.on("error", onError);
 } catch (err) {
   console.error(err);

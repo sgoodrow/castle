@@ -4,7 +4,6 @@ import {
   Entity,
   PrimaryGeneratedColumn,
 } from "typeorm";
-import { Members } from "../features/invite-list/update-invite-action";
 import { GuildMember } from "discord.js";
 
 @Entity({})

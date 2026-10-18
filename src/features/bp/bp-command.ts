@@ -49,11 +49,11 @@ class sendBp extends Subcommand {
           key: val,
         },
       });
-      savedBp
-        ? log(
-            `Found saved batphone ${savedBp.key} for ${savedBp.location}`
-          )
-        : log(`No key found for ${val}`);
+      if (savedBp) {
+        log(`Found saved batphone ${savedBp.key} for ${savedBp.location}`);
+      } else {
+        log(`No key found for ${val}`);
+      }
       const message = savedBp?.message || val;
       if (typeof message === "string") {
         const formattedMessage = message.replace(
@@ -105,8 +105,8 @@ class sendBp extends Subcommand {
   }
 
   public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
+    _option: string,
+    _interaction: AutocompleteInteraction<CacheType>
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
@@ -220,7 +220,7 @@ class setBp extends Subcommand {
   }
   public async getOptionAutocomplete(
     option: string,
-    interaction: AutocompleteInteraction<CacheType>
+    _interaction: AutocompleteInteraction<CacheType>
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
@@ -284,8 +284,8 @@ class unsetBp extends Subcommand {
     }
   }
   public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
+    _option: string,
+    _interaction: AutocompleteInteraction<CacheType>
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
@@ -344,11 +344,11 @@ ${formattedMessage}
 Location: ${savedMsg?.location || "NO LOCATION SET"}
 To change this message, use \`/bp update\` to set a new message.
 `;
-        savedMsg
-          ? log(
-              `Found saved batphone ${savedMsg.key} for ${savedMsg.location}`
-            )
-          : log(`No key found for ${val}`);
+        if (savedMsg) {
+          log(`Found saved batphone ${savedMsg.key} for ${savedMsg.location}`);
+        } else {
+          log(`No key found for ${val}`);
+        }
         const buttonMessages: ActionRowBuilder<MessageActionRowComponentBuilder>[][] =
           await getBotButtonComponents(savedMsg?.location || "");
         const firstComponents = buttonMessages.length > 0 ? buttonMessages[0] : undefined;
@@ -375,8 +375,8 @@ To change this message, use \`/bp update\` to set a new message.
   }
 
   public async getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
+    _option: string,
+    _interaction: AutocompleteInteraction<CacheType>
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {
@@ -464,7 +464,7 @@ class updateBp extends Subcommand {
 
   public async getOptionAutocomplete(
     option: string,
-    interaction: AutocompleteInteraction<CacheType>
+    _interaction: AutocompleteInteraction<CacheType>
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {

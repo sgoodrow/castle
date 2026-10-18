@@ -1,7 +1,8 @@
+import { Message } from "discord.js";
 import { buildTodAdapter } from "./prefix-adapter";
 
-function fakeMessage(content: string): any {
-  return { content, author: { id: "1", username: "tester" } };
+function fakeMessage(content: string): Message {
+  return { content, author: { id: "1", username: "tester" } } as unknown as Message;
 }
 
 describe("buildTodAdapter", () => {

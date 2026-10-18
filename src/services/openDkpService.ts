@@ -8,7 +8,6 @@ import {
   code,
   convertClass,
   convertRace,
-  decodeHtmlEntities,
   processTsvFileWithHeaders,
   RowObject,
   toSentenceCase,
@@ -20,7 +19,6 @@ import {
   openDkpPassword,
   openDkpAuthClientId,
   openDkpClientName,
-  openDkpAuctionRaidId,
 } from "../config";
 import { EmbedBuilder } from "discord.js";
 import { round, truncate } from "lodash";
@@ -134,6 +132,21 @@ export interface ODKPDkpSummaryEntry {
   CharacterName: string;
   CharacterClass: string;
   CharacterRank: string;
+}
+
+// One row of a character's DKP history from /characters/{id}/dkp.
+interface ODKPDkpEntry {
+  CharacterName: string;
+  SourceType: string;
+  Value: number;
+}
+
+interface ODKPDkpTotals {
+  CharacterName: string;
+  Raid: number;
+  Adjustments: number;
+  Items: number;
+  Total: number;
 }
 
 export interface ODKPCharacterDkpSummary {
@@ -445,7 +458,7 @@ export const openDkpService = {
     );
   },
 
-  summarizeByCharacter: (data: any[]) => {
+  summarizeByCharacter: (data: ODKPDkpEntry[]): ODKPDkpTotals[] => {
     const totals = data.reduce((acc, { CharacterName, SourceType, Value }) => {
       if (!acc[CharacterName]) {
         acc[CharacterName] = {
@@ -465,15 +478,15 @@ export const openDkpService = {
       acc[CharacterName].Total += Value;
 
       return acc;
-    }, {});
+    }, {} as Record<string, ODKPDkpTotals>);
 
-    return Object.values(totals).sort((a: any, b: any) =>
+    return Object.values(totals).sort((a, b) =>
       a.CharacterName.localeCompare(b.CharacterName)
     );
   },
 
   formatSummaryForDiscord: (
-    data: any[],
+    data: ODKPDkpEntry[],
     characterDkpSummary?: ODKPCharacterDkpSummary
   ) => {
     const summary = openDkpService.summarizeByCharacter(data);
@@ -490,7 +503,7 @@ export const openDkpService = {
 
     const divider = "─".repeat(header.length);
 
-    const rows = summary.map((c: any) =>
+    const rows = summary.map((c) =>
       [
         c.CharacterName.slice(0, COL.name).padEnd(COL.name),
         c.Raid.toFixed(1).padStart(COL.raid),
@@ -501,7 +514,7 @@ export const openDkpService = {
     );
 
     const foot = summary.reduce(
-      (acc: any, c: any) => {
+      (acc, c) => {
         acc.Raid += c.Raid;
         acc.Adjustments += c.Adjustments;
         acc.Items += c.Items;
@@ -509,7 +522,7 @@ export const openDkpService = {
         return acc;
       },
       { Raid: 0, Adjustments: 0, Items: 0, Total: 0 }
-    ) as any;
+    );
 
     const footer = [
       "TOTAL".padEnd(COL.name),
@@ -521,8 +534,6 @@ export const openDkpService = {
 
     let overview = "";
     if (characterDkpSummary) {
-      const ATT_COL = { label: 4, col: 12 };
-
       const attHeader = [
         "".padEnd(8),
         "30d".padStart(8),
@@ -618,7 +629,7 @@ export const openDkpService = {
             ItemName: safeItemName,
           }
         );
-      } catch (error) {
+      } catch {
         log(`Returning ${safeItemName}, couldn't find item in OpenDKP database`);
         return {
           GameItemId: -1,
@@ -1192,7 +1203,7 @@ ${result}${code}${notIncluded}`,
           return acc;
         }, {} as Record<string, LinkInfo[]>);
 
-        for (const [userid, characters] of Object.entries(groups)) {
+        for (const characters of Object.values(groups)) {
           if (characters) {
             await openDkpService.processLinkedCharacters(
               characters,
@@ -1331,7 +1342,7 @@ ${result}${code}${notIncluded}`,
                 //   item = await openDkpService.searchItem(i.item_name);
                 //   itemCache[item.ItemName] = item;
                 // }
-              } catch (err: unknown) {
+              } catch {
                 item = { GameItemId: -1, ItemId: -1, Name: i.item_name };
               }
 

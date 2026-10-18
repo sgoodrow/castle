@@ -10,7 +10,6 @@ import {
   openDkpService,
   odkpCharacterCache,
 } from "../../services/openDkpService";
-import { capitalize } from "../../shared/util";
 import { raiderRoleId } from "../../config";
 
 export class OdkpGetSubcommand extends Subcommand {

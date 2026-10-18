@@ -16,7 +16,7 @@ export class OdkpAddCharacterSubcommand extends Subcommand {
   
   public async getOptionAutocomplete(
     option: string,
-    interaction: AutocompleteInteraction<CacheType>
+    _interaction: AutocompleteInteraction<CacheType>
   ): Promise<ApplicationCommandOptionChoiceData[] | undefined> {
     const characters = await openDkpService.getCharacters();
     switch (option) {

@@ -1,4 +1,3 @@
-import { replaceAll } from "./string-util";
 
 export const itemsData = {
   "10 dose adrenaline tap": "/10_Dose_Adrenaline_Tap",

@@ -3,9 +3,8 @@ import {
   CacheType,
   ChannelType,
   PermissionFlagsBits,
-  Permissions,
 } from "discord.js";
-import { getGuild, getMember } from "../..";
+import { getMember } from "../..";
 import { inviteListChannelId } from "../../config";
 import { dataSource } from "../../db/data-source";
 import { InviteSimple } from "../../db/invite-simple";
@@ -34,7 +33,6 @@ export const getAttentionMessage = async (users: string[]) => {
     throw new Error("There is nobody to alert.");
   }
 
-  const guild = await getGuild();
   const statuses = await Promise.all(
     users.map(async (user) => {
       const { presence } = await getMember(

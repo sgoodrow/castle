@@ -13,7 +13,7 @@ import {
   BOT_SPREADSHEET_COLUMNS
 } from "../sheet-updater/public-sheet";
 import { IPublicAccountService } from "./public-accounts.i";
-import { bot, PrismaClient } from "@prisma/client";
+import { bot } from "@prisma/client";
 import moment from "moment";
 import { truncate } from "lodash";
 import { log } from "../../shared/logger";
@@ -200,7 +200,7 @@ Password: ${spoiler(details.password)}
               [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment().toString(),
             });
           }
-        } catch (err) {
+        } catch {
           throw new Error(
             "Failed to update public record, check the configuration"
           );
@@ -529,7 +529,7 @@ If you are still piloting ${botName}, sorry for the inconvenience and please use
               [BOT_SPREADSHEET_COLUMNS.CurrentPilot]: "",
             }
           );
-        } catch (err: unknown) {
+        } catch {
           log("Failed to update Google sheet with cleanup");
         }
 

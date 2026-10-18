@@ -37,7 +37,6 @@ class BankRequest extends Subcommand {
         itemName = String(this.getOptionValue("item", interaction));
       } else {
         itemName = stockList?.name || "unknown";
-        const count = stockList?.stock[0].count;
         const countAvailable = stockList?.stock.reduce(
           (total, s) => total + (s.count || 0),
           0

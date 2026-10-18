@@ -1,5 +1,4 @@
 import { ApplicationCommandOptionChoiceData } from "discord.js";
-import { PublicSheetService } from "./sheet-updater/public-sheet";
 import LRUCache from "lru-cache";
 import { MINUTES } from "../shared/time";
 import { truncate } from "lodash";

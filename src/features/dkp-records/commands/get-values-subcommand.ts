@@ -1,20 +1,13 @@
 import {
-  ApplicationCommandOptionChoiceData,
-  AutocompleteInteraction,
   CacheType,
   CommandInteraction,
   EmbedBuilder,
   GuildMemberRoleManager,
 } from "discord.js";
 import {
-  dkpDeputyRoleId,
-  dkpRecordsChannelId,
-  officerRoleId,
   raiderRoleId,
 } from "../../../config";
-import { castledkp } from "../../../services/castledkp";
 import { Subcommand } from "../../../shared/command/subcommand";
-import { getRaidReport } from "../raid-report";
 import { RaidValuesService } from "../../../services/raidValuesService";
 
 enum Option {

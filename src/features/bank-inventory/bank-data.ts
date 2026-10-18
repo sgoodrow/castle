@@ -35,7 +35,7 @@ class BankData {
 
   public async setInventory(inventory: Inventory): Promise<void> {
     try {
-      const upsertChar = await this.prisma.char.upsert({
+      await this.prisma.char.upsert({
         where: {
           name: inventory.charName,
         },
@@ -53,7 +53,7 @@ class BankData {
     
     for (let item of inventory.items) {
       try {
-        const upsertItem = await this.prisma.item.upsert({
+        await this.prisma.item.upsert({
           where: {
             id: item.id
           },
@@ -70,7 +70,7 @@ class BankData {
       }
       
       try {
-        const upsertSlot = await this.prisma.slot.upsert({
+        await this.prisma.slot.upsert({
           where: {
             charSlot: String(inventory.charName + item.location)
           },
@@ -175,10 +175,10 @@ class BankData {
     });
   }
 
-  public async removeInventory(charName: string, removeChar: boolean = false) {
+  public async removeInventory(charName: string) {
     console.log("bank-db-remove:", charName);
     // remove char slots
-    const deleteSlots =  await this.prisma.slot.deleteMany({
+    await this.prisma.slot.deleteMany({
       where: {
         charName: {
           equals: charName
@@ -190,7 +190,7 @@ class BankData {
     
     // remove char
     // todo: make this step optional
-    const deleteCharslots = await this.prisma.char.delete({
+    await this.prisma.char.delete({
       where: {
         name: charName
       }
@@ -200,7 +200,7 @@ class BankData {
   }
 
   public async setItemData(itemId: number, price: string | null) {
-    const setItem = await this.prisma.item.update({
+    await this.prisma.item.update({
       where: {
         id: itemId
       },

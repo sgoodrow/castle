@@ -5,8 +5,6 @@ import {
   CommandInteraction,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
-import { IPublicAccountService } from "../../services/bot/public-accounts.i";
-import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { authorizeByMemberRoles } from "../../shared/command/util";
 import { officerRoleId, knightRoleId } from "../../config";
 import { redisClient } from "../../redis/client";
@@ -47,8 +45,8 @@ export class SetSongSubcommand extends Subcommand {
   }
 
   public getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
+    _option: string,
+    _interaction: AutocompleteInteraction<CacheType>
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {

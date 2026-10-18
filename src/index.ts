@@ -1,4 +1,4 @@
-import { ChannelType, Client, Events, FetchMemberOptions, GatewayIntentBits, Guild, Partials } from "discord.js";
+import { ChannelType, Client, Events, GatewayIntentBits, Guild, Partials } from "discord.js";
 import { interactionCreateListener } from "./listeners/interaction-create-listener";
 import { guildId, token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
@@ -20,8 +20,6 @@ import { PrismaClient } from "@prisma/client";
 import { reportError } from "./shared/error-reports";
 import { log } from "./shared/logger";
 import { openDkpService } from "./services/openDkpService";
-import { accounts } from "./services/accounts";
-import { MINUTES } from "./shared/time";
 import { PublicSheetService } from "./services/sheet-updater/public-sheet";
 
 // Global
@@ -101,9 +99,10 @@ setInterval(() => {
   openDkpService.generateToken();
 }, 1500000);
 
-process.on("unhandledRejection", (reason: any, promise) => {
+process.on("unhandledRejection", (reason: unknown, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
-  reportError({ source: "worker", message: String(reason?.message || reason), stack: reason?.stack });
+  const err = reason instanceof Error ? reason : undefined;
+  reportError({ source: "worker", message: String(err?.message || reason), stack: err?.stack });
 });
 process.on("uncaughtException", (err) => {
   // Report, then exit as Node would have; Dokku starts the bot again.

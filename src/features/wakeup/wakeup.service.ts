@@ -1,6 +1,5 @@
 import { VoiceChannel, Guild } from "discord.js";
 import {
-  AudioResource,
   StreamType,
   VoiceConnectionStatus,
   createAudioPlayer,
@@ -39,7 +38,7 @@ export class WakeupService implements IWakeupService {
       const voiceConnection = joinVoiceChannel({
         channelId: this.wakeupChannel.id,
         guildId: this.wakeupChannel.guildId,
-        adapterCreator: this.wakeupChannel.guild.voiceAdapterCreator as any,
+        adapterCreator: this.wakeupChannel.guild.voiceAdapterCreator,
       });
 
       voiceConnection.on(VoiceConnectionStatus.Connecting, () =>
@@ -70,7 +69,7 @@ export class WakeupService implements IWakeupService {
 
       voiceConnection.on(
         VoiceConnectionStatus.Ready,
-        async (oldState, newState) => {
+        async (_oldState, _newState) => {
           try {
             // yirst TTS
             this.wakeupChannel?.send({

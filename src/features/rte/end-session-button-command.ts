@@ -1,10 +1,8 @@
 import {
-  ActionRowBuilder,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
   CacheType,
-  ComponentType,
 } from "discord.js";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { rteService } from "../../services/rteService";

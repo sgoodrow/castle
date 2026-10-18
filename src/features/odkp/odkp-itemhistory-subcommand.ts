@@ -10,7 +10,6 @@ import { Subcommand } from "../../shared/command/subcommand";
 import {
   openDkpService,
   odkpItemDb,
-  ODKPItemHistoryEntry,
 } from "../../services/openDkpService";
 import moment from "moment";
 import { raiderRoleId } from "../../config";

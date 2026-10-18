@@ -1,12 +1,9 @@
 import { EmbedBuilder } from "discord.js";
 import {
-  bankOfficeChannelId,
-  bankerRoleId,
   clientId,
   guardOfficeChannelId,
   guardRoleId,
   raidBotsChannelId,
-  raiderRoleId,
 } from "../../config";
 import { Name } from "../../db/instructions";
 import { accounts } from "../../services/accounts";
@@ -28,18 +25,12 @@ export const updateRaidBotsInfo = (options: Options) =>
   readyActionExecutor(async () => {
     try {
       checkGoogleCredentials();
-    } catch (err) {
+    } catch {
       console.warn(
         "Update raid bots feature is disabled because google credentials were not found."
       );
       return;
     }
-    const raiderAccounts = await accounts.getAccountsForRole(raiderRoleId);
-    const sorted = sortBy(
-      raiderAccounts,
-      (b) => b.purpose,
-      (b) => b.characters
-    );
     await raidBotInstructions.createOrUpdateInstructions({
       embeds: [
         new EmbedBuilder({
@@ -89,7 +80,7 @@ export const updateGuardBotInfo = (options: Options) =>
   readyActionExecutor(async () => {
     try {
       checkGoogleCredentials();
-    } catch (err) {
+    } catch {
       console.warn(
         "Update guard bots feature is disabled because google credentials were not found."
       );

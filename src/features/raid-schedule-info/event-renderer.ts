@@ -1,6 +1,5 @@
 import { GuildScheduledEvent } from "discord.js";
 import { HOURS } from "../../shared/time";
-import { compactDescription } from "../../shared/util";
 
 export class EventRenderer {
   public constructor(

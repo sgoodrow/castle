@@ -3,7 +3,6 @@ import {
   AutocompleteInteraction,
   CacheType,
   CommandInteraction,
-  ThreadMemberFlagsBitField,
 } from "discord.js";
 import { Subcommand } from "../../shared/command/subcommand";
 import { authorizeByMemberRoles } from "../../shared/command/util";
@@ -41,8 +40,8 @@ export class WakeupTestSubcommand extends Subcommand {
   }
 
   public getOptionAutocomplete(
-    option: string,
-    interaction: AutocompleteInteraction<CacheType>
+    _option: string,
+    _interaction: AutocompleteInteraction<CacheType>
   ): Promise<
     ApplicationCommandOptionChoiceData<string | number>[] | undefined
   > {

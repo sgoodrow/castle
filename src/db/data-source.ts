@@ -1,4 +1,5 @@
 import { DataSource } from "typeorm";
+import { PostgresDriver } from "typeorm/driver/postgres/PostgresDriver";
 import { DATABASE_URL, SSL } from "../config";
 import { BankHour } from "./bank-hour";
 import { Instructions } from "./instructions";
@@ -19,7 +20,7 @@ dataSource
   .initialize()
   .then((c) => {
     // https://github.com/typeorm/typeorm/issues/3286#issuecomment-486991573
-    const driver = c.driver as any;
+    const driver = c.driver as PostgresDriver;
     driver.postgres.defaults.parseInputDatesAsUTC = true;
     driver.postgres.types.setTypeParser(
       1114,

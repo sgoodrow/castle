@@ -20,14 +20,10 @@ class BankSearch extends Subcommand {
       throw new Error(`An item is required.`); 
     } else {
       const stockList = await bankData.getItemStockById(parseInt(String(item.value)));
-      let itemName = "unknown";
       if (!stockList?.stock || stockList?.stock.length === 0) {
         stockEmbed.setTitle("No stock found.")
         .setDescription("Item not found in current bank inventory.");
-        itemName = String(this.getOptionValue("item", interaction))
       } else {
-        itemName = stockList?.name || 'unknown';
-        const count = stockList?.stock[0].count;
         const countAvailable = stockList?.stock.reduce((total, s) => total + (s.count || 0), 0);
         let inStock = ''
         for (let i = 0; i < stockList?.stock.length && i <= 30; i++) {

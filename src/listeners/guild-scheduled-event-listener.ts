@@ -28,4 +28,3 @@ export const guildScheduledEventStartedListener = async (
     recordRaidStarted(client, after);
   }
 };
-6

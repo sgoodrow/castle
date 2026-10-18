@@ -3,6 +3,7 @@ import { SimpleCommand } from "../../../shared/command/simple-command";
 import { formatDateShort } from "./helpers/format";
 import { parseTime } from "./parsers/time-parser";
 import { timerPrismaClient } from "../../../db/timer-client";
+import { Prisma } from "@prisma/client";
 
 class LeaderboardCommand extends SimpleCommand {
   public get command() {
@@ -58,21 +59,14 @@ class LeaderboardCommand extends SimpleCommand {
     lines.push("");
 
     // Build where clause for date filtering
-    const whereClause: any = {
+    const whereClause: Prisma.TodWhereInput = {
       displayName: { not: null },
     };
 
-    if (startAt) {
+    if (startAt || endAt) {
       whereClause.createdAt = {
-        ...whereClause.createdAt,
-        gte: startAt,
-      };
-    }
-
-    if (endAt) {
-      whereClause.createdAt = {
-        ...whereClause.createdAt,
-        lte: endAt,
+        gte: startAt || undefined,
+        lte: endAt || undefined,
       };
     }
 

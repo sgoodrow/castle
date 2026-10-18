@@ -5,7 +5,7 @@ import {
   EmbedBuilder
  } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
-import { bankRequestsChannelId, bankerRoleId, officerRoleId, modRoleId } from "../../../config";
+import { bankerRoleId, officerRoleId, modRoleId } from "../../../config";
 import { bankData } from "../bank-data";
 import { authorizeByMemberRoles } from "../../../shared/command/util";
 import { autoCompleteAllItems } from "../helpers";
@@ -34,7 +34,7 @@ class SetItemData extends Subcommand {
     } else {
       const itemData = await bankData.getItemStockById(parseInt(String(item.value)));
       if(itemData) {
-        const setData = await bankData.setItemData(itemData.id, String(price.value));
+        await bankData.setItemData(itemData.id, String(price.value));
 
         const countAvailable = itemData?.stock.reduce((total, s) => total + (s.count || 0), 0);
         embed.setTitle("UPDATED: " + itemData.name);

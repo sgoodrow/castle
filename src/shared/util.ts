@@ -86,7 +86,7 @@ export const processTsvFileWithHeaders = async (
 
           try {
             rowObj[header] = JSON.parse(value);
-          } catch (err) {
+          } catch {
             console.warn(`Failed to parse JSON in column "${header}":`, value);
             rowObj[header] = value; // fallback: keep as string
           }

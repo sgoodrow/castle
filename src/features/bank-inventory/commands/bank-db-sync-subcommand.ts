@@ -1,10 +1,9 @@
 import { 
   CacheType, 
-  CommandInteraction,
-  GuildMemberRoleManager
+  CommandInteraction
  } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
-import { bankRequestsChannelId, bankerRoleId, officerRoleId, modRoleId } from "../../../config";
+import { bankerRoleId, officerRoleId, modRoleId } from "../../../config";
 import { findFiles, getFile } from "../../../services/gdrive";
 import { 
   parseInventoryFile,
@@ -12,7 +11,7 @@ import {
 } from "../inventory-files";
 import { bankData } from "../bank-data";
 import { authorizeByMemberRoles } from "../../../shared/command/util";
-import { drive_v3, file_v1 } from "googleapis";
+import { drive_v3 } from "googleapis";
 
 let replyTxt = ""    
 

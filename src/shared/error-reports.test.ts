@@ -2,7 +2,9 @@ import { commit, fingerprint, reportError } from "./error-reports";
 
 jest.mock("./logger", () => ({ log: jest.fn() }));
 
-const calls: { url: string; method: string; body: any }[] = [];
+// The issue fields error-reports sends to GitHub.
+type IssueBody = { title: string; body: string; labels: string[] };
+const calls: { url: string; method: string | undefined; body: IssueBody }[] = [];
 let searchHits: number[] = [];
 
 beforeEach(() => {
@@ -10,11 +12,11 @@ beforeEach(() => {
   searchHits = [];
   process.env.githubErrorToken = "ghp_testtoken1234";
   process.env.GIT_REV = "abc123";
-  global.fetch = jest.fn(async (url: string, init: any) => {
-    calls.push({ url, method: init.method, body: init.body && JSON.parse(init.body) });
+  global.fetch = jest.fn(async (url: string, init: RequestInit) => {
+    calls.push({ url, method: init.method, body: init.body && JSON.parse(init.body as string) });
     const json = url.includes("/search/") ? { items: searchHits.map(number => ({ number })) } : { number: 42 };
     return { ok: true, status: 200, json: async () => json } as Response;
-  }) as any;
+  }) as unknown as typeof fetch;
 });
 
 describe("fingerprint", () => {

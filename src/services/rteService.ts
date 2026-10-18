@@ -4,7 +4,6 @@ import {
   ButtonStyle,
   GuildMemberRoleManager,
 } from "discord.js";
-import moment from "moment";
 import { client, prismaClient } from "..";
 import { knightRoleId, officerRoleId, rteRequireOpenTarget } from "../config";
 import { RaidValuesService } from "./raidValuesService";

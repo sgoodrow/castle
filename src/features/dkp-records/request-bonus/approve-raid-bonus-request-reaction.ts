@@ -9,7 +9,7 @@ import {
   reactionActionExecutor,
 } from "../../../shared/action/reaction-action";
 import { getAction, getBonusMessageContent } from "./util";
-import { getMember, getMembers } from "../../..";
+import { getMember } from "../../..";
 
 export const tryApproveRaidBonusRequestReactionAction = (
   reaction: MessageReaction | PartialMessageReaction,

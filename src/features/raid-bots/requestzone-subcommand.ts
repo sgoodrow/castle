@@ -8,8 +8,6 @@ import { Subcommand } from "../../shared/command/subcommand";
 import { accounts } from "../../services/accounts";
 import { raidBotInstructions } from "./update-bots";
 import moment from "moment";
-import { Class } from "../../shared/classes";
-import { capitalize } from "../../shared/util";
 import { Mutex } from "async-mutex";
 import { LocationService } from "../../services/location";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
@@ -95,12 +93,12 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
               guildUser?.nickname || guildUser?.user.username || "UNKNOWN USER",
             [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment().toString(),
           });
-        } catch (err) {
+        } catch {
           throw new Error(
             "Failed to update public record, check the configuration"
           );
         }
-      } catch (err) {
+      } catch {
         status = "❌ Denied";
 
         await interaction.editReply(

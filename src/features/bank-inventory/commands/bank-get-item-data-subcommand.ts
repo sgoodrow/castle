@@ -5,7 +5,7 @@ import {
   EmbedBuilder
  } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
-import { bankRequestsChannelId, bankerRoleId, officerRoleId, modRoleId } from "../../../config";
+import { bankerRoleId, officerRoleId, modRoleId } from "../../../config";
 import { bankData } from "../bank-data";
 import { authorizeByMemberRoles } from "../../../shared/command/util";
 import { autoCompleteAllItems } from "../helpers";

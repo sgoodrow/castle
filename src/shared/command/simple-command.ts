@@ -6,6 +6,7 @@ import {
   ChatInputCommandInteraction,
 } from "discord.js";
 import { BaseCommand } from "./base-command";
+import { Subcommand } from "./subcommand";
 
 export abstract class SimpleCommand extends BaseCommand {
   public get command(): SlashCommandBuilder | SlashCommandOptionsOnlyBuilder {
@@ -14,7 +15,7 @@ export abstract class SimpleCommand extends BaseCommand {
       .setDescription(this.description);
   }
 
-  public readonly subcommands: Record<string, any> = {};
+  public readonly subcommands: Record<string, Subcommand> = {};
 
   public async getOptionAutocomplete(
     _option: string,

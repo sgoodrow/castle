@@ -1,7 +1,6 @@
 import {
   CacheType,
   CommandInteraction,
-  TextChannel,
   TimestampStyles,
   time,
 } from "discord.js";

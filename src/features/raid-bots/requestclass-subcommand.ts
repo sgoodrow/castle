@@ -108,12 +108,12 @@ Please use \`/bot park <name> <location if you moved it>\` when you are finished
               guildUser?.nickname || guildUser?.user.username || "UNKNOWN USER",
             [BOT_SPREADSHEET_COLUMNS.CheckoutTime]: moment().toString(),
           });
-        } catch (err) {
+        } catch {
           throw new Error(
             "Failed to update public record, check the configuration"
           );
         }
-      } catch (err) {
+      } catch {
         status = "❌ Denied";
 
         await interaction.editReply(

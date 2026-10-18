@@ -161,6 +161,8 @@ function load() {
   for (const k of SETTINGS) delete process.env[k];
   Object.assign(process.env, world.env);
   jest.isolateModules(() => {
+    // isolateModules is synchronous, so this can't be an import().
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     world.mod = require("../server");
   });
   return world.mod!;

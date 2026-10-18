@@ -88,7 +88,7 @@ export class PublicSheetService {
       if (botInfoSheet) {
         this.botSheetRows = await botInfoSheet.getRows();
       }
-    } catch (err) {
+    } catch {
       log(
         `Failed to load location sheet data. Does it exist in the public sheet with name '${SHEET_TITLE}'?`
       );
@@ -104,7 +104,7 @@ export class PublicSheetService {
       if (locationSheet) {
         this.locationSheetRows = await locationSheet.getRows();
       }
-    } catch (err) {
+    } catch {
       log(
         "Failed to load location sheet data. Does it exist in the public sheet with name 'Bot Locations'?"
       );
@@ -120,7 +120,7 @@ export class PublicSheetService {
       if (raidValuesSheet) {
         this.raidValueRows = await raidValuesSheet.getRows();
       }
-    } catch (err) {
+    } catch {
       log(
         "Failed to load raid values sheet data. Does it exist in the raid values sheet with name 'Data'?"
       );
@@ -136,7 +136,7 @@ export class PublicSheetService {
       if (raidRolesSheet) {
         this.raidRolesRows = await raidRolesSheet.getRows();
       }
-    } catch (err) {
+    } catch {
       log(
         "Failed to load raid roles sheet data. Does it exist in the raid values sheet with name 'Roles'?"
       );

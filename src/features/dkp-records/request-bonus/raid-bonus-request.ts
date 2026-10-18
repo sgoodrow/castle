@@ -43,7 +43,7 @@ export abstract class RaidBonusRequest {
     // execute action on raid report
     try {
       await this.execute(Number(raidId));
-    } catch (err) {
+    } catch {
       await message.react("⚠️");
       return false;
     }

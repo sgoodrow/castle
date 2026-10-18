@@ -289,7 +289,8 @@ export async function updateTimersChannel(client: Client): Promise<void> {
       try {
         const message = await channel.messages.fetch(timerMessageId);
         await message.edit({ embeds });
-      } catch (err: any) {
+      } catch (caught) {
+        const err = caught as { status?: number; message?: string; code?: number } | undefined;
         if (err?.status === 404 || err?.message?.includes("404") || err?.code === 10008) {
           const result = await channel.send({ embeds });
           await saveSettingByKey("timer_message_id", result.id);

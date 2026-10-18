@@ -84,7 +84,6 @@ export class RaidValuesService implements IRaidValuesService {
             if (!this.raidValueCache.size) {
                 // Reload data
                 const rows = await publicSheetService.getRaidValueRows();
-                let foundHeader = false;
                 for (const row of rows) {
                     if (row[RAID_VALUES_SPREADSHEET_COLUMNS.BaseDKP] !== undefined) {
                         const raidValue = {
@@ -118,7 +117,6 @@ export class RaidValuesService implements IRaidValuesService {
             if (!this.raidValueCache.size) {
                 // Reload data
                 const rows = await publicSheetService.getRaidValueRows();
-                let foundHeader = false;
                 for (const row of rows) {
                     if (row[RAID_VALUES_SPREADSHEET_COLUMNS.Description] !== undefined) {
                         const raidRole = {

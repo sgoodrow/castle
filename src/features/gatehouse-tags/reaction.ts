@@ -2,7 +2,6 @@ import {
   MessageReaction,
   PartialMessageReaction,
   PartialUser,
-  Permissions,
   User,
 } from "discord.js";
 import {

@@ -1,5 +1,4 @@
 import {
-  CommandInteraction,
   MessageReaction,
   PartialMessageReaction,
   PartialUser,

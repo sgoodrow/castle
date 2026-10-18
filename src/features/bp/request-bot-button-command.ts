@@ -9,7 +9,7 @@ import {
 } from "discord.js";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { bot } from "@prisma/client";
-import { knightRoleId, raiderRoleId } from "../../config";
+import { raiderRoleId } from "../../config";
 import { getClassAbreviation } from "../../shared/classes";
 import { PublicAccountsFactory } from "../../services/bot/bot-factory";
 import { log } from "../../shared/logger";
@@ -39,7 +39,7 @@ export class RequestBotButtonCommand extends ButtonCommand {
         } clicked batphone button for ${name}`
       );
       await PublicAccountsFactory.getService().doBotCheckout(name, interaction);
-    } catch (err: unknown) {
+    } catch {
       await this.setButtonState(interaction, true);
     }
   }

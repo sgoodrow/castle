@@ -10,7 +10,6 @@ import {
   UPLOAD_DATE_FORMAT,
 } from "../features/dkp-records/raid-tick";
 import { MINUTES, MONTHS } from "../shared/time";
-import { betaDkpService } from "./betaDkpService";
 import { ODKPRaidData } from "./openDkpService";
 
 const route = (f: string) => `api.php?function=${f}`;
