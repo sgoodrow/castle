@@ -30,7 +30,7 @@ Each phase starts by answering its questions with the user and recording the ans
 - **Decided:** the sheet's Forbidden Spells tab is the source of truth for which spells are forbidden. The database stays the source of truth for stock (the sheet's "All Items" tab is a copy of the same mule uploads).
 - **Decided:** the sheet's Cost column overrides the page's level rules for spells. This fixes prices the page gets wrong today, e.g. Aegis (57) is 50p on the sheet, and Burnout IV (55) is auction-only. A banker's price in the database still wins over both.
 - **Decided:** requests for forbidden spells go to #bank-requests like everything else. A banker starts the auction.
-- What should a member see besides "Goes to DKP auction": a minimum bid, who can bid, limits?
+- **Decided:** a member doesn't buy a forbidden spell, they ask the bank to start a DKP auction for it. The page and the post say that, with no price, minimum bid or bidding rules.
 
 **Later phases**
 - Sky and jewelry data are in Google Sheets today. Read them as they are, or move them to something bankers manage from Discord?
