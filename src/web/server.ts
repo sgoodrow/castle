@@ -26,11 +26,12 @@ const {
   bankWebUrl = `http://localhost:${PORT}`,
   bankWebDevNoAuth,
   bankCacheDir,
+  bankDistDir,
 } = process.env;
 
 const GIT_REV = commit();
 const ROOT = path.resolve(__dirname, "../..");
-const DIST = path.join(ROOT, "bank/dist");
+const DIST = bankDistDir ? path.resolve(bankDistDir) : path.join(ROOT, "bank/dist");
 const PAGE = path.join(DIST, "index.html");
 const WIKI_EVERY = 30 * 60e3;
 
@@ -90,7 +91,7 @@ async function pageError(req: IncomingMessage, res: ServerResponse, me: Session)
   send(req, res, 204, "text/plain", "");
 }
 
-async function handle(req: IncomingMessage, res: ServerResponse) {
+async function route(req: IncomingMessage, res: ServerResponse) {
   const url = new URL(req.url || "/", bankWebUrl);
   if (req.method === "POST" && url.pathname === "/api/errors") {
     const me = session(req);
@@ -132,23 +133,34 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
   send(req, res, 404, "text/plain", "Not found");
 }
 
-createServer((req, res) => {
-  handle(req, res).catch(err => {
+// Every request goes through here; a thrown error is filed and answered with a 500.
+export function handle(req: IncomingMessage, res: ServerResponse) {
+  return route(req, res).catch(err => {
     reportError({ source: "web", message: String(err?.message || err), stack: err?.stack, details: { Path: (req.url || "").split("?")[0] } });
+    // Every route answers in one send or redirect, so nothing throws once headers are out; ending
+    // the response is only a guard in case a route someday streams.
+    /* istanbul ignore else */
     if (!res.headersSent) send(req, res, 500, "text/plain", "Something went wrong");
     else res.end();
   });
-}).listen(+PORT, () => log(`bank web: listening on ${PORT} as ${bankWebUrl}${NO_AUTH ? " (no auth)" : ""}`));
+}
 
-// Keep icons and auctions current in the background; the page never waits on the wiki.
-const refreshWiki = () => api.refreshWiki().catch(err => reportError({ source: "web", message: `wiki refresh failed: ${err?.message || err}`, stack: err?.stack }));
-refreshWiki();
-setInterval(refreshWiki, WIKI_EVERY);
+// Listening, the wiki refresh and the process handlers only start when this file is run, so tests can import it.
+export function start() {
+  createServer(handle).listen(+PORT, () => log(`bank web: listening on ${PORT} as ${bankWebUrl}${NO_AUTH ? " (no auth)" : ""}`));
 
-process.on("unhandledRejection", (err: any) => reportError({ source: "web", message: String(err?.message || err), stack: err?.stack }));
-process.on("uncaughtException", err => {
-  // Report, then exit as Node would have; Dokku starts the process again.
-  const exit = () => process.exit(1);
-  setTimeout(exit, 5000).unref();
-  reportError({ source: "web", message: err.message, stack: err.stack }).finally(exit);
-});
+  // Keep icons and auctions current in the background; the page never waits on the wiki.
+  const refreshWiki = () => api.refreshWiki().catch(err => reportError({ source: "web", message: `wiki refresh failed: ${err?.message || err}`, stack: err?.stack }));
+  refreshWiki();
+  setInterval(refreshWiki, WIKI_EVERY);
+
+  process.on("unhandledRejection", (err: any) => reportError({ source: "web", message: String(err?.message || err), stack: err?.stack }));
+  process.on("uncaughtException", err => {
+    // Report, then exit as Node would have; Dokku starts the process again.
+    const exit = () => process.exit(1);
+    setTimeout(exit, 5000).unref();
+    reportError({ source: "web", message: err.message, stack: err.stack }).finally(exit);
+  });
+}
+
+if (require.main === module) start();

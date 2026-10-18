@@ -6,18 +6,35 @@ on:
   pull_request:
     branches: [main]
 
+  # Auto-fix PRs are opened with GITHUB_TOKEN, which doesn't start pull_request runs, so
+  # .github/workflows/auto-fix.yml starts this on their branch instead.
   workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
         with:
           node-version: 22.22.2
           cache: yarn
           cache-dependency-path: yarn.lock
-      - run: yarn install
-      - run: yarn test:ci
+
+      # Claude's fixes have to fix the code, not the tests. main's copy of the check runs, so the
+      # branch can't change what it checks.
+      - name: Tests kept
+        if: startsWith(github.head_ref || github.ref_name, 'auto-fix/')
+        run: git show origin/main:.github/scripts/check-tests-kept.sh | bash -s origin/main
+
+      # The bot and the bank web server. Coverage can't drop in any file with tests (jest.config.js).
+      - run: yarn install --frozen-lockfile
       - run: yarn tsc
+      - run: yarn test:ci
+
+      # The bank page. Same rule for coverage (bank/web/vite.config.ts).
+      - run: npm ci --prefix bank/web
+      - run: npm --prefix bank/web run build
+      - run: npm --prefix bank/web run test:ci

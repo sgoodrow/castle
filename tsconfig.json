@@ -11,5 +11,5 @@
     "experimentalDecorators": true,
     "types": ["jest", "node"]
   },
-  "exclude": ["./node_modules", "**/*.test.ts", "./bank"]
+  "exclude": ["./node_modules", "**/*.test.ts", "src/web/features", "./bank"]
 }

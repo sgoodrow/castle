@@ -4,9 +4,10 @@ import { IconMoneybag } from "@tabler/icons-react";
 import { ToastNotification, type ToastMsg } from "../ToastNotification";
 import { OverflowTooltip } from "../OverflowTooltip";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ITEMS, bankRequest, ITEM_LIST, RESISTS, SLOT_CHIPS, STATS, sumOf, statText, usable, type Item } from "../../data";
+import { ITEMS, bankRequest, RESISTS, STATS, usable, type Item } from "../../data";
+import { filterItems } from "../../search";
 import { getRouteApi } from "@tanstack/react-router";
-import { sortDesc, sortKey, toFilters, toSearch, useTab, type Filters, type Sort } from "../../state";
+import { toFilters, toSearch, useTab, type Filters } from "../../state";
 import { DetailPane } from "./DetailPane";
 import { ItemListPane } from "./ItemListPane";
 import { SearchPane } from "./SearchPane";
@@ -15,38 +16,6 @@ import { TabPane } from "./TabPane";
 import { tabTotal, totalShort, totalText } from "../../tab";
 import { UpdatedText } from "../texts/UpdatedText";
 import { DevOptionsPane } from "./DevOptionsPane";
-
-function filterItems(f: Filters) {
-  const bits = f.slot ? SLOT_CHIPS.find(([l]) => l === f.slot)![1] : null;
-  const terms = f.q.toLowerCase().split(/\s+/).filter(Boolean);
-  const char = { cls: f.cls, race: f.race };
-  const onlyUsable = f.cls >= 0 || f.race >= 0;
-  const found = ITEM_LIST.filter(it => {
-    if (f.kind !== "all" && it.kind !== f.kind) return false;
-    if (bits && !bits.some(b => (it.slots || 0) & (1 << b))) return false;
-    if (onlyUsable && (it.kind === "gear" || it.kind === "spell") && !usable(it, char)) return false;
-    if (terms.length) {
-      const hay = (it.name + " " + statText(it)).toLowerCase();
-      if (!terms.every(t => hay.includes(t))) return false;
-    }
-    return true;
-  });
-  return sortItems(found, f.sort, f.cls);
-}
-
-// Price is what this class would pay; an unknown price, or one that isn't for sale, counts as 0.
-function sortItems(items: Item[], sort: Sort, cls: number) {
-  const byName = (a: Item, b: Item) => a.name.localeCompare(b.name);
-  const dir = sortDesc(sort) ? -1 : 1;
-  switch (sortKey(sort)) {
-    case "name":
-      return items.sort((a, b) => dir * byName(a, b));
-    case "price": {
-      const pp = new Map(items.map(it => [it, bankRequest(it, cls).pp ?? 0]));
-      return items.sort((a, b) => dir * ((pp.get(a) ?? 0) - (pp.get(b) ?? 0)) || byName(a, b));
-    }
-  }
-}
 
 const route = getRouteApi("__root__");
 
