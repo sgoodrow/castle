@@ -311,6 +311,7 @@ export function handle(req: IncomingMessage, res: ServerResponse) {
 
 export const readSpellSheet = () => api.refreshSheet();
 export const readSkySheet = () => api.refreshSkySheet();
+export const refreshWiki = () => api.refreshWiki();
 
 // Listening, the wiki refresh and the process handlers only start when this file is run, so tests can import it.
 export function start() {
@@ -337,7 +338,7 @@ export function start() {
       });
     });
   for (const refresh of [
-    inBackground("wiki refresh", () => api.refreshWiki()),
+    inBackground("wiki refresh", refreshWiki),
     inBackground("spell sheet refresh", readSpellSheet),
     inBackground("sky sheet refresh", readSkySheet),
   ]) {

@@ -6,7 +6,7 @@ import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { WikiCache } from "./wiki-cache";
 import { SpellSheet, spellKey } from "./spell-sheet";
-import { SkySheet, isSkyMule } from "./sky-sheet";
+import { SkySheet, isSkyMule, type Lookup } from "./sky-sheet";
 
 type DbItem = {
   name: string;
@@ -63,6 +63,10 @@ export class BankApi {
           icon: db?.icon,
         });
     }
+    for (const [, id] of this.sky.mq()) {
+      const db = this.itemdb[id];
+      if (db) seen.set(id, { id, name: db.name, icon: db.icon });
+    }
     await this.wiki.refresh([...seen.values()]);
   }
 
@@ -76,11 +80,22 @@ export class BankApi {
     return this.sheet.refresh(known);
   }
 
-  // Every item the database knows, so the Sky sheet's misspellings get noticed.
+  // An item name's id in the item database, so the Sky sheet's misspellings get noticed. A name
+  // shared by several items is only one of them when exactly one is NO DROP, since NO DROP items
+  // are the ones held for multiquesting.
   refreshSkySheet() {
-    return this.sky.refresh(
-      new Set(Object.values(this.itemdb).map((it) => it.name.toLowerCase()))
-    );
+    const ids = new Map<string, number[]>();
+    for (const [id, it] of Object.entries(this.itemdb)) {
+      const k = it.name.toLowerCase();
+      ids.set(k, [...(ids.get(k) ?? []), +id]);
+    }
+    return this.sky.refresh((name): Lookup => {
+      const all = ids.get(name.trim().toLowerCase()) ?? [];
+      const nodrop = all.filter((id) => this.itemdb[id].nodrop);
+      if (!all.length) return "no such item";
+      if (all.length === 1) return all[0];
+      return nodrop.length === 1 ? nodrop[0] : "more than one item";
+    });
   }
 
   async bank() {
@@ -96,40 +111,61 @@ export class BankApi {
       latest = Math.max(latest, +s.updatedAt);
       rows.push([titleCase(s.charName), s.slot, id, s.count || 1]);
       if (!isSkyMule(s.charName)) offSky.add(id);
-      if (items[id]) continue;
-      const w = this.wiki.get(id);
-      const sheet = this.sheet.get(s.item.name);
-      items[id] = {
-        ...(db || { unknown: true }),
-        name: s.item.name, // the inventory file's spelling matches the P99 client
-        ...(s.item.price ? { price: s.item.price } : {}),
-        ...(sheet ? { sheet } : {}),
-        ...(w
-          ? {
-              wiki: w.url,
-              ...(w.icon ? { icon: w.icon } : {}),
-              ...(w.green ? { green: w.green } : {}),
-            }
-          : {}),
-      };
-      for (const k of SPELL_KEYS) {
-        const sid = db?.[k];
-        if (sid != null && this.spells[String(sid)])
-          spells[String(sid)] = this.spells[String(sid)];
-      }
+      if (!items[id])
+        items[id] = this.describe(id, s.item.name, s.item.price, spells);
     }
-    // A Sky item is one the Sky sheet lists, or one only the Sky mules hold.
+    // Items held for multiquesting are NO DROP, so they're never in the uploads above. Whoever
+    // holds them, they're Sky items.
+    const mq = this.sky.mq().filter(([, id]) => this.itemdb[id]);
+    for (const [, id] of mq) {
+      if (!items[id])
+        items[id] = this.describe(id, this.itemdb[id].name, null, spells);
+      offSky.delete(id);
+    }
+    // A Sky item is one the Sky sheet lists, or one only the Sky mules (or multiquest holders) hold.
     for (const [id, it] of Object.entries(items)) {
       const part = this.sky.get(it.name as string);
       if (part) it.sky = part;
-      else if (!offSky.has(+id)) it.sky = { island: null, note: "" };
+      else if (!offSky.has(+id)) it.sky = { islands: [], note: "" };
     }
     return {
       snapshot: new Date(latest || Date.now()).toISOString(),
       today: new Date().toISOString().slice(0, 10),
       bank: rows,
+      mq,
       items,
       spells,
+    };
+  }
+
+  // An item as the page gets it: the item database's stats, the banker's price, the spell sheet's
+  // price and the wiki's link, icon and Green auctions. Its spells go into `spells`.
+  private describe(
+    id: number,
+    name: string,
+    price: string | null,
+    spells: Record<string, unknown>
+  ): Record<string, unknown> {
+    const db = this.itemdb[id];
+    const w = this.wiki.get(id);
+    const sheet = this.sheet.get(name);
+    for (const k of SPELL_KEYS) {
+      const sid = db?.[k];
+      if (sid != null && this.spells[String(sid)])
+        spells[String(sid)] = this.spells[String(sid)];
+    }
+    return {
+      ...(db || { unknown: true }),
+      name, // the inventory file's spelling matches the P99 client
+      ...(price ? { price } : {}),
+      ...(sheet ? { sheet } : {}),
+      ...(w
+        ? {
+            wiki: w.url,
+            ...(w.icon ? { icon: w.icon } : {}),
+            ...(w.green ? { green: w.green } : {}),
+          }
+        : {}),
     };
   }
 }

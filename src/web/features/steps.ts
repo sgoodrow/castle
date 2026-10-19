@@ -16,7 +16,7 @@ import os from "os";
 import path from "path";
 import { SourceMapGenerator } from "source-map";
 import { CLASS_TABS, FORBIDDEN_TAB } from "../spell-sheet";
-import { SKY_SHEET, SKY_TAB } from "../sky-sheet";
+import { MQ_TAB, SKY_SHEET, SKY_TAB } from "../sky-sheet";
 
 type Slot = {
   charName: string;
@@ -96,6 +96,7 @@ interface World {
   sheetStatus: number;
   sheetAsked: number;
   sky: string | null; // the Sky sheet's announcements tab as CSV
+  mq: string | null; // and its Multiquest tab
   skyStatus: number;
   skyAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
@@ -215,6 +216,12 @@ ROUTES.push([
     });
   },
 ]);
+// The Sky sheet's Multiquest tab: the scenario's, or an empty one with its headers.
+ROUTES.push([
+  "GET",
+  new RegExp(`^${SKY_SHEET.replace(/[.?]/g, "\\$&")}${MQ_TAB}$`),
+  () => new Response(world.mq ?? ",ITEM,CLASS,,\n"),
+]);
 // The spell sheet's tabs: the scenario's, or empty ones with their headers.
 ROUTES.push([
   "GET",
@@ -283,6 +290,7 @@ export async function reset() {
     sheetStatus: 200,
     sheetAsked: 0,
     sky: null,
+    mq: null,
     skyStatus: 200,
     skyAsked: 0,
     posts: [],
@@ -641,6 +649,22 @@ export const steps = ({
   step(/^the bank sends no sheet price for "(.*)"$/, (name: string) =>
     expect(bank().items[itemId(name)]).not.toHaveProperty("sheet")
   );
+  step(
+    /^the bank holds for multiquesting:$/,
+    (rows: Record<string, string>[]) => {
+      const b = bank() as ReturnType<typeof bank> & {
+        mq: [string, number, number][];
+      };
+      expect(
+        b.mq.map(([holder, id, count]) => ({
+          holder,
+          item: b.items[id].name,
+          id: String(id),
+          count: String(count),
+        }))
+      ).toEqual(rows);
+    }
+  );
   step(/^the bank sends no Sky part for "(.*)"$/, (name: string) =>
     expect(bank().items[itemId(name)]).not.toHaveProperty("sky")
   );
@@ -770,6 +794,9 @@ export const steps = ({
   step(/^the Sky sheet's announcements tab is:$/, (csv: string) => {
     world.sky = csv;
   });
+  step(/^the Sky sheet's Multiquest tab is:$/, (csv: string) => {
+    world.mq = csv;
+  });
   step(/^Google answers the Sky sheet with (\d+)$/, (status: string) => {
     world.skyStatus = +status;
   });
@@ -779,7 +806,10 @@ export const steps = ({
       mkdirSync(path.join(world.dir, "cache"), { recursive: true });
       writeFileSync(
         path.join(world.dir, "cache/sky-sheet.json"),
-        JSON.stringify([[name.toLowerCase(), { island: +island, note: "" }]])
+        JSON.stringify({
+          parts: [[name.toLowerCase(), { islands: [+island], note: "" }]],
+          mq: [],
+        })
       );
     }
   );
@@ -787,6 +817,11 @@ export const steps = ({
     await site();
     await world.mod!.readSkySheet();
     expect(world.skyAsked).toBe(1);
+  });
+
+  step(/^the site refreshes the wiki$/, async () => {
+    await site();
+    await world.mod!.refreshWiki();
   });
 
   // ---------- bank requests ----------

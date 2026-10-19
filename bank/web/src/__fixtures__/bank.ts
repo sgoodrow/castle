@@ -52,6 +52,7 @@ export const PAYLOAD: Payload = {
     ["Muleb", "Bank5", 1010, 2],
     ["Muleb", "Bank6", 4040, 1], // not in the item list
   ],
+  mq: [],
   items,
   spells: {
     500: { name: "Lifetap", lv: levels({ NEC: 1, SHD: 9, BRD: 61 }) }, // a level past P99's 60 is EverQuest's, not ours
@@ -81,7 +82,8 @@ export const WITH_SHEET: Payload = {
 };
 
 // The usual stock plus the Plane of Sky mules': island quest items, an Efreeti weapon (DKP auction),
-// one the Sky sheet marks "dkp bid", a bag, one a banker priced, and one a regular mule holds too.
+// one the Sky sheet marks "dkp bid", a bag, one a banker priced, one a regular mule holds too, a
+// stone for two islands, and NO DROP items held only for multiquesting, one by two holders.
 export const WITH_SKY: Payload = {
   ...PAYLOAD,
   bank: [
@@ -93,14 +95,19 @@ export const WITH_SKY: Payload = {
     ["Cgskyc", "General5", 1025, 1],
     ["Mulea", "General9", 1026, 1],
     ["Cgskya", "General6", 1026, 3],
+    ["Cgskyb", "General7", 1027, 1],
   ],
+  mq: [["Rabbie", 1028, 1], ["Kelra", 1029, 1], ["Gmskytwo", 1029, 2], ["Rabbie", 1021, 1]],
   items: {
     ...items,
-    1021: { name: "Emerald Spiroc Feather", sky: { island: 4, note: "fd ring" } },
-    1022: { name: "Efreeti War Axe", slots: 1 << 13, dmg: 20, dly: 40, type: 1, sky: { island: null, note: "" } },
-    1023: { name: "Bixie Stinger", sky: { island: 3, note: "dkp bid" } },
-    1024: { name: "Backpack", cls: 1, bagslots: 8, bagsize: 3, sky: { island: null, note: "" } },
-    1025: { name: "Kite Shield", slots: 1 << 14, ac: 6, price: "100p", sky: { island: null, note: "" } },
-    1026: { name: "Efreeti Statuette", sky: { island: 4, note: "" } },
+    1021: { name: "Emerald Spiroc Feather", sky: { islands: [4], note: "fd ring" } },
+    1022: { name: "Efreeti War Axe", slots: 1 << 13, dmg: 20, dly: 40, type: 1, sky: { islands: [], note: "" } },
+    1023: { name: "Bixie Stinger", sky: { islands: [3], note: "dkp bid" } },
+    1024: { name: "Backpack", cls: 1, bagslots: 8, bagsize: 3, sky: { islands: [], note: "" } },
+    1025: { name: "Kite Shield", slots: 1 << 14, ac: 6, price: "100p", sky: { islands: [], note: "" } },
+    1026: { name: "Efreeti Statuette", sky: { islands: [4], note: "" } },
+    1027: { name: "Ethereal Amethyst", sky: { islands: [6, 7], note: "" } },
+    1028: { name: "Sky Sapphire", nodrop: true, sky: { islands: [2], note: "" } },
+    1029: { name: "Griffon Eye", nodrop: true, sky: { islands: [], note: "" } },
   },
 };

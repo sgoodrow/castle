@@ -1,4 +1,4 @@
-import { ITEMS, bankRequest, prettyLoc, priceText, type ClassId, type Item } from "./data";
+import { ITEMS, bankRequest, prettyLoc, priceText, requestedFrom, type ClassId, type Item } from "./data";
 import type { Tab } from "./state";
 import { tabTotal, totalText } from "./tab";
 
@@ -18,8 +18,9 @@ const byCharThenSpot = (a: Item["holders"][number], b: Item["holders"][number]) 
   a.char.localeCompare(b.char) || a.loc.localeCompare(b.loc, undefined, { numeric: true });
 
 function spots(it: Item) {
-  const shown = [...it.holders].sort(byCharThenSpot).slice(0, 6).map(h => `• ${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
-  const more = it.holders.length - shown.length;
+  const { holders } = requestedFrom(it);
+  const shown = [...holders].sort(byCharThenSpot).slice(0, 6).map(h => `• ${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
+  const more = holders.length - shown.length;
   return [...shown, ...(more > 0 ? [`-# …and ${more} more`] : [])].join("\n");
 }
 

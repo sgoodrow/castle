@@ -19,12 +19,25 @@ interface Props {
   bare?: boolean; // inside the details drawer, which has its own header
 }
 
-// One entry per banker; their spots go in the tooltip.
-function byChar(it: Item) {
+// One entry per character; their spots go in the tooltip.
+function byChar(holders: Holder[]) {
   const m = new Map<string, Holder[]>();
-  for (const h of it.holders) m.set(h.char, [...(m.get(h.char) ?? []), h]);
+  for (const h of holders) m.set(h.char, [...(m.get(h.char) ?? []), h]);
   return [...m];
 }
+
+const HolderBadges = ({ holders }: { holders: Holder[] }) => (
+  <Group gap={6}>
+    {byChar(holders).map(([char, spots]) => (
+      <Tooltip key={char} multiline label={spots.map(h => <div key={h.loc}>{prettyLoc(h.loc)}{h.count > 1 ? ` · ×${h.count}` : ""}</div>)}>
+        <Badge variant="default" size="lg" radius="sm" tt="none" fw={500} style={{ cursor: "help" }}>
+          {char}{spots.length > 1 || spots.some(h => h.count > 1) ? <Text span c="dimmed" inherit> ×{spots.reduce((n, h) => n + h.count, 0)}</Text> : null}
+        </Badge>
+      </Tooltip>
+    ))}
+  </Group>
+);
+const count = (holders: Holder[]) => holders.reduce((n, h) => n + h.count, 0);
 
 // The heading style every part of the details shares.
 const SectionTitle = ({ children }: { children: React.ReactNode }) => (
@@ -52,6 +65,8 @@ export function DetailPane({ it, canUse, cls, qty, onAdd, onRemove, onClose, bar
     );
   }
   const req = bankRequest(it, cls);
+  const inBank = it.holders.filter(h => !h.mq);
+  const mq = it.holders.filter(h => h.mq);
   const auction = req.text != null && req.price.kind === "auction";
   const guild = req.text == null ? "Not for sale" : req.price.kind === "ask" ? "Ask a banker" : priceText(req.price, 1);
   // A tinted card: its label (Guild price or DKP auction) with the tab count beside it, then
@@ -87,17 +102,17 @@ export function DetailPane({ it, canUse, cls, qty, onAdd, onRemove, onClose, bar
           </Alert>
         )}
         <Divider />
-        <Section title={`Bank location · ${it.total}`}>
-          <Group gap={6}>
-            {byChar(it).map(([char, spots]) => (
-              <Tooltip key={char} multiline label={spots.map(h => <div key={h.loc}>{prettyLoc(h.loc)}{h.count > 1 ? ` · ×${h.count}` : ""}</div>)}>
-                <Badge variant="default" size="lg" radius="sm" tt="none" fw={500} style={{ cursor: "help" }}>
-                  {char}{spots.length > 1 || spots.some(h => h.count > 1) ? <Text span c="dimmed" inherit> ×{spots.reduce((n, h) => n + h.count, 0)}</Text> : null}
-                </Badge>
-              </Tooltip>
-            ))}
-          </Group>
-        </Section>
+        {inBank.length > 0 && (
+          <Section title={`Bank location · ${count(inBank)}`}>
+            <HolderBadges holders={inBank} />
+          </Section>
+        )}
+        {mq.length > 0 && (
+          <Section title={`Multiquest · ${count(mq)}`}>
+            <HolderBadges holders={mq} />
+            <Text fz="sm" c="dimmed">Held for multiquesting. Request it, and a banker will tell you how to set it up.</Text>
+          </Section>
+        )}
         <Divider />
         <Section title="Market data" aside={<MarketWarningText it={it} />}>
           <AuctionPane it={it} />

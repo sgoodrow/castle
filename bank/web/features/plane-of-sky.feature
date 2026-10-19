@@ -3,13 +3,14 @@ Feature: Plane of Sky
   and requests them in #bank-requests like anything else, in the bot's "Sky:" format. Each is 250pp,
   once the member has won the DKP items its quest needs, which a banker checks. Efreeti weapons and
   items the Sky sheet marks "dkp bid" go to DKP auction. A banker's price still wins. Items are
-  picked up at the East Freeport docks.
+  picked up at the East Freeport docks. Some items are held for multiquesting by characters the
+  bankers don't log in to. A member requests those too, and a banker tells them how to set it up.
 
   Scenario: Plane of Sky lists only the Sky mules' items
     Given the bank also holds the Plane of Sky items
     And I have opened the bank page
     When I pick "Plane of Sky"
-    Then the bank lists only "Emerald Spiroc Feather", "Efreeti War Axe", "Bixie Stinger", "Backpack", "Kite Shield", "Efreeti Statuette"
+    Then the bank lists only "Emerald Spiroc Feather", "Efreeti War Axe", "Bixie Stinger", "Backpack", "Kite Shield", "Efreeti Statuette", "Ethereal Amethyst", "Sky Sapphire", "Griffon Eye"
     And "Plane of Sky" is picked
 
   Scenario Outline: Sky items have the Sky prices
@@ -26,6 +27,7 @@ Feature: Plane of Sky
       | Efreeti War Axe        | DKP auction | Plane of Sky item. A banker starts a DKP auction. Pick up at the East Freeport docks.                                    |
       | Bixie Stinger          | DKP auction | Island 3 quest item (dkp bid). A banker starts a DKP auction. Pick up at the East Freeport docks.                        |
       | Kite Shield            | 100pp       | Set by a banker: 100p.                                                                                                   |
+      | Ethereal Amethyst      | 250pp       | Islands 6 and 7 quest item: 250pp, once you've won the DKP items its quest needs. Pick up at the East Freeport docks.    |
 
   Scenario Outline: Each Sky request line is in the bot's Sky format
     Given the bank also holds the Plane of Sky items
@@ -37,6 +39,8 @@ Feature: Plane of Sky
       | 1     | Emerald Spiroc Feather | Sky: Emerald Spiroc Feather (Cgskya, 2)      |
       | 2     | Emerald Spiroc Feather | Sky: Emerald Spiroc Feather (Cgskya, 2) x2   |
       | 1     | Efreeti Statuette      | Sky: Efreeti Statuette (Cgskya, 3)           |
+      | 1     | Sky Sapphire           | Sky MQ: Sky Sapphire (held by Rabbie)        |
+      | 2     | Griffon Eye            | Sky MQ: Griffon Eye (held by Kelra and Gmskytwo) x2 |
 
   Scenario: An Efreeti weapon is one DKP auction at a time
     Given the bank also holds the Plane of Sky items
@@ -44,3 +48,41 @@ Feature: Plane of Sky
     When I add 2 "Efreeti War Axe" to my tab
     Then I am told "One DKP auction at a time for Efreeti War Axe"
     And the tab button shows "1 DKP auction"
+
+  Scenario: An item held only for multiquesting has no price, and a banker explains it
+    Given the bank also holds the Plane of Sky items
+    And I have opened the bank page
+    Then "Sky Sapphire" has no price
+    And the price of "Sky Sapphire" for anyone is explained as "Island 2 quest item, held for a multiquest by Rabbie. A banker will tell you how to set it up."
+    And the price of "Griffon Eye" for anyone is explained as "Plane of Sky item, held for a multiquest by Kelra and Gmskytwo. A banker will tell you how to set it up."
+
+  Scenario: The details list who holds an item for multiquesting apart from the bank
+    Given the bank also holds the Plane of Sky items
+    And I have opened the bank page
+    When I click "Emerald Spiroc Feather" in the bank
+    Then the page says "Bank location · 2"
+    And the page says "Multiquest · 1"
+    And the page says "Rabbie"
+
+  Scenario: An item only held for multiquesting has no bank location
+    Given the bank also holds the Plane of Sky items
+    And I have opened the bank page
+    When I click "Griffon Eye" in the bank
+    Then the page says "Multiquest · 3"
+    And the page doesn't say "Bank location · 3"
+
+  Scenario: A multiquest request goes to the holders, and the tab says a banker will help
+    Given the bank also holds the Plane of Sky items
+    And I have opened the bank page
+    When I add "Sky Sapphire" to my tab
+    And I open my tab
+    Then my tab says "A banker will tell you how to set up each multiquest."
+    When I send my tab to Discord
+    Then the post reads "• Sky Sapphire (unknown)"
+    And the post reads "• Rabbie (multiquest)"
+
+  Scenario: The bank's own stock is what a member can put on the tab
+    Given the bank also holds the Plane of Sky items
+    And I have opened the bank page
+    When I add 3 "Emerald Spiroc Feather" to my tab
+    Then the tab button shows "500pp"
