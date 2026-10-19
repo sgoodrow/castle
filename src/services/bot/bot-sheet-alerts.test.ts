@@ -15,29 +15,20 @@ describe("BotSheetAlerts", () => {
   });
 
   it("says nothing while the sheet loads cleanly", async () => {
-    await alerts.loaded([]);
-    await alerts.loaded([]);
+    await alerts.loaded();
+    await alerts.loaded();
     expect(posts).toEqual([]);
   });
 
   it("tells raid chat once when it breaks, and once when it's fixed", async () => {
     await alerts.failed(new Error("no Bot Info tab"));
     await alerts.failed(new Error("no Bot Info tab"));
-    await alerts.loaded([]);
-    await alerts.loaded([]);
+    await alerts.loaded();
+    await alerts.loaded();
 
     expect(posts).toHaveLength(2);
     expect(posts[0]).toMatch(/couldn't be loaded.*no Bot Info tab/);
     expect(posts[1]).toBe(`The bots load from the "Bot Info" sheet again.`);
-  });
-
-  it("lists skipped rows once for each new set of them", async () => {
-    await alerts.loaded(["Row 4 (Bet): no class"]);
-    await alerts.loaded(["Row 4 (Bet): no class"]);
-    await alerts.loaded(["Row 4 (Bet): no class", "Row 9: no name"]);
-
-    expect(posts).toHaveLength(2);
-    expect(posts[1]).toMatch(/• Row 4 \(Bet\): no class\n• Row 9: no name$/);
   });
 
   it("keeps going when Discord can't be reached", async () => {

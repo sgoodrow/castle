@@ -32,27 +32,23 @@ import { BotSheetAlerts } from "./bot-sheet-alerts";
 
 type SheetRow = Record<string, string> & { rowIndex: number };
 
-// The rows the bot can use, and why it skips the rest: a bot needs a name and a class, and each
-// name once (the first row wins), since a bot is requested by name.
-export function usableBotRows(rows: SheetRow[]) {
-  const usable: SheetRow[] = [];
-  const skipped: string[] = [];
+// What's wrong with the sheet's rows, if anything: a bot needs a name and a class, and each name
+// once, since a bot is requested by name. Blank rows are fine.
+export function badBotRows(rows: SheetRow[]) {
+  const bad: string[] = [];
   const seen = new Set<string>();
   for (const row of rows) {
     const name = row[BOT_SPREADSHEET_COLUMNS.Name]?.trim() ?? "";
     const where = `Row ${row.rowIndex}${name ? ` (${name})` : ""}`;
     if (!name && !row[BOT_SPREADSHEET_COLUMNS.Class]?.trim()) continue; // a blank row
-    if (!name) skipped.push(`${where}: no name`);
+    if (!name) bad.push(`${where}: no name`);
     else if (!row[BOT_SPREADSHEET_COLUMNS.Class]?.trim())
-      skipped.push(`${where}: no class`);
+      bad.push(`${where}: no class`);
     else if (seen.has(name.toLowerCase()))
-      skipped.push(`${where}: the name is on an earlier row too`);
-    else {
-      seen.add(name.toLowerCase());
-      usable.push(row);
-    }
+      bad.push(`${where}: the name is on an earlier row too`);
+    seen.add(name.toLowerCase());
   }
-  return { usable, skipped };
+  return bad;
 }
 
 export class PrismaPublicAccounts implements IPublicAccountService {
@@ -87,9 +83,9 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   // on the next tick; it must not leave guardReady waiting forever.
   private async refreshOrLog() {
     try {
-      const skipped = await this.refresh();
+      await this.refresh();
       this.loadFailed = false;
-      await this.alerts.loaded(skipped);
+      await this.alerts.loaded();
     } catch (err) {
       this.loadFailed = true;
       log(`FAILED - Refreshing bot data: ${err}`);
@@ -102,9 +98,8 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     log("START - Refreshing bot data");
     try {
       await accounts.refreshAccountData();
-      const skipped = await this.init();
+      await this.init();
       log("END - Refreshing bot data");
-      return skipped;
     } finally {
       this.refreshing = false;
     }
@@ -123,14 +118,16 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   }
 
   // Replaces the stored bots with the sheet's, all at once, so a failure part way keeps the old
-  // ones. Returns the rows it skipped, and why.
+  // ones. A bad row fails the whole load, saying which rows to fix.
   public async init() {
     log("PublicAccountsPrisma - reading sheet");
-    const { usable, skipped } = usableBotRows(
-      await publicSheetService.getBotSheetRows()
-    );
+    const rows = await publicSheetService.getBotSheetRows();
+    const bad = badBotRows(rows);
+    if (bad.length)
+      throw new Error(`these rows need fixing:\n${bad.map((b) => `• ${b}`).join("\n")}`);
     const bots = [];
-    for (const row of usable) {
+    for (const row of rows) {
+      if (!row[BOT_SPREADSHEET_COLUMNS.Name]?.trim()) continue; // a blank row
       const time = moment(row[BOT_SPREADSHEET_COLUMNS.CheckoutTime]);
       const roles = await accounts.getRolesForAccount(
         row[BOT_SPREADSHEET_COLUMNS.Name]
@@ -153,7 +150,6 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       prismaClient.bot.deleteMany({}),
       prismaClient.bot.createMany({ data: bots }),
     ]);
-    return skipped;
   }
 
   async getBotParkButtonComponents(name: string) {

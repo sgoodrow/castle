@@ -1,4 +1,4 @@
-import { PrismaPublicAccounts, usableBotRows } from "./bot-prisma";
+import { PrismaPublicAccounts, badBotRows } from "./bot-prisma";
 
 const calls: string[] = [];
 const alerts: string[] = [];
@@ -26,7 +26,7 @@ vi.mock("../sheet-updater/public-sheet", () => ({
 }));
 vi.mock("./bot-sheet-alerts", () => ({
   BotSheetAlerts: class {
-    loaded = async (skipped: string[]) => alerts.push(`loaded ${skipped}`);
+    loaded = async () => alerts.push("loaded");
     failed = async (err: unknown) => alerts.push(`failed ${err}`);
   },
 }));
@@ -73,30 +73,41 @@ describe("PrismaPublicAccounts refresh", () => {
     expect(alerts).toEqual(["failed Error: no bot sheet"]);
   });
 
-  it("replaces the stored bots with the sheet's usable rows in one go", async () => {
-    sheetRows = async () => [row(2, "Aleph"), row(3, "Bet", "")];
+  it("replaces the stored bots with the sheet's in one go", async () => {
+    sheetRows = async () => [row(2, "Aleph"), row(3, "", ""), row(4, "Bet")];
     const accounts = new PrismaPublicAccounts();
 
     await accounts.guardReady();
 
-    expect(calls).toEqual(["deleteMany", "createMany Aleph"]);
-    expect(alerts).toEqual(["loaded Row 3 (Bet): no class"]);
+    expect(calls).toEqual(["deleteMany", "createMany Aleph,Bet"]);
+    expect(alerts).toEqual(["loaded"]);
+  });
+
+  it("fails the whole load on a bad row, naming the rows to fix", async () => {
+    sheetRows = async () => [row(2, "Aleph"), row(3, "Bet", "")];
+    const accounts = new PrismaPublicAccounts();
+
+    await expect(accounts.guardReady()).rejects.toThrow();
+
+    expect(calls).toEqual([]);
+    expect(alerts).toEqual([
+      "failed Error: these rows need fixing:\n• Row 3 (Bet): no class",
+    ]);
   });
 });
 
-describe("usableBotRows", () => {
-  it("skips rows without a name or class, and a name used twice, saying why", () => {
-    const { usable, skipped } = usableBotRows([
-      row(2, "Aleph"),
-      row(3, "", "Cleric"),
-      row(4, "Bet", ""),
-      row(5, "aleph"),
-      row(6, "", ""),
-      row(7, "Gimel"),
-    ]);
-
-    expect(usable.map((r) => r.Name)).toEqual(["Aleph", "Gimel"]);
-    expect(skipped).toEqual([
+describe("badBotRows", () => {
+  it("finds rows without a name or class, and a name used twice, saying why", () => {
+    expect(
+      badBotRows([
+        row(2, "Aleph"),
+        row(3, "", "Cleric"),
+        row(4, "Bet", ""),
+        row(5, "aleph"),
+        row(6, "", ""),
+        row(7, "Gimel"),
+      ])
+    ).toEqual([
       "Row 3: no name",
       "Row 4 (Bet): no class",
       "Row 5 (aleph): the name is on an earlier row too",
