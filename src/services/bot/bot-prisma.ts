@@ -59,6 +59,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   private refreshing: boolean = false;
   private isReady: boolean = false;
   private alerts = new BotSheetAlerts();
+  private loadFailed = false; // the last load of the sheet failed
 
   
 
@@ -84,8 +85,11 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   // on the next tick; it must not leave guardReady waiting forever.
   private async refreshOrLog() {
     try {
-      await this.alerts.loaded(await this.refresh());
+      const skipped = await this.refresh();
+      this.loadFailed = false;
+      await this.alerts.loaded(skipped);
     } catch (err) {
+      this.loadFailed = true;
       log(`FAILED - Refreshing bot data: ${err}`);
       await this.alerts.failed(err);
     }
@@ -109,6 +113,11 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     while (!this.isReady || this.refreshing) {
       await sleep(100);
     }
+    // Bot commands stop, rather than run on bots that may be out of date.
+    if (this.loadFailed)
+      throw new Error(
+        `The "Bot Info" sheet couldn't be loaded, so bot commands are off. A knight needs to fix the sheet and restart the bot.`
+      );
   }
 
   // Replaces the stored bots with the sheet's, all at once, so a failure part way keeps the old

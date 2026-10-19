@@ -59,13 +59,15 @@ describe("PrismaPublicAccounts refresh", () => {
     alerts.length = 0;
   });
 
-  it("keeps the stored bots, tells raid chat and still becomes ready when the sheet can't be read", async () => {
+  it("keeps the stored bots, tells raid chat and turns bot commands off when the sheet can't be read", async () => {
     sheetRows = async () => {
       throw new Error("no bot sheet");
     };
     const accounts = new PrismaPublicAccounts();
 
-    await accounts.guardReady();
+    await expect(accounts.guardReady()).rejects.toThrow(
+      "A knight needs to fix the sheet and restart the bot."
+    );
 
     expect(calls).toEqual([]);
     expect(alerts).toEqual(["failed Error: no bot sheet"]);
