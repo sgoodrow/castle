@@ -92,6 +92,7 @@ export const {
   CONDENSE_FUTURE_WINDOW,
   RTE_REQUIRE_OPEN_TARGET,
   eqnotifyChannelId,
+  knightChannelId,
   TELEGRAM_BOT_TOKEN,
 
 } = process.env as {
@@ -300,6 +301,12 @@ export const {
    * tags. Defaults to the batphone channel if unset.
    */
   eqnotifyChannelId?: string;
+
+  /**
+   * [Optional] Channel where the knights, who edit the bot sheet, are told when it can't be loaded
+   * or has rows the bot skips.
+   */
+  knightChannelId?: string;
 
   /**
    * [Optional] Telegram bot token (from @BotFather) used to deliver EQNotify

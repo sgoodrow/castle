@@ -28,10 +28,37 @@ import { code } from "../../shared/util";
 import { MINUTES } from "../../shared/time";
 import { noBotsRoleId, noBotWizardsRoleId } from "../../config";
 import { Class } from "../../shared/classes";
+import { BotSheetAlerts } from "./bot-sheet-alerts";
+
+type SheetRow = Record<string, string> & { rowIndex: number };
+
+// The rows the bot can use, and why it skips the rest: a bot needs a name and a class, and each
+// name once (the first row wins), since a bot is requested by name.
+export function usableBotRows(rows: SheetRow[]) {
+  const usable: SheetRow[] = [];
+  const skipped: string[] = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    const name = row[BOT_SPREADSHEET_COLUMNS.Name]?.trim() ?? "";
+    const where = `Row ${row.rowIndex}${name ? ` (${name})` : ""}`;
+    if (!name && !row[BOT_SPREADSHEET_COLUMNS.Class]?.trim()) continue; // a blank row
+    if (!name) skipped.push(`${where}: no name`);
+    else if (!row[BOT_SPREADSHEET_COLUMNS.Class]?.trim())
+      skipped.push(`${where}: no class`);
+    else if (seen.has(name.toLowerCase()))
+      skipped.push(`${where}: the name is on an earlier row too`);
+    else {
+      seen.add(name.toLowerCase());
+      usable.push(row);
+    }
+  }
+  return { usable, skipped };
+}
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private refreshing: boolean = false;
   private isReady: boolean = false;
+  private alerts = new BotSheetAlerts();
 
   
 
@@ -57,9 +84,10 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   // on the next tick; it must not leave guardReady waiting forever.
   private async refreshOrLog() {
     try {
-      await this.refresh();
+      await this.alerts.loaded(await this.refresh());
     } catch (err) {
       log(`FAILED - Refreshing bot data: ${err}`);
+      await this.alerts.failed(err);
     }
   }
 
@@ -68,8 +96,9 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     log("START - Refreshing bot data");
     try {
       await accounts.refreshAccountData();
-      await this.init();
+      const skipped = await this.init();
       log("END - Refreshing bot data");
+      return skipped;
     } finally {
       this.refreshing = false;
     }
@@ -82,36 +111,38 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     }
   }
 
+  // Replaces the stored bots with the sheet's, all at once, so a failure part way keeps the old
+  // ones. Returns the rows it skipped, and why.
   public async init() {
-    // read sheet on startup
     log("PublicAccountsPrisma - reading sheet");
-    const sheetService = publicSheetService;
-    const rows = await sheetService.getBotSheetRows();
-
-    // Clear data since we read initial from sheet
-    log("PublicAccountsPrisma - clearing old rows");
-    await prismaClient.bot.deleteMany({});
-    for (const row of rows) {
+    const { usable, skipped } = usableBotRows(
+      await publicSheetService.getBotSheetRows()
+    );
+    const bots = [];
+    for (const row of usable) {
       const time = moment(row[BOT_SPREADSHEET_COLUMNS.CheckoutTime]);
       const roles = await accounts.getRolesForAccount(
         row[BOT_SPREADSHEET_COLUMNS.Name]
       );
-
-      await prismaClient.bot.create({
-        data: {
-          name: row[BOT_SPREADSHEET_COLUMNS.Name],
-          class: row[BOT_SPREADSHEET_COLUMNS.Class],
-          level: row[BOT_SPREADSHEET_COLUMNS.Level],
-          location: row[BOT_SPREADSHEET_COLUMNS.CurrentLocation],
-          checkoutTime: time.isValid() ? time.toString() : "",
-          currentPilot: row[BOT_SPREADSHEET_COLUMNS.CurrentPilot],
-          bindLocation: row[BOT_SPREADSHEET_COLUMNS.BindLocation],
-          factioned: row[BOT_SPREADSHEET_COLUMNS.Factioned] !== "",
-          faction: row[BOT_SPREADSHEET_COLUMNS.Faction] || "",
-          requiredRoles: roles.map((r) => r.id),
-        },
+      bots.push({
+        name: row[BOT_SPREADSHEET_COLUMNS.Name],
+        class: row[BOT_SPREADSHEET_COLUMNS.Class],
+        level: row[BOT_SPREADSHEET_COLUMNS.Level],
+        location: row[BOT_SPREADSHEET_COLUMNS.CurrentLocation],
+        checkoutTime: time.isValid() ? time.toString() : "",
+        currentPilot: row[BOT_SPREADSHEET_COLUMNS.CurrentPilot],
+        bindLocation: row[BOT_SPREADSHEET_COLUMNS.BindLocation],
+        factioned: row[BOT_SPREADSHEET_COLUMNS.Factioned] !== "",
+        faction: row[BOT_SPREADSHEET_COLUMNS.Faction] || "",
+        requiredRoles: roles.map((r) => r.id),
       });
     }
+    log("PublicAccountsPrisma - replacing stored bots");
+    await prismaClient.$transaction([
+      prismaClient.bot.deleteMany({}),
+      prismaClient.bot.createMany({ data: bots }),
+    ]);
+    return skipped;
   }
 
   async getBotParkButtonComponents(name: string) {
