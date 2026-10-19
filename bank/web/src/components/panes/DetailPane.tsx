@@ -1,12 +1,13 @@
 import { Alert, Badge, CloseButton, Divider, Group, Paper, Stack, Text, Title, Tooltip } from "@mantine/core";
 import { IconAlertTriangle, IconGavel } from "@tabler/icons-react";
 import { useRef } from "react";
-import { bankRequest, prettyLoc, priceText, type ClassId, type Holder, type Item } from "../../data";
+import { bankRequest, islandName, islandWiki, prettyLoc, priceText, type ClassId, type Holder, type Item } from "../../data";
 import { BuyPane } from "./BuyPane";
 import { AuctionPane } from "./AuctionPane";
 import { MarketWarningText } from "../texts/MarketWarningText";
 import { CollapsibleLayout } from "../CollapsibleLayout";
 import { StatPane } from "./StatPane";
+import { WikiLinkText } from "../texts/WikiLinkText";
 
 interface Props {
   it: Item | null;
@@ -102,6 +103,14 @@ export function DetailPane({ it, canUse, cls, qty, onAdd, onRemove, onClose, bar
           </Alert>
         )}
         <Divider />
+        {it.sky && it.sky.islands.length > 0 && (
+          <Section title="Plane of Sky quest">
+            <Stack gap={2}>
+              {it.sky.islands.map(i => <Text key={i} fz="sm"><WikiLinkText href={islandWiki(i)}>{islandName(i)}</WikiLinkText></Text>)}
+            </Stack>
+            <Text fz="sm" c="dimmed">The wiki has what each quest needs.</Text>
+          </Section>
+        )}
         {inBank.length > 0 && (
           <Section title={`Bank location · ${count(inBank)}`}>
             <HolderBadges holders={inBank} />

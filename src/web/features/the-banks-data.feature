@@ -14,7 +14,7 @@ Feature: The bank's data
     Then the bank lists:
       | banker | spot     | item            | count |
       | Mulea  | General1 | Cloak of flames | 1     |
-    And the bank describes "Cloak of flames" by the item database, under that name
+    And the bank describes "Cloak of flames" by the item database, under that name, with its wiki page
 
   Scenario: NO DROP items and empty slots never leave the bank
     Given the bankers' uploads hold:
@@ -54,7 +54,15 @@ Feature: The bank's data
       | banker | spot     | item        | count |
       | mulea  | General1 | Mystery Box | 1     |
     When Someone asks for the bank
-    Then the bank describes "Mystery Box" as unknown
+    Then the bank describes "Mystery Box" as unknown, with its wiki page
+
+  Scenario: Every item links to its wiki page from its name, before the wiki cache has it
+    Given the bankers' uploads hold:
+      | banker | spot     | item         | count |
+      | mulea  | General1 | Mystery Box  | 1     |
+    When Someone asks for the bank
+    Then the bank describes "Mystery Box" with:
+      | wiki | "https://wiki.project1999.com/Mystery_Box" |
 
   Scenario: An item in many spots is described once, and a missing count is one
     Given the bankers' uploads hold:

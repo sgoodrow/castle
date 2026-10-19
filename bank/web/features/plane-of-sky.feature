@@ -64,6 +64,20 @@ Feature: Plane of Sky
     And the page says "Multiquest · 1"
     And the page says "Rabbie"
 
+  Scenario: The details link each of an item's islands to its quests on the wiki
+    Given the bank also holds the Plane of Sky items
+    And I have opened the bank page
+    When I click "Ethereal Amethyst" in the bank
+    Then the page says "Plane of Sky quest"
+    And the page links "Island 6: Bee Island" to "https://wiki.project1999.com/Plane_of_Sky#Island_6:_Bee_Island"
+    And the page links "Island 7: Drake Island" to "https://wiki.project1999.com/Plane_of_Sky#Island_7:_Drake_Island"
+
+  Scenario: An item on no island has no quest links
+    Given the bank also holds the Plane of Sky items
+    And I have opened the bank page
+    When I click "Griffon Eye" in the bank
+    Then the page doesn't say "Plane of Sky quest"
+
   Scenario: An item only held for multiquesting has no bank location
     Given the bank also holds the Plane of Sky items
     And I have opened the bank page

@@ -1,18 +1,12 @@
-import { Anchor, Box, Group, Stack, Text } from "@mantine/core";
-import { IconExternalLink } from "@tabler/icons-react";
+import { Box, Group, Stack, Text } from "@mantine/core";
 import type { ReactNode } from "react";
 import {
   ALL_CLASSES, ALL_RACES, CLASSES, ELEM, RACES, RESISTS, SIZES, STATS, TYPES, WEAPON,
   maskText, spellOf, signed, slotText, type Item,
 } from "../../data";
 import { ItemImage } from "../ItemImage";
+import { WikiLinkText as Wiki } from "../texts/WikiLinkText";
 
-// A P99 wiki page, marked as leaving the site.
-const Wiki = ({ href, children, fw }: { href: string; children: ReactNode; fw?: number }) => (
-  <Anchor href={href} target="_blank" rel="noopener" fw={fw} inherit>
-    {children}<IconExternalLink size="0.9em" style={{ marginLeft: 3, verticalAlign: "-0.1em" }} />
-  </Anchor>
-);
 const spellWiki = (name: string) => `https://wiki.project1999.com/${encodeURIComponent(name.replace(/ /g, "_"))}`;
 
 const K = ({ children }: { children: ReactNode }) => (

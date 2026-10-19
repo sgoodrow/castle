@@ -29,7 +29,12 @@ export type SheetPrice = { kind: "pp"; pp: number; dkp: number | null } | { kind
 
 // A Plane of Sky item: the islands whose quests it's for (none when the Sky sheet doesn't list it),
 // and the sheet's note on it, e.g. "fd ring" or "dkp bid".
-export interface SkyPart { islands: number[]; note: string }
+export interface SkyPart { islands: Island[]; note: string }
+// The islands with quests, by the names the wiki's Plane of Sky page gives their sections.
+export const ISLANDS = { 1: "Fairy", 2: "Imp", 3: "Harpy", 4: "Pegasus", 5: "Bird", 6: "Bee", 7: "Drake", 8: "Butterfly" } as const;
+export type Island = keyof typeof ISLANDS;
+export const islandName = (i: Island) => `Island ${i}: ${ISLANDS[i]} Island`;
+export const islandWiki = (i: Island) => `https://wiki.project1999.com/Plane_of_Sky#${islandName(i).replace(/ /g, "_")}`;
 
 // What /api/bank sends: every filled slot (character, slot, item id, count), and the items in them.
 export interface Payload {

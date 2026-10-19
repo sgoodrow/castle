@@ -166,6 +166,9 @@ step(/^the row for "(.*)" shows (".*)$/, (_, name, parts) => {
 step(/^"(.*)" is marked "(.*)"$/, (_, name, badge) => { within(row(name)).getByText(badge); });
 step(/^"(.*)" isn't marked "(.*)"$/, (_, name, badge) => { expect(within(row(name)).queryByText(badge)).toBeNull(); });
 step(/^the page says "(.*)"$/, async (_, text) => { await screen.findAllByText(reading(text)); });
+step(/^the page links "(.*)" to "(.*)"$/, async (_, name, href) => {
+  expect((await screen.findByRole("link", { name })).getAttribute("href")).toBe(href);
+});
 step(/^the page doesn't say "(.*)"$/, (_, text) => { expect(screen.queryAllByText(reading(text))).toEqual([]); });
 step(/^the page says:$/, async ({ table }) => {
   for (const { text } of table) {

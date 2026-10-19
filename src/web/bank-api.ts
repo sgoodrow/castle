@@ -4,7 +4,7 @@
 import { readFileSync } from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
-import { WikiCache } from "./wiki-cache";
+import { WikiCache, wikiUrl } from "./wiki-cache";
 import { SpellSheet, spellKey } from "./spell-sheet";
 import { SkySheet, isSkyMule, type Lookup } from "./sky-sheet";
 
@@ -159,13 +159,9 @@ export class BankApi {
       name, // the inventory file's spelling matches the P99 client
       ...(price ? { price } : {}),
       ...(sheet ? { sheet } : {}),
-      ...(w
-        ? {
-            wiki: w.url,
-            ...(w.icon ? { icon: w.icon } : {}),
-            ...(w.green ? { green: w.green } : {}),
-          }
-        : {}),
+      wiki: wikiUrl(name),
+      ...(w?.icon ? { icon: w.icon } : {}),
+      ...(w?.green ? { green: w.green } : {}),
     };
   }
 }

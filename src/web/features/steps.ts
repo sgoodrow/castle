@@ -630,14 +630,24 @@ export const steps = ({
     expect(bank().items).toEqual({});
   });
   step(
-    /^the bank describes "(.*)" by the item database, under that name$/,
+    /^the bank describes "(.*)" by the item database, under that name, with its wiki page$/,
     (name: string) => {
       const id = itemId(name);
-      expect(bank().items[id]).toEqual({ ...ITEMDB[id], name });
+      expect(bank().items[id]).toEqual({
+        ...ITEMDB[id],
+        name,
+        wiki: expect.stringMatching(/^https:\/\/wiki\.project1999\.com\//),
+      });
     }
   );
-  step(/^the bank describes "(.*)" as unknown$/, (name: string) =>
-    expect(bank().items[itemId(name)]).toEqual({ unknown: true, name })
+  step(
+    /^the bank describes "(.*)" as unknown, with its wiki page$/,
+    (name: string) =>
+      expect(bank().items[itemId(name)]).toEqual({
+        unknown: true,
+        name,
+        wiki: expect.stringMatching(/^https:\/\/wiki\.project1999\.com\//),
+      })
   );
   step(
     /^the bank describes "(.*)" with:$/,

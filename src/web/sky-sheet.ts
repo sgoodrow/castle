@@ -17,9 +17,11 @@ export const MQ_TAB = "412443712"; // "Multiquest"
 // The Sky mules: cgskya … cgskyhh and gmskyone … gmskyseven.
 export const isSkyMule = (char: string) => /sky/i.test(char);
 
-// islands are the quests' islands (1–7), empty when the sheet doesn't list the item. note is the
+// The islands with quests, as the wiki numbers them.
+export type Island = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+// islands are the quests' islands, empty when the sheet doesn't list the item. note is the
 // sheet's word on it, e.g. "fd ring" or "dkp bid".
-export type SkyPart = { islands: number[]; note: string };
+export type SkyPart = { islands: Island[]; note: string };
 
 // One item a row, under a header with Items, Island and Notes. Each island's own row ("Island 3",
 // with its reward in the Island column) and anything without an island number is skipped. An item
@@ -33,15 +35,16 @@ export function skyParts(rows: string[][]): [name: string, part: SkyPart][] {
     throw new Error("no Items, Island and Notes columns");
   const parts = new Map<
     string,
-    { name: string; islands: number[]; notes: string[] }
+    { name: string; islands: Island[]; notes: string[] }
   >();
   for (const r of rows.slice(1)) {
     const n = r[name]?.trim() ?? "";
-    const m = r[island]?.trim().match(/^Island (\d)$/i);
+    const m = r[island]?.trim().match(/^Island ([1-8])$/i);
     if (!n || !m) continue;
     const p = parts.get(n.toLowerCase()) ?? { name: n, islands: [], notes: [] };
     parts.set(n.toLowerCase(), p);
-    if (!p.islands.includes(+m[1])) p.islands.push(+m[1]);
+    const i = +m[1] as Island; // the pattern only matches 1–8
+    if (!p.islands.includes(i)) p.islands.push(i);
     const t = r[note]?.trim() ?? "";
     if (t && !p.notes.includes(t)) p.notes.push(t);
   }
