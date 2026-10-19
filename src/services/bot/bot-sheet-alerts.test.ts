@@ -20,7 +20,7 @@ describe("BotSheetAlerts", () => {
     expect(posts).toEqual([]);
   });
 
-  it("tells the knights once when it breaks, and once when it's fixed", async () => {
+  it("tells raid chat once when it breaks, and once when it's fixed", async () => {
     await alerts.failed(new Error("no Bot Info tab"));
     await alerts.failed(new Error("no Bot Info tab"));
     await alerts.loaded([]);

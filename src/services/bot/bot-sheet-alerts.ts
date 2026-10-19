@@ -1,23 +1,23 @@
-// Tells the knights, who edit the "Bot Info" sheet, when the bots can't be loaded from it or some of
+// Tells raid chat, where the people who edit the "Bot Info" sheet are, when the bots can't be loaded from it or some of
 // its rows are skipped. It posts only when that changes: once when it breaks, once for each new set
 // of skipped rows, and once when it's fixed, not on every 15-minute refresh. Without
-// knightChannelId set, it only logs.
-import { knightChannelId } from "../../config";
+// raidChatChannelId set, it only logs.
+import { raidChatChannelId } from "../../config";
 import { log } from "../../shared/logger";
 import { getTextChannel } from "../..";
 
 const SHEET = `the "Bot Info" sheet`;
 
-const postToKnights = async (message: string) => {
-  if (!knightChannelId) return;
-  await (await getTextChannel(knightChannelId)).send(message);
+const postToRaidChat = async (message: string) => {
+  if (!raidChatChannelId) return;
+  await (await getTextChannel(raidChatChannelId)).send(message);
 };
 
 export class BotSheetAlerts {
   private problem = ""; // what was last posted; "" while the sheet loads cleanly
 
   constructor(
-    private post: (message: string) => Promise<void> = postToKnights
+    private post: (message: string) => Promise<void> = postToRaidChat
   ) {}
 
   // The sheet loaded; `skipped` says which rows were left out, and why.
@@ -46,7 +46,7 @@ export class BotSheetAlerts {
     try {
       await this.post(message.slice(0, 2000)); // Discord's limit for one message
     } catch (err) {
-      log(`bot sheet: couldn't tell the knights: ${err}`);
+      log(`bot sheet: couldn't tell raid chat: ${err}`);
     }
   }
 }

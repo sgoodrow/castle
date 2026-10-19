@@ -59,7 +59,7 @@ describe("PrismaPublicAccounts refresh", () => {
     alerts.length = 0;
   });
 
-  it("keeps the stored bots, tells the knights and still becomes ready when the sheet can't be read", async () => {
+  it("keeps the stored bots, tells raid chat and still becomes ready when the sheet can't be read", async () => {
     sheetRows = async () => {
       throw new Error("no bot sheet");
     };
