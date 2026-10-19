@@ -71,14 +71,16 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   private async startRefreshLoop() {
     await this.refreshOrLog();
     this.isReady = true;
+    // Every 15 minutes, or every minute while the last load failed, so a fixed sheet is picked
+    // up quickly.
+    let lastTry = Date.now();
     setInterval(async () => {
-      // Refreshing private and public bot sheet on timer
-      if (this.refreshing) {
-        log("SKIP - Refresh already in progress");
+      if (this.refreshing) return;
+      if (!this.loadFailed && Date.now() - lastTry < 15 * MINUTES - MINUTES / 2)
         return;
-      }
+      lastTry = Date.now();
       await this.refreshOrLog();
-    }, 15 * MINUTES);
+    }, MINUTES);
   }
 
   // A failed refresh keeps the bot data already in the database and is retried

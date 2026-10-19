@@ -34,7 +34,7 @@ export class BotSheetAlerts {
   failed(error: unknown) {
     return this.report(
       `The bots couldn't be loaded from ${SHEET}, so bot commands are off. Fix the sheet and restart the bot ` +
-        `(it also tries again every 15 minutes). The error: ${String(error).slice(0, 500)}`
+        `(it also tries again every minute). The error: ${String(error).slice(0, 500)}`
     );
   }
 
