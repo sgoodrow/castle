@@ -33,10 +33,10 @@ export class BotSheetAlerts {
   private async report(problem: string) {
     if (problem === this.problem) return;
     const message = problem || `The bots load from ${SHEET} again.`;
-    this.problem = problem;
     log(`bot sheet: ${message}`);
     try {
       await this.post(message.slice(0, 2000)); // Discord's limit for one message
+      this.problem = problem; // only once it's posted, so a failed post is tried again
     } catch (err) {
       log(`bot sheet: couldn't tell raid chat: ${err}`);
     }

@@ -31,6 +31,18 @@ describe("BotSheetAlerts", () => {
     expect(posts[1]).toBe(`The bots load from the "Bot Info" sheet again.`);
   });
 
+  it("tries again on the next failure when Discord couldn't be reached", async () => {
+    let down = true;
+    alerts = new BotSheetAlerts(async (m) => {
+      if (down) throw new Error("Discord is down");
+      posts.push(m);
+    });
+    await alerts.failed("oops");
+    down = false;
+    await alerts.failed("oops");
+    expect(posts).toHaveLength(1);
+  });
+
   it("keeps going when Discord can't be reached", async () => {
     alerts = new BotSheetAlerts(async () => {
       throw new Error("Discord is down");
