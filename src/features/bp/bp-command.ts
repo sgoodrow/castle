@@ -129,9 +129,13 @@ class sendBp extends Subcommand {
 }
 
 export const getBotButtonComponents = async (location: string) => {
-  const bots = await PublicAccountsFactory.getService().getBotsForBatphone(
-    location
-  );
+  // While the bot sheet is broken the batphone still goes out, just without bot buttons.
+  const bots = await PublicAccountsFactory.getService()
+    .getBotsForBatphone(location)
+    .catch((err) => {
+      log(`no bot buttons for batphone in ${location}: ${err}`);
+      return [];
+    });
   log(
     `loading bots for batphone in ${location} - ${bots
       .map((b) => b.name)

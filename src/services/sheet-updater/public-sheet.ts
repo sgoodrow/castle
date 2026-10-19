@@ -83,17 +83,13 @@ export class PublicSheetService {
     await this.authorize();
     await this.publicBotSheet.loadInfo();
 
-    try {
-      const botInfoSheet = this.publicBotSheet.sheetsByTitle[SHEET_TITLE];
-      if (botInfoSheet) {
-        this.botSheetRows = await botInfoSheet.getRows();
-      }
-    } catch (err) {
-      log(
-        `Failed to load location sheet data. Does it exist in the public sheet with name '${SHEET_TITLE}'?`
+    const botInfoSheet = this.publicBotSheet.sheetsByTitle[SHEET_TITLE];
+    if (!botInfoSheet) {
+      throw new Error(
+        `Failed to load bot sheet data. Does it exist in the public sheet with name '${SHEET_TITLE}'?`
       );
-      return;
     }
+    this.botSheetRows = await botInfoSheet.getRows();
   }
 
   private async loadLocations(): Promise<void> {
