@@ -6,11 +6,10 @@ import { bankRequest, type ClassId, type Item } from "../../data";
 // and a spell that only goes to DKP auction gets a gold badge.
 export function GuildPriceText({ it, cls }: { it: Item; cls: ClassId | null }) {
   const req = bankRequest(it, cls);
-  if (req.text == null) return null;
   const { price } = req;
   switch (price.kind) {
     case "ask": return null;
-    case "auction": return <Badge size="xs" px={5} variant="light" color="yellow" tt="none" style={{ flex: "none", overflow: "visible" }}>DKP auction</Badge>;
+    case "auction": return <Badge size="xs" px={5} variant="light" color="yellow" tt="none" style={{ flex: "none", overflow: "visible" }}>DKP</Badge>;
     case "free": return <Text span fz="xs" fw={600}>free</Text>;
     case "pp": {
       const thin = price.fromMarket && it.auc.level === "thin";

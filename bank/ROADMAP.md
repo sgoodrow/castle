@@ -51,9 +51,10 @@ UX (agreed):
 - **Decided:** the waitlist stays in the sheet. The site doesn't read or change it.
 - **Decided:** requests go to #bank-requests like everything else, as "Sky: Item (Mule, count)".
 - **Decided:** Sky items are 250pp, picked up at the East Freeport docks, once the member has won the DKP items the quest needs. A banker checks that; the site doesn't track who won what.
-- **Decided:** items the sheet marks "dkp bid", and Efreeti weapons it doesn't list, go to DKP auction. A banker's price still wins.
-- Found under a "Plane of Sky" button beside the slots.
-- **Decided:** the page doesn't repeat quest recipes. The wiki has them, so every item links to its wiki page (built from its name, so the link is there before the wiki cache has the page), and the details link each of an item's islands to its section of the wiki's Plane of Sky page. The page shows only what the guild knows: stock, price, how the guild hands it out (bank, DKP bid or roll), and who holds an item for multiquesting.
+- **Decided:** items the sheet marks "dkp bid", and Efreeti weapons it doesn't list, go to DKP auction, explained as for forbidden spells: "A banker starts an auction at 1 DKP." A banker's price still wins.
+- Found under a "Sky" button beside Spells and Other.
+- **Decided:** the bankers' own bags hold the stock and aren't for sale, so the page doesn't list them, and there is no Bags filter. A Plane of Sky bag, such as a Backpack, is stock and is listed.
+- **Decided:** the page doesn't repeat quest recipes. The wiki has them, so every item links to its wiki page (built from its name, so the link is there before the wiki cache has the page). The details don't link to the islands' quests; the item's wiki page is enough. The page shows only what the guild knows: stock, price, how the guild hands it out (bank, DKP bid or roll), and who holds an item for multiquesting.
 - **Decided:** the page doesn't show what the bank is short of. That list stays in the sheet.
 - **Decided:** the page shows the Multiquest holders, and an MQ is requested like any item. It posts to #bank-requests as "Sky MQ: Item (held by Holder)", and a banker tells the member how to set it up, since some holders are bots and some are players. The page doesn't say which; the sheet stays the only record.
 - **Decided:** an item can be on more than one island (Ethereal Amethyst is on 6 and 7), so its islands are a list.

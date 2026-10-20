@@ -34,7 +34,7 @@ export function requestMessage(tab: Tab, cls: ClassId | null): RequestMessage | 
   // The site swaps this title for one naming the member, linked to their Discord profile.
   const request: Embed = {
     title: "Bank request",
-    description: [...lines.map(l => `• ${l.qty > 1 ? `${l.qty} × ` : ""}${l.it.name} (${l.req.text == null ? "not for sale" : priceText(l.req.price, l.qty)})`), "", `**Total: ${total}**`].join("\n"),
+    description: [...lines.map(l => `• ${l.qty > 1 ? `${l.qty} × ` : ""}${l.it.name} (${priceText(l.req.price, l.qty)})`), "", `**Total: ${total}**`].join("\n"),
     color: BLURPLE,
   };
   // One embed per item. The tab holds at most MAX_TAB_ITEMS, so this fits Discord's ten.

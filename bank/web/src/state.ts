@@ -34,7 +34,7 @@ export interface Search {
   sort?: Sort;
   item?: number; // the item whose details are open
 }
-const KINDS: Exclude<KindFilter, "all">[] = ["gear", "spell", "bag", "other", "sky"];
+const KINDS: Exclude<KindFilter, "all">[] = ["gear", "spell", "other", "sky"];
 const str = (v: unknown) => (typeof v === "string" && v ? v : undefined);
 // A positive whole number: from the address bar it's text, from the page's own links a number.
 const id = (v: unknown) => { const n = Number(typeof v === "number" ? v : str(v)); return n > 0 && Number.isInteger(n) ? n : undefined; };
@@ -107,7 +107,7 @@ export function useTab() {
   return [tab, setTab] as const;
 }
 
-export const KIND_LABEL: Record<KindFilter, string> = { all: "All", gear: "Gear", spell: "Spells", bag: "Bags", other: "Other", sky: "Plane of Sky" };
+export const KIND_LABEL: Record<KindFilter, string> = { all: "All", gear: "Gear", spell: "Spells", other: "Other", sky: "Sky" };
 
 // The active filters, each with what clears it.
 export function activeChips(f: Filters): { label: string; clear: Partial<Filters> }[] {

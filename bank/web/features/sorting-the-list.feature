@@ -18,7 +18,6 @@ Feature: Sorting the list
     And the bank lists, in order:
       | item             |
       | Bone Chips       |
-      | Large Sewing Kit |
       | Pearl            |
       | Spell: Lifetap   |
       | Spell: Splurt    |
@@ -39,7 +38,6 @@ Feature: Sorting the list
       | Scaled Tunic     |
       | Spell: Splurt    |
       | Bone Chips       |
-      | Large Sewing Kit |
       | Pearl            |
       | Spell: Lifetap   |
 
@@ -52,7 +50,6 @@ Feature: Sorting the list
       | item                      |
       | Bone Chips                |
       | Fine Steel Long Sword     |
-      | Large Sewing Kit          |
       | Pearl                     |
       | Spell: Lifetap            |
       | Spell: Aegis              |

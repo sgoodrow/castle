@@ -22,7 +22,7 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
   const lines = Object.entries(tab).flatMap(([id, qty]) => {
     const it = ITEMS[+id];
     const req = it && bankRequest(it, cls, qty);
-    return it && req?.text != null ? [{ it, qty, price: req.price }] : []; // what isn't for sale can't be on it
+    return it && req ? [{ it, qty, price: req.price }] : [];
   });
   const total = tabTotal(tab, cls);
   const dkp = lines.some(l => l.price.kind === "pp" && l.price.dkp);

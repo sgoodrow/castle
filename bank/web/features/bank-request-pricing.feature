@@ -20,7 +20,7 @@ Feature: Bank request pricing
     When I play a Cleric
     Then "Spell: Aegolism" is priced "150pp" with low confidence
 
-  Scenario Outline: Some items have to be priced by a banker, and bags aren't sold
+  Scenario Outline: Some items have to be priced by a banker
     Given the bank holds the usual stock
     And I have opened the bank page
     When I play <who>
@@ -29,7 +29,6 @@ Feature: Bank request pricing
     Examples:
       | item             | who              |
       | Bone Chips       | anyone           |
-      | Large Sewing Kit | anyone           |
       | Spell: Lifetap   | a Necromancer    |
       | Spell: Lifetap   | a Shadow Knight  |
 
@@ -47,7 +46,6 @@ Feature: Bank request pricing
       | Spell: Aegolism  | a Cleric      | Level 55–60 spells: 200pp, or the Green median if lower. Or pay 1 DKP.                           |
       | Spell: Lifetap   | a Necromancer | Level 1 spell. Ask a banker.                                                                     |
       | Pearl            | anyone        | Free for raid use.                                                                               |
-      | Large Sewing Kit | anyone        | Bags aren't for sale.                                                                            |
 
   Scenario Outline: Each request line is in the #bank-requests format
     Given the bank holds the usual stock
@@ -112,13 +110,6 @@ Feature: Bank request pricing
     Then I am told "Up to 9 different items per request"
     And I open my tab
     And my tab lists "Cloak of Flames" and "Spell: Bedlam"
-
-  Scenario: Bags aren't for sale
-    Given the bank holds the usual stock
-    And I have opened the bank page
-    When I add "Large Sewing Kit" to my tab
-    Then I am told "Large Sewing Kit isn't for sale"
-    And the tab button shows "0pp"
 
   Scenario: Taking one off my tab
     Given the bank holds the usual stock
@@ -188,7 +179,7 @@ Feature: Bank request pricing
     Given the bank holds the usual stock
     And the bank also holds spells priced by the spell sheet
     And I have opened the bank page
-    Then "Spell: Bedlam" is priced "DKP auction"
+    Then "Spell: Bedlam" is priced "DKP"
     And the price of "Spell: Bedlam" for anyone is explained as "A banker starts an auction at 1 DKP."
     When I click "Spell: Bedlam" in the bank
     Then the page says "A banker starts an auction at 1 DKP."

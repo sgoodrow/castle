@@ -21,10 +21,9 @@ export function filterItems(f: Filters, list: Item[] = ITEM_LIST) {
   return sortItems(found, f.sort, f.cls);
 }
 
-// Price is what this class would pay; an unknown price, or one that isn't for sale, counts as 0, and
+// Price is what this class would pay; an unknown price counts as 0, and
 // a DKP auction above any platinum price.
 function sortPrice(req: BankRequest) {
-  if (req.text == null) return 0;
   switch (req.price.kind) {
     case "pp": return req.price.pp;
     case "free": case "ask": return 0;

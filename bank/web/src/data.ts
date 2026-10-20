@@ -30,11 +30,8 @@ export type SheetPrice = { kind: "pp"; pp: number; dkp: number | null } | { kind
 // A Plane of Sky item: the islands whose quests it's for (none when the Sky sheet doesn't list it),
 // and the sheet's note on it, e.g. "fd ring" or "dkp bid".
 export interface SkyPart { islands: Island[]; note: string }
-// The islands with quests, by the names the wiki's Plane of Sky page gives their sections.
-export const ISLANDS = { 1: "Fairy", 2: "Imp", 3: "Harpy", 4: "Pegasus", 5: "Bird", 6: "Bee", 7: "Drake", 8: "Butterfly" } as const;
-export type Island = keyof typeof ISLANDS;
-export const islandName = (i: Island) => `Island ${i}: ${ISLANDS[i]} Island`;
-export const islandWiki = (i: Island) => `https://wiki.project1999.com/Plane_of_Sky#${islandName(i).replace(/ /g, "_")}`;
+// The islands with quests, as the wiki numbers them.
+export type Island = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 // What /api/bank sends: every filled slot (character, slot, item id, count), and the items in them.
 export interface Payload {
@@ -75,7 +72,7 @@ function toSpell(raw: RawSpell): Spell | null {
 export interface Holder { char: string; loc: string; count: number; mq: boolean }
 // An item is only listed because someone holds it, so there's always a first holder.
 export type Holders = [Holder, ...Holder[]];
-export type Kind = "gear" | "spell" | "bag" | "other";
+export type Kind = "gear" | "spell" | "other";
 export type MarketLevel = "solid" | "thin" | "none";
 export interface Listing { d: Date; seller: string; price: number }
 export interface Auctions {
@@ -161,9 +158,11 @@ export const STATS = [["str","STR"],["sta","STA"],["agi","AGI"],["dex","DEX"],["
 export const RESISTS = [["pr","POISON"],["mr","MAGIC"],["dr","DISEASE"],["fr","FIRE"],["cr","COLD"]] as const;
 
 // ---------- data shaping ----------
+// The bankers' own bags, which hold the stock and aren't for sale. A Plane of Sky bag is stock.
+const isBag = (it: RawItem) => it.cls === 1 || !!it.bagslots;
+
 function kindOf(it: RawItem): Kind {
   if (it.scroll || /^Spell: /.test(it.name)) return "spell";
-  if (it.cls === 1 || it.bagslots) return "bag";
   if ((it.slots || 0) & ~1) return "gear";
   return "other";
 }
@@ -220,7 +219,7 @@ export function loadBank(p: Payload) {
     }
     const raw = p.items[id];
     // NO DROP items can't leave the bank, so they're never shown, unless they're held for a multiquest.
-    if (!raw || (raw.nodrop && !holder.mq)) return;
+    if (!raw || (raw.nodrop && !holder.mq) || (isBag(raw) && !raw.sky)) return;
     ITEM_LIST.push(ITEMS[id] = { ...raw, id, holders: [holder], total: holder.count, kind: kindOf(raw), auc: auctions(raw) });
   };
   for (const [char, loc, id, count] of p.bank) hold(id, { char, loc, count, mq: false });
@@ -315,8 +314,8 @@ export type Price =
   | { kind: "free" }
   | { kind: "auction" } // the member asks a banker to start a DKP auction
   | { kind: "ask" }; // a banker has to quote it
-// text is the line in the bot's #bank-requests format; an item with none isn't for sale.
-export type BankRequest = { text: null; cost: string } | { text: string; cost: string; price: Price };
+// text is the line in the bot's #bank-requests format.
+export type BankRequest = { text: string; cost: string; price: Price };
 // A line's price as the tab and the post show it: "400pp", "free", "DKP auction" or "unknown".
 export function priceText(price: Price, qty = 1) {
   switch (price.kind) {
@@ -333,7 +332,6 @@ const AUCTION_COST = "A banker starts an auction at 1 DKP.";
 // rules and the market.
 export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest {
   const req = it.sky ? skyRequest(it, it.sky, qty) : ruleRequest(it, cls, qty);
-  if (req.text == null) return req;
   if (it.price) {
     const n = it.price.match(/\d+/);
     const price: Price = /auction/i.test(it.price) ? { kind: "auction" } : n ? pp(+n[0], /dkp/i.test(it.price)) : { kind: "ask" };
@@ -346,8 +344,7 @@ export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest
 }
 // Whether a spell only goes to DKP auction. That doesn't depend on the member's class.
 export const auctionOnly = (it: Item) => {
-  const req = bankRequest(it, null);
-  return req.text != null && req.price.kind === "auction";
+  return bankRequest(it, null).price.kind === "auction";
 };
 // The most a member can put on their tab: what the bank holds, or one auction at a time.
 // Different items one request can hold: Discord posts ten embeds a message, one for the summary
@@ -376,7 +373,7 @@ function skyRequest(it: Item, sky: SkyPart, qty: number): BankRequest {
   const holder = from.holders.find(h => isSkyMule(h.char)) ?? from.holders[0];
   const text = `Sky: ${it.name} (${holder.char}, ${holder.count})${qty > 1 ? ` x${qty}` : ""}`;
   if (/dkp/i.test(sky.note) || (!sky.islands.length && /^Efreeti /.test(it.name)))
-    return { text, price: { kind: "auction" }, cost: `${what}. A banker starts a DKP auction. ${SKY_PICKUP}` };
+    return { text, price: { kind: "auction" }, cost: AUCTION_COST };
   return { text, price: pp(250), cost: `${what}: 250pp, once you've won the DKP items its quest needs. ${SKY_PICKUP}` };
 }
 function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
@@ -399,7 +396,6 @@ function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
     return { text, price: { kind: "ask" }, cost: level ? `Level ${level} spell. Ask a banker.` : "Check the dropped-spell rules in Discord." };
   }
   if (RAID_REAGENTS.test(it.name)) return { text: `Raid Reagents: ${it.name}, ${qty}`, price: { kind: "free" }, cost: "Free for raid use." };
-  if (it.kind === "bag") return { text: null, cost: "Bags aren't for sale." };
   const text = `Misc item: ${it.name} (${mule})${qty > 1 ? ` x${qty}` : ""}`;
   return mkt
     ? { text, price: pp(Math.round(mkt * 0.8), false, true), cost: `80% of the ${mkt}pp Green median${it.auc.level === "thin" ? " (thin data)" : ""}.` }

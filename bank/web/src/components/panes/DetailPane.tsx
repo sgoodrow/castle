@@ -1,13 +1,13 @@
 import { Alert, Badge, CloseButton, Divider, Group, Paper, Stack, Text, Title, Tooltip } from "@mantine/core";
 import { IconAlertTriangle, IconGavel } from "@tabler/icons-react";
 import { useRef } from "react";
-import { bankRequest, islandName, islandWiki, prettyLoc, priceText, type ClassId, type Holder, type Item } from "../../data";
+import { bankRequest, prettyLoc, priceText, type ClassId, type Holder, type Item } from "../../data";
 import { BuyPane } from "./BuyPane";
+import { BuyCardPane } from "./BuyCardPane";
 import { AuctionPane } from "./AuctionPane";
 import { MarketWarningText } from "../texts/MarketWarningText";
 import { CollapsibleLayout } from "../CollapsibleLayout";
 import { StatPane } from "./StatPane";
-import { WikiLinkText } from "../texts/WikiLinkText";
 
 interface Props {
   it: Item | null;
@@ -68,58 +68,32 @@ export function DetailPane({ it, canUse, cls, qty, onAdd, onRemove, onClose, bar
   const req = bankRequest(it, cls);
   const inBank = it.holders.filter(h => !h.mq);
   const mq = it.holders.filter(h => h.mq);
-  const auction = req.text != null && req.price.kind === "auction";
-  const guild = req.text == null ? "Not for sale" : req.price.kind === "ask" ? "Ask a banker" : priceText(req.price, 1);
-  // A tinted card: its label (Guild price or DKP auction) with the tab count beside it, then
-  // the price, or for an auction one line on what happens.
-  const tint = auction ? "yellow" : "blue";
+  const auction = req.price.kind === "auction";
+  const guild = req.price.kind === "ask" ? "Ask a banker" : priceText(req.price, 1);
   const priceCard = (
-    <Paper ref={buy} role="group" aria-label="On your tab" withBorder p="xs" radius="md"
-      style={{ background: `var(--mantine-color-${tint}-light)`, borderColor: `var(--mantine-color-${tint}-outline)`, boxShadow: "none" }}>
-      <Group justify="space-between" wrap="nowrap">
-        <Group gap={4} wrap="nowrap" c={`var(--mantine-color-${tint}-light-color)`}>
-          {auction && <IconGavel size={14} style={{ flex: "none" }} />}
-          <Title order={3} fz="xs" tt="uppercase" c="inherit" style={{ letterSpacing: "0.06em" }}>{auction ? "DKP auction" : "Guild price"}</Title>
-        </Group>
-        <BuyPane it={it} qty={qty} onAdd={() => buy.current && onAdd(it, buy.current)} onRemove={() => onRemove(it)} />
-      </Group>
-      {auction ? (
-        <Text fz="sm">{req.cost}</Text>
-      ) : (
-        <Text fz="lg" fw={700} c={req.text == null || req.price.kind === "ask" ? "dimmed" : undefined}>{guild}</Text>
-      )}
-    </Paper>
+    <BuyCardPane ref={buy} tint={auction ? "auction" : "price"} title={auction ? "DKP auction" : "Guild price"}
+      icon={auction && <IconGavel size={14} style={{ flex: "none" }} />}
+      action={<BuyPane it={it} qty={qty} onAdd={() => buy.current && onAdd(it, buy.current)} onRemove={() => onRemove(it)} />}>
+      {auction ? req.cost : guild}
+    </BuyCardPane>
+  );
+  const cantUse = !canUse && (
+    <Alert color="red" variant="light" icon={<IconAlertTriangle size={18} />} p="xs">
+      Your character can't use this.
+    </Alert>
   );
   const body = (
       <Stack gap="md" p={bare ? 0 : "md"}>
         <Paper withBorder p="sm" radius="md" style={{ background: "var(--surface-head)", boxShadow: "none" }}>
           <StatPane it={it} />
         </Paper>
-        <Divider />
         {priceCard}
-        {!canUse && (
-          <Alert color="red" variant="light" icon={<IconAlertTriangle size={18} />} p="xs">
-            Your character can't use this.
-          </Alert>
-        )}
+        {cantUse}
         <Divider />
-        {it.sky && it.sky.islands.length > 0 && (
-          <Section title="Plane of Sky quest">
-            <Stack gap={2}>
-              {it.sky.islands.map(i => <Text key={i} fz="sm"><WikiLinkText href={islandWiki(i)}>{islandName(i)}</WikiLinkText></Text>)}
-            </Stack>
-            <Text fz="sm" c="dimmed">The wiki has what each quest needs.</Text>
-          </Section>
-        )}
-        {inBank.length > 0 && (
-          <Section title={`Bank location · ${count(inBank)}`}>
-            <HolderBadges holders={inBank} />
-          </Section>
-        )}
-        {mq.length > 0 && (
-          <Section title={`Multiquest · ${count(mq)}`}>
-            <HolderBadges holders={mq} />
-            <Text fz="sm" c="dimmed">Held for multiquesting. Request it, and a banker will tell you how to set it up.</Text>
+        {it.holders.length > 0 && (
+          <Section title={`Bank location · ${count(it.holders)}`}>
+            <HolderBadges holders={[...inBank, ...mq]} />
+            {inBank.length === 0 && <Text fz="sm" c="dimmed">Held for multiquesting. Request it, and a banker will tell you how to set it up.</Text>}
           </Section>
         )}
         <Divider />

@@ -4,18 +4,22 @@ Feature: Finding items
   Scenario: Everything in the bank is listed by name
     Given the bank holds the usual stock
     When I open the bank page
-    Then the bank lists 9 items
+    Then the bank lists 8 items
     And the bank lists, in order:
       | item                  |
       | Bone Chips            |
       | Cloak of Flames       |
       | Fine Steel Long Sword |
-      | Large Sewing Kit      |
       | Pearl                 |
       | Scaled Tunic          |
       | Spell: Aegolism       |
       | Spell: Lifetap        |
       | Spell: Splurt         |
+
+  Scenario: The bankers' own bags aren't listed
+    Given the bank holds the usual stock
+    When I open the bank page
+    Then the bank doesn't list "Large Sewing Kit"
 
   Scenario: Items that can't leave the bank aren't listed
     Given the bank holds the usual stock
@@ -35,7 +39,6 @@ Feature: Finding items
       | flame shield      | "Cloak of Flames"       |
       | 8/30              | "Fine Steel Long Sword" |
       | sword   steel     | "Fine Steel Long Sword" |
-      | 10 slots          | "Large Sewing Kit"      |
       | nothing like this | nothing                 |
 
   Scenario: Nothing matching says how to find more
@@ -51,7 +54,7 @@ Feature: Finding items
     And I search for "cloak"
     When I clear the search
     Then the search box reads ""
-    And the bank lists 9 items
+    And the bank lists 8 items
 
   Scenario Outline: Things that aren't worn have their own filters
     Given the bank holds the usual stock
@@ -62,7 +65,6 @@ Feature: Finding items
     Examples:
       | kind   | shown                                                    |
       | Spells | "Spell: Aegolism", "Spell: Lifetap" and "Spell: Splurt" |
-      | Bags   | "Large Sewing Kit"                                       |
       | Other  | "Bone Chips" and "Pearl"                                 |
 
   Scenario Outline: The doll filters by where an item is worn
@@ -86,13 +88,24 @@ Feature: Finding items
     When I pick the ear slot
     Then the ear slots are picked
 
+  Scenario: The arrow keys move through the list, and the details follow, stopping at the ends
+    Given the bank holds the usual stock
+    And I have opened the bank page
+    And I have clicked "Cloak of Flames" in the bank
+    When I press down
+    Then "Fine Steel Long Sword" is selected in the bank
+    When I press up 2 times
+    Then "Bone Chips" is selected in the bank
+    When I press up
+    Then the address reads "/?item=1006"
+
   Scenario: Picking a slot again turns it off
     Given the bank holds the usual stock
     And I have opened the bank page
     And I pick the back slot
     When I pick the back slot
     Then the back slot is not picked
-    And the bank lists 9 items
+    And the bank lists 8 items
 
   Scenario: A slot means gear, so picking a kind of item drops the slot
     Given the bank holds the usual stock
@@ -130,7 +143,7 @@ Feature: Finding items
     And the race "Iksar" is not picked
     And "Spells" is not picked
     And the search box reads ""
-    And the bank lists 9 items
+    And the bank lists 8 items
     And I can not clear the filters
 
   Scenario Outline: Clearing is offered once something is filtered
@@ -144,7 +157,7 @@ Feature: Finding items
       | ?q=cloak    | can     |
       | ?class=NEC  | can     |
       | ?race=IKS   | can     |
-      | ?kind=bag   | can     |
+      | ?kind=spell | can     |
       | ?slot=back  | can     |
 
   Scenario: An empty bank

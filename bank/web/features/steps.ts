@@ -75,7 +75,7 @@ const listed = () => rows().map(li => ITEM_LIST.find(it => within(li).queryByTex
 const group = (name: string) => screen.getByRole("group", { name });
 const picker = (kind: string, name: string) => within(group(`Filter by ${kind}`)).getByRole("button", { name });
 const slots = (slot: string) => within(group("Filter by slot")).getAllByRole("button", { name: new RegExp(`^${slot.toLowerCase()} slot\\b`) });
-const notWorn = (name: string) => within(group(name === "Plane of Sky" ? "Other inventories" : "Not worn")).getByRole("button", { name });
+const notWorn = (name: string) => within(group("Not worn")).getByRole("button", { name });
 const searchBox = () => screen.getByRole("textbox", { name: "Search the bank" });
 const tab = () => screen.findByRole("dialog", { name: /Your tab/ });
 const classId = (match: (c: (typeof CLASSES)[number]) => boolean, what: string) => {
@@ -131,7 +131,7 @@ step(/^I clear the filters$/, () => world.user.click(screen.getByRole("button", 
 step(/^I (?:pick|have picked) the (class|race) "(.*)"$/, (_, kind, name) => world.user.click(picker(kind, name)));
 step(/^I play (?:an? )?(.+)$/, (_, name) => (/^any/.test(name) ? undefined : world.user.click(picker("class", name))));
 step(/^I pick the (\w+) slot$/, (_, slot) => world.user.click(first(slots(slot), `${slot} slot`)));
-step(/^I pick "(Spells|Bags|Other|Plane of Sky)"$/, (_, kind) => world.user.click(notWorn(kind)));
+step(/^I pick "(Spells|Sky|Other)"$/, (_, kind) => world.user.click(notWorn(kind)));
 
 const sortHeader = (column: string) => within(list().parentElement!).getByRole("button", { name: column });
 step(/^I (?:sort|have sorted) by "(Item|Guild price)"(?: again)?$/, (_, column) => world.user.click(sortHeader(column)));
@@ -145,7 +145,7 @@ step(/^the bank lists (".*)$/, (_, names) => { for (const n of quoted(names)) ro
 step(/^the bank doesn't list (".*)$/, (_, names) => { for (const n of quoted(names)) expect(listed()).not.toContain(n); });
 step(/^the (class|race) "(.*)" is (not )?picked$/, (_, kind, name, not) => { expect(pressed(picker(kind, name))).toBe(!not); });
 step(/^the (\w+) slots? (?:is|are) (not )?picked$/, (_, slot, not) => { for (const b of slots(slot)) expect(pressed(b)).toBe(!not); });
-step(/^"(Spells|Bags|Other|Plane of Sky)" is (not )?picked$/, (_, kind, not) => { expect(pressed(notWorn(kind))).toBe(!not); });
+step(/^"(Spells|Sky|Other)" is (not )?picked$/, (_, kind, not) => { expect(pressed(notWorn(kind))).toBe(!not); });
 step(/^the search box reads "(.*)"$/, (_, q) => { expect(searchBox()).toHaveProperty("value", q); });
 step(/^I can (not )?clear the filters$/, (_, not) => {
   expect(screen.getByRole("button", { name: "Clear filters" })).toHaveProperty("disabled", !!not);
@@ -154,6 +154,8 @@ step(/^the address reads "(.*)"$/, (_, url) => waitFor(() => expect(location.pat
 
 // ---------- items ----------
 step(/^I (?:click|have clicked) "(.*)" in the bank$/, (_, name) => world.user.click(rowButton(name)));
+step(/^I press (up|down)(?: (\d+) times)?$/, async (_, dir, n) => world.user.keyboard(`{Arrow${dir === "up" ? "Up" : "Down"}>${n || 1}/}`));
+step(/^"(.*)" is selected in the bank$/, (_, name) => waitFor(() => expect(rowButton(name).getAttribute("aria-current")).toBe("true")));
 step(/^"(.*)" is priced "(.*)"$/, (_, name, price) => { within(row(name)).getByText(price); });
 step(/^"(.*)" has no price$/, (_, name) => { expect(within(row(name)).queryByText(/^(\d+pp|free)$/)).toBeNull(); });
 step(/^"(.*)" is priced "(.*)" with low confidence$/, (_, name, price) => {
@@ -166,9 +168,6 @@ step(/^the row for "(.*)" shows (".*)$/, (_, name, parts) => {
 step(/^"(.*)" is marked "(.*)"$/, (_, name, badge) => { within(row(name)).getByText(badge); });
 step(/^"(.*)" isn't marked "(.*)"$/, (_, name, badge) => { expect(within(row(name)).queryByText(badge)).toBeNull(); });
 step(/^the page says "(.*)"$/, async (_, text) => { await screen.findAllByText(reading(text)); });
-step(/^the page links "(.*)" to "(.*)"$/, async (_, name, href) => {
-  expect((await screen.findByRole("link", { name })).getAttribute("href")).toBe(href);
-});
 step(/^the page doesn't say "(.*)"$/, (_, text) => { expect(screen.queryAllByText(reading(text))).toEqual([]); });
 step(/^the page says:$/, async ({ table }) => {
   for (const { text } of table) {

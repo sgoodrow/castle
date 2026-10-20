@@ -42,9 +42,9 @@ export function BuyPane({ it, qty, onAdd, onRemove }: Props) {
 
   // Space is always held so adding to the tab never reflows the row.
   return (
-    <Group gap={4} wrap="nowrap">
+    <Group gap={2} wrap="nowrap">
       <span style={{ visibility: qty ? "visible" : "hidden" }}>{minus}</span>
-      <Text span fz="xs" fw={700} ta="center" miw={30} data-qty style={{ fontVariantNumeric: "tabular-nums", visibility: qty ? "visible" : "hidden" }}>{count}</Text>
+      <Text span fz="xs" fw={700} ta="center" miw={22} data-qty style={{ fontVariantNumeric: "tabular-nums", visibility: qty ? "visible" : "hidden" }}>{count}</Text>
       {plus}
     </Group>
   );
