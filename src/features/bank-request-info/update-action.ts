@@ -20,6 +20,7 @@ import { services } from "./bank-services";
 import { bankCleanupButtonCommand } from "./bank-cleanup-button-command";
 import { bankingButtonCommand } from "./banking-button-command";
 import { Icon } from "./types";
+import { MAX_AGE_DAYS } from "./expire-old-requests";
 
 export const updateBankRequestInfo = (
   client: Client,
@@ -82,7 +83,7 @@ ${bankHour
 • State how long you will be available.
 • Reimbursement, Recharge, and Auction requests remain open until fulfilled.
 • All other requests will remain open for 3 days and then closed.
-• Requests made with the bank site or '/bank request' are removed after 30 days.
+• Requests made with the bank site or '/bank request' are removed after ${MAX_AGE_DAYS} days.
 • Reach out to an officer if you want to help bank.
 • Bankers will only process requests made in ${this.channel} (not PMs).
 

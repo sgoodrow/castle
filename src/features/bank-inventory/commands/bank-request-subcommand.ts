@@ -8,7 +8,7 @@ import { Subcommand } from "../../../shared/command/subcommand";
 import { bankData } from "../bank-data";
 import { bankRequestsChannelId } from "../../../config";
 import { getTextChannel } from "../../..";
-import { Icon } from "../../bank-request-info/types";
+import { commandOpening } from "../../../shared/bank-request-author";
 import { autoCompleteStockedItems } from "../helpers";
 
 enum Option {
@@ -57,7 +57,7 @@ class BankRequest extends Subcommand {
           .setDescription(inStock);
       }
 
-      let message = `${Icon.Request} ${interaction.user} requests:`;
+      let message = commandOpening(`${interaction.user}`);
 
       message += ` ${itemName}`;
       message += this.getOption("count", interaction)

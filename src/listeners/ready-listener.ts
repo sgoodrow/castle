@@ -37,9 +37,7 @@ export const readyListener = async (client: Client) => {
     const guild = await getGuild();
     await guild.members.fetch(); // warm the cache once
   }, { repeatDuration: 0 });
-  readyActionExecutor(() => expireOldBankRequests(client.user!.id), {
-    repeatDuration: 1 * HOURS,
-  });
+  expireOldBankRequests(updateOptions);
   setInterval(spawnTimerLoop, 2500);
   setInterval(timerSheetExportLoop, 1 * MINUTES);
 };

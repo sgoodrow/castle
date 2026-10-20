@@ -1,9 +1,6 @@
+import { Collection } from "discord.js";
 import { DAYS } from "../../shared/time";
-import {
-  expireOldRequests,
-  PostedMessage,
-  RequestsChannel,
-} from "./expire-old-requests";
+import { expireOldRequests } from "./expire-old-requests";
 
 vi.mock("../..", () => ({}));
 vi.mock("../../shared/logger", () => ({ log: vi.fn() }));
@@ -13,10 +10,18 @@ const BOT = "bot";
 const NOW = 100 * DAYS;
 let next = 0;
 
-const message = (
-  ageDays: number,
-  fields: Partial<Omit<PostedMessage, "delete">> = {}
-): PostedMessage & { delete: ReturnType<typeof vi.fn> } => ({
+interface Fields {
+  content?: string;
+  author?: { id: string };
+  embeds?: { url?: string; description?: string }[];
+}
+type Post = Required<Fields> & {
+  id: string;
+  createdTimestamp: number;
+  delete: ReturnType<typeof vi.fn>;
+};
+
+const message = (ageDays: number, fields: Fields = {}): Post => ({
   id: String(next++),
   createdTimestamp: NOW - ageDays * DAYS,
   content: "",
@@ -41,20 +46,25 @@ const commandRequest = (ageDays: number) =>
   message(ageDays, { content: "✍️ <@222> requests: Cloak of Flames x 1" });
 
 // Newest first, a page of at most `limit` at a time, as Discord gives them.
-const channel = (messages: PostedMessage[]): RequestsChannel => ({
-  messages: {
-    fetch: async ({ limit, before }) => {
-      const from = before ? messages.findIndex((m) => m.id === before) + 1 : 0;
-      return { values: () => messages.slice(from, from + limit).values() };
+const channel = (messages: Post[]) =>
+  ({
+    messages: {
+      fetch: async ({ limit, before }: { limit: number; before?: string }) => {
+        const from = before
+          ? messages.findIndex((m) => m.id === before) + 1
+          : 0;
+        return new Collection(
+          messages.slice(from, from + limit).map((m) => [m.id, m])
+        );
+      },
     },
-  },
-});
+  }) as unknown as Parameters<typeof expireOldRequests>[0];
 
 const dms: [string, string][] = [];
 const notify = async (userId: string, text: string) => {
   dms.push([userId, text]);
 };
-const expire = (messages: PostedMessage[]) =>
+const expire = (messages: Post[]) =>
   expireOldRequests(channel(messages), BOT, NOW, notify);
 
 beforeEach(() => {
@@ -134,5 +144,14 @@ describe("expiring old bank requests", () => {
     });
     await expire([long]);
     expect(dms[0][1].length).toBeLessThanOrEqual(2000);
+  });
+
+  it("skips a request a banker removed while the cleanup ran", async () => {
+    const gone = siteRequest(40);
+    gone.delete.mockRejectedValue(new Error("Unknown Message"));
+    const old = commandRequest(40);
+    expect(await expire([gone, old])).toBe(1);
+    expect(old.delete).toHaveBeenCalled();
+    expect(dms.map(([id]) => id)).toEqual(["222"]);
   });
 });
