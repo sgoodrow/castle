@@ -6,6 +6,7 @@ import {
 } from "./expire-old-requests";
 
 vi.mock("../..", () => ({}));
+vi.mock("../../shared/logger", () => ({ log: vi.fn() }));
 vi.mock("../../config", () => ({ bankRequestsChannelId: "requests" }));
 
 const BOT = "bot";
@@ -49,19 +50,39 @@ const channel = (messages: PostedMessage[]): RequestsChannel => ({
   },
 });
 
+const dms: [string, string][] = [];
+const notify = async (userId: string, text: string) => {
+  dms.push([userId, text]);
+};
+const expire = (messages: PostedMessage[]) =>
+  expireOldRequests(channel(messages), BOT, NOW, notify);
+
+beforeEach(() => {
+  dms.length = 0;
+});
+
 describe("expiring old bank requests", () => {
   it("removes the bot's requests from the bank page once they're 30 days old", async () => {
     const fresh = siteRequest(29);
     const old = siteRequest(30);
-    expect(await expireOldRequests(channel([fresh, old]), BOT, NOW)).toBe(1);
+    expect(await expire([fresh, old])).toBe(1);
     expect(fresh.delete).not.toHaveBeenCalled();
     expect(old.delete).toHaveBeenCalled();
+    expect(dms).toEqual([
+      ["111", expect.stringContaining("> • Cloak of Flames (800pp)")],
+    ]);
   });
 
   it("removes the bot's /bank request posts once they're 30 days old", async () => {
     const old = commandRequest(45);
-    expect(await expireOldRequests(channel([old]), BOT, NOW)).toBe(1);
+    expect(await expire([old])).toBe(1);
     expect(old.delete).toHaveBeenCalled();
+    expect(dms).toEqual([
+      [
+        "222",
+        expect.stringContaining("> ✍️ <@222> requests: Cloak of Flames x 1"),
+      ],
+    ]);
   });
 
   it("leaves players' own posts, however old", async () => {
@@ -70,23 +91,48 @@ describe("expiring old bank requests", () => {
       content: "Raid Reagents: Peridots, 40",
     });
     const copied = siteRequest(60, "player");
-    expect(await expireOldRequests(channel([typed, copied]), BOT, NOW)).toBe(0);
+    expect(await expire([typed, copied])).toBe(0);
     expect(typed.delete).not.toHaveBeenCalled();
     expect(copied.delete).not.toHaveBeenCalled();
+    expect(dms).toEqual([]);
   });
 
   it("leaves the bot's instructions, however old", async () => {
     const instructions = message(90, {
-      embeds: [{ url: "https://example.com/inventory", description: "• Spells" }],
+      embeds: [
+        { url: "https://example.com/inventory", description: "• Spells" },
+      ],
     });
-    expect(await expireOldRequests(channel([instructions]), BOT, NOW)).toBe(0);
+    expect(await expire([instructions])).toBe(0);
     expect(instructions.delete).not.toHaveBeenCalled();
   });
 
   it("reads past the first page of the channel", async () => {
     const recent = Array.from({ length: 150 }, () => message(1));
     const old = commandRequest(31);
-    expect(await expireOldRequests(channel([...recent, old]), BOT, NOW)).toBe(1);
+    expect(await expire([...recent, old])).toBe(1);
     expect(old.delete).toHaveBeenCalled();
+  });
+
+  it("still removes a request when its member doesn't take DMs", async () => {
+    const old = siteRequest(40);
+    const closed = async () => {
+      throw new Error("Cannot send messages to this user");
+    };
+    expect(await expireOldRequests(channel([old]), BOT, NOW, closed)).toBe(1);
+    expect(old.delete).toHaveBeenCalled();
+  });
+
+  it("keeps each DM within Discord's 2,000 characters", async () => {
+    const long = message(40, {
+      embeds: [
+        {
+          url: "https://discord.com/users/111",
+          description: "• x\n".repeat(1000),
+        },
+      ],
+    });
+    await expire([long]);
+    expect(dms[0][1].length).toBeLessThanOrEqual(2000);
   });
 });
