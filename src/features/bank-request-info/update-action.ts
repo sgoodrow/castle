@@ -82,6 +82,7 @@ ${bankHour
 • State how long you will be available.
 • Reimbursement, Recharge, and Auction requests remain open until fulfilled.
 • All other requests will remain open for 3 days and then closed.
+• Requests made with the bank site or '/bank request' are removed after 30 days.
 • Reach out to an officer if you want to help bank.
 • Bankers will only process requests made in ${this.channel} (not PMs).
 
