@@ -10,7 +10,6 @@ export function tabTotal(tab: Tab, cls: ClassId | null): TabTotal {
     const it = ITEMS[+id];
     if (!it) continue; // no longer in the bank
     const req = bankRequest(it, cls, qty);
-    if (req.text == null) continue; // not for sale, so it can't be on the tab
     switch (req.price.kind) {
       case "pp": t.pp += req.price.pp * qty; break;
       case "free": break;

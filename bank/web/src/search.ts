@@ -9,7 +9,7 @@ export function filterItems(f: Filters, list: Item[] = ITEM_LIST) {
   const char = { cls: f.cls, race: f.race };
   const onlyUsable = f.cls != null || f.race != null;
   const found = list.filter(it => {
-    if (f.kind !== "all" && it.kind !== f.kind) return false;
+    if (f.kind === "sky" ? !it.sky : f.kind !== "all" && it.kind !== f.kind) return false;
     if (bits && !bits.some(b => (it.slots || 0) & (1 << b))) return false;
     if (onlyUsable && (it.kind === "gear" || it.kind === "spell") && !usable(it, char)) return false;
     if (terms.length) {
@@ -21,10 +21,9 @@ export function filterItems(f: Filters, list: Item[] = ITEM_LIST) {
   return sortItems(found, f.sort, f.cls);
 }
 
-// Price is what this class would pay; an unknown price, or one that isn't for sale, counts as 0, and
+// Price is what this class would pay; an unknown price counts as 0, and
 // a DKP auction above any platinum price.
 function sortPrice(req: BankRequest) {
-  if (req.text == null) return 0;
   switch (req.price.kind) {
     case "pp": return req.price.pp;
     case "free": case "ask": return 0;

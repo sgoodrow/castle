@@ -1,7 +1,7 @@
 import { ActionIcon, Anchor, Divider, Group, Stack, Text } from "@mantine/core";
 import { OverflowText } from "../texts/OverflowText";
 import { IconTrash } from "@tabler/icons-react";
-import { ITEMS, bankRequest, priceText, type ClassId } from "../../data";
+import { ITEMS, bankRequest, priceText, requestedFrom, type ClassId } from "../../data";
 import { tabTotal, totalText } from "../../tab";
 import type { Tab } from "../../state";
 import { ItemImage } from "../ItemImage";
@@ -22,11 +22,12 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
   const lines = Object.entries(tab).flatMap(([id, qty]) => {
     const it = ITEMS[+id];
     const req = it && bankRequest(it, cls, qty);
-    return it && req?.text != null ? [{ it, qty, price: req.price }] : []; // what isn't for sale can't be on it
+    return it && req ? [{ it, qty, price: req.price }] : [];
   });
   const total = tabTotal(tab, cls);
   const dkp = lines.some(l => l.price.kind === "pp" && l.price.dkp);
   const auction = lines.some(l => l.price.kind === "auction");
+  const mq = lines.some(l => requestedFrom(l.it).mq);
   const msg = requestMessage(tab, cls);
 
   return (
@@ -63,7 +64,12 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
           )}
           {auction && (
             <Text fz="xs" c="dimmed">
-              A banker starts a DKP auction for each auction spell.
+              A banker starts a DKP auction for each auction item.
+            </Text>
+          )}
+          {mq && (
+            <Text fz="xs" c="dimmed">
+              A banker will tell you how to set up each multiquest.
             </Text>
           )}
           {msg && (

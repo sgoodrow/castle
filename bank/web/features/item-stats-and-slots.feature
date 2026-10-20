@@ -11,7 +11,6 @@ Feature: Item stats and slots
       | Cloak of Flames       | "AC 10", "HP +5", "STR +3", "FR +10", "Worn: Flame Shield" |
       | Fine Steel Long Sword | "DMG 8/30"                                             |
       | Spell: Lifetap        | "SHD 9, NEC 1"                                         |
-      | Large Sewing Kit      | "10 slots, LARGE"                                      |
 
   Scenario: Opening gear shows its stats and where it's worn
     Given the bank holds the usual stock
@@ -36,10 +35,11 @@ Feature: Item stats and slots
     Then the page says "Your character can't use this."
 
   Scenario: Opening a bag shows its size
-    Given the bank holds the usual stock
+    Given the bank also holds the Plane of Sky items
     And I have opened the bank page
-    When I click "Large Sewing Kit" in the bank
-    Then the page says "Capacity: 10 Size: LARGE"
+    Then the row for "Backpack" shows "8 slots, LARGE"
+    When I click "Backpack" in the bank
+    Then the page says "Capacity: 8 Size: LARGE"
 
   Scenario: A stack held by several bankers is counted together
     Given the bank holds the usual stock

@@ -1,7 +1,7 @@
 import { Badge, Text, Tooltip, UnstyledButton, Group } from "@mantine/core";
 import { IconArrowDown, IconArrowUp } from "@tabler/icons-react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { memo, useLayoutEffect, useRef, useState } from "react";
+import { memo, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import { BuyPane } from "./BuyPane";
 import { statParts, type ClassId, type Item } from "../../data";
 import { nextSort, sortDesc, sortKey, type Sort, type SortKey, type Tab } from "../../state";
@@ -79,7 +79,7 @@ const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index
           {!usable && <Badge size="xs" variant="outline" color="red" style={{ flex: "none" }}>CAN'T USE</Badge>}
         </Group>
         <OverflowText fz="xs" className={classes.stats}>{stats(it)}</OverflowText>
-        <span className={`${classes.price} ${classes.end}`}><GuildPriceText it={it} cls={cls} /></span>
+        <span className={classes.price}><GuildPriceText it={it} cls={cls} /></span>
         <span className={`${classes.tab} ${classes.end}`}>
           <BuyPane it={it} qty={qty}
             onAdd={() => btn.current && on.current.onAdd?.(it, btn.current)}
@@ -118,6 +118,20 @@ export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAd
     scrollMargin: offset,
     getItemKey: i => items[i]?.id ?? i,
   });
+  // Up and down move the selection, and the details follow. The new row is scrolled into view and
+  // takes the focus, so holding a key walks the list.
+  const step = (e: KeyboardEvent<HTMLUListElement>) => {
+    const by = e.key === "ArrowDown" ? 1 : e.key === "ArrowUp" ? -1 : 0;
+    if (!by) return;
+    e.preventDefault();
+    const at = items.findIndex(it => it.id === selected);
+    const i = Math.min(items.length - 1, Math.max(0, at + by));
+    const next = items[i];
+    if (!next) return;
+    onSelect(next.id);
+    v.scrollToIndex(i, { align: "auto" });
+    requestAnimationFrame(() => listRef.current?.querySelector<HTMLElement>(`[data-index="${i}"] > button`)?.focus({ preventScroll: true }));
+  };
   return (
     <CollapsibleLayout id="items" title="Items Available" className={classes.root} data-table={table || undefined}
       actions={<Text fz="sm" c="dimmed" style={{ whiteSpace: "nowrap" }}>{items.length} {items.length === 1 ? "item" : "items"}</Text>}>
@@ -125,13 +139,13 @@ export function ItemListPane({ items, selected, tab, cls, canUse, onSelect, onAd
         <span className={classes.icon} />
         <SortHeader k="name" sort={sort} onSort={onSort} className={classes.name}>Item</SortHeader>
         {table && <span className={classes.stats}>Stats</span>}
-        <SortHeader k="price" sort={sort} onSort={onSort} className={`${classes.price} ${classes.end}`} tip="80% of market price. Unknown prices sort as 0.">
+        <SortHeader k="price" sort={sort} onSort={onSort} className={classes.price} tip="80% of market price. Unknown prices sort as 0.">
           {table ? "Guild price" : "Price"}
         </SortHeader>
         <span className={`${classes.tab} ${classes.end}`}>Buy</span>
       </div>
       {items.length === 0 && <Text p="md" c="dimmed">Nothing in the bank matches. Try clearing a filter.</Text>}
-      <ul ref={listRef} aria-label="Items in the bank" className={classes.list} style={{ height: v.getTotalSize() }}>
+      <ul ref={listRef} aria-label="Items in the bank" onKeyDown={step} className={classes.list} style={{ height: v.getTotalSize() }}>
         {v.getVirtualItems().map(r => {
           const it = items[r.index];
           // The virtualizer only hands out indexes below count, so a miss is our bug: say so, don't hide it.

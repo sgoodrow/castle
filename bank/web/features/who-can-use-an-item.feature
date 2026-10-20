@@ -10,7 +10,7 @@ Feature: Who can use an item
 
     Examples:
       | picker | choice      | hidden                  | kept                                                         |
-      | class  | Necromancer | "Fine Steel Long Sword" | "Spell: Lifetap", "Bone Chips", "Large Sewing Kit" and "Pearl" |
+      | class  | Necromancer | "Fine Steel Long Sword" | "Spell: Lifetap", "Bone Chips" and "Pearl"                     |
       | class  | Cleric      | "Fine Steel Long Sword" | "Spell: Aegolism", "Cloak of Flames" and "Scaled Tunic"       |
       | class  | Warrior     | "Spell: Aegolism"       | "Fine Steel Long Sword" and "Cloak of Flames"                 |
       | class  | Paladin     | "Spell: Aegolism"       | "Fine Steel Long Sword" and "Scaled Tunic"                   |
@@ -63,7 +63,7 @@ Feature: Who can use an item
     And I play a Necromancer
     When I play a Necromancer
     Then the class "Necromancer" is not picked
-    And the bank lists 9 items
+    And the bank lists 8 items
 
   Scenario Outline: An item's classes are listed, or the ones left out, or ALL or NONE
     Then an item for <who> lists its classes as "<text>"

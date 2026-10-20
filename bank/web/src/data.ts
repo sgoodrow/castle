@@ -21,16 +21,24 @@ export interface RawItem {
   proclvl?: number; charges?: number;
   price?: string; // set by a banker with the bot, e.g. "250p" or "200p, 1dkp"
   sheet?: SheetPrice; // a scroll's price on the bankers' spell sheet
+  sky?: SkyPart; // a Plane of Sky item: on the Sky sheet, or held only by the Sky mules
 }
 
 // A spell's price on the bankers' spell sheet: platinum, maybe with a DKP alternative, or a DKP auction.
 export type SheetPrice = { kind: "pp"; pp: number; dkp: number | null } | { kind: "auction" };
+
+// A Plane of Sky item: the islands whose quests it's for (none when the Sky sheet doesn't list it),
+// and the sheet's note on it, e.g. "fd ring" or "dkp bid".
+export interface SkyPart { islands: Island[]; note: string }
+// The islands with quests, as the wiki numbers them.
+export type Island = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 // What /api/bank sends: every filled slot (character, slot, item id, count), and the items in them.
 export interface Payload {
   snapshot: string; // the newest inventory upload
   today: string; // the server's date, which auction windows count back from
   bank: [string, string, number, number][];
+  mq: [string, number, number][]; // who holds how many of a NO DROP item for multiquesting
   items: Record<string, RawItem>;
   spells: Record<string, RawSpell>;
   me: { name: string }; // who's signed in, for the request preview
@@ -60,10 +68,11 @@ function toSpell(raw: RawSpell): Spell | null {
   return { name: raw.name, levels };
 }
 
-export interface Holder { char: string; loc: string; count: number }
+// mq: held for multiquesting, by a character the bankers don't log in to, rather than in the bank.
+export interface Holder { char: string; loc: string; count: number; mq: boolean }
 // An item is only listed because someone holds it, so there's always a first holder.
 export type Holders = [Holder, ...Holder[]];
-export type Kind = "gear" | "spell" | "bag" | "other";
+export type Kind = "gear" | "spell" | "other";
 export type MarketLevel = "solid" | "thin" | "none";
 export interface Listing { d: Date; seller: string; price: number }
 export interface Auctions {
@@ -149,9 +158,11 @@ export const STATS = [["str","STR"],["sta","STA"],["agi","AGI"],["dex","DEX"],["
 export const RESISTS = [["pr","POISON"],["mr","MAGIC"],["dr","DISEASE"],["fr","FIRE"],["cr","COLD"]] as const;
 
 // ---------- data shaping ----------
+// The bankers' own bags, which hold the stock and aren't for sale. A Plane of Sky bag is stock.
+const isBag = (it: RawItem) => it.cls === 1 || !!it.bagslots;
+
 function kindOf(it: RawItem): Kind {
   if (it.scroll || /^Spell: /.test(it.name)) return "spell";
-  if (it.cls === 1 || it.bagslots) return "bag";
   if ((it.slots || 0) & ~1) return "gear";
   return "other";
 }
@@ -199,18 +210,20 @@ export function loadBank(p: Payload) {
   SNAPSHOT_AT = new Date(p.snapshot);
   NOW = new Date(p.today + "T00:00:00");
   ME = p.me.name;
-  for (const [char, loc, id, count] of p.bank) {
-    const holder = { char, loc, count };
+  const hold = (id: number, holder: Holder) => {
     const it = ITEMS[id];
     if (it) {
       it.holders.push(holder);
-      it.total += count;
-      continue;
+      it.total += holder.count;
+      return;
     }
     const raw = p.items[id];
-    if (!raw || raw.nodrop) continue; // NO DROP items can't leave the bank, so they're never shown.
-    ITEM_LIST.push(ITEMS[id] = { ...raw, id, holders: [holder], total: count, kind: kindOf(raw), auc: auctions(raw) });
-  }
+    // NO DROP items can't leave the bank, so they're never shown, unless they're held for a multiquest.
+    if (!raw || (raw.nodrop && !holder.mq) || (isBag(raw) && !raw.sky)) return;
+    ITEM_LIST.push(ITEMS[id] = { ...raw, id, holders: [holder], total: holder.count, kind: kindOf(raw), auc: auctions(raw) });
+  };
+  for (const [char, loc, id, count] of p.bank) hold(id, { char, loc, count, mq: false });
+  for (const [char, id, count] of p.mq) hold(id, { char, loc: "Multiquest", count, mq: true });
 }
 
 // The server keeps the wiki's icons.
@@ -284,6 +297,13 @@ export function prettyLoc(loc: string) {
   return loc.toLowerCase(); // a worn slot: "primary", "ear"
 }
 
+// Who a request takes an item from: the bank, when it holds any, or else the characters holding it
+// for multiquesting.
+export function requestedFrom(it: Item): { mq: boolean; holders: Holders } {
+  const [first, ...rest] = it.holders.filter(h => !h.mq);
+  return first ? { mq: false, holders: [first, ...rest] } : { mq: true, holders: it.holders };
+}
+
 // ---------- bank requests (formats from the bot's #bank-requests instructions) ----------
 const RAID_REAGENTS = /^(Peridot|Hate Stone|Pearl|Small Portal Fragment)s?$/i;
 // What an item costs. Each screen handles every kind, so a new kind can't be left out of one.
@@ -294,8 +314,8 @@ export type Price =
   | { kind: "free" }
   | { kind: "auction" } // the member asks a banker to start a DKP auction
   | { kind: "ask" }; // a banker has to quote it
-// text is the line in the bot's #bank-requests format; an item with none isn't for sale.
-export type BankRequest = { text: null; cost: string } | { text: string; cost: string; price: Price };
+// text is the line in the bot's #bank-requests format.
+export type BankRequest = { text: string; cost: string; price: Price };
 // A line's price as the tab and the post show it: "400pp", "free", "DKP auction" or "unknown".
 export function priceText(price: Price, qty = 1) {
   switch (price.kind) {
@@ -308,10 +328,10 @@ export function priceText(price: Price, qty = 1) {
 const pp = (pp: number, dkp = false, fromMarket = false): Price => ({ kind: "pp", pp, dkp, fromMarket });
 const AUCTION_COST = "A banker starts an auction at 1 DKP.";
 
-// A price a banker set with the bot beats the spell sheet, which beats the rules and the market.
+// A price a banker set with the bot beats the spell sheet and the Plane of Sky rules, which beat the
+// rules and the market.
 export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest {
-  const req = ruleRequest(it, cls, qty);
-  if (req.text == null) return req;
+  const req = it.sky ? skyRequest(it, it.sky, qty) : ruleRequest(it, cls, qty);
   if (it.price) {
     const n = it.price.match(/\d+/);
     const price: Price = /auction/i.test(it.price) ? { kind: "auction" } : n ? pp(+n[0], /dkp/i.test(it.price)) : { kind: "ask" };
@@ -324,16 +344,40 @@ export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest
 }
 // Whether a spell only goes to DKP auction. That doesn't depend on the member's class.
 export const auctionOnly = (it: Item) => {
-  const req = bankRequest(it, null);
-  return req.text != null && req.price.kind === "auction";
+  return bankRequest(it, null).price.kind === "auction";
 };
 // The most a member can put on their tab: what the bank holds, or one auction at a time.
 // Different items one request can hold: Discord posts ten embeds a message, one for the summary
 // and one per item.
 export const MAX_TAB_ITEMS = 9;
-export const tabLimit = (it: Item) => (auctionOnly(it) ? 1 : it.total);
+export const tabLimit = (it: Item) => (auctionOnly(it) ? 1 : requestedFrom(it).holders.reduce((n, h) => n + h.count, 0));
+// The Sky mules: cgskya … cgskyhh and gmskyone … gmskyseven.
+export const isSkyMule = (char: string) => /sky/i.test(char);
+const SKY_PICKUP = "Pick up at the East Freeport docks.";
+const andList = (xs: readonly (string | number)[]) => xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
+// "Island 4 quest item (fd ring)", "Islands 6 and 7 quest item", or "Plane of Sky item".
+const skyWhat = (sky: SkyPart) => sky.islands.length
+  ? `Island${sky.islands.length > 1 ? "s" : ""} ${andList(sky.islands)} quest item${sky.note ? ` (${sky.note})` : ""}`
+  : "Plane of Sky item";
+// Efreeti weapons and shields (from Noble Dojorn and the Overseer of Air) and items the Sky sheet
+// marks "dkp bid" go to DKP auction. Every other Sky item is 250pp, once the member has won the DKP
+// items its quest needs; a banker checks that. An item only held for multiquesting is requested
+// too, and a banker tells the member how to set it up.
+function skyRequest(it: Item, sky: SkyPart, qty: number): BankRequest {
+  const what = skyWhat(sky);
+  const from = requestedFrom(it);
+  if (from.mq) {
+    const who = andList([...new Set(from.holders.map(h => h.char))]);
+    return { text: `Sky MQ: ${it.name} (held by ${who})${qty > 1 ? ` x${qty}` : ""}`, price: { kind: "ask" }, cost: `${what}, held for a multiquest by ${who}. A banker will tell you how to set it up.` };
+  }
+  const holder = from.holders.find(h => isSkyMule(h.char)) ?? from.holders[0];
+  const text = `Sky: ${it.name} (${holder.char}, ${holder.count})${qty > 1 ? ` x${qty}` : ""}`;
+  if (/dkp/i.test(sky.note) || (!sky.islands.length && /^Efreeti /.test(it.name)))
+    return { text, price: { kind: "auction" }, cost: AUCTION_COST };
+  return { text, price: pp(250), cost: `${what}: 250pp, once you've won the DKP items its quest needs. ${SKY_PICKUP}` };
+}
 function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
-  const [holder] = it.holders;
+  const [holder] = requestedFrom(it).holders;
   const mule = holder.char || "Mule";
   const sp = spellOf(it.scroll);
   const mkt = it.auc.level !== "none" ? it.auc.median : null;
@@ -352,7 +396,6 @@ function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
     return { text, price: { kind: "ask" }, cost: level ? `Level ${level} spell. Ask a banker.` : "Check the dropped-spell rules in Discord." };
   }
   if (RAID_REAGENTS.test(it.name)) return { text: `Raid Reagents: ${it.name}, ${qty}`, price: { kind: "free" }, cost: "Free for raid use." };
-  if (it.kind === "bag") return { text: null, cost: "Bags aren't for sale." };
   const text = `Misc item: ${it.name} (${mule})${qty > 1 ? ` x${qty}` : ""}`;
   return mkt
     ? { text, price: pp(Math.round(mkt * 0.8), false, true), cost: `80% of the ${mkt}pp Green median${it.auc.level === "thin" ? " (thin data)" : ""}.` }

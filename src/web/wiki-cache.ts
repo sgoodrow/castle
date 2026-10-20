@@ -61,6 +61,8 @@ const PATHS: Record<string, string> = itemsData;
 const wikiPath = (name: string) =>
   PATHS[name.toLowerCase()] ||
   "/" + encodeURIComponent(name.replace(/ /g, "_"));
+// An item's wiki page, known from its name alone, so every item links there before its page is fetched.
+export const wikiUrl = (name: string) => WIKI + wikiPath(name);
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 export class WikiCache {
@@ -129,7 +131,7 @@ export class WikiCache {
   }
 
   private async fetchItem(id: number, name: string) {
-    const url = WIKI + wikiPath(name);
+    const url = wikiUrl(name);
     const rec: WikiItem = {
       url,
       icon: null,

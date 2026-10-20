@@ -11,7 +11,7 @@ Feature: Sharing a search link
       | ?class=nec   | the class "Necromancer" |
       | ?race=iks    | the race "Iksar"        |
       | ?slot=HEAD   | the head slot           |
-      | ?kind=Bag    | "Bags"                  |
+      | ?kind=Sky    | "Sky"                   |
 
   Scenario: A shared link fills in the search
     Given the bank holds the usual stock
@@ -22,7 +22,7 @@ Feature: Sharing a search link
   Scenario Outline: Parts of a link the bank doesn't know are ignored
     Given the bank holds the usual stock
     When I open the link "<link>"
-    Then the bank lists 9 items
+    Then the bank lists 8 items
     And I can not clear the filters
 
     Examples:
@@ -30,6 +30,7 @@ Feature: Sharing a search link
       | ?class=XYZ&kind=3  |
       | ?slot=tail&q=      |
       | ?colour=red        |
+      | ?kind=bag          |
 
   Scenario: Picking filters writes them into the address
     Given the bank holds the usual stock

@@ -16,6 +16,7 @@ import os from "os";
 import path from "path";
 import { SourceMapGenerator } from "source-map";
 import { CLASS_TABS, FORBIDDEN_TAB } from "../spell-sheet";
+import { MQ_TAB, SKY_SHEET, SKY_TAB } from "../sky-sheet";
 
 type Slot = {
   charName: string;
@@ -94,6 +95,10 @@ interface World {
   sheet: Record<string, string>; // the spell sheet's tabs as CSV, by tab id
   sheetStatus: number;
   sheetAsked: number;
+  sky: string | null; // the Sky sheet's announcements tab as CSV
+  mq: string | null; // and its Multiquest tab
+  skyStatus: number;
+  skyAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
   postStatus: number;
   logs: string[];
@@ -200,6 +205,23 @@ const ROUTES: Route[] = [
     },
   ],
 ];
+// The Sky sheet's announcements tab: the scenario's, or an empty one with its headers.
+ROUTES.push([
+  "GET",
+  new RegExp(`^${SKY_SHEET.replace(/[.?]/g, "\\$&")}${SKY_TAB}$`),
+  () => {
+    world.skyAsked++;
+    return new Response(world.sky ?? "Items,Island,Notes\n", {
+      status: world.skyStatus,
+    });
+  },
+]);
+// The Sky sheet's Multiquest tab: the scenario's, or an empty one with its headers.
+ROUTES.push([
+  "GET",
+  new RegExp(`^${SKY_SHEET.replace(/[.?]/g, "\\$&")}${MQ_TAB}$`),
+  () => new Response(world.mq ?? ",ITEM,CLASS,,\n"),
+]);
 // The spell sheet's tabs: the scenario's, or empty ones with their headers.
 ROUTES.push([
   "GET",
@@ -267,6 +289,10 @@ export async function reset() {
     sheet: {},
     sheetStatus: 200,
     sheetAsked: 0,
+    sky: null,
+    mq: null,
+    skyStatus: 200,
+    skyAsked: 0,
     posts: [],
     postStatus: 200,
     logs: [],
@@ -604,14 +630,24 @@ export const steps = ({
     expect(bank().items).toEqual({});
   });
   step(
-    /^the bank describes "(.*)" by the item database, under that name$/,
+    /^the bank describes "(.*)" by the item database, under that name, with its wiki page$/,
     (name: string) => {
       const id = itemId(name);
-      expect(bank().items[id]).toEqual({ ...ITEMDB[id], name });
+      expect(bank().items[id]).toEqual({
+        ...ITEMDB[id],
+        name,
+        wiki: expect.stringMatching(/^https:\/\/wiki\.project1999\.com\//),
+      });
     }
   );
-  step(/^the bank describes "(.*)" as unknown$/, (name: string) =>
-    expect(bank().items[itemId(name)]).toEqual({ unknown: true, name })
+  step(
+    /^the bank describes "(.*)" as unknown, with its wiki page$/,
+    (name: string) =>
+      expect(bank().items[itemId(name)]).toEqual({
+        unknown: true,
+        name,
+        wiki: expect.stringMatching(/^https:\/\/wiki\.project1999\.com\//),
+      })
   );
   step(
     /^the bank describes "(.*)" with:$/,
@@ -622,6 +658,25 @@ export const steps = ({
   );
   step(/^the bank sends no sheet price for "(.*)"$/, (name: string) =>
     expect(bank().items[itemId(name)]).not.toHaveProperty("sheet")
+  );
+  step(
+    /^the bank holds for multiquesting:$/,
+    (rows: Record<string, string>[]) => {
+      const b = bank() as ReturnType<typeof bank> & {
+        mq: [string, number, number][];
+      };
+      expect(
+        b.mq.map(([holder, id, count]) => ({
+          holder,
+          item: b.items[id].name,
+          id: String(id),
+          count: String(count),
+        }))
+      ).toEqual(rows);
+    }
+  );
+  step(/^the bank sends no Sky part for "(.*)"$/, (name: string) =>
+    expect(bank().items[itemId(name)]).not.toHaveProperty("sky")
   );
   step(/^the bank sends the spells (".*)$/, (names: string) => {
     expect(
@@ -743,6 +798,48 @@ export const steps = ({
     await site();
     await world.mod!.readSpellSheet();
     expect(world.sheetAsked).toBe(Object.keys(TAB_IDS).length);
+  });
+
+  // ---------- the Sky sheet ----------
+  step(/^the Sky sheet's announcements tab is:$/, (csv: string) => {
+    world.sky = csv;
+  });
+  step(/^the Sky sheet's Multiquest tab is:$/, (csv: string) => {
+    world.mq = csv;
+  });
+  step(/^Google answers the Sky sheet with (\d+)$/, (status: string) => {
+    world.skyStatus = +status;
+  });
+  step(
+    /^a saved copy of the Sky sheet puts "(.*)" on island (\d)$/,
+    (name: string, island: string) => {
+      mkdirSync(path.join(world.dir, "cache"), { recursive: true });
+      writeFileSync(
+        path.join(world.dir, "cache/sky-sheet.json"),
+        JSON.stringify({
+          parts: [[name.toLowerCase(), { islands: [+island], note: "" }]],
+          mq: [],
+        })
+      );
+    }
+  );
+  step(/^the site reads the Sky sheet$/, async () => {
+    await site();
+    await world.mod!.readSkySheet();
+    expect(world.skyAsked).toBe(1);
+  });
+
+  step(/^the site refreshes the wiki$/, async () => {
+    await site();
+    // The refresh waits a second between wiki pages to be polite; a test needn't wait for real.
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
+    try {
+      const done = world.mod!.refreshWiki();
+      await vi.runAllTimersAsync();
+      await done;
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   // ---------- bank requests ----------
@@ -933,8 +1030,9 @@ export const steps = ({
     );
   });
   step(
-    /^the wiki and the spell sheet are refreshed again every (\d+) minutes$/,
-    (min: string) => expect(world.every).toEqual([+min * 60e3, +min * 60e3])
+    /^the wiki and both sheets are refreshed again every (\d+) minutes$/,
+    (min: string) =>
+      expect(world.every).toEqual([+min * 60e3, +min * 60e3, +min * 60e3])
   );
   step(
     /^a promise fails with (an error|the bare value) "(.*)" and nothing catches it$/,

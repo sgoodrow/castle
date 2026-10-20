@@ -6,6 +6,6 @@ Feature: Broken bank data
     Given the bank holds the usual stock
     And the spell data for "Splurt" has only 14 class levels
     When I open the bank page
-    Then the bank lists 9 items
+    Then the bank lists 8 items
     And the bank lists "Spell: Splurt"
     And the page reports one error: "Error: Spell data without 15 class levels: 502"

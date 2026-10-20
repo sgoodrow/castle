@@ -4,7 +4,7 @@ import { IconArrowLeft, IconMoneybag } from "@tabler/icons-react";
 import { ToastNotification, type ToastMsg } from "../ToastNotification";
 import { OverflowTooltip } from "../OverflowTooltip";
 import { useMemo, useRef, useState } from "react";
-import { ITEMS, MAX_TAB_ITEMS, bankRequest, tabLimit, usable, type Item } from "../../data";
+import { ITEMS, MAX_TAB_ITEMS, tabLimit, usable, type Item } from "../../data";
 import { filterItems } from "../../search";
 import { getRouteApi } from "@tanstack/react-router";
 import { toFilters, toSearch, useTab, type Filters } from "../../state";
@@ -53,7 +53,6 @@ export function AppPane() {
     toastTimer.current = window.setTimeout(() => setToast(null), 2200);
   };
   const addOne = (it: Item, row: HTMLElement) => {
-    if (bankRequest(it, f.cls).text == null) return say(`${it.name} isn't for sale`, false);
     const have = tab[it.id] || 0;
     if (!have && Object.keys(tab).length >= MAX_TAB_ITEMS) return say(`Up to ${MAX_TAB_ITEMS} different items per request`, false);
     const max = tabLimit(it);
@@ -91,7 +90,8 @@ export function AppPane() {
     }
     const push = !md && id != null && selected == null;
     if (push) pushed.current = true;
-    navigate({ search: s => ({ ...s, item: id ?? undefined }), replace: !push });
+    // The router scrolls to the top on every navigation, which would lose the member's place in the list.
+    navigate({ search: s => ({ ...s, item: id ?? undefined }), replace: !push, resetScroll: false });
   };
   // Kept while the drawer slides shut, so it doesn't empty as it goes.
   const [drawerItem, setDrawerItem] = useState(sel);
@@ -122,8 +122,8 @@ export function AppPane() {
         </Group>
         {/* The tab: a coin pouch with the bill so far. Fixed width so a growing bill never moves anything. */}
         <Button ref={tabBtn} variant="light" h={36} px={6} w={md ? 140 : 120} style={{ flex: "none" }} aria-label={`Show tab, ${totalText(total)}`} onClick={() => setTabOpen(true)}
-          leftSection={<IconMoneybag size={20} />} styles={{ inner: { justifyContent: "stretch" }, label: { flex: 1 }, section: { marginInlineEnd: 6 } }}>
-          <Text span fw={700} fz="sm" px={6} py={2} w="100%" ta="right" style={{ fontVariantNumeric: "tabular-nums", borderRadius: 4, background: "var(--mantine-color-body)", color: "light-dark(#5f6b76, #dde3e9)" }}>
+          leftSection={<IconMoneybag size={20} />} styles={{ inner: { justifyContent: "stretch" }, label: { flex: 1, minWidth: 0 }, section: { marginInlineEnd: 6 } }}>
+          <Text span truncate="end" display="block" fw={700} fz="sm" px={6} py={2} w="100%" ta="right" title={totalShort(total)} style={{ fontVariantNumeric: "tabular-nums", borderRadius: 4, background: "var(--mantine-color-body)", color: "light-dark(#5f6b76, #dde3e9)" }}>
             {totalShort(total)}
           </Text>
         </Button>
