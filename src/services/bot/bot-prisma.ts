@@ -28,10 +28,34 @@ import { code } from "../../shared/util";
 import { MINUTES } from "../../shared/time";
 import { noBotsRoleId, noBotWizardsRoleId } from "../../config";
 import { Class } from "../../shared/classes";
+import { BotSheetAlerts } from "./bot-sheet-alerts";
+
+type SheetRow = Record<string, string> & { rowIndex: number };
+
+// What's wrong with the sheet's rows, if anything: a bot needs a name and a class, and each name
+// once, since a bot is requested by name. Blank rows are fine.
+export function badBotRows(rows: SheetRow[]) {
+  const bad: string[] = [];
+  const seen = new Set<string>();
+  for (const row of rows) {
+    const name = row[BOT_SPREADSHEET_COLUMNS.Name]?.trim() ?? "";
+    const where = `Row ${row.rowIndex}${name ? ` (${name})` : ""}`;
+    if (!name && !row[BOT_SPREADSHEET_COLUMNS.Class]?.trim()) continue; // a blank row
+    if (!name) bad.push(`${where}: no name`);
+    else if (!row[BOT_SPREADSHEET_COLUMNS.Class]?.trim())
+      bad.push(`${where}: no class`);
+    else if (seen.has(name.toLowerCase()))
+      bad.push(`${where}: the name is on an earlier row too`);
+    seen.add(name.toLowerCase());
+  }
+  return bad;
+}
 
 export class PrismaPublicAccounts implements IPublicAccountService {
   private refreshing: boolean = false;
   private isReady: boolean = false;
+  private alerts = new BotSheetAlerts();
+  private loadFailed = false; // the last load of the sheet failed
 
   
 
@@ -41,16 +65,32 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   }
 
   private async startRefreshLoop() {
-    await this.refresh();
+    await this.refreshOrLog();
     this.isReady = true;
+    // Every 15 minutes, or every minute while the last load failed, so a fixed sheet is picked
+    // up quickly.
+    let lastTry = Date.now();
     setInterval(async () => {
-      // Refreshing private and public bot sheet on timer
-      if (this.refreshing) {
-        log("SKIP - Refresh already in progress");
+      if (this.refreshing) return;
+      if (!this.loadFailed && Date.now() - lastTry < 15 * MINUTES - MINUTES / 2)
         return;
-      }
+      lastTry = Date.now();
+      await this.refreshOrLog();
+    }, MINUTES);
+  }
+
+  // A failed refresh keeps the bot data already in the database and is retried
+  // on the next tick; it must not leave guardReady waiting forever.
+  private async refreshOrLog() {
+    try {
       await this.refresh();
-    }, 15 * MINUTES);
+      this.loadFailed = false;
+      await this.alerts.loaded();
+    } catch (err) {
+      this.loadFailed = true;
+      log(`FAILED - Refreshing bot data: ${err}`);
+      await this.alerts.failed(err);
+    }
   }
 
   private async refresh() {
@@ -70,38 +110,46 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     while (!this.isReady || this.refreshing) {
       await sleep(100);
     }
+    // Bot commands stop, rather than run on bots that may be out of date.
+    if (this.loadFailed)
+      throw new Error(
+        `The "Bot Info" sheet couldn't be loaded, so bot commands are off. A knight needs to fix the sheet and restart the bot.`
+      );
   }
 
+  // Replaces the stored bots with the sheet's, all at once, so a failure part way keeps the old
+  // ones. A bad row fails the whole load, saying which rows to fix.
   public async init() {
-    // read sheet on startup
     log("PublicAccountsPrisma - reading sheet");
-    const sheetService = publicSheetService;
-    const rows = await sheetService.getBotSheetRows();
-
-    // Clear data since we read initial from sheet
-    log("PublicAccountsPrisma - clearing old rows");
-    await prismaClient.bot.deleteMany({});
+    const rows = await publicSheetService.getBotSheetRows();
+    const bad = badBotRows(rows);
+    if (bad.length)
+      throw new Error(`these rows need fixing:\n${bad.map((b) => `• ${b}`).join("\n")}`);
+    const bots = [];
     for (const row of rows) {
+      if (!row[BOT_SPREADSHEET_COLUMNS.Name]?.trim()) continue; // a blank row
       const time = moment(row[BOT_SPREADSHEET_COLUMNS.CheckoutTime]);
       const roles = await accounts.getRolesForAccount(
         row[BOT_SPREADSHEET_COLUMNS.Name]
       );
-
-      await prismaClient.bot.create({
-        data: {
-          name: row[BOT_SPREADSHEET_COLUMNS.Name],
-          class: row[BOT_SPREADSHEET_COLUMNS.Class],
-          level: row[BOT_SPREADSHEET_COLUMNS.Level],
-          location: row[BOT_SPREADSHEET_COLUMNS.CurrentLocation],
-          checkoutTime: time.isValid() ? time.toString() : "",
-          currentPilot: row[BOT_SPREADSHEET_COLUMNS.CurrentPilot],
-          bindLocation: row[BOT_SPREADSHEET_COLUMNS.BindLocation],
-          factioned: row[BOT_SPREADSHEET_COLUMNS.Factioned] !== "",
-          faction: row[BOT_SPREADSHEET_COLUMNS.Faction] || "",
-          requiredRoles: roles.map((r) => r.id),
-        },
+      bots.push({
+        name: row[BOT_SPREADSHEET_COLUMNS.Name],
+        class: row[BOT_SPREADSHEET_COLUMNS.Class],
+        level: row[BOT_SPREADSHEET_COLUMNS.Level],
+        location: row[BOT_SPREADSHEET_COLUMNS.CurrentLocation],
+        checkoutTime: time.isValid() ? time.toString() : "",
+        currentPilot: row[BOT_SPREADSHEET_COLUMNS.CurrentPilot],
+        bindLocation: row[BOT_SPREADSHEET_COLUMNS.BindLocation],
+        factioned: row[BOT_SPREADSHEET_COLUMNS.Factioned] !== "",
+        faction: row[BOT_SPREADSHEET_COLUMNS.Faction] || "",
+        requiredRoles: roles.map((r) => r.id),
       });
     }
+    log("PublicAccountsPrisma - replacing stored bots");
+    await prismaClient.$transaction([
+      prismaClient.bot.deleteMany({}),
+      prismaClient.bot.createMany({ data: bots }),
+    ]);
   }
 
   async getBotParkButtonComponents(name: string) {

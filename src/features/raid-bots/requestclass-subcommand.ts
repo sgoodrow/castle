@@ -73,7 +73,7 @@ export class RequestClassSubcommand extends Subcommand {
       } catch (err) {
         status = "❌ Denied";
         await interaction.editReply(
-          `No bot was found matching the provided criteria.`
+          `No bot was found matching the provided criteria. (${err})`
         );
         const message = await thread.send("OK");
         let response = `${status} ${interaction.user} access to the first available ${botClass}`;

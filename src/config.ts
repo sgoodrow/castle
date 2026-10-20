@@ -92,8 +92,8 @@ export const {
   CONDENSE_FUTURE_WINDOW,
   RTE_REQUIRE_OPEN_TARGET,
   eqnotifyChannelId,
+  raidChatChannelId,
   TELEGRAM_BOT_TOKEN,
-
 } = process.env as {
   /**
    * [Optional] PostgreSQL DB connection URL. Defaults to gitpod development DB.
@@ -300,6 +300,11 @@ export const {
    * tags. Defaults to the batphone channel if unset.
    */
   eqnotifyChannelId?: string;
+
+  /**
+   * [Optional] Raid chat. Told when the bot sheet can't be loaded or has rows the bot skips.
+   */
+  raidChatChannelId?: string;
 
   /**
    * [Optional] Telegram bot token (from @BotFather) used to deliver EQNotify
