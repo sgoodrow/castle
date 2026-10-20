@@ -8,7 +8,7 @@ import { Subcommand } from "../../../shared/command/subcommand";
 import { bankData } from "../bank-data";
 import { bankRequestsChannelId } from "../../../config";
 import { getTextChannel } from "../../..";
-import { commandOpening } from "../../../shared/bank-request-author";
+import { commandOpening } from "../../bank-request-info/bank-request";
 import { autoCompleteStockedItems } from "../helpers";
 
 enum Option {

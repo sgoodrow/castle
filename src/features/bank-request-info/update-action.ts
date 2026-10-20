@@ -81,9 +81,8 @@ ${bankHour
     const description = `Always be courteous and patient with your bankers.
 • ${Icon.Request} Use the '/bank request' command or the appropriate request format
 • State how long you will be available.
-• Reimbursement, Recharge, and Auction requests remain open until fulfilled.
+• Reimbursement, Recharge, and Auction requests remain open until fulfilled, for up to ${MAX_AGE_DAYS} days.
 • All other requests will remain open for 3 days and then closed.
-• Requests made with the bank site or '/bank request' are removed after ${MAX_AGE_DAYS} days.
 • Reach out to an officer if you want to help bank.
 • Bankers will only process requests made in ${this.channel} (not PMs).
 

@@ -5,7 +5,7 @@ import {
   Options,
   readyActionExecutor,
 } from "../../shared/action/ready-action-2";
-import { readBankRequest } from "../../shared/bank-request-author";
+import { readBankRequest } from "./bank-request";
 import { channelMessages, MessageSource } from "../../shared/channel-messages";
 import { log } from "../../shared/logger";
 import { DAYS } from "../../shared/time";
@@ -56,19 +56,22 @@ export const expireOldRequests = async (
   return removed;
 };
 
-export const expireOldBankRequests = (options: Options) =>
-  readyActionExecutor(async () => {
-    const botId = client.user?.id;
-    if (!botId) return;
-    const channel = await getTextChannel(bankRequestsChannelId);
-    const removed = await expireOldRequests(
-      channel,
-      botId,
-      Date.now(),
-      (id, text) => client.users.send(id, text)
+export const expireOldBankRequests = (options: Options) => {
+  readyActionExecutor(refreshBankRequests, options);
+};
+
+const refreshBankRequests = async () => {
+  const botId = client.user?.id;
+  if (!botId) return;
+  const channel = await getTextChannel(bankRequestsChannelId);
+  const removed = await expireOldRequests(
+    channel,
+    botId,
+    Date.now(),
+    (id, text) => client.users.send(id, text)
+  );
+  if (removed)
+    log(
+      `bank requests: removed ${removed} request(s) over ${MAX_AGE_DAYS} days old`
     );
-    if (removed)
-      log(
-        `bank requests: removed ${removed} request(s) over ${MAX_AGE_DAYS} days old`
-      );
-  }, options);
+};
