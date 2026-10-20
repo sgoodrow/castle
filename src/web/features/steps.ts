@@ -831,7 +831,15 @@ export const steps = ({
 
   step(/^the site refreshes the wiki$/, async () => {
     await site();
-    await world.mod!.refreshWiki();
+    // The refresh waits a second between wiki pages to be polite; a test needn't wait for real.
+    vi.useFakeTimers({ toFake: ["setTimeout"] });
+    try {
+      const done = world.mod!.refreshWiki();
+      await vi.runAllTimersAsync();
+      await done;
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   // ---------- bank requests ----------

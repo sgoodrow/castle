@@ -15,6 +15,9 @@ export default defineConfig(({ mode }) => {
       // The features in features/ drive the whole page in a pretend browser.
       environment: "jsdom",
       setupFiles: ["features/support/setup.ts"],
+      // Each step is a test. A busy machine (coverage, other suites) can slow one well past vitest's 5s,
+      // so steps get the same 20s as the server's features.
+      testTimeout: 20000,
       coverage: {
         provider: "v8",
         include: ["src/**/*.{ts,tsx}"],
