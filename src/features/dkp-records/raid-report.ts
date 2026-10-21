@@ -1,10 +1,11 @@
 import {
   Message,
   EmbedBuilder,
+  embedLength,
   TextBasedChannel,
   ThreadChannel,
 } from "discord.js";
-import { capitalize, compact, every, flatMap, max, uniq } from "lodash";
+import { capitalize, compact, every, flatMap, max, sum, uniq } from "lodash";
 import { raiderRoleId } from "../../config";
 import { redisChannels, redisClient } from "../../redis/client";
 import { CreateRaidResponse, RaidEventData } from "../../services/castledkp";
@@ -34,6 +35,8 @@ const RAID_REPORT_TITLE = "Raid Report";
 const INSTRUCTIONS_TITLE = "Instructions";
 const CLASS_SUMMARY_TITLE = "Class Summary";
 const THREAD_EMBED_CHAR_LIMIT = 4000;
+// Discord caps all the embeds in one message at 6000 characters together; keep a little spare
+const MESSAGE_EMBEDS_CHAR_LIMIT = 5900;
 const SECOND_COLUMN_LENGTH = 6;
 
 const isRaidReportMessage = (m: Message) =>
@@ -46,6 +49,24 @@ export const isRaidInstructionsMessage = (m: Message) =>
 
 const isClassSummaryMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === CLASS_SUMMARY_TITLE);
+
+const paginate = (lines: string[]): string[] => {
+  const pages: string[] = [""];
+  lines.forEach((line) => {
+    if (pages[pages.length - 1].length + line.length > THREAD_EMBED_CHAR_LIMIT) {
+      pages.push("");
+    }
+    pages[pages.length - 1] += `\n${line}`;
+  });
+  return pages;
+};
+
+const reportEmbed = (page: string) =>
+  new EmbedBuilder({
+    title: RAID_REPORT_TITLE,
+    description: `${code}diff
+${page}${code}`,
+  });
 
 export const getRaidReportMessages = async (channel: TextBasedChannel) => {
   if (!channel.isThread()) {
@@ -190,14 +211,14 @@ export class RaidReport {
   }
 
   public async updateMessages(messages: Message[]) {
-    const raidReportEmbeds = this.getRaidReportEmbeds();
     const classSummaryMessages = messages.filter(isClassSummaryMessage);
     const reportMessages = messages.filter((m) => !isClassSummaryMessage(m));
-    if (raidReportEmbeds.length > reportMessages.length) {
-      throw new Error(
-        "Insufficient messages for number of embeds. This should never happen"
-      );
-    }
+    const instructionsLength = embedLength(this.instructionsEmbed.toJSON());
+    const raidReportEmbeds = this.getRaidReportMessageEmbeds(
+      reportMessages.map((m) =>
+        isRaidInstructionsMessage(m) ? instructionsLength : 0
+      )
+    );
 
     try {
       await Promise.all([
@@ -205,10 +226,7 @@ export class RaidReport {
           m.edit({ embeds: [this.classSummaryEmbed] })
         ),
         ...reportMessages.map((m, i) => {
-          // since the messages include a buffer message, which may not have any raid report content in it,
-          // we need to verify there is actually an embed
-          const embed: EmbedBuilder = raidReportEmbeds[i];
-          const embeds = embed ? [embed] : [];
+          const embeds = [...raidReportEmbeds[i]];
           if (isRaidInstructionsMessage(m)) {
             embeds.push(this.instructionsEmbed);
           }
@@ -313,32 +331,61 @@ ${t.renderClasses((name) => this.getClass(name))}${code}`,
     );
   }
 
+  /** One embed per message, as the report is first posted. */
   public getRaidReportEmbeds(): EmbedBuilder[] {
-    const report = `${this.ticks
+    return paginate(this.reportLines).map(reportEmbed);
+  }
+
+  /**
+   * The report's embeds for each of the thread's report messages, given how many characters each
+   * message's other embeds already use (e.g. the instructions). The thread can't gain messages above
+   * the credit !commands, so as the report grows it fills each message up to Discord's limit rather
+   * than needing more 4000-character pages than it was posted with. Every message gets a share.
+   */
+  public getRaidReportMessageEmbeds(reserved: number[]): EmbedBuilder[][] {
+    const lines = this.reportLines;
+    // a message's lines are split into at most two embeds, each with a title and code block
+    const overhead = 2 * embedLength(reportEmbed("").toJSON());
+    const capacities = reserved.map(
+      (r) => MESSAGE_EMBEDS_CHAR_LIMIT - r - overhead
+    );
+    const size = (line: string) => line.length + 1;
+    let remaining = sum(lines.map(size));
+    let next = 0;
+    const embeds = capacities.map((capacity, i) => {
+      const later = sum(capacities.slice(i + 1));
+      const target = Math.max(
+        Math.ceil(remaining / (capacities.length - i)),
+        remaining - later
+      );
+      const taken: string[] = [];
+      let length = 0;
+      while (
+        next < lines.length &&
+        length < target &&
+        length + size(lines[next]) <= capacity
+      ) {
+        taken.push(lines[next]);
+        length += size(lines[next]);
+        next++;
+      }
+      remaining -= length;
+      return taken.length > 0 ? paginate(taken).map(reportEmbed) : [];
+    });
+    if (next < lines.length) {
+      throw new Error(
+        `The raid report is too long for its ${reserved.length} messages`
+      );
+    }
+    return embeds;
+  }
+
+  private get reportLines(): string[] {
+    return `${this.ticks
       .map((t) => t.renderTick(this.firstColumnLength, SECOND_COLUMN_LENGTH))
       .join("\n\n")}
 
-${this.attendance}`;
-
-    const pages: string[] = [""];
-    report.split("\n").forEach((line) => {
-      if (
-        pages[pages.length - 1].length + line.length >
-        THREAD_EMBED_CHAR_LIMIT
-      ) {
-        pages.push("");
-      }
-      pages[pages.length - 1] += `\n${line}`;
-    });
-
-    return pages.map(
-      (p) =>
-        new EmbedBuilder({
-          title: RAID_REPORT_TITLE,
-          description: `${code}diff
-${p}${code}`,
-        })
-    );
+${this.attendance}`.split("\n");
   }
 
   public async uploadRemainingRaidTicks(threadUrl: string) {
