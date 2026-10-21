@@ -1,50 +1,22 @@
 import { auctionChannelId } from "../../config";
 import { Icon, Service } from "./types";
 
+// The bank site's category filters, as its `?kind=` deep link names them.
+// "all" is the site's front page.
+export type SiteSection = "spell" | "sky" | "other" | "all";
+
+// A card the bank site covers links to it, where members request; the others show members how
+// to type a request, and may link a spreadsheet.
+export type BankService = Omit<Service, "requestFormats" | "inventoryUrl"> &
+  ({ site: SiteSection } | Pick<Service, "requestFormats" | "inventoryUrl">);
+
 // todo: store this in database, populate and remove with command
-export const services: Service[] = [
+export const services: BankService[] = [
   {
-    title: "Bounties Spreadsheet",
-    icon: Icon.Bought,
-    inventoryUrl:
-      "https://docs.google.com/spreadsheets/d/1IRXO4cRQXMAeMtFgZ-TGgADFi0A9z8-9uHvxJLPT3TQ/edit#gid=0",
-    bullets: [
-      "The guild bank will purchase these items",
-      "Some are purhcased with platinum, and others with DKP",
-      "Some have player limits",
-    ],
-  },
-  {
-    title: "OT Hammer Event Scheduling",
+    title: "Misc Items",
     icon: Icon.Sold,
+    site: "all",
     bullets: [
-      "_The Overthere, Outpost_ Look for monthly threads for date/time",
-      "Bring 1 Jade and either 1750pp (members and allies) or 2500p (non-allies)",
-      "Payment may be delivered at _North Freeport Bank_ or _Hammer Hill_",
-      "Charisma gear, Tash and Malo will be provided",
-      "Requires more people to facilitate, so this is a request to schedule event",
-      "Some exceptions may be made. DM Treasurer for info.",
-    ],
-  },
-  {
-    title: "Recharge Instructions",
-    icon: Icon.Sold,
-    inventoryUrl: "https://tinyurl.com/castle-charge",
-    bullets: [
-      "_West Commons Lake, South Inn_",
-      "Leatherfoot Raiders Skullcap (180p)",
-      "Ring of Shadows (36p)",
-      "Thin Bones Wand (5p)",
-      "Wort Potions (750p, scheduled events only)",
-      "Various Items, see spreadsheet",
-    ],
-  },
-  {
-    title: "Misc Item Spreadsheet",
-    icon: Icon.Sold,
-    inventoryUrl: "https://tinyurl.com/castle-misc-list",
-    bullets: [
-      "Various Items, see spreadsheet (80% market rate, bags not for sale)",
       "Tradeskilling INT Gear check in/out (free _Thurgadin_)",
       "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk _Rivervale Bank_)",
       "Burnished Wooden Stave (100p _North Freeport Bank_)",
@@ -56,49 +28,39 @@ export const services: Service[] = [
     ],
   },
   {
-    title: "PP4DKP",
+    title: "Dropped Spells",
     icon: Icon.Sold,
+    site: "spell",
     bullets: [
-      "_NFP Bank or EC Tunnel_",
-      "PP4DKP (Platinum Pieces for Dragon Kill Points) Fundraising",
-      "PP4DKP runs on a monthly cycle with DKP recorded the following month",
-      "1k = 1 DKP; 30 maximum",
-      "No fractional DKP or rounding; Only PP, no items",
+      "_North Freeport Bank_",
+      "For all bank spells, you **must be able to scribe the spell**",
+      "**51-54** spells cost 50p, as well as: Tiger's Insects, Infusion, Conjure Corpse, Wake of Tranquility",
+      "**55-60** spells cost lesser of 200p/EC price or 1DKP each (buyer's choice)",
+      `**Forbidden** spells, when requested, will initiate a DKP auction in <#${auctionChannelId}>.`,
     ],
   },
   {
-    title: "Plane of Sky Spreadsheet",
+    title: "Plane of Sky",
     icon: Icon.Sold,
-    inventoryUrl: "https://tinyurl.com/castle-sky-bank",
+    site: "sky",
     bullets: [
       "_East Freeport Docks_",
       "**Droppables and non-DKP no-drops for quests** cost 250p each, must have already won the other required DKP items.",
       `**Efreeti items**, when requested, will initiate a DKP auction in <#${auctionChannelId}>.`,
       `**No-drops for quests that do not require Efreeti items**, when requested, will initiate a DKP auction in <#${auctionChannelId}>.`,
+      "**Rare drops** (2 or fewer in stock): use the [Sky Requests form](https://forms.gle/1574wewRuJcp7PwP6).",
     ],
   },
   {
-    title: "Dropped Spell Spreadsheet",
+    title: "Research Spells & Components",
     icon: Icon.Sold,
-    inventoryUrl: "https://tinyurl.com/castle-spell-spreadsheet",
-    bullets: [
-      "_North Freeport Bank_",
-      "For all bank spells, you **must be able to scribe the spell**",
-      "You must check the spreadsheet and post the quantity availabile",
-      "**51-54** spells cost 50p, as well as: Tiger's Insects, Infusion, Conjure Corpse, Wake of Tranquility",
-      "**55-60** spells cost lesser of 200p/EC price or 1DKP each (buyer's choice)",
-      `**Forbidden** spells (highlighted in gold), when requested, will initiate a DKP auction in <#${auctionChannelId}>.`,
-    ],
-  },
-  {
-    title: "Research Spells & Components Spreadsheet",
-    icon: Icon.Sold,
-    inventoryUrl: "https://tinyurl.com/castle-research",
+    site: "other",
     bullets: ["_North Freeport Bank_ (free)"],
   },
   {
     title: "Raid Reagents",
     icon: Icon.Jewelry,
+    requestFormats: ["Raid Reagents: Item name, Item count"],
     bullets: [
       "_West Commons, Wizard Spire_ or _ToV, Entrance_",
       "The following reagents are free **for raid purposes only**.",
@@ -106,6 +68,60 @@ export const services: Service[] = [
       "Hate Stones (Wizards)",
       "Pearls (Mages)",
       "Small Portal Fragments (Wizards)",
+    ],
+  },
+  {
+    title: "Recharge Instructions",
+    icon: Icon.Sold,
+    requestFormats: ["Recharge: Item name"],
+    inventoryUrl: "https://tinyurl.com/castle-charge",
+    bullets: [
+      "_West Commons Lake, South Inn_",
+      "Leatherfoot Raiders Skullcap (180p)",
+      "Ring of Shadows (36p)",
+      "Thin Bones Wand (5p)",
+      "Wort Potions (750p, scheduled events only)",
+      "Various Items, see spreadsheet",
+    ],
+  },
+  {
+    title: "OT Hammer Event Scheduling",
+    icon: Icon.Sold,
+    requestFormats: [
+      "OT Hammer Event",
+      "OT Hammer Event: Date, Time (include timezone)",
+    ],
+    bullets: [
+      "_The Overthere, Outpost_ Look for monthly threads for date/time",
+      "Bring 1 Jade and either 1750pp (members and allies) or 2500p (non-allies)",
+      "Payment may be delivered at _North Freeport Bank_ or _Hammer Hill_",
+      "Charisma gear, Tash and Malo will be provided",
+      "Requires more people to facilitate, so this is a request to schedule event",
+      "Some exceptions may be made. DM Treasurer for info.",
+    ],
+  },
+  {
+    title: "Bounties Spreadsheet",
+    icon: Icon.Bought,
+    requestFormats: ["Bounty: Item name, Item count"],
+    inventoryUrl:
+      "https://docs.google.com/spreadsheets/d/1IRXO4cRQXMAeMtFgZ-TGgADFi0A9z8-9uHvxJLPT3TQ/edit#gid=0",
+    bullets: [
+      "The guild bank will purchase these items",
+      "Some are purhcased with platinum, and others with DKP",
+      "Some have player limits",
+    ],
+  },
+  {
+    title: "PP4DKP",
+    icon: Icon.Sold,
+    requestFormats: ["PP4DKP #K Platinum"],
+    bullets: [
+      "_NFP Bank or EC Tunnel_",
+      "PP4DKP (Platinum Pieces for Dragon Kill Points) Fundraising",
+      "PP4DKP runs on a monthly cycle with DKP recorded the following month",
+      "1k = 1 DKP; 30 maximum",
+      "No fractional DKP or rounding; Only PP, no items",
     ],
   },
 ];

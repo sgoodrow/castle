@@ -1,4 +1,12 @@
-import { ButtonInteraction, CacheType, ChannelType, Collection, TextBasedChannel, TextChannel, User } from "discord.js";
+import {
+  ButtonInteraction,
+  CacheType,
+  ChannelType,
+  Collection,
+  TextBasedChannel,
+  TextChannel,
+  User,
+} from "discord.js";
 import { bankerRoleId, bankRequestsChannelId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 import {
@@ -13,11 +21,11 @@ class BankingButtonCommand extends ButtonCommand {
 
     const messages = await bankRequestsChannel.messages.fetch();
 
-    const botMentions = messages.filter(
-      (m) => (m.member?.user.bot && m.content.match("requests:") && m.mentions)
-    ).map(
-      (m) => Array.from(m.mentions.parsedUsers.values())[0]
-    )
+    const botMentions = messages
+      .filter(
+        (m) => m.member?.user.bot && m.content.match("requests:") && m.mentions
+      )
+      .map((m) => Array.from(m.mentions.parsedUsers.values())[0]);
 
     // get all non-banker messages
     const users = [
@@ -30,14 +38,18 @@ class BankingButtonCommand extends ButtonCommand {
           .map((r) => r.member?.user)
           .filter(Boolean)
           .concat(botMentions)
-      )
+      ),
     ];
 
     const attention = await getAttentionMessage(
       users.map((u) => (u as User).id)
     );
-    if (interaction.channel?.isTextBased() && !interaction.channel.isDMBased()) {
-      await (interaction.channel as TextChannel).send(`**${interaction.member?.user} is now banking!**
+    if (
+      interaction.channel?.isTextBased() &&
+      !interaction.channel.isDMBased()
+    ) {
+      await (interaction.channel as TextChannel)
+        .send(`**${interaction.member?.user} is now banking!**
 
 ${attention}`);
     }

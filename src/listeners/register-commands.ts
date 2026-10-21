@@ -9,7 +9,6 @@ import {
 import { clientId, guildId, token } from "../config";
 import { applicationCommandButton } from "../features/applications/update-applications";
 import { auctionCommand } from "../features/auctions/command";
-import { bankHourCommand } from "../features/bank-hours/command";
 import { bankCleanupButtonCommand } from "../features/bank-request-info/bank-cleanup-button-command";
 import { bankingButtonCommand } from "../features/bank-request-info/banking-button-command";
 import {
@@ -31,7 +30,7 @@ import { botCommand } from "../features/raid-bots/command";
 import { batphoneCommand } from "../features/bp/bp-command";
 import { wakeupCommand } from "../features/wakeup/wakeup-command";
 import { requestBotButtonCommand } from "../features/bp/request-bot-button-command";
-import { parkBotButtonCommand } from "../features/raid-bots/park-bot-button-command"
+import { parkBotButtonCommand } from "../features/raid-bots/park-bot-button-command";
 import { odkpCommand } from "../features/odkp/odkp-command";
 import { rteCommand } from "../features/rte/command";
 import { eqnotifyCommand } from "../features/eqnotify/command";
@@ -62,7 +61,6 @@ import {
 } from "../features/spawn-timers/commands/index";
 
 const slashCommands = [
-  bankHourCommand,
   auctionCommand,
   botCommand,
   invitedCommand,
@@ -118,8 +116,7 @@ const buttonCommands = [
 
 export const getCommand = (
   interaction:
-    | CommandInteraction<CacheType>
-    | AutocompleteInteraction<CacheType>
+    CommandInteraction<CacheType> | AutocompleteInteraction<CacheType>
 ) => {
   const command = slashCommands.find((c) => c.name === interaction.commandName);
   if (!command) {

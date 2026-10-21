@@ -8,15 +8,13 @@ import {
   MessageActionRowComponentBuilder,
 } from "discord.js";
 import { bankRequestsChannelId, bankWebUrl } from "../../config";
-import { BankHour } from "../../db/bank-hour";
-import { dataSource } from "../../db/data-source";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 import {
   readyActionExecutor,
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
-import { services } from "./bank-services";
+import { BankService, services, SiteSection } from "./bank-services";
 import { bankCleanupButtonCommand } from "./bank-cleanup-button-command";
 import { bankingButtonCommand } from "./banking-button-command";
 import { Icon } from "./types";
@@ -55,40 +53,34 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
   }
 
   private async getServicesEmbeds() {
-    return services.map(
-      ({ title, icon, inventoryUrl, bullets }) =>
-        new EmbedBuilder({
-          title: `${icon} ${inventoryUrl ? "__" : ""}${title}${
-            inventoryUrl ? "__" : ""
-          }`,
-          url: inventoryUrl,
-          description: `${bullets.map((b) => `• ${b}`).join("\n")}`,
-        })
-    );
+    return services.map((service) => {
+      const { title, url, requestFormats } = card(service);
+      return new EmbedBuilder({
+        title: `${service.icon} ${url ? `__${title}__` : title}`,
+        url,
+        footer: requestFormats.length
+          ? {
+              text: requestFormats
+                .map((r) => `${Icon.Request} ${r}`)
+                .join("\n"),
+            }
+          : undefined,
+        description: service.bullets.map((b) => `• ${b}`).join("\n"),
+      });
+    });
   }
 
   private async getInstructionsEmbed() {
-    const bankHour = await dataSource.getRepository(BankHour).findBy({});
-    const bankHourDescription = ` Additionally the following banker(s) have a set schedule on which they are also available (in your timezone):
-
-${bankHour
-  .map((a) => `• ${a.richLabel}`)
-  .sort((a, b) => (a > b ? 1 : -1))
-  .join("\n")}`;
     const site = bankWebUrl
-      ? `• ${Icon.Sold} **Request from the [bank site](${bankWebUrl}),** especially for more than one item. Browse misc items, dropped spells and Plane of Sky, see prices and stock, and post your list here in one click.
+      ? `• ${Icon.Sold} **Request from the [bank site](${bankWebUrl}),** especially for more than one item. Browse misc items, dropped spells, Plane of Sky and research, see prices and stock, and post your list here in one click.
 `
       : "";
     const description = `Always be courteous and patient with your bankers.
-${site}• The '/bank request' command works for a single item.
-• State how long you will be available.
+${site}• ${Icon.Request} For services the site doesn't cover, post in the format shown on its card.
+• \`/bank request\` works for a single item, and \`/bank search\` finds an item without requesting it.
 • Requests remain open until fulfilled, for up to ${MAX_AGE_DAYS} days.
 • Reach out to an officer if you want to help bank.
-• Bankers will only process requests made in ${this.channel} (not PMs).
-
-We have many bankers that are available at their convenience throughout the day but do not have set banking hours.${
-      bankHour.length ? bankHourDescription : "."
-    }`;
+• Bankers will only process requests made in ${this.channel} (not PMs).`;
     // Discord shows at most 10 embeds a message, and the services use 9, so the site is linked here.
     return new EmbedBuilder({
       title: "Instructions",
@@ -101,3 +93,24 @@ We have many bankers that are available at their convenience throughout the day 
     return this.getChannel(bankRequestsChannelId, "bank requests");
   }
 }
+
+// The site's cards are titled for it and link to its category, where members request instead of
+// typing a format.
+const card = (service: BankService) =>
+  "site" in service
+    ? {
+        title: `Castle Bank: ${service.title}`,
+        url: bankWebUrl && siteLink(bankWebUrl, service.site),
+        requestFormats: [],
+      }
+    : {
+        title: service.title,
+        url: service.inventoryUrl,
+        requestFormats: service.requestFormats,
+      };
+
+const siteLink = (base: string, site: SiteSection) => {
+  const url = new URL(base);
+  if (site !== "all") url.searchParams.set("kind", site);
+  return url.toString();
+};
