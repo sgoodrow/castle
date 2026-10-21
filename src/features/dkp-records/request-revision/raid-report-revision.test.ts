@@ -44,15 +44,21 @@ const saved = () => new RaidReport(JSON.parse(store.get(THREAD) ?? ""));
 const savedTicks = (): RaidTickData[] =>
   JSON.parse(store.get(THREAD) ?? "").ticks;
 
-// a !command in the raid thread, with no `channel`: approving must not touch Discord beyond reacting
+// a !command in the raid thread that a deputy has just ✅'d, with no `channel`: approving
+// must not touch Discord beyond the bot adding its own ✅ to the same reaction
 const request = (id: string) => {
-  const reactions: { emoji: { name: string }; me: boolean }[] = [];
+  const reactions = [{ emoji: { name: "✅" }, me: false }];
   return {
     id,
     channelId: THREAD,
     reactions: { cache: reactions },
     react: vi.fn(async (name: string) => {
-      reactions.push({ emoji: { name }, me: true });
+      const reaction = reactions.find((r) => r.emoji.name === name);
+      if (reaction) {
+        reaction.me = true;
+      } else {
+        reactions.push({ emoji: { name }, me: true });
+      }
     }),
     reply: vi.fn(),
   } as any;
@@ -84,6 +90,15 @@ describe("approving a raid report request", () => {
     await approve("!rep Pumped with Iceburgh 1", message);
     expect(savedTicks()[0].attendees).toEqual(["Iceburgh"]);
     expect(message.react).toHaveBeenCalledWith("✅");
+  });
+
+  it("skips a later ✅ once the bot has added its own", async () => {
+    await save([tickData(1, ["Someone"])]);
+    const message = request("1");
+    await approve("!adj Someone 5 kill", message);
+    await approve("!adj Someone 5 kill", message);
+    expect(savedTicks()[0].adjustments).toHaveLength(1);
+    expect(message.react).toHaveBeenCalledTimes(1);
   });
 
   it("does nothing once the bot's ✅ is on the message", async () => {

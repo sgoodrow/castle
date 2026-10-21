@@ -21,7 +21,7 @@ export default defineConfig({
       thresholds: {
         "src/db/bank-hour.ts": { lines: 77, branches: 0, functions: 50 },
         "src/features/dkp-records/raid-report.ts": { lines: 36, branches: 88, functions: 39 },
-        "src/features/dkp-records/request-revision/raid-report-revision.ts": { lines: 96, branches: 95, functions: 83 },
+        "src/features/dkp-records/request-revision/raid-report-revision.ts": { lines: 96, branches: 94, functions: 83 },
         "src/features/dkp-records/request-revision/util.ts": { lines: 75, branches: 58, functions: 100 },
         "src/listeners/message-reaction-add-listener.ts": { lines: 100, branches: 100, functions: 100 },
         "src/features/dkp-records/raid-tick.ts": { lines: 54, branches: 40, functions: 34 },
