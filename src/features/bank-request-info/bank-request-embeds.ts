@@ -2,7 +2,6 @@ import { Colors, EmbedBuilder } from "discord.js";
 import { bankWebUrl } from "../../config";
 import {
   BankSection,
-  BankService,
   bounties,
   inventory,
   raidingServices,
@@ -22,7 +21,7 @@ export const bankRequestEmbeds = (channel: string) => [
     title: `${Icon.Sold} ${
       bankWebUrl ? "__Castle Bank Inventory__" : "Castle Bank Inventory"
     }`,
-    url: bankWebUrl,
+    url: bankWebUrl || undefined,
     description:
       "Shop the Castle Bank's inventory. Prices and rules are described below.",
     fields: inventory.map((section) => ({
@@ -32,11 +31,12 @@ export const bankRequestEmbeds = (channel: string) => [
   }),
   new EmbedBuilder({
     title: `${Icon.Raiding} Castle Raiding Services`,
-    fields: raidingServices.map((service: BankService) => ({
-      name: service.title,
+    fields: raidingServices.map((service, i) => {
       // A blank line sets the request apart from the bullets.
-      value: spaced(`${list(service)}\n\n${Icon.Request} ${service.request}`),
-    })),
+      const value = `${list(service)}\n\n${Icon.Request} ${service.request}`;
+      const last = i === raidingServices.length - 1;
+      return { name: service.title, value: last ? value : spaced(value) };
+    }),
   }),
   new EmbedBuilder({
     title: "Bank Requests Instructions",

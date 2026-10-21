@@ -2,7 +2,6 @@ export enum Icon {
   Bought = "📜",
   Request = "✍️",
   Sold = "🏦",
-  Money = "💰",
   Jewelry = "💎",
   Raiding = "⚔️",
 }
