@@ -550,11 +550,10 @@ ${this.attendance}`.split("\n");
 ${sorted
         .flatMap((name, i) => {
           const [first, ...more] = labels[i];
-          // further bots line up under the first, without the tick numbers
-          const indent = " ".repeat(name.length + 1);
+          // further bots are indented under the name, without the tick numbers
           return [
             this.renderAttendee(first.padEnd(width), attendanceMap[name]),
-            ...more.map((bots) => `+ ${indent}${bots}`),
+            ...more.map((bots) => `+   ${bots}`),
           ];
         })
         .join("\n")}`;
@@ -576,7 +575,7 @@ ${sorted
 
   /**
    * The attendee's lines, e.g. ["Iceburgh [Pumped]"] when Iceburgh replaced their bot Pumped, or
-   * ["Iceburgh [Pumped]", "[Zapped, Buffed]", "[Healed]"] when they replaced four, so a botpilot's
+   * ["Iceburgh [Pumped,", "Zapped, Buffed,", "Healed]"] when they replaced four, so a botpilot's
    * bots don't widen every line of the attendance.
    */
   private labelAttendee(name: string): [string, ...string[]] {
@@ -586,9 +585,12 @@ ${sorted
     if (!first) {
       return [name];
     }
+    const rest = chunk(more, BOTS_PER_LINE).map((bots) => bots.join(", "));
+    // one pair of brackets around all of them, with a comma ending each line before the last
+    const end = (last: boolean) => (last ? "]" : ",");
     return [
-      `${name} [${first}]`,
-      ...chunk(more, BOTS_PER_LINE).map((bots) => `[${bots.join(", ")}]`),
+      `${name} [${first}${end(rest.length === 0)}`,
+      ...rest.map((bots, i) => `${bots}${end(i === rest.length - 1)}`),
     ];
   }
 

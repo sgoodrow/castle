@@ -161,10 +161,33 @@ describe("attendance", () => {
     });
     expect(attendance(report)).toEqual([
       "--- Attendance (2) ---",
-      "+ Iceburgh [Pumped] (1, 2, 3, 4)",
-      "+          [Zapped, Buffed]",
-      "+          [Healed]",
+      "+ Iceburgh [Pumped, (1, 2, 3, 4)",
+      "+   Zapped, Buffed,",
+      "+   Healed]",
       "+ Someone           (1, 2, 3, 4)",
+    ]);
+  });
+
+  it("keeps a player with one bot on one line", () => {
+    const report = new RaidReport({
+      filename: "raid",
+      ticks: [
+        {
+          finished: false,
+          tickNumber: 1,
+          sheetName: "Test",
+          loot: [],
+          attendees: ["Iceburgh", "Someone"],
+          date: "2026-10-14T00:00:00.000Z",
+          credits: [],
+          replaced: { Iceburgh: "Pumped" },
+        },
+      ],
+    });
+    expect(attendance(report)).toEqual([
+      "--- Attendance (2) ---",
+      "+ Iceburgh [Pumped] (1)",
+      "+ Someone           (1)",
     ]);
   });
 });
