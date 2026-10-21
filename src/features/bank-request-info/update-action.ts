@@ -2,25 +2,19 @@ import {
   Client,
   ActionRowBuilder,
   ButtonBuilder,
-  EmbedBuilder,
   ButtonStyle,
-  Colors,
   MessageActionRowComponentBuilder,
 } from "discord.js";
 import { bankRequestsChannelId } from "../../config";
-import { BankHour } from "../../db/bank-hour";
-import { dataSource } from "../../db/data-source";
 import { Name } from "../../db/instructions";
 import { InstructionsReadyAction } from "../../shared/action/instructions-ready-action";
 import {
   readyActionExecutor,
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
-import { services } from "./bank-services";
+import { bankRequestEmbeds } from "./bank-request-embeds";
 import { bankCleanupButtonCommand } from "./bank-cleanup-button-command";
 import { bankingButtonCommand } from "./banking-button-command";
-import { Icon } from "./types";
-import { MAX_AGE_DAYS } from "./expire-old-requests";
 
 export const updateBankRequestInfo = (
   client: Client,
@@ -31,10 +25,7 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
   public async execute() {
     await this.createOrUpdateInstructions(
       {
-        embeds: [
-          ...(await this.getServicesEmbeds()),
-          await this.getInstructionsEmbed(),
-        ],
+        embeds: bankRequestEmbeds(`${this.channel}`),
         components: [await this.getButtons()],
       },
       Name.BankRequestInstructions
@@ -50,53 +41,8 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
       new ButtonBuilder()
         .setCustomId(bankCleanupButtonCommand.customId)
         .setStyle(ButtonStyle.Danger)
-        .setLabel("Remove Old Requests")
+        .setLabel("Remove All Requests")
     );
-  }
-
-  private async getServicesEmbeds() {
-    return services.map(
-      ({ title, icon, requestFormats, inventoryUrl, bullets }) =>
-        new EmbedBuilder({
-          title: `${icon} ${inventoryUrl ? "__" : ""}${title}${
-            inventoryUrl ? "__" : ""
-          }`,
-          url: inventoryUrl,
-          footer: {
-            text: requestFormats.map((r) => `${Icon.Request} ${r}`).join("\n"),
-          },
-          description: `${bullets.map((b) => `• ${b}`).join("\n")}`,
-        })
-    );
-  }
-
-  private async getInstructionsEmbed() {
-    const bankHour = await dataSource.getRepository(BankHour).findBy({});
-    const bankHourDescription = ` Additionally the following banker(s) have a set schedule on which they are also available (in your timezone):
-
-${bankHour
-  .map((a) => `• ${a.richLabel}`)
-  .sort((a, b) => (a > b ? 1 : -1))
-  .join("\n")}`;
-    const description = `Always be courteous and patient with your bankers.
-• ${Icon.Request} Use the '/bank request' command or the appropriate request format
-• State how long you will be available.
-• Reimbursement, Recharge, and Auction requests remain open until fulfilled, for up to ${MAX_AGE_DAYS} days.
-• All other requests will remain open for 3 days and then closed.
-• Reach out to an officer if you want to help bank.
-• Bankers will only process requests made in ${this.channel} (not PMs).
-
-**__Example Request:__**
-> Raid Reagents: Peridots, 40
-
-We have many bankers that are available at their convenience throughout the day but do not have set banking hours.${
-      bankHour.length ? bankHourDescription : "."
-    }`;
-    return new EmbedBuilder({
-      title: "Instructions",
-      description,
-      color: Colors.Green,
-    });
   }
 
   protected get channel() {

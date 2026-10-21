@@ -70,6 +70,7 @@ export const {
   GOOGLE_PRIVATE_KEY,
   GOOGLE_KEY_FILE,
   bankGoogleDriveFolderId,
+  bankWebUrl,
   modRoleId,
   batphoneChannelId,
   wakeupChannelId,
@@ -262,6 +263,11 @@ export const {
 
   // Google Ids
   bankGoogleDriveFolderId: string;
+
+  /**
+   * [Optional] The bank site's address, linked from the #bank-requests instructions.
+   */
+  bankWebUrl?: string;
 
   // Google Auth
   GOOGLE_CLIENT_EMAIL: string;
