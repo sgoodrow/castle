@@ -41,7 +41,7 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
       new ButtonBuilder()
         .setCustomId(bankCleanupButtonCommand.customId)
         .setStyle(ButtonStyle.Danger)
-        .setLabel("Remove Old Requests")
+        .setLabel("Remove All Requests")
     );
   }
 

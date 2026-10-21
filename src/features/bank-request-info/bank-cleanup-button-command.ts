@@ -45,7 +45,7 @@ class BankCleanupCommand extends ButtonCommand {
 
     // for each user
     Object.values(nonBankerMessagesMap).forEach(({ user, messages }) => {
-      // DM them their stale messages
+      // DM them their requests
       user.send(dismissal(messages.map((m) => m.content)));
 
       // Delete the messages
@@ -53,7 +53,7 @@ class BankCleanupCommand extends ButtonCommand {
     });
 
     await interaction.editReply({
-      content: `Removed stale bank requests from: ${Object.values(
+      content: `Removed all bank requests from: ${Object.values(
         nonBankerMessagesMap
       )
         .map(({ user }) => user)
