@@ -3,7 +3,7 @@ import { Icon, Service } from "./types";
 
 // The bank site's category filters, as its `?kind=` deep link names them.
 // "all" is the site's front page.
-export type SiteSection = "spell" | "sky" | "other" | "all";
+export type SiteSection = "spell" | "sky" | "all";
 
 // A card the bank site covers links to it, where members request; the others show members how
 // to type a request, and may link a spreadsheet.
@@ -54,7 +54,8 @@ export const services: BankService[] = [
   {
     title: "Research Spells & Components",
     icon: Icon.Sold,
-    site: "other",
+    // Research scrolls are under Spells and components under Other, so neither category has both.
+    site: "all",
     bullets: ["_North Freeport Bank_ (free)"],
   },
   {
