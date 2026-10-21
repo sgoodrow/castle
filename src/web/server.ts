@@ -15,6 +15,7 @@ import { message, send } from "./respond";
 import { WikiCache } from "./wiki-cache";
 import { SpellSheet } from "./spell-sheet";
 import { SkySheet } from "./sky-sheet";
+import { ResearchSheet } from "./research-sheet";
 
 dotenv.config();
 
@@ -72,7 +73,8 @@ const api = new BankApi(
   path.join(ROOT, "bank/data"),
   wiki,
   new SpellSheet(CACHE),
-  new SkySheet(CACHE)
+  new SkySheet(CACHE),
+  new ResearchSheet(CACHE)
 );
 // Posting bank requests needs the bot's token and the channel; without them the page is told so.
 const poster: Poster | null =
@@ -311,6 +313,7 @@ export function handle(req: IncomingMessage, res: ServerResponse) {
 
 export const readSpellSheet = () => api.refreshSheet();
 export const readSkySheet = () => api.refreshSkySheet();
+export const readResearchSheet = () => api.refreshResearchSheet();
 export const refreshWiki = () => api.refreshWiki();
 
 // Listening, the wiki refresh and the process handlers only start when this file is run, so tests can import it.
@@ -323,7 +326,7 @@ export function start() {
     )
   );
 
-  // Keep icons, auctions, spell prices and Sky islands current in the background; the page never waits on the
+  // Keep icons, auctions, spell prices, Sky islands and research items current in the background; the page never waits on the
   // wiki or the sheets.
   const inBackground = (what: string, run: () => Promise<unknown>) => () =>
     run().catch((err) => {
@@ -334,13 +337,14 @@ export function start() {
         stack,
         feature: what,
         outcome:
-          "The bank page kept showing what it had before: icons, auctions, spell prices or Sky islands go stale until a refresh works.",
+          "The bank page kept showing what it had before: icons, auctions, spell prices, Sky islands or research items go stale until a refresh works.",
       });
     });
   for (const refresh of [
     inBackground("wiki refresh", refreshWiki),
     inBackground("spell sheet refresh", readSpellSheet),
     inBackground("sky sheet refresh", readSkySheet),
+    inBackground("research sheet refresh", readResearchSheet),
   ]) {
     refresh();
     setInterval(refresh, WIKI_EVERY);

@@ -111,3 +111,23 @@ export const WITH_SKY: Payload = {
     1029: { name: "Griffon Eye", nodrop: true, sky: { islands: [], note: "" } },
   },
 };
+
+// The usual stock plus the research mules': a component on a research mule and a storage mule, a
+// scroll two classes research, and a component a banker priced.
+export const WITH_RESEARCH: Payload = {
+  ...PAYLOAD,
+  bank: [
+    ...PAYLOAD.bank,
+    ["Cgstorageb", "General1", 1031, 2],
+    ["Cgnecro", "General1", 1031, 7],
+    ["Cgnecro", "General2", 1032, 1],
+    ["Cgwiz", "General1", 1033, 1],
+  ],
+  items: {
+    ...items,
+    1031: { name: "Words of Odus", research: true },
+    1032: { name: "Spell: Lich", scroll: 506, research: true },
+    1033: { name: "Rune of Ap`Sagor", price: "5p", research: true },
+  },
+  spells: { ...PAYLOAD.spells, 506: { name: "Lich", lv: levels({ NEC: 49, SHD: 60 }) } },
+};

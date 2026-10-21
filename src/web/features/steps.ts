@@ -17,6 +17,7 @@ import path from "path";
 import { SourceMapGenerator } from "source-map";
 import { CLASS_TABS, FORBIDDEN_TAB } from "../spell-sheet";
 import { MQ_TAB, SKY_SHEET, SKY_TAB } from "../sky-sheet";
+import { RESEARCH_SHEET, RESEARCH_TABS, researchKey } from "../research-sheet";
 
 type Slot = {
   charName: string;
@@ -99,6 +100,9 @@ interface World {
   mq: string | null; // and its Multiquest tab
   skyStatus: number;
   skyAsked: number;
+  research: Record<string, string>; // the research sheet's class tabs as CSV, by tab id
+  researchStatus: number;
+  researchAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
   postStatus: number;
   logs: string[];
@@ -222,6 +226,19 @@ ROUTES.push([
   new RegExp(`^${SKY_SHEET.replace(/[.?]/g, "\\$&")}${MQ_TAB}$`),
   () => new Response(world.mq ?? ",ITEM,CLASS,,\n"),
 ]);
+// The research sheet's class tabs: the scenario's, or empty ones with their headers.
+ROUTES.push([
+  "GET",
+  new RegExp(`^${RESEARCH_SHEET.replace(/[.?]/g, "\\$&")}(\\d+)$`),
+  (_, m) => {
+    const tab = RESEARCH_TABS.find((t) => t.tab === m[1]);
+    if (!tab) throw new Error(`The research sheet has no tab ${m[1]}`);
+    world.researchAsked++;
+    return new Response(world.research[m[1]] ?? `Spell,${tab.components}\n`, {
+      status: world.researchStatus,
+    });
+  },
+]);
 // The spell sheet's tabs: the scenario's, or empty ones with their headers.
 ROUTES.push([
   "GET",
@@ -293,6 +310,9 @@ export async function reset() {
     mq: null,
     skyStatus: 200,
     skyAsked: 0,
+    research: {},
+    researchStatus: 200,
+    researchAsked: 0,
     posts: [],
     postStatus: 200,
     logs: [],
@@ -829,6 +849,42 @@ export const steps = ({
     expect(world.skyAsked).toBe(1);
   });
 
+  // ---------- the research sheet ----------
+  const RESEARCH_CLASSES: Record<string, string> = {
+    Enchanter: RESEARCH_TABS[0].tab,
+    Magician: RESEARCH_TABS[1].tab,
+    Necromancer: RESEARCH_TABS[2].tab,
+    Wizard: RESEARCH_TABS[3].tab,
+  };
+  step(/^the research sheet's (\w+) tab is:$/, (cls: string, csv: string) => {
+    const gid = RESEARCH_CLASSES[cls];
+    if (!gid) throw new Error(`The research sheet has no ${cls} tab`);
+    world.research[gid] = csv;
+  });
+  step(/^Google answers the research sheet with (\d+)$/, (status: string) => {
+    world.researchStatus = +status;
+  });
+  step(/^a saved copy of the research sheet lists "(.*)"$/, (name: string) => {
+    mkdirSync(path.join(world.dir, "cache"), { recursive: true });
+    writeFileSync(
+      path.join(world.dir, "cache/research-sheet.json"),
+      JSON.stringify([researchKey(name)])
+    );
+  });
+  step(/^the site reads the research sheet$/, async () => {
+    await site();
+    await world.mod!.readResearchSheet();
+    expect(world.researchAsked).toBe(RESEARCH_TABS.length);
+  });
+  step(/^the bank gives away (".*)$/, (names: string) => {
+    for (const name of quoted(names))
+      expect(bank().items[itemId(name)], name).toHaveProperty("research", true);
+  });
+  step(/^the bank doesn't give away (".*)$/, (names: string) => {
+    for (const name of quoted(names))
+      expect(bank().items[itemId(name)], name).not.toHaveProperty("research");
+  });
+
   step(/^the site refreshes the wiki$/, async () => {
     await site();
     // The refresh waits a second between wiki pages to be polite; a test needn't wait for real.
@@ -1030,9 +1086,8 @@ export const steps = ({
     );
   });
   step(
-    /^the wiki and both sheets are refreshed again every (\d+) minutes$/,
-    (min: string) =>
-      expect(world.every).toEqual([+min * 60e3, +min * 60e3, +min * 60e3])
+    /^the wiki and all three sheets are refreshed again every (\d+) minutes$/,
+    (min: string) => expect(world.every).toEqual(Array(4).fill(+min * 60e3))
   );
   step(
     /^a promise fails with (an error|the bare value) "(.*)" and nothing catches it$/,

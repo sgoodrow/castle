@@ -62,6 +62,7 @@ Feature: Plane of Sky
     When I click "Emerald Spiroc Feather" in the bank
     Then the page says "Bank location · 3"
     And the page says "Rabbie"
+    And the page says "Pick up at the East Freeport docks."
     And the page doesn't say "Held for multiquesting. Request it, and a banker will tell you how to set it up."
 
   Scenario: The details of an item only held for multiquesting say a banker will help

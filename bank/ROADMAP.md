@@ -19,7 +19,8 @@ The guild bank offers many services. To a member they're all the same thing: an 
 | 3 | Forbidden spells | A price of "Auction" instead of pp or DKP, and a tab total that allows for auction lines | Done |
 | 4 | Plane of Sky | A second inventory, fixed prices, auctions, and "must have won X first" | In progress |
 | 5 | Jewelry | Made-to-order items, a discount for materials you bring, posted to #jewelry-requests | Not started |
-| — | Recharges, research spells, bounties, PP4DKP | Rarer, one-off services | Parked |
+| 6 | Research spells | Research spells and components, free, picked up at North Freeport Bank | In progress |
+| — | Recharges, bounties, PP4DKP | Rarer, one-off services | Parked |
 
 ## Open questions
 
@@ -60,6 +61,14 @@ UX (agreed):
 - **Decided:** the page shows the Multiquest holders, and an MQ is requested like any item. It posts to #bank-requests as "Sky MQ: Item (held by Holder)", and a banker tells the member how to set it up, since some holders are bots and some are players. The page doesn't say which; the sheet stays the only record.
 - **Decided:** an item can be on more than one island (Ethereal Amethyst is on 6 and 7), so its islands are a list.
 - What we know: the sheet's "Multiquest" tab lists which character holds each item kept for multiquesting (character, item, class).
+
+**Phase 6: Research spells**
+- What we know: the research bankers' "Research Spells & Components" Google Sheet has a tab per class (Enchanter, Magician, Necromancer, Wizard). Each lists that class's research spells (levels 16–49) and the components they take: Runes for Wizards, Words for Necromancers, grimoire pages for Enchanters, and Words plus other items for Magicians. Its "All Items" tab is the inventory of the four research mules, Cgenc, Cgmage, Cgnecro and Cgwiz, the same uploads the database has. Cgstorageb and a few other mules hold more of the same Words and Runes.
+- What we know: before this phase, 112 of the 116 Rune and Words items showed "ask a banker" and 4 showed 80% of their Green price. Research scrolls are below level 51, so the dropped-spell rules sent them to "ask a banker" too.
+- **Decided:** an item is a research item if a class tab lists it, as a spell or a component, and one of the four research mules holds it. Having to be on a research mule keeps the Magician tab's everyday items, such as Dagger or Loaf of Bread, at their usual price. The sheet's names are matched loosely: "(Left)" and "(Right)" are dropped, "Pg. 64 (Faded)" is "A Faded … Page", and only letters and digits count, so "Ap'Sagor" matches "Ap`Sagor" and "Pg. 68" matches "Pg.68". Sheet names that match no item are logged.
+- **Decided:** research items are 0pp. They stay under Other (or Spells, for the scrolls) and get no section of their own. A banker's price still wins.
+- **Decided:** a research item is picked up at North Freeport Bank. The details pane and the request's item card in Discord both say where, and so do they for Sky items (the East Freeport docks). Request lines use the bot's existing formats: "Research spell: Necromancer, 49, Lich" (the member's class if it can scribe it) and "Research component: Words of Odus".
+- **Decided:** no class or race filtering for components. Their item data says every class can use them, and the wiki pages the server caches don't say otherwise. The sheet's class tabs do say which class uses each one, if that's ever wanted.
 
 **Later phases**
 - Jewelry data is in a Google Sheet today. Read it as it is, or move it to something bankers manage from Discord?

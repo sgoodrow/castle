@@ -38,6 +38,10 @@ export function requestMessage(tab: Tab, cls: ClassId | null): RequestMessage | 
     color: BLURPLE,
   };
   // One embed per item. The tab holds at most MAX_TAB_ITEMS, so this fits Discord's ten.
-  const embeds: Embed[] = [request, ...lines.map(l => ({ title: l.it.name, description: spots(l.it), color: GREY, item: l.it.id }))];
+  // An item kept in one place says where to pick it up.
+  const embeds: Embed[] = [request, ...lines.map(l => ({
+    title: l.it.name, description: spots(l.it), color: GREY, item: l.it.id,
+    ...(l.req.pickup ? { footer: `Pick up at ${l.req.pickup}.` } : {}),
+  }))];
   return { embeds };
 }

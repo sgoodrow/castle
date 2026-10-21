@@ -4,7 +4,7 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent, { type UserEvent } from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { expect } from "vitest";
-import { PAYLOAD, WITH_SHEET, WITH_SKY } from "../src/__fixtures__/bank";
+import { PAYLOAD, WITH_RESEARCH, WITH_SHEET, WITH_SKY } from "../src/__fixtures__/bank";
 import { bankPage } from "../src/app";
 import { ALL_CLASSES, CLASS_BIT, CLASSES, ITEM_LIST, bankRequest, maskText, prettyLoc, type EqClassLevels, type Payload } from "../src/data";
 import { server } from "./support/setup";
@@ -95,6 +95,7 @@ const pressed = (el: HTMLElement) => el.getAttribute("aria-pressed") === "true";
 step(/^the bank holds the usual stock$/, () => { world.payload = PAYLOAD; });
 step(/^the bank also holds spells priced by the spell sheet$/, () => { world.payload = WITH_SHEET; });
 step(/^the bank also holds the Plane of Sky items$/, () => { world.payload = WITH_SKY; });
+step(/^the bank also holds research spells and components$/, () => { world.payload = WITH_RESEARCH; });
 step(/^the bank is empty$/, () => { world.payload = { ...PAYLOAD, bank: [], items: {} }; });
 // Rows land after the usual stock, in the order given, the way the database may return them.
 step(/^the bank also holds:$/, ({ table }) => {
