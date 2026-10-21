@@ -1,21 +1,16 @@
 import { auctionChannelId } from "../../config";
 import { Icon, Service } from "./types";
 
-// The bank site's category filters, as its `?kind=` deep link names them.
-// "all" is the site's front page.
-export type SiteSection = "spell" | "sky" | "all";
+// What the bank site sells, one section each on the Castle Bank card. Members request these from
+// the site, so they have no typed request format.
+export interface CastleBankSection {
+  title: string;
+  bullets: string[];
+}
 
-// A card the bank site covers links to it, where members request; the others show members how
-// to type a request, and may link a spreadsheet.
-export type BankService = Omit<Service, "requestFormats" | "inventoryUrl"> &
-  ({ site: SiteSection } | Pick<Service, "requestFormats" | "inventoryUrl">);
-
-// todo: store this in database, populate and remove with command
-export const services: BankService[] = [
+export const castleBankSections: CastleBankSection[] = [
   {
-    title: "Misc Items",
-    icon: Icon.Sold,
-    site: "all",
+    title: "Miscellaneous",
     bullets: [
       "Tradeskilling INT Gear check in/out (free _Thurgadin_)",
       "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk _Rivervale Bank_)",
@@ -29,8 +24,6 @@ export const services: BankService[] = [
   },
   {
     title: "Dropped Spells",
-    icon: Icon.Sold,
-    site: "spell",
     bullets: [
       "_North Freeport Bank_",
       "For all bank spells, you **must be able to scribe the spell**",
@@ -41,8 +34,6 @@ export const services: BankService[] = [
   },
   {
     title: "Plane of Sky",
-    icon: Icon.Sold,
-    site: "sky",
     bullets: [
       "_East Freeport Docks_",
       "**Droppables and non-DKP no-drops for quests** cost 250p each, must have already won the other required DKP items.",
@@ -53,11 +44,26 @@ export const services: BankService[] = [
   },
   {
     title: "Research Spells & Components",
-    icon: Icon.Sold,
-    // Research scrolls are under Spells and components under Other, so neither category has both.
-    site: "all",
     bullets: ["_North Freeport Bank_ (free)"],
   },
+];
+
+// What members sell to the bank; first in the channel.
+export const bounties: Service = {
+  title: "Bounties Spreadsheet",
+  icon: Icon.Bought,
+  requestFormats: ["Bounty: Item name, Item count"],
+  inventoryUrl:
+    "https://docs.google.com/spreadsheets/d/1IRXO4cRQXMAeMtFgZ-TGgADFi0A9z8-9uHvxJLPT3TQ/edit#gid=0",
+  bullets: [
+    "The guild bank will purchase these items",
+    "Some are purhcased with platinum, and others with DKP",
+    "Some have player limits",
+  ],
+};
+
+// todo: store this in database, populate and remove with command
+export const services: Service[] = [
   {
     title: "Raid Reagents",
     icon: Icon.Jewelry,
@@ -99,18 +105,6 @@ export const services: BankService[] = [
       "Charisma gear, Tash and Malo will be provided",
       "Requires more people to facilitate, so this is a request to schedule event",
       "Some exceptions may be made. DM Treasurer for info.",
-    ],
-  },
-  {
-    title: "Bounties Spreadsheet",
-    icon: Icon.Bought,
-    requestFormats: ["Bounty: Item name, Item count"],
-    inventoryUrl:
-      "https://docs.google.com/spreadsheets/d/1IRXO4cRQXMAeMtFgZ-TGgADFi0A9z8-9uHvxJLPT3TQ/edit#gid=0",
-    bullets: [
-      "The guild bank will purchase these items",
-      "Some are purhcased with platinum, and others with DKP",
-      "Some have player limits",
     ],
   },
   {

@@ -14,10 +14,10 @@ import {
   readyActionExecutor,
   ReadyActionExecutorOptions,
 } from "../../shared/action/ready-action";
-import { BankService, services, SiteSection } from "./bank-services";
+import { bounties, castleBankSections, services } from "./bank-services";
 import { bankCleanupButtonCommand } from "./bank-cleanup-button-command";
 import { bankingButtonCommand } from "./banking-button-command";
-import { Icon } from "./types";
+import { Icon, Service } from "./types";
 import { MAX_AGE_DAYS } from "./expire-old-requests";
 
 export const updateBankRequestInfo = (
@@ -30,7 +30,9 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
     await this.createOrUpdateInstructions(
       {
         embeds: [
-          ...(await this.getServicesEmbeds()),
+          serviceEmbed(bounties),
+          this.getCastleBankEmbed(),
+          ...services.map(serviceEmbed),
           await this.getInstructionsEmbed(),
         ],
         components: [await this.getButtons()],
@@ -52,27 +54,25 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
     );
   }
 
-  private async getServicesEmbeds() {
-    return services.map((service) => {
-      const { title, url, requestFormats } = card(service);
-      return new EmbedBuilder({
-        title: `${service.icon} ${url ? `__${title}__` : title}`,
-        url,
-        footer: requestFormats.length
-          ? {
-              text: requestFormats
-                .map((r) => `${Icon.Request} ${r}`)
-                .join("\n"),
-            }
-          : undefined,
-        description: service.bullets.map((b) => `• ${b}`).join("\n"),
-      });
+  // Everything the bank site sells, in one card linked to the site, a field per category.
+  private getCastleBankEmbed() {
+    const site = bankWebUrl
+      ? `Request these from the [bank site](${bankWebUrl}): see prices and stock, and post your list here in one click.`
+      : undefined;
+    return new EmbedBuilder({
+      title: `${Icon.Sold} ${bankWebUrl ? "__Castle Bank__" : "Castle Bank"}`,
+      url: bankWebUrl,
+      description: site,
+      fields: castleBankSections.map(({ title, bullets }) => ({
+        name: title,
+        value: bullets.map((b) => `• ${b}`).join("\n"),
+      })),
     });
   }
 
   private async getInstructionsEmbed() {
     const site = bankWebUrl
-      ? `• ${Icon.Sold} **Request from the [bank site](${bankWebUrl}),** especially for more than one item. Browse misc items, dropped spells, Plane of Sky and research, see prices and stock, and post your list here in one click.
+      ? `• ${Icon.Sold} For anything on the Castle Bank card, **request from the [bank site](${bankWebUrl})**, especially for more than one item.
 `
       : "";
     const description = `Always be courteous and patient with your bankers.
@@ -81,7 +81,6 @@ ${site}• ${Icon.Request} For services the site doesn't cover, post in the form
 • Requests remain open until fulfilled, for up to ${MAX_AGE_DAYS} days.
 • Reach out to an officer if you want to help bank.
 • Bankers will only process requests made in ${this.channel} (not PMs).`;
-    // Discord shows at most 10 embeds a message, and the services use 9, so the site is linked here.
     return new EmbedBuilder({
       title: "Instructions",
       description,
@@ -94,23 +93,16 @@ ${site}• ${Icon.Request} For services the site doesn't cover, post in the form
   }
 }
 
-// The site's cards are titled for it and link to its category, where members request instead of
-// typing a format.
-const card = (service: BankService) =>
-  "site" in service
-    ? {
-        title: `Castle Bank: ${service.title}`,
-        url: bankWebUrl && siteLink(bankWebUrl, service.site),
-        requestFormats: [],
-      }
-    : {
-        title: service.title,
-        url: service.inventoryUrl,
-        requestFormats: service.requestFormats,
-      };
-
-const siteLink = (base: string, site: SiteSection) => {
-  const url = new URL(base);
-  if (site !== "all") url.searchParams.set("kind", site);
-  return url.toString();
-};
+const serviceEmbed = (service: Service) =>
+  new EmbedBuilder({
+    title: `${service.icon} ${
+      service.inventoryUrl ? `__${service.title}__` : service.title
+    }`,
+    url: service.inventoryUrl,
+    footer: {
+      text: service.requestFormats
+        .map((r) => `${Icon.Request} ${r}`)
+        .join("\n"),
+    },
+    description: service.bullets.map((b) => `• ${b}`).join("\n"),
+  });
