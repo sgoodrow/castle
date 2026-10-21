@@ -133,3 +133,38 @@ describe("updateMessages", () => {
     );
   });
 });
+
+describe("attendance", () => {
+  const attendance = (report: RaidReport) => {
+    const text = report
+      .getRaidReportMessageEmbeds([0])
+      .flat()
+      .map((e) => e.toJSON().description ?? "")
+      .join("");
+    return text.slice(text.indexOf("--- Attendance")).replace(/```$/, "").split("\n");
+  };
+
+  it("wraps a botpilot's bots after the first, with their ticks only on the first line", () => {
+    const bots = ["Pumped", "Zapped", "Buffed", "Healed"];
+    const report = new RaidReport({
+      filename: "raid",
+      ticks: bots.map((bot, i) => ({
+        finished: false,
+        tickNumber: i + 1,
+        sheetName: "Test",
+        loot: [],
+        attendees: ["Iceburgh", "Someone"],
+        date: "2026-10-14T00:00:00.000Z",
+        credits: [],
+        replaced: { Iceburgh: bot },
+      })),
+    });
+    expect(attendance(report)).toEqual([
+      "--- Attendance (2) ---",
+      "+ Iceburgh [Pumped] (1, 2, 3, 4)",
+      "+          [Zapped, Buffed]",
+      "+          [Healed]",
+      "+ Someone           (1, 2, 3, 4)",
+    ]);
+  });
+});
