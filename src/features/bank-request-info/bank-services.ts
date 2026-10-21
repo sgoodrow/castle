@@ -65,7 +65,7 @@ export const bounties: Service = {
 // todo: store this in database, populate and remove with command
 export const services: Service[] = [
   {
-    title: "Raid Reagents",
+    title: "Raiding: Reagents",
     icon: Icon.Jewelry,
     requestFormats: ["Raid Reagents: Item name, Item count"],
     bullets: [
@@ -78,7 +78,7 @@ export const services: Service[] = [
     ],
   },
   {
-    title: "Recharge Instructions",
+    title: "Raiding: Recharge Instructions",
     icon: Icon.Sold,
     requestFormats: ["Recharge: Item name"],
     inventoryUrl: "https://tinyurl.com/castle-charge",
@@ -89,6 +89,18 @@ export const services: Service[] = [
       "Thin Bones Wand (5p)",
       "Wort Potions (750p, scheduled events only)",
       "Various Items, see spreadsheet",
+    ],
+  },
+  {
+    title: "Raiding: PP4DKP",
+    icon: Icon.Sold,
+    requestFormats: ["PP4DKP #K Platinum"],
+    bullets: [
+      "_NFP Bank or EC Tunnel_",
+      "PP4DKP (Platinum Pieces for Dragon Kill Points) Fundraising",
+      "PP4DKP runs on a monthly cycle with DKP recorded the following month",
+      "1k = 1 DKP; 30 maximum",
+      "No fractional DKP or rounding; Only PP, no items",
     ],
   },
   {
@@ -105,18 +117,6 @@ export const services: Service[] = [
       "Charisma gear, Tash and Malo will be provided",
       "Requires more people to facilitate, so this is a request to schedule event",
       "Some exceptions may be made. DM Treasurer for info.",
-    ],
-  },
-  {
-    title: "PP4DKP",
-    icon: Icon.Sold,
-    requestFormats: ["PP4DKP #K Platinum"],
-    bullets: [
-      "_NFP Bank or EC Tunnel_",
-      "PP4DKP (Platinum Pieces for Dragon Kill Points) Fundraising",
-      "PP4DKP runs on a monthly cycle with DKP recorded the following month",
-      "1k = 1 DKP; 30 maximum",
-      "No fractional DKP or rounding; Only PP, no items",
     ],
   },
 ];
