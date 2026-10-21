@@ -72,12 +72,12 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
 
   private async getInstructionsEmbed() {
     const site = bankWebUrl
-      ? `• ${Icon.Sold} For anything on the Castle Bank card, **request from the [bank site](${bankWebUrl})**, especially for more than one item.
+      ? `• ${Icon.Sold} Request Castle Bank items from the [bank site](${bankWebUrl}).
 `
       : "";
     const description = `Always be courteous and patient with your bankers.
-${site}• ${Icon.Request} For services the site doesn't cover, post in the format shown on its card.
-• \`/bank request\` works for a single item, and \`/bank search\` finds an item without requesting it.
+${site}• ${Icon.Request} For the other cards, post in the format shown on the card.
+• Prefer a command? \`/bank request\` works too.
 • Requests remain open until fulfilled, for up to ${MAX_AGE_DAYS} days.
 • Reach out to an officer if you want to help bank.
 • Bankers will only process requests made in ${this.channel} (not PMs).`;
