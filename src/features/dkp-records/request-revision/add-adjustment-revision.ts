@@ -1,12 +1,12 @@
 import { capitalize } from "lodash";
 import { RaidReport } from "../raid-report";
+import { AdjustmentData } from "../raid-tick";
 import { RaidReportRevision } from "./raid-report-revision";
 import { openDkpService } from "../../../services/openDkpService";
 
-export class AddAdjustmentRevision extends RaidReportRevision {
-  protected async execute(raid: RaidReport) {
-    const { player, value, reason } = await this.validateArgs();
-    raid.addAdjustment({ player, value, reason });
+export class AddAdjustmentRevision extends RaidReportRevision<AdjustmentData> {
+  protected execute(raid: RaidReport, adjustment: AdjustmentData) {
+    raid.addAdjustment(adjustment);
   }
 
   protected async validateArgs() {

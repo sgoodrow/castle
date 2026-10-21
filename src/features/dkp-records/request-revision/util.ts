@@ -21,7 +21,8 @@ export const getRaidRevisionMessageContent = async (
     return;
   }
 
-  const { content } = await message.fetch();
+  // a cached message's content is kept current by Discord, so only fetch a partial one
+  const { content } = message.partial ? await message.fetch() : message;
   if (!content.startsWith("!")) {
     return;
   }

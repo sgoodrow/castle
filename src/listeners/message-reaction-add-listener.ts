@@ -28,5 +28,9 @@ export const messageReactionAddListener = async (
   reaction: MessageReaction | PartialMessageReaction,
   user: User | PartialUser
 ) => {
+  // the bot's own ✅ and ⚠️ confirm work already done; acting on them again only costs Discord calls
+  if (user.id === reaction.client.user?.id) {
+    return;
+  }
   reactionActions.forEach((ra) => ra(reaction, user));
 };

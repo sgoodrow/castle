@@ -1,4 +1,4 @@
-import { ChannelType, Client, Events, FetchMemberOptions, GatewayIntentBits, Guild, Partials } from "discord.js";
+import { ChannelType, Client, Events, FetchMemberOptions, GatewayIntentBits, Guild, Partials, RESTEvents } from "discord.js";
 import { interactionCreateListener } from "./listeners/interaction-create-listener";
 import { guildId, token } from "./config";
 import { readyListener } from "./listeners/ready-listener";
@@ -168,6 +168,10 @@ client.on("guildScheduledEventDelete", guildScheduledEventListener);
 client.on("guildScheduledEventUpdate", guildScheduledEventListener);
 client.on("guildScheduledEventUpdate", guildScheduledEventStartedListener);
 client.on(Events.ClientReady, readyListener);
+// discord.js queues requests silently when Discord rate limits them; log it so slow reactions can be traced
+client.rest.on(RESTEvents.RateLimited, ({ route, timeToReset, global }) =>
+  log(`Discord rate limited ${global ? "globally" : route} for ${timeToReset}ms`)
+);
 
 registerSlashCommands();
 

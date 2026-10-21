@@ -5,9 +5,17 @@ import { openDkpService } from "../../../services/openDkpService";
 
 const verbs = ["on", "with"];
 
-export class ReplacePlayerRevision extends RaidReportRevision {
-  protected async execute(raid: RaidReport) {
-    const { replacer, replaced, tickNumbers } = await this.validateArgs();
+interface ReplaceArgs {
+  replacer: string;
+  replaced: string;
+  tickNumbers: number[];
+}
+
+export class ReplacePlayerRevision extends RaidReportRevision<ReplaceArgs> {
+  protected execute(
+    raid: RaidReport,
+    { replacer, replaced, tickNumbers }: ReplaceArgs
+  ) {
     raid.replacePlayer(replacer, replaced, tickNumbers);
   }
 

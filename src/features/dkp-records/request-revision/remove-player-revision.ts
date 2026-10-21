@@ -1,11 +1,10 @@
 import { capitalize, some } from "lodash";
 import { RaidReport } from "../raid-report";
-import { RaidReportRevision } from "./raid-report-revision";
+import { PlayerArgs, RaidReportRevision } from "./raid-report-revision";
 import { openDkpService } from "../../../services/openDkpService";
 
-export class RemovePlayerRevision extends RaidReportRevision {
-  protected async execute(raid: RaidReport) {
-    const { player, tickNumbers } = await this.validateArgs();
+export class RemovePlayerRevision extends RaidReportRevision<PlayerArgs> {
+  protected execute(raid: RaidReport, { player, tickNumbers }: PlayerArgs) {
     raid.removePlayer(player, tickNumbers);
   }
 

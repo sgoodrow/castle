@@ -49,8 +49,10 @@ class RaidReportFinishedReactionAction extends ReactionAction {
       return;
     }
 
-    // check that the message is the raid report
-    const fullMessage = await this.message.fetch();
+    // check that the message is the raid report, fetching it only if it isn't cached
+    const fullMessage = this.message.partial
+      ? await this.message.fetch()
+      : this.message;
     if (!isRaidInstructionsMessage(fullMessage)) {
       return;
     }

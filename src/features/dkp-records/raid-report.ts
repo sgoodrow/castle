@@ -109,18 +109,26 @@ export const withRaidReportLock = async <T>(
   }
 };
 
+/**
+ * The saved report alone, with no Discord or OpenDKP calls. Edits use this inside
+ * withRaidReportLock, which runs one at a time, so a slow call here delays every queued ✅.
+ */
+export const loadRaidReport = async (threadId: string) => {
+  const serialized = await redisClient.get(threadId);
+  if (!serialized) {
+    throw new Error("Could not find raid report in database.");
+  }
+  return new RaidReport(JSON.parse(serialized));
+};
+
+/** The saved report plus its messages, for callers that render it themselves. */
 export const getRaidReport = async (channel: TextBasedChannel) => {
   const messages = await getRaidReportMessages(channel);
 
   // refill the character cache (used for class summaries) if it has expired
   await openDkpService.getCharacters().catch(() => undefined);
 
-  const serialized = await redisClient.get(channel.id);
-  if (!serialized) {
-    throw new Error("Could not find raid report in database.");
-  }
-
-  return { report: new RaidReport(JSON.parse(serialized)), messages };
+  return { report: await loadRaidReport(channel.id), messages };
 };
 
 export class RaidReport {
