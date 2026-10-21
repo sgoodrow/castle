@@ -1,76 +1,82 @@
-import { auctionChannelId } from "../../config";
-import { Icon, Service } from "./types";
-
-// What the bank site sells, one section each on the Castle Bank card. Members request these from
-// the site, so they have no typed request format.
-export interface CastleBankSection {
+// A category on one of the bank's cards, shown as a field. Bullets that are sentences end with a
+// period; fragments don't. Prices are in "p".
+export interface BankSection {
   title: string;
   bullets: string[];
 }
 
-export const castleBankSections: CastleBankSection[] = [
+// Something members ask for in a post of their own; `request` tells them what to write.
+export interface BankService extends BankSection {
+  request: string;
+}
+
+// What the bank site sells, one field each on the Castle Bank Inventory card. Members request
+// these from the site.
+export const inventory: BankSection[] = [
   {
     title: "Miscellaneous",
     bullets: [
-      "Tradeskilling INT Gear check in/out (free _Thurgadin_)",
-      "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk _Rivervale Bank_)",
-      "Burnished Wooden Stave (100p _North Freeport Bank_)",
-      "Jade Reaver (1000p _North Freeport Bank_, must have VSR stone)",
-      "Mind Melt (500p _Thurgadin_)",
-      "Iceball (free _Thurgadin_)",
-      "Seahorse Scales (free _Thurgadin_)",
-      "Arctic Mussles (free _Thurgadin_)",
+      "Tradeskilling INT Gear check in/out (free in Thurgadin)",
+      "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk in Rivervale Bank)",
+      "Burnished Wooden Stave (100p in North Freeport Bank)",
+      "Jade Reaver (1000p+VSR stone in North Freeport Bank)",
+      "Mind Melt (500p in Thurgadin)",
+      "Iceball (free in Thurgadin)",
+      "Seahorse Scales (free in Thurgadin)",
+      "Arctic Mussles (free in Thurgadin)",
     ],
   },
   {
     title: "Dropped Spells",
     bullets: [
-      "_North Freeport Bank_",
-      "For all bank spells, you **must be able to scribe the spell**",
-      "**51-54** spells cost 50p, as well as: Tiger's Insects, Infusion, Conjure Corpse, Wake of Tranquility",
-      "**55-60** spells cost lesser of 200p/EC price or 1DKP each (buyer's choice)",
-      `**Forbidden** spells, when requested, will initiate a DKP auction in <#${auctionChannelId}>.`,
+      "North Freeport Bank",
+      "You must be able to scribe the spell.",
+      "51-54 spells (50p)",
+      "55-60 spells (200p/EC price or 1 DKP)",
+      "Forbidden spells (DKP auction)",
     ],
   },
   {
     title: "Plane of Sky",
     bullets: [
-      "_East Freeport Docks_",
-      "**Droppables and non-DKP no-drops for quests** cost 250p each, must have already won the other required DKP items.",
-      `**Efreeti items**, when requested, will initiate a DKP auction in <#${auctionChannelId}>.`,
-      `**No-drops for quests that do not require Efreeti items**, when requested, will initiate a DKP auction in <#${auctionChannelId}>.`,
-      "**Rare drops** (2 or fewer in stock): use the [Sky Requests form](https://forms.gle/1574wewRuJcp7PwP6).",
+      "East Freeport Docks",
+      "You must have already won the other required DKP items.",
+      "Droppables and non-DKP no-drops for quests (250p)",
+      "Efreeti items (DKP auction)",
+      "No-drops for quests that do not require Efreeti items (DKP auction)",
+      "Rare drops (2 or fewer in stock): use the [Sky Requests form](https://forms.gle/1574wewRuJcp7PwP6).",
     ],
   },
   {
     title: "Research Spells & Components",
-    bullets: ["_North Freeport Bank_ (free)"],
+    bullets: ["North Freeport Bank", "Free"],
   },
 ];
 
 // What members sell to the bank; first in the channel.
-export const bounties: Service = {
-  title: "Bounties Spreadsheet",
-  icon: Icon.Bought,
-  requestFormats: ["Bounty: Item name, Item count"],
-  inventoryUrl:
+export const bounties: BankService & { spreadsheet: string } = {
+  title: "Castle Bounties",
+  spreadsheet:
     "https://docs.google.com/spreadsheets/d/1IRXO4cRQXMAeMtFgZ-TGgADFi0A9z8-9uHvxJLPT3TQ/edit#gid=0",
+  request:
+    'To sell an item to the bank, say "I\'d like to sell <count> <item>".',
   bullets: [
-    "The guild bank will purchase these items",
-    "Some are purhcased with platinum, and others with DKP",
-    "Some have player limits",
+    "The guild bank will purchase these items.",
+    "Some are purchased with platinum, and others with DKP.",
+    "Some have player limits.",
   ],
 };
 
+// One field each on the Castle Raiding Services card.
 // todo: store this in database, populate and remove with command
-export const services: Service[] = [
+export const raidingServices: BankService[] = [
   {
-    title: "Raiding: Reagents",
-    icon: Icon.Jewelry,
-    requestFormats: ["Raid Reagents: Item name, Item count"],
+    title: "Reagents",
+    request:
+      'To request reagents, say "I\'d like <count> <reagent> for raiding".',
     bullets: [
-      "_West Commons, Wizard Spire_ or _ToV, Entrance_",
-      "The following reagents are free **for raid purposes only**.",
+      "West Commons, Wizard Spire or ToV entrance",
+      "The reagents are free for raid purposes only.",
       "Peridots (Clerics, Enchanters, Wizards with giant-bane nuke)",
       "Hate Stones (Wizards)",
       "Pearls (Mages)",
@@ -78,44 +84,39 @@ export const services: Service[] = [
     ],
   },
   {
-    title: "Raiding: Recharge Instructions",
-    icon: Icon.Sold,
-    requestFormats: ["Recharge: Item name"],
-    inventoryUrl: "https://tinyurl.com/castle-charge",
+    title: "Recharge",
+    request: 'To request an item recharge, say "I\'d like to recharge <item>".',
     bullets: [
-      "_West Commons Lake, South Inn_",
+      "West Commonlands Lake South Inn",
       "Leatherfoot Raiders Skullcap (180p)",
       "Ring of Shadows (36p)",
       "Thin Bones Wand (5p)",
       "Wort Potions (750p, scheduled events only)",
-      "Various Items, see spreadsheet",
+      "Various others on [recharge spreadsheet](https://tinyurl.com/castle-charge)",
     ],
   },
   {
-    title: "Raiding: PP4DKP",
-    icon: Icon.Sold,
-    requestFormats: ["PP4DKP #K Platinum"],
+    title: "PP4DKP",
+    request: 'To donate, say "I\'d like to give <#>k platinum for PP4DKP".',
     bullets: [
-      "_NFP Bank or EC Tunnel_",
-      "PP4DKP (Platinum Pieces for Dragon Kill Points) Fundraising",
-      "PP4DKP runs on a monthly cycle with DKP recorded the following month",
-      "1k = 1 DKP; 30 maximum",
-      "No fractional DKP or rounding; Only PP, no items",
+      "North Freeport Bank or EC Tunnel",
+      "Runs on a monthly cycle with DKP recorded the following month.",
+      "1,000p per DKP up to 30 DKP",
+      "No fractional DKP",
+      "Platinum only, no trades",
     ],
   },
   {
     title: "OT Hammer Event Scheduling",
-    icon: Icon.Sold,
-    requestFormats: [
-      "OT Hammer Event",
-      "OT Hammer Event: Date, Time (include timezone)",
-    ],
+    request:
+      'To schedule an event, say "I\'d like an OT Hammer event", with a date and time (include timezone) if you have one in mind.',
     bullets: [
-      "_The Overthere, Outpost_ Look for monthly threads for date/time",
-      "Bring 1 Jade and either 1750pp (members and allies) or 2500p (non-allies)",
-      "Payment may be delivered at _North Freeport Bank_ or _Hammer Hill_",
-      "Charisma gear, Tash and Malo will be provided",
-      "Requires more people to facilitate, so this is a request to schedule event",
+      "The Overthere Outpost",
+      "Look for monthly threads for date and time.",
+      "Bring 1 Jade and either 1750p (members and allies) or 2500p (non-allies).",
+      "Payment may be delivered at North Freeport Bank or Hammer Hill.",
+      "Charisma gear, Tash and Malo will be provided.",
+      "Requires more people to facilitate, so this is a request to schedule event.",
       "Some exceptions may be made. DM Treasurer for info.",
     ],
   },

@@ -4,6 +4,7 @@ export enum Icon {
   Sold = "🏦",
   Money = "💰",
   Jewelry = "💎",
+  Raiding = "⚔️",
 }
 
 export interface Service {
