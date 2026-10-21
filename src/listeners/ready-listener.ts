@@ -17,6 +17,7 @@ import { getGuild } from "..";
 import { readyActionExecutor } from "../shared/action/ready-action-2";
 import { spawnTimerLoop } from "../features/spawn-timers/bot";
 import { timerSheetExportLoop } from "../features/spawn-timers/sheet-export";
+import { expireOldBankRequests } from "../features/bank-request-info/expire-old-requests";
 
 export const updateOptions = { repeatDuration: 1 * HOURS };
 
@@ -36,6 +37,7 @@ export const readyListener = async (client: Client) => {
     const guild = await getGuild();
     await guild.members.fetch(); // warm the cache once
   }, { repeatDuration: 0 });
+  expireOldBankRequests(updateOptions);
   setInterval(spawnTimerLoop, 2500);
   setInterval(timerSheetExportLoop, 1 * MINUTES);
 };

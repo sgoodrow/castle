@@ -6,6 +6,7 @@ import {
   User,
 } from "discord.js";
 import { bankerRoleId, bankRequestsChannelId } from "../../config";
+import { dismissal } from "./dismissal";
 import { ButtonCommand } from "../../shared/command/button-command";
 import {
   getChannel,
@@ -45,11 +46,7 @@ class BankCleanupCommand extends ButtonCommand {
     // for each user
     Object.values(nonBankerMessagesMap).forEach(({ user, messages }) => {
       // DM them their stale messages
-      user.send(`Your <Castle> bank request has been dismissed.
-
-**Sorry we missed you!** Please post your bank request again the next time you are available to have it fulfilled.
-
-${messages.map((m) => this.getQuotedContent(m.content)).join("\n")}`);
+      user.send(dismissal(messages.map((m) => m.content)));
 
       // Delete the messages
       messages.forEach((m) => m.delete());
@@ -63,14 +60,6 @@ ${messages.map((m) => this.getQuotedContent(m.content)).join("\n")}`);
         .map((u) => `${u}`)
         .join(" ")}`,
     });
-  }
-
-  private getQuotedContent(content: string) {
-    return `${content
-      .split("\n")
-      .map((l) => `> ${l}`)
-      .join("\n")}
-    `;
   }
 
   protected async authorize(interaction: ButtonInteraction<CacheType>) {

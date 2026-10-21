@@ -6,6 +6,7 @@ import {
   User,
 } from "discord.js";
 import { jewelerRoleId, jewelryChannelId } from "../../config";
+import { quote } from "../../shared/string-util";
 import { ButtonCommand } from "../../shared/command/button-command";
 import {
   getChannel,
@@ -49,7 +50,7 @@ class JeweleryCleanupCommand extends ButtonCommand {
 
 **Sorry we missed you!** Please post your jewelry request again the next time you are available to have it fulfilled.
 
-${messages.map((m) => this.getQuotedContent(m.content)).join("\n")}`);
+${messages.map((m) => quote(m.content)).join("\n\n")}`);
 
       // Delete the messages
       messages.forEach((m) => m.delete());
@@ -63,14 +64,6 @@ ${messages.map((m) => this.getQuotedContent(m.content)).join("\n")}`);
         .map((u) => `${u}`)
         .join(" ")}`,
     });
-  }
-
-  private getQuotedContent(content: string) {
-    return `${content
-      .split("\n")
-      .map((l) => `> ${l}`)
-      .join("\n")}
-    `;
   }
 
   protected async authorize(interaction: ButtonInteraction<CacheType>) {

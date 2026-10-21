@@ -20,6 +20,7 @@ import { services } from "./bank-services";
 import { bankCleanupButtonCommand } from "./bank-cleanup-button-command";
 import { bankingButtonCommand } from "./banking-button-command";
 import { Icon } from "./types";
+import { MAX_AGE_DAYS } from "./expire-old-requests";
 
 export const updateBankRequestInfo = (
   client: Client,
@@ -80,7 +81,7 @@ ${bankHour
     const description = `Always be courteous and patient with your bankers.
 • ${Icon.Request} Use the '/bank request' command or the appropriate request format
 • State how long you will be available.
-• Reimbursement, Recharge, and Auction requests remain open until fulfilled.
+• Reimbursement, Recharge, and Auction requests remain open until fulfilled, for up to ${MAX_AGE_DAYS} days.
 • All other requests will remain open for 3 days and then closed.
 • Reach out to an officer if you want to help bank.
 • Bankers will only process requests made in ${this.channel} (not PMs).

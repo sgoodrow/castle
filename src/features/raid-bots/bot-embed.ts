@@ -14,6 +14,7 @@ import { getClassAbreviation } from "../../shared/classes";
 import { log } from "../../shared/logger";
 import { client, getTextChannel } from "../..";
 import { HOURS } from "../../shared/time";
+import { channelMessages } from "../../shared/channel-messages";
 
 export const botEmbedInstructions = new InstructionsReadyAction(
   Name.BotStatusEmbed,
@@ -50,20 +51,9 @@ const purgeBotMessages = async () => {
   }
   const channel = await getTextChannel(botEmbedChannelId);
 
-  let before: string | undefined;
-  for (let page = 0; page < 20; page++) {
-    const batch = await channel.messages.fetch({ limit: 100, before });
-    if (batch.size === 0) {
-      break;
-    }
-    for (const message of batch.values()) {
-      if (message.author.id === meId) {
-        await message.delete().catch(() => undefined);
-      }
-    }
-    before = batch.last()?.id;
-    if (batch.size < 100) {
-      break;
+  for await (const message of channelMessages(channel, 20)) {
+    if (message.author.id === meId) {
+      await message.delete().catch(() => undefined);
     }
   }
 
