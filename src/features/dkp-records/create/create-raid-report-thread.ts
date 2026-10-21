@@ -57,13 +57,6 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
       ticks,
     });
 
-    // get the raid report embeds
-    const reportEmbeds = report.getRaidReportEmbeds();
-    const first = reportEmbeds.shift();
-    if (!first) {
-      return;
-    }
-
     // create a thread
     const thread = await this.message.startThread({
       name: report.getThreadName(),
@@ -73,21 +66,15 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     // save report to redis
     await report.save(thread.id);
 
-    // add files with the first report embed
-    await thread.send({
-      embeds: [first],
-    });
-    reportEmbeds.forEach(
-      async (e) =>
-        await thread.send({
-          embeds: [e],
-        })
-    );
+    // the report, in order, with a spare message to grow into
+    for (const embeds of report.getPostedEmbeds()) {
+      await thread.send({ embeds });
+    }
 
-    // always end with a message containing the instructions embed
-    // this message can be used for raid report overflow from add actions
+    // the instructions, which never change; mentioning the raider role mustn't ping it
     await thread.send({
-      embeds: [report.instructionsEmbed],
+      content: report.instructions,
+      allowedMentions: { parse: [] },
     });
 
     // class summary per tick, above the credit !add/!rep messages
