@@ -45,6 +45,7 @@ UX (agreed):
 - **Decided:** a request holds up to 9 different items, with any quantity of each. Discord posts at most 10 embeds a message: one for the summary and one per item. 9 item cards from the real bank use under half of Discord's 6,000-character limit. A tab saved before the limit keeps its first 9 items.
 - **Decided:** each item card lists its spots by character, then by spot (pack 2 before pack 10), so a banker logs in to each character once per card. Not yet: ordering across cards to minimise logins for the whole request.
 - **Decided:** the bot removes the requests it posted (from the page or /bank request) once they're 30 days old, checking hourly, and DMs the member each one it removed. Players' own posts in #bank-requests are left to the bankers.
+- **Decided:** the #bank-requests instructions point members to the bank site first, especially for more than one item. `/bank request` stays for a single item. The service cards keep their spreadsheets and bullets but no longer show typed request formats, and the instructions no longer give an example request or promise a 3-day close.
 
 **Phase 4: Plane of Sky**
 - What we know: the Sky mules (cgskya … cgskyhh, gmskyone … gmskyseven) are bank characters like the others; their names are the only mark. The Sky bankers' "Plane of Sky" sheet lists each island's quest items on its "Item Counts and announcements" tab, with notes such as "fd ring" or "dkp bid", and keeps a waitlist.

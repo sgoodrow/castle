@@ -1,9 +1,10 @@
-import { Icon, Service } from "../bank-request-info/types";
+import { Icon, JewelryService } from "../bank-request-info/types";
 
-export const services: Service[] = [
+export const services: JewelryService[] = [
   {
     title: "Jewelry Spreadsheet",
-    inventoryUrl: "https://docs.google.com/spreadsheets/d/1_Wqh3A_0Wg0JN4Fbt06j51yUqUZVKcVDLbSzzJ9FI4k/edit?usp=sharing",
+    inventoryUrl:
+      "https://docs.google.com/spreadsheets/d/1_Wqh3A_0Wg0JN4Fbt06j51yUqUZVKcVDLbSzzJ9FI4k/edit?usp=sharing",
     icon: Icon.Jewelry,
     requestFormats: [
       "Item name, Item count (List of materials provided, Total cost)",

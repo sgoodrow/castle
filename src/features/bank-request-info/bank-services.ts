@@ -1,4 +1,4 @@
- import { auctionChannelId } from "../../config";
+import { auctionChannelId } from "../../config";
 import { Icon, Service } from "./types";
 
 // todo: store this in database, populate and remove with command
@@ -6,7 +6,6 @@ export const services: Service[] = [
   {
     title: "Bounties Spreadsheet",
     icon: Icon.Bought,
-    requestFormats: ["Bounty: Item name, Item count"],
     inventoryUrl:
       "https://docs.google.com/spreadsheets/d/1IRXO4cRQXMAeMtFgZ-TGgADFi0A9z8-9uHvxJLPT3TQ/edit#gid=0",
     bullets: [
@@ -18,10 +17,6 @@ export const services: Service[] = [
   {
     title: "OT Hammer Event Scheduling",
     icon: Icon.Sold,
-    requestFormats: [
-      "OT Hammer Event",
-      "OT Hammer Event: Date, Time (include timezone)",
-    ],
     bullets: [
       "_The Overthere, Outpost_ Look for monthly threads for date/time",
       "Bring 1 Jade and either 1750pp (members and allies) or 2500p (non-allies)",
@@ -34,7 +29,6 @@ export const services: Service[] = [
   {
     title: "Recharge Instructions",
     icon: Icon.Sold,
-    requestFormats: ["Recharge: Item name"],
     inventoryUrl: "https://tinyurl.com/castle-charge",
     bullets: [
       "_West Commons Lake, South Inn_",
@@ -48,7 +42,6 @@ export const services: Service[] = [
   {
     title: "Misc Item Spreadsheet",
     icon: Icon.Sold,
-    requestFormats: ["Misc item: Item name (Mule name)"],
     inventoryUrl: "https://tinyurl.com/castle-misc-list",
     bullets: [
       "Various Items, see spreadsheet (80% market rate, bags not for sale)",
@@ -65,7 +58,6 @@ export const services: Service[] = [
   {
     title: "PP4DKP",
     icon: Icon.Sold,
-    requestFormats: ["PP4DKP #K Platinum"],
     bullets: [
       "_NFP Bank or EC Tunnel_",
       "PP4DKP (Platinum Pieces for Dragon Kill Points) Fundraising",
@@ -77,7 +69,6 @@ export const services: Service[] = [
   {
     title: "Plane of Sky Spreadsheet",
     icon: Icon.Sold,
-    requestFormats: ["Sky: Item name (Mule name, Quantity available)"],
     inventoryUrl: "https://tinyurl.com/castle-sky-bank",
     bullets: [
       "_East Freeport Docks_",
@@ -89,9 +80,6 @@ export const services: Service[] = [
   {
     title: "Dropped Spell Spreadsheet",
     icon: Icon.Sold,
-    requestFormats: [
-      "Dropped spell: Class, Level, Spell name (Mule name, Quantity available)",
-    ],
     inventoryUrl: "https://tinyurl.com/castle-spell-spreadsheet",
     bullets: [
       "_North Freeport Bank_",
@@ -105,17 +93,12 @@ export const services: Service[] = [
   {
     title: "Research Spells & Components Spreadsheet",
     icon: Icon.Sold,
-    requestFormats: [
-      "Research spell: Class, Level, Spell name",
-      "Research component: Component name",
-    ],
     inventoryUrl: "https://tinyurl.com/castle-research",
     bullets: ["_North Freeport Bank_ (free)"],
   },
   {
     title: "Raid Reagents",
     icon: Icon.Jewelry,
-    requestFormats: ["Raid Reagents: Item name, Item count"],
     bullets: [
       "_West Commons, Wizard Spire_ or _ToV, Entrance_",
       "The following reagents are free **for raid purposes only**.",

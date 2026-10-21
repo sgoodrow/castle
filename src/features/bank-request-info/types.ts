@@ -9,9 +9,13 @@ export enum Icon {
 export interface Service {
   title: string;
   icon: string;
-  requestFormats: string[];
   inventoryUrl?: string;
   bullets: string[];
+}
+
+// Jewelry still shows members how to type a request.
+export interface JewelryService extends Service {
+  requestFormats: string[];
 }
 
 export enum Day {

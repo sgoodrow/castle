@@ -7,7 +7,7 @@ import {
   Colors,
   MessageActionRowComponentBuilder,
 } from "discord.js";
-import { bankRequestsChannelId } from "../../config";
+import { bankRequestsChannelId, bankWebUrl } from "../../config";
 import { BankHour } from "../../db/bank-hour";
 import { dataSource } from "../../db/data-source";
 import { Name } from "../../db/instructions";
@@ -56,15 +56,12 @@ class UpdateBankRequestInfoAction extends InstructionsReadyAction {
 
   private async getServicesEmbeds() {
     return services.map(
-      ({ title, icon, requestFormats, inventoryUrl, bullets }) =>
+      ({ title, icon, inventoryUrl, bullets }) =>
         new EmbedBuilder({
           title: `${icon} ${inventoryUrl ? "__" : ""}${title}${
             inventoryUrl ? "__" : ""
           }`,
           url: inventoryUrl,
-          footer: {
-            text: requestFormats.map((r) => `${Icon.Request} ${r}`).join("\n"),
-          },
           description: `${bullets.map((b) => `• ${b}`).join("\n")}`,
         })
     );
@@ -78,20 +75,21 @@ ${bankHour
   .map((a) => `• ${a.richLabel}`)
   .sort((a, b) => (a > b ? 1 : -1))
   .join("\n")}`;
+    const site = bankWebUrl
+      ? `• ${Icon.Sold} **Request from the [bank site](${bankWebUrl}),** especially for more than one item. Browse misc items, dropped spells and Plane of Sky, see prices and stock, and post your list here in one click.
+`
+      : "";
     const description = `Always be courteous and patient with your bankers.
-• ${Icon.Request} Use the '/bank request' command or the appropriate request format
+${site}• The '/bank request' command works for a single item.
 • State how long you will be available.
-• Reimbursement, Recharge, and Auction requests remain open until fulfilled, for up to ${MAX_AGE_DAYS} days.
-• All other requests will remain open for 3 days and then closed.
+• Requests remain open until fulfilled, for up to ${MAX_AGE_DAYS} days.
 • Reach out to an officer if you want to help bank.
 • Bankers will only process requests made in ${this.channel} (not PMs).
-
-**__Example Request:__**
-> Raid Reagents: Peridots, 40
 
 We have many bankers that are available at their convenience throughout the day but do not have set banking hours.${
       bankHour.length ? bankHourDescription : "."
     }`;
+    // Discord shows at most 10 embeds a message, and the services use 9, so the site is linked here.
     return new EmbedBuilder({
       title: "Instructions",
       description,
