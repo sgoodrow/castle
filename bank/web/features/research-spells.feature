@@ -35,7 +35,7 @@ Feature: Research spells and components
     Then the page says "Bank location · 9"
     And the page says "Pick up at North Freeport Bank."
 
-  Scenario: The request's item card says where to pick it up, and the tab costs nothing
+  Scenario: A research request costs nothing
     Given the bank also holds research spells and components
     And I have opened the bank page
     When I add 3 "Words of Odus" to my tab
@@ -43,4 +43,4 @@ Feature: Research spells and components
     When I open my tab
     And I send my tab to Discord
     Then the post reads "• 3 × Words of Odus (0pp)"
-    And the post reads "Pick up at North Freeport Bank."
+    And the post doesn't read "Pick up at"
