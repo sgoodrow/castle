@@ -44,11 +44,52 @@ const isRaidReportMessage = (m: Message) =>
 
 const isNotEmpty = (m: Message) => !!m.embeds.find((e) => e.length === 0);
 
-export const isRaidInstructionsMessage = (m: Message) =>
+const INSTRUCTIONS_HEADING = `**${INSTRUCTIONS_TITLE}**`;
+
+// threads posted before the instructions were their own message keep them in an embed below the
+// report, which is edited along with it
+const isInstructionsEmbedMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === INSTRUCTIONS_TITLE);
+
+/** The message deputies ✅ to upload the raid. */
+export const isRaidInstructionsMessage = (m: Message) =>
+  isInstructionsEmbedMessage(m) ||
+  (m.author.id === m.client.user.id &&
+    m.content.startsWith(INSTRUCTIONS_HEADING));
 
 const isClassSummaryMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === CLASS_SUMMARY_TITLE);
+
+const instructionsIntro = () => `• <@&${raiderRoleId}>s may use the \`!commands\` to submit change requests.
+• The bot will react with ⚠️ if the request is invalid (wrong format).
+• Deputies will ✅ requests to add them the raid report.
+• Deputies will ✅ this message to upload the raid.
+• Requests made by deputies are automatically added to the raid report.
+
+Kill bonus values: <https://docs.google.com/spreadsheets/d/1cZdD1HOtDutOvxkEp0-upfx5qyY4C-pfaME7VM7ou40/edit?gid=131422595#gid=131422595>`;
+
+const INSTRUCTIONS_COMMANDS = [
+  {
+    name: "Add a name to raid ticks. Tick numbers and context are optional.",
+    value: "`!add Matil 2, 3 (context)`",
+  },
+  {
+    name: "Remove a name from raid ticks. Tick numbers and context are optional.",
+    value: "`!rem Matil 2, 3 (context)`",
+  },
+  {
+    name: "Replace a name on raid ticks. Tick numbers and context are optional.",
+    value: "`!rep Ratburgh with Matil 2, 3 (context)`",
+  },
+  {
+    name: "Add an adjustment to the first raid tick. Context is optional.",
+    value: "`!adj Matil 5 reason (context)`",
+  },
+  {
+    name: "Deputies: Assign raid tick event types and values.",
+    value: '`/raid tick event: "Cazic Thule" tick: "1" value: "3"`',
+  },
+];
 
 const paginate = (lines: string[]): string[] => {
   const pages: string[] = [""];
@@ -83,10 +124,9 @@ export const getRaidReportMessages = async (channel: TextBasedChannel) => {
   }
   const all = await channel.messages.fetch({
     after: starter.id,
-    // 4 is the typical number of messages for a "very large" raid (e.g. 9 ticks on a quake)
-    // plus the class summary; 8 has some nice buffer incase something crazy happens
-    // assumption: fewer = faster
-    limit: 8,
+    // a "very large" raid (e.g. 9 ticks on a quake) is posted as 5 report messages, then the
+    // instructions and the class summary; 10 leaves room in case something crazy happens
+    limit: 10,
   });
   const messages = [
     ...all
@@ -94,7 +134,7 @@ export const getRaidReportMessages = async (channel: TextBasedChannel) => {
       .filter(
         (m) =>
           isRaidReportMessage(m) ||
-          isRaidInstructionsMessage(m) ||
+          isInstructionsEmbedMessage(m) ||
           isClassSummaryMessage(m) ||
           isNotEmpty(m)
       )
@@ -216,7 +256,7 @@ export class RaidReport {
     const instructionsLength = embedLength(this.instructionsEmbed.toJSON());
     const raidReportEmbeds = this.getRaidReportMessageEmbeds(
       reportMessages.map((m) =>
-        isRaidInstructionsMessage(m) ? instructionsLength : 0
+        isInstructionsEmbedMessage(m) ? instructionsLength : 0
       )
     );
 
@@ -227,7 +267,7 @@ export class RaidReport {
         ),
         ...reportMessages.map((m, i) => {
           const embeds = [...raidReportEmbeds[i]];
-          if (isRaidInstructionsMessage(m)) {
+          if (isInstructionsEmbedMessage(m)) {
             embeds.push(this.instructionsEmbed);
           }
           return m.edit({
@@ -265,38 +305,22 @@ export class RaidReport {
     }
   }
 
+  /** The instructions as their own message, posted after the report; it never changes. */
+  public get instructions(): string {
+    return `${INSTRUCTIONS_HEADING}
+${instructionsIntro()}
+
+${INSTRUCTIONS_COMMANDS.map(({ name, value }) => `**${name}**\n${value}`).join(
+  "\n"
+)}`;
+  }
+
+  /** For threads that still keep the instructions in an embed below the report. */
   public get instructionsEmbed(): EmbedBuilder {
     return new EmbedBuilder({
       title: INSTRUCTIONS_TITLE,
-      description: `• <@&${raiderRoleId}>s may use the \`!commands\` to submit change requests.
-• The bot will react with ⚠️ if the request is invalid (wrong format).
-• Deputies will ✅ requests to add them the raid report.
-• Deputies will ✅ this message to upload the raid.
-• Requests made by deputies are automatically added to the raid report.
-
-Kill bonus values: https://docs.google.com/spreadsheets/d/1cZdD1HOtDutOvxkEp0-upfx5qyY4C-pfaME7VM7ou40/edit?gid=131422595#gid=131422595`,
-    }).addFields([
-      {
-        name: "Add a name to raid ticks. Tick numbers and context are optional.",
-        value: "`!add Matil 2, 3 (context)`",
-      },
-      {
-        name: "Remove a name from raid ticks. Tick numbers and context are optional.",
-        value: "`!rem Matil 2, 3 (context)`",
-      },
-      {
-        name: "Replace a name on raid ticks. Tick numbers and context are optional.",
-        value: "`!rep Ratburgh with Matil 2, 3 (context)`",
-      },
-      {
-        name: "Add an adjustment to the first raid tick. Context is optional.",
-        value: "`!adj Matil 5 reason (context)`",
-      },
-      {
-        name: `Deputies: Assign raid tick event types and values.`,
-        value: '`/raid tick event: "Cazic Thule" tick: "1" value: "3"`',
-      },
-    ]);
+      description: instructionsIntro(),
+    }).addFields(INSTRUCTIONS_COMMANDS);
   }
 
   public getReceiptEmbeds(
@@ -331,16 +355,21 @@ ${t.renderClasses((name) => this.getClass(name))}${code}`,
     );
   }
 
-  /** One embed per message, as the report is first posted. */
-  public getRaidReportEmbeds(): EmbedBuilder[] {
-    return paginate(this.reportLines).map(reportEmbed);
+  /**
+   * The report's embeds for each message it is first posted as: one more message than it has
+   * 4000-character pages, so it has room to grow, since the thread can't gain messages later.
+   */
+  public getPostedEmbeds(): EmbedBuilder[][] {
+    return this.getRaidReportMessageEmbeds(
+      [...paginate(this.reportLines), ""].map(() => 0)
+    );
   }
 
   /**
    * The report's embeds for each of the thread's report messages, given how many characters each
-   * message's other embeds already use (e.g. the instructions). The thread can't gain messages above
-   * the credit !commands, so as the report grows it fills each message up to Discord's limit rather
-   * than needing more 4000-character pages than it was posted with. Every message gets a share.
+   * message's other embeds already use (an older thread's instructions). The thread can't gain
+   * messages above the credit !commands, so as the report grows it fills each message up to
+   * Discord's limit. Every message gets a share, since Discord won't leave one empty.
    */
   public getRaidReportMessageEmbeds(reserved: number[]): EmbedBuilder[][] {
     const lines = this.reportLines;
