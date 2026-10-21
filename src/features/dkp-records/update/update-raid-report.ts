@@ -3,6 +3,7 @@ import { getGuild } from "../../..";
 import { redisClient } from "../../../redis/client";
 import { SECONDS } from "../../../shared/time";
 import { getRaidReportMessages, RaidReport } from "../raid-report";
+import { openDkpService } from "../../../services/openDkpService";
 
 // one debounce per thread, so an edit in one raid thread can't swallow another thread's update
 const pendingUpdates = new Map<string, () => void>();
@@ -44,6 +45,9 @@ const updateThread = async (threadId: string) => {
   }
   const report = new RaidReport(JSON.parse(serialized));
   const messages = await getRaidReportMessages(thread);
+
+  // refill the character cache (used for class summaries) if it has expired
+  await openDkpService.getCharacters().catch(() => undefined);
 
   await report.updateMessages(messages);
 };
