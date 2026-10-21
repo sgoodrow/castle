@@ -94,6 +94,7 @@ export function DetailPane({ it, canUse, cls, qty, onAdd, onRemove, onClose, bar
           <Section title={`Bank location · ${count(it.holders)}`}>
             <HolderBadges holders={[...inBank, ...mq]} />
             {inBank.length === 0 && <Text fz="sm" c="dimmed">Held for multiquesting. Request it, and a banker will tell you how to set it up.</Text>}
+            {req.pickup && <Text fz="sm" c="dimmed">Pick up at {req.pickup}.</Text>}
           </Section>
         )}
         <Divider />

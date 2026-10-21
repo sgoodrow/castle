@@ -22,6 +22,7 @@ export interface RawItem {
   price?: string; // set by a banker with the bot, e.g. "250p" or "200p, 1dkp"
   sheet?: SheetPrice; // a scroll's price on the bankers' spell sheet
   sky?: SkyPart; // a Plane of Sky item: on the Sky sheet, or held only by the Sky mules
+  research?: true; // a research spell or component: on the research sheet, and a research mule holds it
 }
 
 // A spell's price on the bankers' spell sheet: platinum, maybe with a DKP alternative, or a DKP auction.
@@ -314,8 +315,9 @@ export type Price =
   | { kind: "free" }
   | { kind: "auction" } // the member asks a banker to start a DKP auction
   | { kind: "ask" }; // a banker has to quote it
-// text is the line in the bot's #bank-requests format.
-export type BankRequest = { text: string; cost: string; price: Price };
+// text is the line in the bot's #bank-requests format. pickup is where the member collects it, for
+// stock that's kept in one place.
+export type BankRequest = { text: string; cost: string; price: Price; pickup?: string };
 // A line's price as the tab and the post show it: "400pp", "free", "DKP auction" or "unknown".
 export function priceText(price: Price, qty = 1) {
   switch (price.kind) {
@@ -328,15 +330,16 @@ export function priceText(price: Price, qty = 1) {
 const pp = (pp: number, dkp = false, fromMarket = false): Price => ({ kind: "pp", pp, dkp, fromMarket });
 const AUCTION_COST = "A banker starts an auction at 1 DKP.";
 
-// A price a banker set with the bot beats the spell sheet and the Plane of Sky rules, which beat the
-// rules and the market.
+// A price a banker set with the bot beats research, the spell sheet and the Plane of Sky rules,
+// which beat the rules and the market.
 export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest {
-  const req = it.sky ? skyRequest(it, it.sky, qty) : ruleRequest(it, cls, qty);
+  const req = it.research ? researchRequest(it, cls, qty) : it.sky ? skyRequest(it, it.sky, qty) : ruleRequest(it, cls, qty);
   if (it.price) {
     const n = it.price.match(/\d+/);
     const price: Price = /auction/i.test(it.price) ? { kind: "auction" } : n ? pp(+n[0], /dkp/i.test(it.price)) : { kind: "ask" };
-    return { text: req.text, price, cost: `Set by a banker: ${it.price}.` };
+    return { ...req, price, cost: `Set by a banker: ${it.price}.` };
   }
+  if (it.research) return req;
   if (it.sheet?.kind === "auction") return { text: req.text, price: { kind: "auction" }, cost: AUCTION_COST };
   if (it.sheet?.kind === "pp")
     return { text: req.text, price: pp(it.sheet.pp, it.sheet.dkp != null), cost: `From the spell sheet.${it.sheet.dkp != null ? ` Or pay ${it.sheet.dkp} DKP.` : ""}` };
@@ -353,7 +356,21 @@ export const MAX_TAB_ITEMS = 9;
 export const tabLimit = (it: Item) => (auctionOnly(it) ? 1 : requestedFrom(it).holders.reduce((n, h) => n + h.count, 0));
 // The Sky mules: cgskya … cgskyhh and gmskyone … gmskyseven.
 export const isSkyMule = (char: string) => /sky/i.test(char);
-const SKY_PICKUP = "Pick up at the East Freeport docks.";
+const SKY_PICKUP = "the East Freeport docks";
+// Research spells and components are free, from North Freeport Bank. A scroll's line names the
+// member's class if it can scribe it, like a dropped spell's.
+const RESEARCH_PICKUP = "North Freeport Bank";
+function researchRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
+  const sp = spellOf(it.scroll);
+  const spell = sp || it.kind === "spell";
+  const x = qty > 1 ? ` x${qty}` : "";
+  const cost = `Research ${spell ? "spells" : "components"} are free. Pick up at ${RESEARCH_PICKUP}.`;
+  if (!spell) return { text: `Research component: ${it.name}${x}`, price: pp(0), cost, pickup: RESEARCH_PICKUP };
+  const can = sp?.levels ?? [];
+  const pick = can.find(c => c.cls === cls) ?? can[0];
+  const text = `Research spell: ${pick ? CLASS_NAME[pick.cls] : "Class"}, ${pick?.level ?? "Level"}, ${it.name.replace(/^Spell: /, "")}${x}`;
+  return { text, price: pp(0), cost, pickup: RESEARCH_PICKUP };
+}
 const andList = (xs: readonly (string | number)[]) => xs.length < 2 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
 // "Island 4 quest item (fd ring)", "Islands 6 and 7 quest item", or "Plane of Sky item".
 const skyWhat = (sky: SkyPart) => sky.islands.length
@@ -373,8 +390,8 @@ function skyRequest(it: Item, sky: SkyPart, qty: number): BankRequest {
   const holder = from.holders.find(h => isSkyMule(h.char)) ?? from.holders[0];
   const text = `Sky: ${it.name} (${holder.char}, ${holder.count})${qty > 1 ? ` x${qty}` : ""}`;
   if (/dkp/i.test(sky.note) || (!sky.islands.length && /^Efreeti /.test(it.name)))
-    return { text, price: { kind: "auction" }, cost: AUCTION_COST };
-  return { text, price: pp(250), cost: `${what}: 250pp, once you've won the DKP items its quest needs. ${SKY_PICKUP}` };
+    return { text, price: { kind: "auction" }, cost: AUCTION_COST, pickup: SKY_PICKUP };
+  return { text, price: pp(250), cost: `${what}: 250pp, once you've won the DKP items its quest needs. Pick up at ${SKY_PICKUP}.`, pickup: SKY_PICKUP };
 }
 function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
   const [holder] = requestedFrom(it).holders;

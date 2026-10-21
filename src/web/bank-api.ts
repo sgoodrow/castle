@@ -1,12 +1,14 @@
 // Everything the bank page shows, read from the bot's database: who holds what, plus stats
 // (the item DB in bank/data), banker prices, icons and auctions from the wiki cache, and spell
-// prices from the bankers' spell sheet, and which items are Plane of Sky quest parts from the Sky sheet.
+// prices from the bankers' spell sheet, which items are Plane of Sky quest parts from the Sky sheet,
+// and which are research spells and components from the research sheet.
 import { readFileSync } from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { WikiCache, wikiUrl } from "./wiki-cache";
 import { SpellSheet, spellKey } from "./spell-sheet";
 import { SkySheet, isSkyMule, type Lookup } from "./sky-sheet";
+import { ResearchSheet, isResearchMule, researchKey } from "./research-sheet";
 
 type DbItem = {
   name: string;
@@ -27,7 +29,8 @@ export class BankApi {
     dataDir: string,
     private wiki: WikiCache,
     private sheet: SpellSheet,
-    private sky: SkySheet
+    private sky: SkySheet,
+    private research: ResearchSheet
   ) {
     this.itemdb = JSON.parse(
       readFileSync(path.join(dataDir, "itemdb.json"), "utf-8")
@@ -98,12 +101,20 @@ export class BankApi {
     });
   }
 
+  // Every item name the item database knows, so the research sheet's misspellings get noticed.
+  refreshResearchSheet() {
+    return this.research.refresh(
+      new Set(Object.values(this.itemdb).map((it) => researchKey(it.name)))
+    );
+  }
+
   async bank() {
     let latest = 0;
     const rows: [string, string, number, number][] = [];
     const items: Record<number, Record<string, unknown>> = {};
     const spells: Record<string, unknown> = {};
     const offSky = new Set<number>(); // items some non-Sky mule holds
+    const onResearch = new Set<number>(); // items some research mule holds
     for (const s of await this.filledSlots()) {
       const id = s.itemId!;
       const db = this.itemdb[id];
@@ -111,6 +122,7 @@ export class BankApi {
       latest = Math.max(latest, +s.updatedAt);
       rows.push([titleCase(s.charName), s.slot, id, s.count || 1]);
       if (!isSkyMule(s.charName)) offSky.add(id);
+      if (isResearchMule(s.charName)) onResearch.add(id);
       if (!items[id])
         items[id] = this.describe(id, s.item.name, s.item.price, spells);
     }
@@ -128,6 +140,11 @@ export class BankApi {
       if (part) it.sky = part;
       else if (!offSky.has(+id)) it.sky = { islands: [], note: "" };
     }
+    // A research item is one the research sheet lists and a research mule holds, so the everyday
+    // items some recipes take, such as a Dagger, keep their usual price.
+    for (const [id, it] of Object.entries(items))
+      if (onResearch.has(+id) && this.research.has(it.name as string))
+        it.research = true;
     return {
       snapshot: new Date(latest || Date.now()).toISOString(),
       today: new Date().toISOString().slice(0, 10),
