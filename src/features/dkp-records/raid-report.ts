@@ -5,7 +5,16 @@ import {
   TextBasedChannel,
   ThreadChannel,
 } from "discord.js";
-import { capitalize, compact, every, flatMap, max, sum, uniq } from "lodash";
+import {
+  capitalize,
+  chunk,
+  compact,
+  every,
+  flatMap,
+  max,
+  sum,
+  uniq,
+} from "lodash";
 import { raiderRoleId } from "../../config";
 import { redisChannels, redisClient } from "../../redis/client";
 import { CreateRaidResponse, RaidEventData } from "../../services/castledkp";
@@ -38,6 +47,8 @@ const THREAD_EMBED_CHAR_LIMIT = 4000;
 // Discord caps all the embeds in one message at 6000 characters together; keep a little spare
 const MESSAGE_EMBEDS_CHAR_LIMIT = 5900;
 const SECOND_COLUMN_LENGTH = 6;
+// a botpilot's replaced bots after the first wrap onto lines of their own, this many to a line
+const BOTS_PER_LINE = 2;
 
 const isRaidReportMessage = (m: Message) =>
   !!m.embeds.find((e) => e.title === RAID_REPORT_TITLE);
@@ -562,13 +573,18 @@ ${this.attendance}`.split("\n");
     // botpilot labels like "Iceburgh [Pumped]" can be longer than any name
     const width = Math.max(
       this.firstColumnLength + SECOND_COLUMN_LENGTH + 1,
-      ...labels.map((l) => l.length)
+      ...labels.map(([first]) => first.length)
     );
     return `--- Attendance (${sorted.length}) ---
 ${sorted
-        .map((name, i) =>
-          this.renderAttendee(labels[i].padEnd(width), attendanceMap[name])
-        )
+        .flatMap((name, i) => {
+          const [first, ...more] = labels[i];
+          // further bots are indented under the name, without the tick numbers
+          return [
+            this.renderAttendee(first.padEnd(width), attendanceMap[name]),
+            ...more.map((bots) => `+   ${bots}`),
+          ];
+        })
         .join("\n")}`;
   }
 
@@ -586,12 +602,25 @@ ${sorted
     return odkpCharacterCache.get(capitalize(name))?.Class;
   }
 
-  // e.g. "Iceburgh [Pumped]" when Iceburgh replaced their bot Pumped
-  private labelAttendee(name: string): string {
-    const replaced = uniq(
+  /**
+   * The attendee's lines, e.g. ["Iceburgh [Pumped]"] when Iceburgh replaced their bot Pumped, or
+   * ["Iceburgh [Pumped,", "Zapped, Buffed,", "Healed]"] when they replaced four, so a botpilot's
+   * bots don't widen every line of the attendance.
+   */
+  private labelAttendee(name: string): [string, ...string[]] {
+    const [first, ...more] = uniq(
       compact(this.ticks.map((t) => t.getReplaced(name)))
     );
-    return replaced.length > 0 ? `${name} [${replaced.join(", ")}]` : name;
+    if (!first) {
+      return [name];
+    }
+    const rest = chunk(more, BOTS_PER_LINE).map((bots) => bots.join(", "));
+    // one pair of brackets around all of them, with a comma ending each line before the last
+    const end = (last: boolean) => (last ? "]" : ",");
+    return [
+      `${name} [${first}${end(rest.length === 0)}`,
+      ...rest.map((bots, i) => `${bots}${end(i === rest.length - 1)}`),
+    ];
   }
 
   private get allAttendees() {
