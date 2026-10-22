@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
-import { bankRequestsChannelId } from "../../config";
+import { bankRequestsChannelId, jewelryChannelId } from "../../config";
 import { client, getTextChannel } from "../..";
 import {
   Options,
@@ -63,13 +63,14 @@ export const expireOldBankRequests = (options: Options) => {
 const refreshBankRequests = async () => {
   const botId = client.user?.id;
   if (!botId) return;
-  const channel = await getTextChannel(bankRequestsChannelId);
-  const removed = await expireOldRequests(
-    channel,
-    botId,
-    Date.now(),
-    (id, text) => client.users.send(id, text)
-  );
+  // Jewelry requests expire the same way bank requests do.
+  let removed = 0;
+  for (const channelId of [bankRequestsChannelId, jewelryChannelId]) {
+    const channel = await getTextChannel(channelId);
+    removed += await expireOldRequests(channel, botId, Date.now(), (id, text) =>
+      client.users.send(id, text)
+    );
+  }
   if (removed)
     log(
       `bank requests: removed ${removed} request(s) over ${MAX_AGE_DAYS} days old`

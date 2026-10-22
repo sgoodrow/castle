@@ -207,18 +207,28 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
 
   // ---------- bank requests ----------
   step(
-    /^(\w+) placed a jewelry request in #(\S+):$/,
-    (name: string, channel: string, lines: string) => {
+    /^(\w+) placed a jewelry request in #(\S+)(?: (\d+) days ago)?:$/,
+    (
+      name: string,
+      channel: string,
+      days: string | undefined,
+      lines: string
+    ) => {
       const { id } = member(name);
-      post(channel, BOT_ID, {
-        embeds: [
-          {
-            title: `@${name} has placed a bank request`,
-            url: `https://discord.com/users/${id}`,
-            description: lines,
-          },
-        ],
-      });
+      post(
+        channel,
+        BOT_ID,
+        {
+          embeds: [
+            {
+              title: `@${name} has placed a bank request`,
+              url: `https://discord.com/users/${id}`,
+              description: lines,
+            },
+          ],
+        },
+        daysAgo(days)
+      );
     }
   );
   step(

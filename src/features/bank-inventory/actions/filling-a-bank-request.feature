@@ -70,6 +70,35 @@ Feature: Filling a bank request
     Then nothing is posted in #bank-transactions
     And Alice's request is still in #jewelry-requests
 
+  Scenario: A jeweler can't fill a bank request
+    Given Frances is a Castle jeweler
+    And Alice placed a bank request on the bank page:
+      """
+      • Cloak of Flames (800p)
+      """
+    When Frances reacts ✅ to Alice's request
+    Then nothing is posted in #bank-transactions
+    And Alice's request is still in #bank-requests
+
+  Scenario: A banker fills a jewelry request
+    Given Alice placed a jewelry request in #jewelry-requests:
+      """
+      • Golden Cat Eye Bracelet (13pp)
+      """
+    When Dana reacts ✅ to Alice's request in #jewelry-requests
+    Then the bot posts in #bank-transactions:
+      | content       | title                            | description                      | pings |
+      | ✅ by <@Dana> | @Alice has placed a bank request | • Golden Cat Eye Bracelet (13pp) | no    |
+    And Alice's request is no longer in #jewelry-requests
+
+  Scenario: A member cancels their own jewelry request
+    Given Alice placed a jewelry request in #jewelry-requests:
+      """
+      • Golden Cat Eye Bracelet (13pp)
+      """
+    When Alice reacts ❌ to Alice's request in #jewelry-requests
+    Then Alice's request is no longer in #jewelry-requests
+
   Scenario Outline: Officers and mods can fill requests too
     Given Erin is a Castle <role>
     And Alice placed a bank request on the bank page:
