@@ -265,7 +265,7 @@ export const {
   bankGoogleDriveFolderId: string;
 
   /**
-   * [Optional] The bank site's address, linked from the #bank-requests instructions.
+   * [Optional] The bank site's address, used as its sign-in base. Discord copy links its short link instead.
    */
   bankWebUrl?: string;
 

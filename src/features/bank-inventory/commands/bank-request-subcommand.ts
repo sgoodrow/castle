@@ -3,10 +3,12 @@ import {
   CacheType,
   CommandInteraction,
   EmbedBuilder,
+  MessageFlags,
 } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { bankData } from "../bank-data";
-import { bankRequestsChannelId, bankWebUrl } from "../../../config";
+import { bankRequestsChannelId } from "../../../config";
+import { bankSiteLink } from "../../bank-request-info/bank-services";
 import { getTextChannel } from "../../..";
 import { commandOpening } from "../../bank-request-info/bank-request";
 import { autoCompleteStockedItems } from "../helpers";
@@ -76,16 +78,13 @@ class BankRequest extends Subcommand {
         embeds: [stockEmbed],
       });
       // Only the requester sees this reply, so it can point them to the site without cluttering
-      // the channel.
+      // the channel. Previews are suppressed: the post's link would unfurl as Discord's homepage.
       await interaction.editReply({
         content: [
           `Your request is posted in ${posted.url}.`,
-          ...(bankWebUrl
-            ? [
-                `Next time, try the [bank site](${bankWebUrl}): see prices and stock, and request several items at once.`,
-              ]
-            : []),
+          `👋 Please try the new [Castle Bank webapp](${bankSiteLink}) instead of \`/bank request\` next time! Thanks!`,
         ].join("\n"),
+        flags: MessageFlags.SuppressEmbeds,
       });
     }
   }
