@@ -104,6 +104,10 @@ const posterFor = (channelId: string | undefined): Poster | null =>
     : null;
 const poster = posterFor(bankRequestsChannelId);
 const jewelryPoster = posterFor(jewelryChannelId);
+if (token && bankRequestsChannelId && !jewelryChannelId)
+  log(
+    "bank web: jewelry requests can't be posted: the jewelry requests channel isn't set"
+  );
 
 let page: Buffer | null = null;
 // The page reports its errors with this commit, so they're mapped with the right source map.
@@ -225,7 +229,16 @@ async function bankRequest(
     return send(req, res, 400, "text/plain", "Bad request");
   // A post without a channel is an older page's bank request.
   const to = channel === "jewelry" ? jewelryPoster : poster;
-  if (!to) return send(req, res, 503, "text/plain", "Posting isn't set up");
+  if (!to)
+    return send(
+      req,
+      res,
+      503,
+      "text/plain",
+      channel === "jewelry"
+        ? "Posting jewelry isn't set up"
+        : "Posting isn't set up"
+    );
   if (!(await postRequest(to, me, post)))
     return send(req, res, 502, "text/plain", "Discord didn't take it");
   log(`bank web: ${me.name} (${me.id}) posted a bank request`);

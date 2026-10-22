@@ -62,6 +62,13 @@ Feature: Posting a bank request
     When Alice posts a bank request of 0 embeds
     Then the answer is 400 "Bad request"
 
+  Scenario: A jewelry post to a site with no jewelry channel says so
+    Given posting bank requests is set up
+    And the site restarts without the jewelry channel
+    When Alice posts a bank request to #jewelry
+    Then the answer is 503 "Posting jewelry isn't set up"
+    And the bot posts nothing
+
   Scenario: A post to a channel that isn't one of the request channels is refused
     When Alice posts a bank request to #jewlery
     Then the answer is 400 "Bad request"

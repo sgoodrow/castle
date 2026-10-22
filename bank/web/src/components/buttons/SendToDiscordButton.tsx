@@ -17,7 +17,8 @@ export function SendToDiscordButton({ msgs, onSent, onPosted, sending, onSending
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Can't close mid-send: the rest would still go out after the modal shut.
-  const close = () => { if (sending) return; setOpen(false); setError(null); };
+  // Closing forgets the posts that landed, so a later send names only the channels it posts to.
+  const close = () => { if (sending) return; setOpen(false); setError(null); setConfirmed([]); };
   const send = async () => {
     onSending(true);
     setError(null);

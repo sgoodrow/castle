@@ -1016,6 +1016,10 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     delete world.env.token;
     world.base = "";
   });
+  step(/^the site restarts without the jewelry channel$/, () => {
+    delete world.env.jewelryChannelId;
+    world.base = "";
+  });
   step(/^Discord refuses posts$/, () => {
     world.postStatus = 403;
   });
