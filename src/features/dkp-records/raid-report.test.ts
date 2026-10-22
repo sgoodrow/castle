@@ -66,7 +66,7 @@ describe("withRaidReportLock", () => {
   });
 });
 
-// bigger than the 2026-10-20 Quake raid, which outgrew the 3 messages it was posted with
+// six ticks of the same players, the first 40 of them botpilots
 const bigReport = (players: number) => {
   const names = Array.from({ length: players }, (_, i) => `Raider${i}`);
   const ticks: RaidTickData[] = [1, 2, 3, 4, 5, 6].map((tickNumber) => ({
@@ -98,6 +98,7 @@ const message = (id: string, embeds: { title: string }[], content = "") => {
     edit: vi.fn(async ({ embeds }: { embeds: any[] }) => {
       m.edited = embeds.map((e) => e.toJSON());
     }),
+    delete: vi.fn(async () => undefined),
   };
   return m;
 };
@@ -114,14 +115,22 @@ const withinDiscordLimits = (embeds: any[]) => {
 };
 
 describe("posting a report", () => {
-  it("posts one more message than it has pages, each with a share", () => {
-    const report = bigReport(170);
-    const posted = report.getPostedEmbeds().map((m) => m.map((e) => e.toJSON()));
-    expect(posted).toHaveLength(4);
-    posted.forEach((embeds) => {
-      expect(embeds.length).toBeGreaterThan(0);
-      withinDiscordLimits(embeds);
-    });
+  it("posts a short report as one embed", () => {
+    const posted = bigReport(10).getPostedEmbeds();
+    expect(posted.map((embeds) => embeds.length)).toEqual([1]);
+  });
+
+  it("fills each message before starting the next", () => {
+    const posted = bigReport(300)
+      .getPostedEmbeds()
+      .map((m) => m.map((e) => e.toJSON()));
+    expect(posted).toHaveLength(3);
+    posted.forEach(withinDiscordLimits);
+    posted
+      .slice(0, -1)
+      .forEach((embeds) =>
+        expect(sum(embeds.map((e) => embedLength(e)))).toBeGreaterThan(5500)
+      );
   });
 
   it("posts the instructions as one short message", () => {
@@ -150,12 +159,13 @@ describe("isRaidInstructionsMessage", () => {
 
 describe("getRaidReportMessages", () => {
   it("leaves out the instructions post, which never changes", async () => {
-    const report = bigReport(10);
+    const { instructions } = bigReport(1);
     const posted = [
-      ...report.getPostedEmbeds().map((_, i) => message(`${i + 1}`, [{ title: "Raid Report" }])),
-      message("8", [], report.instructions),
-      message("9", [{ title: "Class Summary" }]),
-      message("10", [], "!add Someone 1"),
+      message("1", [{ title: "Raid Report" }]),
+      message("2", [{ title: "Raid Report" }]),
+      message("3", [{ title: "Class Summary" }]),
+      message("4", [], instructions),
+      message("5", [], "!add Someone 1"),
     ];
     const channel = {
       isThread: () => true,
@@ -166,25 +176,44 @@ describe("getRaidReportMessages", () => {
       },
     };
     const found = await getRaidReportMessages(channel as any);
-    expect(found.map((m) => m.id)).toEqual(["1", "2", "9"]);
+    expect(found.map((m) => m.id)).toEqual(["1", "2", "3"]);
   });
 });
 
 describe("updateMessages", () => {
-  it("fills a new thread's report messages and leaves the instructions alone", async () => {
-    const report = bigReport(170);
+  const posted = (report: RaidReport) =>
+    report.getPostedEmbeds().flat().map((e) => e.toJSON());
+
+  it("grows a new thread's report into the class summary's message, above the summary", async () => {
+    const report = bigReport(150);
+    // posted when it was short: one report message, then the class summary
     const messages = [
-      ...report.getPostedEmbeds().map((_, i) => message(`${i}`, [{ title: "Raid Report" }])),
-      message("class", [{ title: "Class Summary" }]),
+      message("1", [{ title: "Raid Report" }]),
+      message("2", [{ title: "Class Summary" }]),
     ];
 
     await report.updateMessages(messages as any);
 
     messages.forEach((m) => withinDiscordLimits(m.edited));
-    expect(messages.flatMap((m) => m.edited.map((e) => e.title))).not.toContain("Instructions");
-    expect(messages.flatMap((m) => reportLines(m.edited))).toEqual(
-      reportLines(report.getPostedEmbeds().flat().map((e) => e.toJSON()))
-    );
+    expect(messages[1].edited.map((e) => e.title)).toEqual(["Raid Report", "Class Summary"]);
+    expect(messages.flatMap((m) => reportLines(m.edited))).toEqual(reportLines(posted(report)));
+  });
+
+  it("keeps a short report in one embed and deletes a spare message it no longer reaches", async () => {
+    const report = bigReport(10);
+    // a thread posted with a spare report message
+    const messages = [
+      message("1", [{ title: "Raid Report" }]),
+      message("2", [{ title: "Raid Report" }]),
+      message("3", [{ title: "Class Summary" }]),
+    ];
+
+    await report.updateMessages(messages as any);
+
+    expect(messages[0].edited.map((e) => e.title)).toEqual(["Raid Report"]);
+    expect(messages[1].delete).toHaveBeenCalled();
+    expect(messages[1].edit).not.toHaveBeenCalled();
+    expect(messages[2].edited.map((e) => e.title)).toEqual(["Class Summary"]);
   });
 
   // an older thread: two report pages, the instructions embed (which takes a page) and the class summary
@@ -197,26 +226,22 @@ describe("updateMessages", () => {
 
   it("fits a report that has outgrown an older thread's pages into the messages it has", async () => {
     const report = bigReport(300);
-    // posted today it would take 4 pages and a spare
-    expect(report.getPostedEmbeds()).toHaveLength(5);
+    // more than the 3 pages of 4000 its report messages used to hold
+    expect(sum(posted(report).map((e) => embedLength(e)))).toBeGreaterThan(12000);
     const messages = olderThread();
 
     await report.updateMessages(messages as any);
 
     messages.forEach((m) => withinDiscordLimits(m.edited));
-    // every report message keeps a share, and the instructions stay last in theirs
-    messages.slice(0, 3).forEach((m) => expect(m.edited[0].title).toBe("Raid Report"));
     expect(messages[2].edited.at(-1).title).toBe("Instructions");
-    expect(messages[3].edited.map((e) => e.title)).toEqual(["Class Summary"]);
+    expect(messages[3].edited.at(-1).title).toBe("Class Summary");
     // the report reads in order across them
-    expect(messages.flatMap((m) => reportLines(m.edited))).toEqual(
-      reportLines(report.getPostedEmbeds().flat().map((e) => e.toJSON()))
-    );
+    expect(messages.flatMap((m) => reportLines(m.edited))).toEqual(reportLines(posted(report)));
   });
 
   it("says so when the report is too long for every message", async () => {
-    await expect(bigReport(400).updateMessages(olderThread() as any)).rejects.toThrow(
-      "The raid report is too long for its 3 messages"
+    await expect(bigReport(600).updateMessages(olderThread() as any)).rejects.toThrow(
+      "The raid report is too long for its 4 messages"
     );
   });
 });

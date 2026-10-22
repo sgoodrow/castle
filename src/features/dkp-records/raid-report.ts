@@ -113,6 +113,27 @@ const paginate = (lines: string[]): string[] => {
   return pages;
 };
 
+/**
+ * The report's embeds for one message holding up to `limit` characters of embeds, starting at
+ * line `from`, and the line after the last one they hold. A message's lines are split into at
+ * most two embeds, since one holds up to 4000 and a message up to 6000.
+ */
+const fillMessage = (
+  lines: string[],
+  from: number,
+  limit: number
+): [EmbedBuilder[], number] => {
+  const capacity = limit - 2 * embedLength(reportEmbed("").toJSON());
+  let next = from;
+  let length = 0;
+  while (next < lines.length && length + lines[next].length + 1 <= capacity) {
+    length += lines[next].length + 1;
+    next++;
+  }
+  const taken = lines.slice(from, next);
+  return [taken.length > 0 ? paginate(taken).map(reportEmbed) : [], next];
+};
+
 const reportEmbed = (page: string) =>
   new EmbedBuilder({
     title: RAID_REPORT_TITLE,
@@ -135,8 +156,8 @@ export const getRaidReportMessages = async (channel: TextBasedChannel) => {
   }
   const all = await channel.messages.fetch({
     after: starter.id,
-    // a "very large" raid (e.g. 9 ticks on a quake) is posted as 5 report messages, then the
-    // instructions and the class summary; 10 leaves room in case something crazy happens
+    // a "very large" raid (e.g. 9 ticks on a quake) is posted as 2 or 3 report messages, then the
+    // class summary and the instructions; 10 leaves room in case something crazy happens
     limit: 10,
   });
   const messages = [
@@ -262,30 +283,23 @@ export class RaidReport {
   }
 
   public async updateMessages(messages: Message[]) {
-    const classSummaryMessages = messages.filter(isClassSummaryMessage);
-    const reportMessages = messages.filter((m) => !isClassSummaryMessage(m));
-    const instructionsLength = embedLength(this.instructionsEmbed.toJSON());
+    // what each message holds besides the report: the class summary, or an older thread's instructions
+    const fixed = messages.map((m) => [
+      ...(isInstructionsEmbedMessage(m) ? [this.instructionsEmbed] : []),
+      ...(isClassSummaryMessage(m) ? [this.classSummaryEmbed] : []),
+    ]);
     const raidReportEmbeds = this.getRaidReportMessageEmbeds(
-      reportMessages.map((m) =>
-        isInstructionsEmbedMessage(m) ? instructionsLength : 0
-      )
+      fixed.map((embeds) => sum(embeds.map((e) => embedLength(e.toJSON()))))
     );
 
     try {
-      await Promise.all([
-        ...classSummaryMessages.map((m) =>
-          m.edit({ embeds: [this.classSummaryEmbed] })
-        ),
-        ...reportMessages.map((m, i) => {
-          const embeds = [...raidReportEmbeds[i]];
-          if (isInstructionsEmbedMessage(m)) {
-            embeds.push(this.instructionsEmbed);
-          }
-          return m.edit({
-            embeds,
-          });
-        }),
-      ]);
+      await Promise.all(
+        messages.map((m, i) => {
+          const embeds = [...raidReportEmbeds[i], ...fixed[i]];
+          // a report message the report no longer reaches, e.g. a spare one; Discord won't keep it empty
+          return embeds.length > 0 ? m.edit({ embeds }) : m.delete();
+        })
+      );
     } catch (err) {
       throw new Error(
         `Could not generate edited raid report with action values: ${err}`
@@ -366,51 +380,38 @@ ${t.renderClasses((name) => this.getClass(name))}${code}`,
     );
   }
 
-  /**
-   * The report's embeds for each message it is first posted as: one more message than it has
-   * 4000-character pages, so it has room to grow, since the thread can't gain messages later.
-   */
+  /** The report's embeds for each message it is first posted as, before the class summary. */
   public getPostedEmbeds(): EmbedBuilder[][] {
-    return this.getRaidReportMessageEmbeds(
-      [...paginate(this.reportLines), ""].map(() => 0)
-    );
+    const lines = this.reportLines;
+    const posted: EmbedBuilder[][] = [];
+    for (let next = 0; next < lines.length; ) {
+      const [embeds, after] = fillMessage(lines, next, MESSAGE_EMBEDS_CHAR_LIMIT);
+      if (after === next) {
+        throw new Error(`A raid report line is too long to post: ${lines[next]}`);
+      }
+      posted.push(embeds);
+      next = after;
+    }
+    return posted;
   }
 
   /**
-   * The report's embeds for each of the thread's report messages, given how many characters each
-   * message's other embeds already use (an older thread's instructions). The thread can't gain
-   * messages above the credit !commands, so as the report grows it fills each message up to
-   * Discord's limit. Every message gets a share, since Discord won't leave one empty.
+   * The report's embeds for each of the thread's messages, given how many characters each one's
+   * other embeds already use (the class summary, or an older thread's instructions). The thread
+   * can't gain messages above the credit !commands, so the report fills them in order, each up to
+   * Discord's limit, and a short report stays in the first.
    */
   public getRaidReportMessageEmbeds(reserved: number[]): EmbedBuilder[][] {
     const lines = this.reportLines;
-    // a message's lines are split into at most two embeds, each with a title and code block
-    const overhead = 2 * embedLength(reportEmbed("").toJSON());
-    const capacities = reserved.map(
-      (r) => MESSAGE_EMBEDS_CHAR_LIMIT - r - overhead
-    );
-    const size = (line: string) => line.length + 1;
-    let remaining = sum(lines.map(size));
     let next = 0;
-    const embeds = capacities.map((capacity, i) => {
-      const later = sum(capacities.slice(i + 1));
-      const target = Math.max(
-        Math.ceil(remaining / (capacities.length - i)),
-        remaining - later
+    const embeds = reserved.map((r) => {
+      const [taken, after] = fillMessage(
+        lines,
+        next,
+        MESSAGE_EMBEDS_CHAR_LIMIT - r
       );
-      const taken: string[] = [];
-      let length = 0;
-      while (
-        next < lines.length &&
-        length < target &&
-        length + size(lines[next]) <= capacity
-      ) {
-        taken.push(lines[next]);
-        length += size(lines[next]);
-        next++;
-      }
-      remaining -= length;
-      return taken.length > 0 ? paginate(taken).map(reportEmbed) : [];
+      next = after;
+      return taken;
     });
     if (next < lines.length) {
       throw new Error(

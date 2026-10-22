@@ -66,20 +66,20 @@ class CreateRaidReportThreadMessageAction extends MessageAction {
     // save report to redis
     await report.save(thread.id);
 
-    // the report, in order, with a spare message to grow into
+    // the report, in order
     for (const embeds of report.getPostedEmbeds()) {
       await thread.send({ embeds });
     }
+
+    // class summary per tick, right below the report; the report grows into this message
+    await thread.send({
+      embeds: [report.classSummaryEmbed],
+    });
 
     // the instructions, which never change; mentioning the raider role mustn't ping it
     await thread.send({
       content: report.instructions,
       allowedMentions: { parse: [] },
-    });
-
-    // class summary per tick, above the credit !add/!rep messages
-    await thread.send({
-      embeds: [report.classSummaryEmbed],
     });
 
     // add credit messages, in order, since a bot's !add must land before its !rep
