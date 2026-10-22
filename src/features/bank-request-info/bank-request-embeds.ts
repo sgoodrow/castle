@@ -1,7 +1,7 @@
 import { Colors, EmbedBuilder } from "discord.js";
-import { bankWebUrl } from "../../config";
 import {
   BankSection,
+  bankSiteLink,
   bounties,
   inventory,
   raidingServices,
@@ -18,10 +18,8 @@ export const bankRequestEmbeds = (channel: string) => [
     footer: { text: `${Icon.Request} ${bounties.request}` },
   }),
   new EmbedBuilder({
-    title: `${Icon.Sold} ${
-      bankWebUrl ? "__Castle Bank Inventory__" : "Castle Bank Inventory"
-    }`,
-    url: bankWebUrl || undefined,
+    title: `${Icon.Sold} __Castle Bank Inventory__`,
+    url: bankSiteLink,
     description:
       "Shop the Castle Bank's inventory. Prices and rules are described below.",
     fields: [
@@ -53,11 +51,7 @@ export const bankRequestEmbeds = (channel: string) => [
     description: [
       "Always be courteous and patient with your bankers.",
       "",
-      ...(bankWebUrl
-        ? [
-            `• Request Castle Bank Inventory items from the [bank site](${bankWebUrl}).`,
-          ]
-        : []),
+      `• Request Castle Bank Inventory items from the [bank site](${bankSiteLink}).`,
       "• For bounties and raiding services, post the request shown on its card.",
       "• Prefer a command? `/bank request` works too.",
       `• Requests remain open until fulfilled, for up to ${MAX_AGE_DAYS} days.`,

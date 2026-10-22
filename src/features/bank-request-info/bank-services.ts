@@ -1,3 +1,7 @@
+// The bank site's short link, for Discord copy. The site's own address (`bankWebUrl`) stays the
+// sign-in base, so it can't be this redirect.
+export const bankSiteLink = "https://tinyurl.com/castle-guild-bank";
+
 // A category on one of the bank's cards, shown as a field. Bullets that are sentences end with a
 // period; fragments don't. Prices are in "p".
 export interface BankSection {
