@@ -48,6 +48,14 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     };
   });
   step(
+    /^the "Bot Info" sheet has a (\w+) named with spaces around it: "(.*)"$/,
+    (klass: string, name: string) => {
+      world.sheets[PUBLIC_SHEET] = {
+        [BOT_TAB]: rowsOf([{ row: "2", Name: ` ${name} `, Class: klass }]),
+      };
+    }
+  );
+  step(
     /^the shared accounts sheet has these rows:$/,
     (table: Record<string, string>[]) => {
       world.sheets["accounts-sheet"] = { Accounts: rowsOf(table) };

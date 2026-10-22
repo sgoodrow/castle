@@ -79,7 +79,7 @@ Feature: Loading the bots
     When the bot starts
     Then bot commands are off, saying:
       """
-      bot commands are off
+      The "Bot Info" sheet couldn't be loaded, so bot commands are off. A knight needs to fix the sheet and restart the bot.
       """
     And the stored bots are:
       | name  |
@@ -104,7 +104,7 @@ Feature: Loading the bots
     When the bot starts
     Then bot commands are off, saying:
       """
-      bot commands are off
+      The "Bot Info" sheet couldn't be loaded, so bot commands are off. A knight needs to fix the sheet and restart the bot.
       """
     And the stored bots are:
       | name  |
@@ -173,3 +173,10 @@ Feature: Loading the bots
     And the stored bots are:
       | name  | level | location | pilot | bind | factioned | faction |
       | Aleph | 60    |          |       |      | no        |         |
+
+  Scenario: A padded name is stored trimmed, the way the bot checks it
+    Given the "Bot Info" sheet has a Rogue named with spaces around it: "Gimel"
+    When the bot starts
+    Then the stored bots are:
+      | name  |
+      | Gimel |

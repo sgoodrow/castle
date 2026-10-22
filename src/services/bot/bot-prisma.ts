@@ -9,9 +9,7 @@ import {
   ComponentType,
 } from "discord.js";
 import { Moment } from "moment";
-import {
-  BOT_SPREADSHEET_COLUMNS
-} from "../sheet-updater/public-sheet";
+import { BOT_SPREADSHEET_COLUMNS } from "../sheet-updater/public-sheet";
 import { IPublicAccountService } from "./public-accounts.i";
 import { bot, PrismaClient } from "@prisma/client";
 import moment from "moment";
@@ -57,10 +55,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   private alerts = new BotSheetAlerts();
   private loadFailed = false; // the last load of the sheet failed
 
-  
-
   constructor() {
-
     this.startRefreshLoop();
   }
 
@@ -106,7 +101,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
   }
 
   public async guardReady() {
-    const sleep = (ms: number) => new Promise(res => setTimeout(res, ms));
+    const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
     while (!this.isReady || this.refreshing) {
       await sleep(100);
     }
@@ -124,18 +119,20 @@ export class PrismaPublicAccounts implements IPublicAccountService {
     const rows = await publicSheetService.getBotSheetRows();
     const bad = badBotRows(rows);
     if (bad.length)
-      throw new Error(`these rows need fixing:\n${bad.map((b) => `• ${b}`).join("\n")}`);
+      throw new Error(
+        `these rows need fixing:\n${bad.map((b) => `• ${b}`).join("\n")}`
+      );
     const bots = [];
     for (const row of rows) {
-      if (!row[BOT_SPREADSHEET_COLUMNS.Name]?.trim()) continue; // a blank row
-      const time = moment(row[BOT_SPREADSHEET_COLUMNS.CheckoutTime]);
-      const roles = await accounts.getRolesForAccount(
-        row[BOT_SPREADSHEET_COLUMNS.Name]
-      );
       // Google Sheets leaves out a row's blank cells after its last filled one.
       const cell = (column: BOT_SPREADSHEET_COLUMNS) => row[column] ?? "";
+      // Named as badBotRows checks them: a padded name is still the bot's name.
+      const name = cell(BOT_SPREADSHEET_COLUMNS.Name).trim();
+      if (!name) continue; // a blank row
+      const time = moment(row[BOT_SPREADSHEET_COLUMNS.CheckoutTime]);
+      const roles = await accounts.getRolesForAccount(name);
       bots.push({
-        name: cell(BOT_SPREADSHEET_COLUMNS.Name),
+        name,
         class: cell(BOT_SPREADSHEET_COLUMNS.Class),
         level: cell(BOT_SPREADSHEET_COLUMNS.Level),
         location: cell(BOT_SPREADSHEET_COLUMNS.CurrentLocation),
@@ -169,7 +166,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
           new ParkBotButtonCommand(`parkbot_${name}`).getButtonBuilder(bot)
         );
       }
-    } catch { }
+    } catch {}
     return components;
   }
 
@@ -196,7 +193,10 @@ export class PrismaPublicAccounts implements IPublicAccountService {
 
       const foundBot = details.characters;
       const prismaBot = await this.getBotByName(foundBot);
-      if (prismaBot?.class === Class.Wizard && roles.cache.has(noBotWizardsRoleId)) {
+      if (
+        prismaBot?.class === Class.Wizard &&
+        roles.cache.has(noBotWizardsRoleId)
+      ) {
         throw new Error("You do not have permission to request Wizard bots");
       }
       const currentPilot = await this.getCurrentBotPilot(foundBot);
@@ -231,13 +231,13 @@ Password: ${spoiler(details.password)}
 
       if (await this.isBotPublic(foundBot)) {
         try {
-          const guildUser = await getMember(
-            interaction.user.id
-          );
+          const guildUser = await getMember(interaction.user.id);
 
           log(
-            `${guildUser?.nickname || guildUser?.user.username
-            } requested ${name} and got ${details.characters} ${currentPilot ? `who is checked out by ${currentPilot}` : ""
+            `${
+              guildUser?.nickname || guildUser?.user.username
+            } requested ${name} and got ${details.characters} ${
+              currentPilot ? `who is checked out by ${currentPilot}` : ""
             }`
           );
 
