@@ -31,7 +31,9 @@ export function AppPane() {
   const sm = useMediaQuery("(min-width: 48em)", true); // tablets and up get the table
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [tabOpen, setTabOpen] = useState(false);
-  const closeTab = () => setTabOpen(false);
+  const [sending, setSending] = useState(false); // a tab post is in flight
+  // The tab stays open while a post is in flight, so its send state isn't unmounted mid-send.
+  const closeTab = () => { if (!sending) setTabOpen(false); };
 
   const items = useMemo(() => filterItems(f), [f]);
   // Filters change the URL in place, so Back still leaves the page rather than undoing a click.
@@ -153,7 +155,8 @@ export function AppPane() {
           </Group>
         }>
         <TabPane tab={tab} cls={f.cls} onSelect={id => { closeTab(); select(id); }} onRemove={id => setQty(id, 0)}
-          onSent={chans => { setTab({}); closeTab(); say(`Posted to ${chans.map(channelName).join(" and ")}`, true); }} />
+          onSent={chans => { setTab({}); setTabOpen(false); say(`Posted to ${chans.map(channelName).join(" and ")}`, true); }}
+          sending={sending} onSending={setSending} />
       </Drawer>
       {!md && (
         <Drawer opened={!!sel} onClose={() => select(null)} position="right" size="min(440px, 100%)" withinPortal withCloseButton={false} styles={{ title: { flex: 1 } }}
