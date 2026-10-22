@@ -102,7 +102,7 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     // Only a request can be filled or cancelled, not the channel's own instructions.
     if (
       !readBankRequest({
-        content: this.message.content ?? "",
+        content: this.message.content as string,
         embeds: this.message.embeds,
       })
     ) {
