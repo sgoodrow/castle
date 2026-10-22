@@ -46,7 +46,8 @@ Feature: Expiring old bank requests
     Given Alice posted in #bank-requests 60 days ago: "Raid Reagents: Peridots, 40"
     And Alice copied a bank page request into #bank-requests 60 days ago
     When the bot clears out old bank requests
-    Then Alice's requests are still in #bank-requests
+    Then the post "Raid Reagents: Peridots, 40" is still in #bank-requests
+    And Alice's requests are still in #bank-requests
     And no one is sent a DM
 
   Scenario: The bot's instructions stay, however old

@@ -1,13 +1,13 @@
 // The steps the bot's features are written in. Each is what the guild's members, its officers or
 // the sheets they keep do or see. The bot's own code runs for real, on a real database; only Discord
 // and Google Sheets are stand-ins (world.ts).
+import { DAYS } from "../shared/time";
 import { prismaClient } from "..";
 import type { DefineStep } from "../testing/gherkin";
 import type { PrismaPublicAccounts } from "../services/bot/bot-prisma";
 import { BOT_ID, newId, post, world, type Message, type Row } from "./world";
 
 const MINUTE = 60 * 1000;
-const DAY = 24 * 60 * MINUTE;
 const PUBLIC_SHEET = "public-sheet";
 const BOT_TAB = "Bot Info";
 
@@ -48,7 +48,7 @@ const member = (name: string) => {
   if (!found) throw new Error(`No one called ${name} is in the scenario`);
   return found;
 };
-const daysAgo = (days?: string) => Number(days ?? 0) * DAY;
+const daysAgo = (days?: string) => Number(days ?? 0) * DAYS;
 
 // The latest of a member's bank requests in a channel, whichever way it was posted.
 const requestOf = (name: string, channel = "bank-requests") => {
@@ -367,8 +367,13 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(/^the bot clears out old bank requests$/, async () => {
     const { expireOldBankRequests } =
       await import("../features/bank-request-info/expire-old-requests");
+    // The handler reports its errors with console.error rather than throwing, so a scenario must
+    // fail on one, or a negative like "no one is sent a DM" would pass with the handler broken.
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
     expireOldBankRequests({});
     await idle();
+    expect(errors.mock.calls).toEqual([]);
+    errors.mockRestore();
   });
   step(
     /^(\w+)'s request is (still|no longer) in #(\S+)$/,
@@ -377,6 +382,13 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       expect(requestOf(name, channel).gone).toBe(still !== "still");
     }
   );
+  step(/^the post "(.*)" is still in #bank-requests$/, (text: string) => {
+    const found = (world.channels["bank-requests"] ?? []).filter(
+      (m) => m.content === text
+    );
+    expect(found).toHaveLength(1);
+    expect(found[0]?.gone).toBe(false);
+  });
   step(
     /^(\w+)'s requests are (still|no longer) in #bank-requests$/,
     (name: string, still: string) => {
