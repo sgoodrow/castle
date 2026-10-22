@@ -64,7 +64,8 @@ export const expireOldBankRequests = (options: Options) => {
 const refreshBankRequests = async () => {
   const botId = client.user?.id;
   if (!botId) return;
-  // Jewelry requests expire the same way bank requests do.
+  // Jewelry the bot posts expires the same way bank requests do. Members' typed jewelry requests
+  // are left to the jewelers.
   let removed = 0;
   for (const [channelId, what] of [
     [bankRequestsChannelId, "bank request"],
