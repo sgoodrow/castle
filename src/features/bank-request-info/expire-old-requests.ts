@@ -11,9 +11,9 @@ import { log } from "../../shared/logger";
 import { DAYS } from "../../shared/time";
 import { dismissal } from "./dismissal";
 
-// Requests the bot posted to #bank-requests, from the bank page or /bank request, are removed once
-// they're 30 days old, and the member is sent each one by DM. Players' own posts, and the bot's
-// instructions, are left alone.
+// Requests the bot posted to #bank-requests and #jewelry-requests, from the bank page or /bank request,
+// are removed once they're 30 days old, and the member is sent each one by DM. Players' own posts,
+// and the bot's instructions, are left alone.
 export const MAX_AGE_DAYS = 30;
 
 type Post = Pick<
@@ -47,7 +47,11 @@ export const expireOldRequests = async (
     // A member who doesn't take DMs still has theirs removed.
     await notify(
       request.requesterId,
-      dismissal([request.text], `, as it was open for ${MAX_AGE_DAYS} days`, what)
+      dismissal(
+        [request.text],
+        `, as it was open for ${MAX_AGE_DAYS} days`,
+        what
+      )
     ).catch(() =>
       log(
         `bank requests: couldn't DM ${request.requesterId} about their removed request`

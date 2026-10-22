@@ -75,23 +75,18 @@ const transactionMessage = (
   };
 };
 
-const isBanker = async (userId: string) => {
-  const member = await getMember(userId);
-  return [bankerRoleId, officerRoleId, modRoleId].some((role) =>
-    member?.roles.cache.has(role)
-  );
-};
-
 // Jewelry requests are filled by the jewelers as well as the bankers.
 const isFiller = async (userId: string, channelId: string) => {
-  if (await isBanker(userId)) return true;
-  if (channelId !== jewelryChannelId) return false;
   const member = await getMember(userId);
-  return !!member?.roles.cache.has(jewelerRoleId);
+  const has = (role: string) => !!member?.roles.cache.has(role);
+  if ([bankerRoleId, officerRoleId, modRoleId].some(has)) return true;
+  return channelId === jewelryChannelId && has(jewelerRoleId);
 };
 
 class BankRequestFinishedReactionAction extends ReactionAction {
   public async execute() {
+    // A reaction on an uncached message arrives without its content or embeds.
+    if (this.message.partial) await this.message.fetch();
     // filter channel: bank requests, and jewelry requests the jewelers fill
     const channelId = this.message.channel.id;
     if (channelId !== bankRequestsChannelId && channelId !== jewelryChannelId) {
