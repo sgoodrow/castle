@@ -14,6 +14,7 @@ import { SearchPane } from "./SearchPane";
 import { FilterPane } from "./FilterPane";
 import { TabPane } from "./TabPane";
 import { tabTotal, totalShort, totalText } from "../../tab";
+import { channelName } from "../../request";
 import { UpdatedText } from "../texts/UpdatedText";
 import { DevOptionsPane } from "./DevOptionsPane";
 import { ClearFiltersButton } from "../buttons/ClearFiltersButton";
@@ -152,7 +153,7 @@ export function AppPane() {
           </Group>
         }>
         <TabPane tab={tab} cls={f.cls} onSelect={id => { closeTab(); select(id); }} onRemove={id => setQty(id, 0)}
-          onSent={() => { setTab({}); closeTab(); say("Posted to #bank-requests", true); }} />
+          onSent={chans => { setTab({}); closeTab(); say(`Posted to ${chans.map(channelName).join(" and ")}`, true); }} />
       </Drawer>
       {!md && (
         <Drawer opened={!!sel} onClose={() => select(null)} position="right" size="min(440px, 100%)" withinPortal withCloseButton={false} styles={{ title: { flex: 1 } }}

@@ -9,6 +9,7 @@ import { loginRoute } from "./route";
 export interface Embed { title: string; description: string; color: number; item?: number; footer?: string }
 // Where the post goes: the bank requests channel, or the jewelry requests channel for made-to-order jewelry.
 export interface RequestMessage { embeds: Embed[]; channel: "bank" | "jewelry" }
+export const channelName = (channel: RequestMessage["channel"]) => channel === "jewelry" ? "#jewelry-requests" : "#bank-requests";
 
 const BLURPLE = 0x5865f2;
 const GREY = 0x4e5058;

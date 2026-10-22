@@ -5,7 +5,7 @@ import { ITEMS, bankRequest, priceText, requestedFrom, type ClassId } from "../.
 import { tabTotal, totalText } from "../../tab";
 import type { Tab } from "../../state";
 import { ItemImage } from "../ItemImage";
-import { requestMessages } from "../../request";
+import { requestMessages, type RequestMessage } from "../../request";
 import { SendToDiscordButton } from "../buttons/SendToDiscordButton";
 
 interface Props {
@@ -13,7 +13,7 @@ interface Props {
   cls: ClassId | null;
   onSelect: (id: number) => void;
   onRemove: (id: number) => void;
-  onSent: () => void;
+  onSent: (channels: RequestMessage["channel"][]) => void;
 }
 
 // The running tab: what's on it, what it costs, and one button to post it to #bank-requests.

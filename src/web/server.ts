@@ -206,7 +206,6 @@ async function bankRequest(
   res: ServerResponse,
   me: Session
 ) {
-  if (!poster) return send(req, res, 503, "text/plain", "Posting isn't set up");
   if (!postAllowed(me.id)) return send(req, res, 429, "text/plain", "Too many");
   const raw = await body(req, 65536);
   if (raw == null) return send(req, res, 413, "text/plain", "Too large");

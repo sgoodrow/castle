@@ -11,20 +11,22 @@ const failure = (status: number | null) =>
   : "Couldn't post it. Try again in a moment.";
 
 // Posts the tab's messages, one per channel, once confirmed in a modal that shows each post itself.
-export function SendToDiscordButton({ msgs, onSent }: { msgs: RequestMessage[]; onSent: () => void }) {
+export function SendToDiscordButton({ msgs, onSent }: { msgs: RequestMessage[]; onSent: (channels: RequestMessage["channel"][]) => void }) {
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // How many of the posts have gone through, so a retry picks up at the first one that didn't.
-  const [posted, setPosted] = useState(0);
-  const close = () => { setOpen(false); setError(null); setPosted(0); };
+  // The posts that have gone through for this tab, so a retry picks up at the first one that didn't.
+  // Kept across cancelling, and only for the same messages: a changed tab starts again from the top.
+  const [progress, setProgress] = useState<{ key: string; done: number } | null>(null);
+  const close = () => { setOpen(false); setError(null); };
   const send = async () => {
     setSending(true);
     setError(null);
-    // In order, and stopping at the first that fails. A retry starts at that one, so a post that
-    // went through is never repeated.
+    // In order, and stopping at the first that fails, so a post that went through is never repeated.
+    const key = JSON.stringify(msgs);
+    let done = progress?.key === key ? progress.done : 0;
     let status: number | null = 204;
-    for (let i = posted; i < msgs.length; i++) {
+    for (let i = done; i < msgs.length; i++) {
       status = await fetch("/api/bank-request", {
         method: "POST",
         credentials: "same-origin",
@@ -32,10 +34,11 @@ export function SendToDiscordButton({ msgs, onSent }: { msgs: RequestMessage[]; 
         body: JSON.stringify(msgs[i]),
       }).then(r => r.status, () => null);
       if (status !== 204) break;
-      setPosted(i + 1);
+      done = i + 1;
+      setProgress({ key, done });
     }
     setSending(false);
-    if (status === 204) { close(); onSent(); } else setError(failure(status));
+    if (status === 204) { setProgress(null); close(); onSent(msgs.map(m => m.channel)); } else setError(failure(status));
   };
   return (
     <>
