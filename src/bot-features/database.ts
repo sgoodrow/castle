@@ -50,6 +50,15 @@ async function template(server: Client) {
     [name]
   );
   if (rows[0]?.datistemplate) return name;
+  // Templates of older migrations are never used again.
+  const { rows: stale } = await server.query<{ datname: string }>(
+    "select datname from pg_database where datname like 'castle\\_test\\_%' and datname <> $1",
+    [name]
+  );
+  for (const { datname } of stale) {
+    await server.query(`alter database "${datname}" is_template false`);
+    await server.query(`drop database "${datname}" with (force)`);
+  }
   // Left half built by a run that stopped part way.
   if (rows[0]) await server.query(`drop database "${name}" with (force)`);
   await server.query(`create database "${name}"`);

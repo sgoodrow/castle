@@ -38,6 +38,21 @@ Feature: Loading the bots
       | Bet   | raider          |
       | Gimel |                 |
 
+  Scenario: A bot taken off the shared accounts sheet needs no role at its next load
+    Given the shared accounts sheet has these rows:
+      | row | Characters | Class  | Account | Password | Officers |
+      | 2   | Aleph      | Wizard | aleph1  | secret   | TRUE     |
+    And the "Bot Info" sheet has these rows:
+      | row | Name  | Class  |
+      | 2   | Aleph | Wizard |
+    When the bot starts
+    And the shared accounts sheet has these rows:
+      | row | Characters | Class | Account | Password | Officers |
+    And 15 minutes pass
+    Then the stored bots are:
+      | name  | required roles |
+      | Aleph |                |
+
   Scenario: A sheet without its "Bot Info" tab keeps the stored bots and turns bot commands off
     Given these bots are stored:
       | name  | class  |

@@ -26,7 +26,7 @@ interface World {
   posts: { channel: string; content: string }[]; // what the bot posted, in order
   discordDown: boolean;
   logs: string[];
-  restore: (() => void)[];
+  restore: (() => unknown)[]; // undone after the scenario, last first
 }
 export let world: World;
 
@@ -52,7 +52,7 @@ export async function reset() {
 }
 
 export async function teardown() {
-  for (const r of world.restore.splice(0).reverse()) r();
+  for (const r of world.restore.splice(0).reverse()) await r();
 }
 
 // Discord, as the bot reaches it through src/index.ts. The database client is the real one.

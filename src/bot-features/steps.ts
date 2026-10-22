@@ -117,6 +117,8 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(/^the bot starts$/, async () => {
     const { PrismaPublicAccounts } = await import("../services/bot/bot-prisma");
     bots = new PrismaPublicAccounts();
+    // A load still running when a scenario fails mustn't land in the next one.
+    world.restore.push(loaded);
     await loaded();
   });
   step(/^(\d+) minutes? pass(?:es)?$/, async (n: string) => {

@@ -9,7 +9,8 @@ import {
   compile,
 } from "@cucumber/gherkin";
 import { IdGenerator, type PickleStep } from "@cucumber/messages";
-import { readFileSync } from "fs";
+import { readdirSync, readFileSync } from "fs";
+import path from "path";
 
 // A step gets its pattern's groups, then its table (one object per row, keyed by the header) or doc
 // string, if it has one.
@@ -65,5 +66,20 @@ export function describeFeature(uri: string, steps: Library) {
         for (const step of pickle.steps) await runStep(steps, step);
       });
     }
+  });
+}
+
+// Each .feature in this folder runs from its own <name>.test.ts; one without it would never run.
+export function expectEveryFeatureRuns(dir: string) {
+  const features = readdirSync(dir).filter((f) => f.endsWith(".feature"));
+  test.each(features)("%s has a test file that runs it", (feature) => {
+    const testFile = path.join(dir, feature.replace(/\.feature$/, ".test.ts"));
+    let text = `no ${testFile}`;
+    try {
+      text = readFileSync(testFile, "utf-8");
+    } catch {
+      // The expectation below names the missing file.
+    }
+    expect(text).toContain(`runFeature("./${feature}")`);
   });
 }
