@@ -101,7 +101,14 @@ Feature: The jewelry sheet
       """
     When the site reads the jewelry sheet
     And Someone asks for the bank
-    Then the bank describes 2 items
+    Then the bank sends item 14646, "Wolfs Eye Golden Bracelet", made to order with:
+      | field     | value                            |
+      | materials | [{"what": "Material", "pp": 14}] |
+      | trivial   | 175                              |
+      | success   | 0.95                             |
+      | price     | 15                               |
+      | note      | ""                               |
+    And the bank describes 2 items
 
   Scenario: A recipe row whose costs aren't numbers keeps the old copy
     Given a saved copy of the jewelry sheet prices item 14618 at 13pp
