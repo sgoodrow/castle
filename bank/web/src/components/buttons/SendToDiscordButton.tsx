@@ -15,30 +15,32 @@ export function SendToDiscordButton({ msgs, onSent }: { msgs: RequestMessage[]; 
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // The posts that have gone through for this tab, so a retry picks up at the first one that didn't.
-  // Kept across cancelling, and only for the same messages: a changed tab starts again from the top.
-  const [progress, setProgress] = useState<{ key: string; done: number } | null>(null);
-  const close = () => { setOpen(false); setError(null); };
+  // The posts that have gone through, as their JSON, so a retry skips them and picks up at the first
+  // one that didn't. Kept across cancelling; a post is only skipped when it's exactly the same.
+  const [sent, setSent] = useState<string[]>([]);
+  // Can't close mid-send: the rest would still go out after the modal shut.
+  const close = () => { if (sending) return; setOpen(false); setError(null); };
   const send = async () => {
     setSending(true);
     setError(null);
-    // In order, and stopping at the first that fails, so a post that went through is never repeated.
-    const key = JSON.stringify(msgs);
-    let done = progress?.key === key ? progress.done : 0;
+    // In order, stopping at the first that fails.
+    const done = [...sent];
     let status: number | null = 204;
-    for (let i = done; i < msgs.length; i++) {
+    for (const msg of msgs) {
+      const body = JSON.stringify(msg);
+      if (done.includes(body)) continue;
       status = await fetch("/api/bank-request", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(msgs[i]),
+        body,
       }).then(r => r.status, () => null);
       if (status !== 204) break;
-      done = i + 1;
-      setProgress({ key, done });
+      done.push(body);
+      setSent([...done]);
     }
     setSending(false);
-    if (status === 204) { setProgress(null); close(); onSent(msgs.map(m => m.channel)); } else setError(failure(status));
+    if (status === 204) { setSent([]); setOpen(false); onSent(msgs.map(m => m.channel)); } else setError(failure(status));
   };
   return (
     <>
@@ -52,7 +54,7 @@ export function SendToDiscordButton({ msgs, onSent }: { msgs: RequestMessage[]; 
           <Stack gap="xs" py="sm" style={{ position: "sticky", bottom: 0, background: "var(--mantine-color-body)", borderTop: "1px solid var(--mantine-color-default-border)" }}>
             {error && <Text fz="sm" c="red" role="alert">{error}</Text>}
             <Group justify="flex-end" gap="xs">
-              <Button variant="default" onClick={close}>Cancel</Button>
+              <Button variant="default" disabled={sending} onClick={close}>Cancel</Button>
               <Button color="#5865f2" loading={sending} leftSection={<IconBrandDiscordFilled size={16} />} onClick={() => void send()}>Send</Button>
             </Group>
           </Stack>

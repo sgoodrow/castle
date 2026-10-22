@@ -91,21 +91,19 @@ const api = new BankApi(
   new ResearchSheet(CACHE, alert("research-sheet.alert", "The research sheet")),
   new JewelrySheet(CACHE, alert("jewelry-sheet.alert", "The jewelry sheet"))
 );
-// Posting bank requests needs the bot's token and the channel; without them the page is told so.
-const poster: Poster | null =
-  token && bankRequestsChannelId
+// Posting needs the bot's token and the channel; without them the page is told so. Bank requests
+// post to their channel, and made-to-order jewelry to the jewelers' channel.
+const posterFor = (channelId: string | undefined): Poster | null =>
+  token && channelId
     ? {
         token,
-        channelId: bankRequestsChannelId,
+        channelId,
         baseUrl: bankWebUrl,
         icon: (id) => wiki.get(id)?.icon,
       }
     : null;
-// Made-to-order jewelry posts to the jewelers' channel, as the bank's requests do to theirs.
-const jewelryPoster: Poster | null =
-  poster && jewelryChannelId
-    ? { ...poster, channelId: jewelryChannelId }
-    : null;
+const poster = posterFor(bankRequestsChannelId);
+const jewelryPoster = posterFor(jewelryChannelId);
 
 let page: Buffer | null = null;
 // The page reports its errors with this commit, so they're mapped with the right source map.
