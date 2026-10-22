@@ -26,10 +26,12 @@ export type Recipe = {
   note: string;
 };
 
-// The export shows the sheet's displayed numbers, so "1,200" is 1200.
+// The export shows the sheet's displayed numbers, so "1,200" is 1200. Only whole thousands are
+// grouped: "1,20" is a typo, not 120.
 const whole = (s: string) => {
-  const t = s.trim().replace(/,/g, "");
-  return /^\d+$/.test(t) ? +t : null;
+  const t = s.trim();
+  if (!/^(\d{1,3}(,\d{3})+|\d+)$/.test(t)) return null;
+  return +t.replace(/,/g, "");
 };
 const percent = (s: string) => {
   const m = s.trim().match(/^(\d+(?:\.\d+)?)%$/);
