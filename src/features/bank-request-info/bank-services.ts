@@ -57,7 +57,7 @@ export const inventory: InventorySection[] = [
     ],
   },
   {
-    title: "Research Spells & Components",
+    title: "Research Spell Components",
     spreadsheet: "https://tinyurl.com/castle-research",
     bullets: ["North Freeport Bank", "Free"],
   },
