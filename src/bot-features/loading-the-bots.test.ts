@@ -1,3 +1,3 @@
 import { runFeature } from "./runFeature";
 
-runFeature("./loading-the-bots.feature");
+runFeature(__dirname, "./loading-the-bots.feature");
