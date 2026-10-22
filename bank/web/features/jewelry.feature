@@ -24,6 +24,12 @@ Feature: Jewelry
       | 1     | Black Sapphire Velium Necklace | Jewelry: Black Sapphire Velium Necklace, 1 (822pp) |
       | 3     | Golden Cat Eye Bracelet        | Jewelry: Golden Cat Eye Bracelet, 3 (39pp)        |
 
+  Scenario: Jewelry the bank holds none of is not Sky
+    Given the jewelers also make jewelry to order
+    And I have opened the bank page
+    When I pick "Sky"
+    Then the bank doesn't list "Black Sapphire Velium Necklace"
+
   Scenario: A member can order more jewelry than the bank holds
     Given the jewelers also make jewelry to order
     And I have opened the bank page

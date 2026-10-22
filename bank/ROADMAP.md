@@ -77,7 +77,7 @@ UX (agreed):
 - **Decided:** read the sheet as it is. The database stays the source of truth for stock.
 - **Decided:** jewelry is part of the one catalog, at the same URL with no new navigation. Jewelry items are searchable and requested like any other item, made to order, at the guild price, with the same details as any other item.
 - **Decided:** jewelry lines post to #jewelry-requests, not #bank-requests, so jewelers watch a quieter channel. The site routes each line, so the member never picks a channel. Until that routing and the ✅/❌ handling for jewelers exist, jewelry must not reach main.
-- What we know: every recipe name matches two items, the jewelry and a copy made with unenchanted metal that gives nothing. The site matches a sheet name exactly to the one item of that name that gives something. On Oct 22, 2026, 93 of the 100 names matched. Five "Wolf's Eye" names are "Wolfs Eye" in the game, "Velium Rose Engagement Ring" is "Rose Velium Engagement Ring", and "Fire Emerald Velium Ring" is two items that both give something. The site logs the names it can't match.
+- What we know: most recipe names match two items, the jewelry and a copy made with unenchanted metal that gives nothing. The site matches a sheet name exactly to the one item of that name that gives something. On Oct 22, 2026, 93 of the 100 names matched. Five "Wolf's Eye" names are "Wolfs Eye" in the game, "Velium Rose Engagement Ring" is "Rose Velium Engagement Ring", and "Fire Emerald Velium Ring" matches two jewelry items. The site logs the names it can't match.
 - In progress: the UX, iterated live. Jewelry needs its post routed to #jewelry-requests, and the ✅/❌ reactions accepted there, before members see it.
 
 ## How work runs

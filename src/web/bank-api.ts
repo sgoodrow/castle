@@ -184,7 +184,7 @@ export class BankApi {
     for (const [id, it] of Object.entries(items)) {
       const part = this.sky.get(it.name as string);
       if (part) it.sky = part;
-      else if (!offSky.has(+id)) it.sky = { islands: [], note: "" };
+      else if (!offSky.has(+id) && !it.jewelry) it.sky = { islands: [], note: "" };
     }
     // A research item is one the research sheet lists and a research mule holds, so the everyday
     // items some recipes take, such as a Dagger, keep their usual price.

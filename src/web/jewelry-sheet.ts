@@ -51,7 +51,7 @@ export function recipes(rows: string[][]): [name: string, recipe: Recipe][] {
     const rest = cells.filter((_, i) => i !== col("ITEM NAME"));
     if (!name || rest.every((c) => !c || c === "None")) continue; // a blank row or a title
     const materials = head.flatMap((h, i) => {
-      const m = h.match(/^(\w+) COST \(pp\)$/);
+      const m = h.match(/^(BAR|GEM|MATERIAL) COST \(pp\)$/);
       if (!m) return [];
       const pp = whole(cells[i] ?? "");
       if (pp == null) throw new Error(`${name}: ${h} isn't a number`);
