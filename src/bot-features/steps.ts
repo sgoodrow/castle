@@ -66,11 +66,6 @@ const requestOf = (name: string, channel = "bank-requests") => {
   return found;
 };
 
-// Every so often the bot's own code waits on another promise; this lets everything it started run.
-const idle = async () => {
-  for (let i = 0; i < 50; i++) await new Promise((r) => setImmediate(r));
-};
-
 // The scenario names its members, as in <@Alice>; the bot sees their ids.
 const named = (text: string) =>
   Object.values(world.members).reduce(
@@ -370,10 +365,12 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     // The handler reports its errors with console.error rather than throwing, so a scenario must
     // fail on one, or a negative like "no one is sent a DM" would pass with the handler broken.
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
-    expireOldBankRequests({});
-    await idle();
-    expect(errors.mock.calls).toEqual([]);
-    errors.mockRestore();
+    try {
+      await expireOldBankRequests({});
+      expect(errors.mock.calls).toEqual([]);
+    } finally {
+      errors.mockRestore();
+    }
   });
   step(
     /^(\w+)'s request is (still|no longer) in #(\S+)$/,
