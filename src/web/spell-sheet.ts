@@ -136,7 +136,7 @@ export class SpellSheet {
     } catch (e) {
       log(`bank web: spell sheet: ${e}`);
       await this.alert.report(
-        `The spell sheet couldn't be read, so the bank keeps its last copy. The error: ${e}`
+        "it couldn't be read, so the bank keeps its last copy if it has one"
       );
       return;
     }
@@ -155,7 +155,7 @@ export class SpellSheet {
     } catch (e) {
       log(`bank web: spell sheet: ${e}`);
       await this.alert.report(
-        `The spell sheet couldn't be read, so the bank keeps its last copy. The error: ${e}`
+        "it couldn't be read, so the bank keeps its last copy if it has one"
       );
       return;
     }
@@ -177,8 +177,6 @@ export class SpellSheet {
     this.problems = problems;
     this.prices = prices;
     writeFileSync(this.file, JSON.stringify([...prices]));
-    await this.alert.report(
-      problems ? `The spell sheet needs fixing: ${problems}.` : ""
-    );
+    await this.alert.report(problems);
   }
 }

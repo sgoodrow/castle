@@ -77,12 +77,14 @@ const bankOffice = (message: string) =>
   token && bankOfficeChannelId
     ? postToChannel(token, bankOfficeChannelId, message)
     : Promise.resolve();
+const alert = (file: string, sheet: string) =>
+  new SheetAlert(path.join(CACHE, file), sheet, bankOffice);
 const api = new BankApi(
   path.join(ROOT, "bank/data"),
   wiki,
-  new SpellSheet(CACHE, new SheetAlert("The spell sheet", bankOffice)),
-  new SkySheet(CACHE, new SheetAlert("The Plane of Sky sheet", bankOffice)),
-  new ResearchSheet(CACHE, new SheetAlert("The research sheet", bankOffice))
+  new SpellSheet(CACHE, alert("spell-sheet.alert", "The spell sheet")),
+  new SkySheet(CACHE, alert("sky-sheet.alert", "The Plane of Sky sheet")),
+  new ResearchSheet(CACHE, alert("research-sheet.alert", "The research sheet"))
 );
 // Posting bank requests needs the bot's token and the channel; without them the page is told so.
 const poster: Poster | null =

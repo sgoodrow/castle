@@ -95,7 +95,7 @@ export class ResearchSheet {
     } catch (e) {
       log(`bank web: research sheet: ${e}`);
       await this.alert.report(
-        `The research sheet couldn't be read, so the bank keeps its last copy. The error: ${e}`
+        "it couldn't be read, so the bank keeps its last copy if it has one"
       );
       return;
     }
@@ -108,8 +108,6 @@ export class ResearchSheet {
     this.problems = problems;
     this.keys = new Set(names.map(researchKey));
     writeFileSync(this.file, JSON.stringify([...this.keys]));
-    await this.alert.report(
-      problems ? `The research sheet needs fixing: ${problems}.` : ""
-    );
+    await this.alert.report(problems);
   }
 }

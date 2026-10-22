@@ -79,7 +79,7 @@ Feature: The spell sheet
     When the site reads the spell sheet
     Then the log says "bank web: spell sheet: no such spell Cantana of Soothing; can't read the cost of Composition of Ervaj "ask Vijo""
 
-  Scenario: Bankers are told once when the spell sheet breaks, and again when it reads again
+  Scenario: Bankers are told once when the spell sheet breaks, however often it is read
     Given the bank office is set up
     And the spell sheet's "Bard Songs" tab is:
       """
@@ -88,16 +88,62 @@ Feature: The spell sheet
       """
     When the site reads the spell sheet
     And the site reads the spell sheet
-    Then the bank office is told "The spell sheet needs fixing: no such spell Cantana of Soothing."
+    Then the bank office is told "The spell sheet has a problem: no such spell Cantana of Soothing."
     And the bank office has been told 1 time
-    Given the spell sheet's "Bard Songs" tab is:
+
+  Scenario: Bankers are told when the spell sheet reads again
+    Given the bank office is set up
+    And the spell sheet's "Bard Songs" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      34,Cantana of Soothing,0,,,50pp
+      """
+    When the site reads the spell sheet
+    And the spell sheet's "Bard Songs" tab is:
       """
       Level,Name,# In Bank,Banker*,,Cost
       34,Aegis,0,,,50pp
       """
-    When the site reads the spell sheet
+    And the site reads the spell sheet
     Then the bank office is told "The spell sheet reads again."
     And the bank office has been told 2 times
+
+  Scenario: A problem the bankers were told about is not repeated after a restart
+    Given the bank office is set up
+    And the spell sheet's "Bard Songs" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      34,Cantana of Soothing,0,,,50pp
+      """
+    When the site reads the spell sheet
+    And the site restarts
+    And the site reads the spell sheet
+    Then the bank office has been told 1 time
+
+  Scenario: A recovery after a restart is still told
+    Given the bank office is set up
+    And the spell sheet's "Bard Songs" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      34,Cantana of Soothing,0,,,50pp
+      """
+    When the site reads the spell sheet
+    And the site restarts
+    And the spell sheet's "Bard Songs" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      34,Aegis,0,,,50pp
+      """
+    And the site reads the spell sheet
+    Then the bank office is told "The spell sheet reads again."
+
+  Scenario: Bankers are told once when Google can't give the spell sheet
+    Given the bank office is set up
+    And Google answers the spell sheet with 500
+    When the site reads the spell sheet
+    And the site reads the spell sheet
+    Then the bank office is told "The spell sheet has a problem: it couldn't be read, so the bank keeps its last copy if it has one."
+    And the bank office has been told 1 time
 
   Scenario: A message the bank office refuses is tried again on the next read
     Given the bank office is set up
@@ -110,5 +156,5 @@ Feature: The spell sheet
     When the site reads the spell sheet
     And the bank office accepts posts again
     And the site reads the spell sheet
-    Then the bank office is told "The spell sheet needs fixing: no such spell Cantana of Soothing."
+    Then the bank office is told "The spell sheet has a problem: no such spell Cantana of Soothing."
     And the bank office has been told 1 time

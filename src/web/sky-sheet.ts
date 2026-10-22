@@ -131,7 +131,7 @@ export class SkySheet {
     } catch (e) {
       log(`bank web: sky sheet: ${e}`);
       await this.alert.report(
-        `The Plane of Sky sheet couldn't be read, so the bank keeps its last copy. The error: ${e}`
+        "it couldn't be read, so the bank keeps its last copy if it has one"
       );
       return;
     }
@@ -172,8 +172,6 @@ export class SkySheet {
       this.file,
       JSON.stringify({ parts: [...this.parts], mq: this.held })
     );
-    await this.alert.report(
-      text ? `The Plane of Sky sheet needs fixing: ${text}.` : ""
-    );
+    await this.alert.report(text);
   }
 }

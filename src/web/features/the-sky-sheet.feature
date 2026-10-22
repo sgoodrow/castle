@@ -115,6 +115,18 @@ Feature: The Sky sheet
       | sky   | {"islands": [4], "note": ""} |
     And the log says "bank web: sky sheet: Error: no Items, Island and Notes columns"
 
+  Scenario: Bankers are told when the Sky sheet names no item
+    Given the bank office is set up
+    And the Sky sheet's announcements tab is:
+      """
+      Items,Island,Item Counts,Notes
+      Phosporic Globe,Island 2,3,
+      Efreeti Statuette,Island 4,6,
+      """
+    When the site reads the Sky sheet
+    Then the bank office is told "The Plane of Sky sheet has a problem: no such item Phosporic Globe."
+    And the bank office has been told 1 time
+
   Scenario: Names that are no item are logged
     Given the Sky sheet's announcements tab is:
       """

@@ -914,6 +914,9 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     world.env.bankRequestsChannelId = "requests-channel";
   });
   // The site reads its settings as it starts, so this one starts afresh. Sign-ins outlast it.
+  step(/^the site restarts$/, () => {
+    world.base = "";
+  });
   step(/^the site restarts without the bot's token$/, () => {
     delete world.env.token;
     world.base = "";

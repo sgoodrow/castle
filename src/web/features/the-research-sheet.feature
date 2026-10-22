@@ -87,5 +87,5 @@ Feature: The research sheet
 ,,Words of Nothing,
       """
     When the site reads the research sheet
-    Then the bank office is told "The research sheet needs fixing: no such item Words of Nothing."
+    Then the bank office is told "The research sheet has a problem: no such item Words of Nothing."
     And the bank office has been told 1 time
