@@ -702,6 +702,11 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     }
   );
   step(
+    /^the bank links item (\d+) to the wiki page "(.*)"$/,
+    (id: string, page: string) =>
+      expect(bank().items[+id].wiki).toBe(`https://wiki.project1999.com${page}`)
+  );
+  step(
     /^the bank describes "(.*)" as unknown, with its wiki page$/,
     (name: string) =>
       expect(bank().items[itemId(name)]).toEqual({

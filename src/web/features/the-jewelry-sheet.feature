@@ -120,6 +120,16 @@ Feature: The jewelry sheet
     And the site refreshes the wiki
     Then the wiki has been asked for "/Golden_Cat_Eye_Bracelet", "/Wolf%27s_Eye_Golden_Bracelet"
 
+  Scenario: A recipe the sheet spells differently links to its wiki page under the sheet's spelling
+    Given the jewelry sheet's price table is:
+      """
+      ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
+      ,Wolf's Eye Golden Bracelet,Wrist,7mr,14,175,95%,15,0,,15,,
+      """
+    When the site reads the jewelry sheet
+    And Someone asks for the bank
+    Then the bank links item 14646 to the wiki page "/Wolf%27s_Eye_Golden_Bracelet"
+
   Scenario: A recipe row whose costs aren't numbers keeps the old copy
     Given a saved copy of the jewelry sheet prices item 14618 at 13pp
     And the jewelry sheet's price table is:
