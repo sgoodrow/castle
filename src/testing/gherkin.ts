@@ -69,17 +69,31 @@ export function describeFeature(uri: string, steps: Library) {
   });
 }
 
-// Each .feature in this folder runs from its own <name>.test.ts; one without it would never run.
-export function expectEveryFeatureRuns(dir: string) {
-  const features = readdirSync(dir).filter((f) => f.endsWith(".feature"));
-  test.each(features)("%s has a test file that runs it", (feature) => {
-    const testFile = path.join(dir, feature.replace(/\.feature$/, ".test.ts"));
-    let text = `no ${testFile}`;
-    try {
-      text = readFileSync(testFile, "utf-8");
-    } catch {
-      // The expectation below names the missing file.
-    }
-    expect(text).toContain(`runFeature("./${feature}")`);
+// Every .feature under dir, at any depth, as paths relative to it.
+const featuresUnder = (dir: string, within = ""): string[] =>
+  readdirSync(path.join(dir, within), { withFileTypes: true }).flatMap((e) => {
+    const rel = path.join(within, e.name);
+    if (e.isDirectory())
+      return e.name === "node_modules" ? [] : featuresUnder(dir, rel);
+    return e.name.endsWith(".feature") ? [rel] : [];
   });
+
+// Each .feature under dir runs from a <name>.test.ts beside it; one without it would never run.
+export function expectEveryFeatureRuns(dir: string) {
+  test.each(featuresUnder(dir))(
+    "%s has a test file that runs it",
+    (feature) => {
+      const testFile = path.join(
+        dir,
+        feature.replace(/\.feature$/, ".test.ts")
+      );
+      let text = `no ${testFile}`;
+      try {
+        text = readFileSync(testFile, "utf-8");
+      } catch {
+        // The expectation below names the missing file.
+      }
+      expect(text).toContain(`"./${path.basename(feature)}"`);
+    }
+  );
 }

@@ -25,9 +25,15 @@ vi.mock("dotenv", () => {
 const { reset, teardown } = await import("./world");
 const { steps } = await import("./steps");
 
-// The path is relative to this folder.
-export function runFeature(file: string) {
+// The feature is relative to the folder of the test that calls this, which passes its own __dirname.
+export function runFeature(dir: string, file: string) {
   vi.setConfig({ testTimeout: 20000 });
+  // The bot's TypeORM connection opens as its code loads; let it open, so the feature doesn't end
+  // while it's still connecting.
+  beforeAll(async () => {
+    const { dataSource } = await import("../db/data-source");
+    await vi.waitUntil(() => dataSource.isInitialized, { timeout: 10000 });
+  });
   beforeEach(reset);
   afterEach(teardown);
   afterAll(async () => {
@@ -37,5 +43,5 @@ export function runFeature(file: string) {
     if (dataSource.isInitialized) await dataSource.destroy();
     await drop();
   });
-  describeFeature(path.join(__dirname, file), library(steps));
+  describeFeature(path.join(dir, file), library(steps));
 }
