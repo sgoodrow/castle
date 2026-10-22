@@ -11,7 +11,7 @@ const failure = (status: number | null) =>
   : "Couldn't post it. Try again in a moment.";
 
 // Posts the tab's messages, one per channel, once confirmed in a modal that shows each post itself.
-export function SendToDiscordButton({ msgs, onSent, onPosted, sending, onSending }: { msgs: RequestMessage[]; onSent: (channels: RequestMessage["channel"][]) => void; onPosted: (items: number[]) => void; sending: boolean; onSending: (on: boolean) => void }) {
+export function SendToDiscordButton({ msgs, onSent, onPosted, sending, onSending }: { msgs: RequestMessage[]; onSent: () => void; onPosted: (msg: RequestMessage) => void; sending: boolean; onSending: (on: boolean) => void }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Can't close mid-send: the rest would still go out after the modal shut.
@@ -30,10 +30,10 @@ export function SendToDiscordButton({ msgs, onSent, onPosted, sending, onSending
         body: JSON.stringify(msg),
       }).then(r => r.status, () => null);
       if (status !== 204) break;
-      onPosted(msg.items);
+      onPosted(msg);
     }
     onSending(false);
-    if (status === 204) { setOpen(false); onSent(msgs.map(m => m.channel)); } else setError(failure(status));
+    if (status === 204) { setOpen(false); onSent(); } else setError(failure(status));
   };
   return (
     <>

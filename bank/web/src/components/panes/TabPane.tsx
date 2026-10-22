@@ -13,8 +13,8 @@ interface Props {
   cls: ClassId | null;
   onSelect: (id: number) => void;
   onRemove: (id: number) => void;
-  onSent: (channels: RequestMessage["channel"][]) => void;
-  onPosted: (items: number[]) => void;
+  onSent: () => void;
+  onPosted: (msg: RequestMessage) => void;
   sending: boolean; // a post is in flight, so the tab stays open until it lands
   onSending: (on: boolean) => void;
 }
