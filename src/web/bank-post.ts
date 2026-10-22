@@ -99,3 +99,21 @@ export async function postRequest(
     log(`bank web: Discord refused ${me.name}'s bank request ${res.status}`);
   return res.ok;
 }
+
+// Says a plain message in a channel as the bot. Throws if Discord doesn't take it.
+export async function postToChannel(
+  token: string,
+  channelId: string,
+  content: string
+) {
+  const res = await fetch(`${DISCORD}/channels/${channelId}/messages`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bot ${token}`,
+      "Content-Type": "application/json",
+    },
+    signal: AbortSignal.timeout(10000),
+    body: JSON.stringify({ content, allowed_mentions: { parse: [] } }),
+  });
+  if (!res.ok) throw new Error(`Discord answered ${res.status}`);
+}

@@ -9,13 +9,14 @@ import { commit, describeError, reportError } from "../shared/error-reports";
 import { log } from "../shared/logger";
 import { Auth, Session } from "./auth";
 import { BankApi } from "./bank-api";
-import { postRequest, readPost, type Poster } from "./bank-post";
+import { postRequest, postToChannel, readPost, type Poster } from "./bank-post";
 import { PageMap } from "./page-map";
 import { message, send } from "./respond";
 import { WikiCache } from "./wiki-cache";
 import { SpellSheet } from "./spell-sheet";
 import { SkySheet } from "./sky-sheet";
 import { ResearchSheet } from "./research-sheet";
+import { SheetAlert } from "./sheet-alert";
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ const {
   bankDistDir,
   token,
   bankRequestsChannelId,
+  bankOfficeChannelId,
 } = process.env;
 
 const GIT_REV = commit();
@@ -69,12 +71,22 @@ if (!auth && !NO_AUTH)
 
 const CACHE = bankCacheDir || path.join(ROOT, "bank/cache");
 const wiki = new WikiCache(CACHE);
+// Bankers hear in the bank office when a bank sheet breaks or reads again. Without the bot's token
+// and the channel the post fails, so nothing is recorded as told, and the alert goes out once it's set up.
+const bankOffice = (text: string) =>
+  token && bankOfficeChannelId
+    ? postToChannel(token, bankOfficeChannelId, text)
+    : Promise.reject(
+        new Error("the bot's token or the bank office channel isn't set")
+      );
+const alert = (file: string, sheet: string) =>
+  new SheetAlert(path.join(CACHE, file), sheet, bankOffice);
 const api = new BankApi(
   path.join(ROOT, "bank/data"),
   wiki,
-  new SpellSheet(CACHE),
-  new SkySheet(CACHE),
-  new ResearchSheet(CACHE)
+  new SpellSheet(CACHE, alert("spell-sheet.alert", "The spell sheet")),
+  new SkySheet(CACHE, alert("sky-sheet.alert", "The Plane of Sky sheet")),
+  new ResearchSheet(CACHE, alert("research-sheet.alert", "The research sheet"))
 );
 // Posting bank requests needs the bot's token and the channel; without them the page is told so.
 const poster: Poster | null =

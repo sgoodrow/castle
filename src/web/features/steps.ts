@@ -73,6 +73,7 @@ const SETTINGS = [
   "githubErrorToken",
   "token",
   "bankRequestsChannelId",
+  "bankOfficeChannelId",
   ...Object.keys(SIGN_IN),
 ];
 
@@ -106,6 +107,8 @@ interface World {
   researchAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
   postStatus: number;
+  officePosts: string[]; // what the bot told the bank office, once Discord took it
+  officeStatus: number;
   logs: string[];
   every: number[];
   handlers: Record<string, (err: unknown) => void>;
@@ -133,6 +136,15 @@ interface Post {
   }[];
 }
 const ROUTES: Route[] = [
+  [
+    "POST",
+    /^https:\/\/discord\.com\/api\/v10\/channels\/bank-office\/messages$/,
+    async (req) => {
+      const { content } = (await req.json()) as { content: string };
+      if (world.officeStatus === 200) world.officePosts.push(content);
+      return new Response(null, { status: world.officeStatus });
+    },
+  ],
   [
     "POST",
     /^https:\/\/discord\.com\/api\/v10\/channels\/requests-channel\/messages$/,
@@ -316,6 +328,8 @@ export async function reset() {
     researchAsked: 0,
     posts: [],
     postStatus: 200,
+    officePosts: [],
+    officeStatus: 200,
     logs: [],
     every: [],
     handlers: {},
@@ -796,6 +810,20 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     if (!gid) throw new Error(`The spell sheet has no tab ${tab}`);
     world.sheet[gid] = csv;
   });
+  step(
+    /^the spell sheet's "(.*)" tab has (\d+) spells the bank doesn't know$/,
+    (tab: string, n: string) => {
+      const gid = TAB_IDS[tab];
+      if (!gid) throw new Error(`The spell sheet has no tab ${tab}`);
+      const rows = Array.from(
+        { length: +n },
+        (_, i) => `34,Imaginary Spell ${i + 1},0,,,50pp`
+      );
+      world.sheet[gid] = ["Level,Name,# In Bank,Banker*,,Cost", ...rows].join(
+        "\n"
+      );
+    }
+  );
   step(/^Google answers the spell sheet with (\d+)$/, (status: string) => {
     world.sheetStatus = +status;
   });
@@ -811,6 +839,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   );
   step(/^the site reads the spell sheet$/, async () => {
     await site();
+    world.sheetAsked = 0;
     await world.mod!.readSpellSheet();
     expect(world.sheetAsked).toBe(Object.keys(TAB_IDS).length);
   });
@@ -840,6 +869,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   );
   step(/^the site reads the Sky sheet$/, async () => {
     await site();
+    world.skyAsked = 0;
     await world.mod!.readSkySheet();
     expect(world.skyAsked).toBe(1);
   });
@@ -868,6 +898,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   });
   step(/^the site reads the research sheet$/, async () => {
     await site();
+    world.researchAsked = 0;
     await world.mod!.readResearchSheet();
     expect(world.researchAsked).toBe(RESEARCH_TABS.length);
   });
@@ -899,6 +930,9 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     world.env.bankRequestsChannelId = "requests-channel";
   });
   // The site reads its settings as it starts, so this one starts afresh. Sign-ins outlast it.
+  step(/^the site restarts$/, () => {
+    world.base = "";
+  });
   step(/^the site restarts without the bot's token$/, () => {
     delete world.env.token;
     world.base = "";
@@ -975,6 +1009,34 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     /^the bank says (\w+) is signed in as "(.*)"$/,
     (_: string, name: string) =>
       expect((JSON.parse(text()) as { me: unknown }).me).toEqual({ name })
+  );
+
+  // ---------- bank office alerts ----------
+  step(/^the bank office is set up$/, () => {
+    world.env.token = "bot-token";
+    world.env.bankOfficeChannelId = "bank-office";
+  });
+  step(/^the bank office refuses posts$/, () => {
+    world.officeStatus = 500;
+  });
+  step(/^the bank office accepts posts again$/, () => {
+    world.officeStatus = 200;
+  });
+  step(/^the bank office is told "(.*)"$/, (text: string) =>
+    expect(world.officePosts[world.officePosts.length - 1] ?? "").toContain(
+      text
+    )
+  );
+  step(
+    /^the bank office is told a cut message of at most (\d+) characters$/,
+    (n: string) => {
+      const last = world.officePosts[world.officePosts.length - 1] ?? "";
+      expect(last.length).toBeLessThanOrEqual(+n);
+      expect(last.endsWith("...")).toBe(true);
+    }
+  );
+  step(/^the bank office has been told (\d+) times?$/, (n: string) =>
+    expect(world.officePosts).toHaveLength(+n)
   );
 
   // ---------- page errors ----------
