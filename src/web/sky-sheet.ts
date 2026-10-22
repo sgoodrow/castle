@@ -149,7 +149,7 @@ export class SkySheet {
     for (const [h, n] of rows) {
       const holder = charName(h);
       const id = lookup(n);
-      if (!holder) noName.push(`"${h}" (${n})`);
+      if (!holder) noName.push(n);
       else if (id === "no such item") noItem.push(n);
       else if (id === "more than one item") twoItems.push(n);
       else {

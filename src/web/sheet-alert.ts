@@ -35,8 +35,9 @@ export class SheetAlert {
   // Pass what's wrong, e.g. "no such spell Bedlam", or "" once the sheet reads cleanly.
   async report(problem: string) {
     if (problem === this.reported) return;
+    const shown = problem.replace(/`/g, "'");
     const message = problem
-      ? `${this.sheet} has a problem: ${problem}.`
+      ? `${this.sheet} has a problem: ${shown}.`
       : `${this.sheet} reads again.`;
     try {
       // Discord's limit for one message. A cut message ends with "...", so bankers can tell it's cut
