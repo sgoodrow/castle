@@ -19,8 +19,9 @@ const byCharThenSpot = (a: Item["holders"][number], b: Item["holders"][number]) 
 
 // Jewelry is made to order, so no banker looks for it.
 function spots(it: Item) {
-  // Made-to-order jewelry the bank holds none of has no spot to give.
-  const holders = it.jewelry ? it.holders : requestedFrom(it).holders;
+  // Made-to-order jewelry is found in the bank's own tabs; a multiquest holder isn't a spot to send to.
+  // Jewelry the bank holds none of has no spot to give.
+  const holders = it.jewelry ? it.holders.filter(h => !h.mq) : requestedFrom(it).holders;
   if (!holders.length) return "Made to order.";
   const shown = [...holders].sort(byCharThenSpot).slice(0, 6).map(h => `• ${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
   const more = holders.length - shown.length;
