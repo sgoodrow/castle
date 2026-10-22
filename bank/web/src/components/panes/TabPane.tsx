@@ -6,6 +6,7 @@ import { tabTotal, totalText } from "../../tab";
 import type { Tab } from "../../state";
 import { ItemImage } from "../ItemImage";
 import { requestMessage } from "../../request";
+import { useDevOption } from "../../devOptions";
 import { SendToDiscordButton } from "../buttons/SendToDiscordButton";
 
 interface Props {
@@ -28,7 +29,8 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
   const dkp = lines.some(l => l.price.kind === "pp" && l.price.dkp);
   const auction = lines.some(l => l.price.kind === "auction");
   const mq = lines.some(l => requestedFrom(l.it).mq);
-  const msg = requestMessage(tab, cls);
+  const spots = useDevOption("spots");
+  const msg = requestMessage(tab, cls, spots === "route" ? "route" : "all");
 
   return (
     <div>

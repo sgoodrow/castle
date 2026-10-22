@@ -7,6 +7,7 @@ import { expect } from "vitest";
 import { PAYLOAD, WITH_RESEARCH, WITH_SHEET, WITH_SKY } from "../src/__fixtures__/bank";
 import { bankPage } from "../src/app";
 import { ALL_CLASSES, CLASS_BIT, CLASSES, ITEM_LIST, bankRequest, maskText, prettyLoc, type EqClassLevels, type Payload } from "../src/data";
+import { pickDevOption } from "../src/devOptions";
 import { server } from "./support/setup";
 
 interface World { payload: Payload; status: number; user: UserEvent; reports: string[]; posts: { embeds: { title: string; description: string }[] }[]; postStatus: number }
@@ -186,6 +187,8 @@ step(/^the doll shows "(.*)" fits the (.+) slots?$/, (_, name, slot) => {
 step(/^I point at "(.*)" among the holders$/, (_, char) => world.user.hover(screen.getByText(reading(char))));
 
 // ---------- the tab ----------
+// A look still being tried, picked from the dev options.
+step(/^the request cards list only the planned logins' spots$/, () => pickDevOption({ spots: "route" }));
 step(/^I (?:add|have added) (?:(\d+) )?"(.*)" to my tab$/, async (_, n, name) => {
   for (let i = 0; i < +(n || 1); i++) await world.user.dblClick(rowButton(name));
 });
