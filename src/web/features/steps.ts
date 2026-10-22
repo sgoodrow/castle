@@ -74,6 +74,7 @@ const SETTINGS = [
   "githubErrorToken",
   "token",
   "bankRequestsChannelId",
+  "jewelryChannelId",
   "bankOfficeChannelId",
   ...Object.keys(SIGN_IN),
 ];
@@ -110,6 +111,7 @@ interface World {
   jewelryStatus: number;
   jewelryAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
+  jewelryPosts: { auth: string | null; body: Post }[]; // what the bot posted to #jewelry-requests
   postStatus: number;
   officePosts: string[]; // what the bot told the bank office, once Discord took it
   officeStatus: number;
@@ -147,6 +149,17 @@ const ROUTES: Route[] = [
       const { content } = (await req.json()) as { content: string };
       if (world.officeStatus === 200) world.officePosts.push(content);
       return new Response(null, { status: world.officeStatus });
+    },
+  ],
+  [
+    "POST",
+    /^https:\/\/discord\.com\/api\/v10\/channels\/jewelry-channel\/messages$/,
+    async (req) => {
+      world.jewelryPosts.push({
+        auth: req.headers.get("authorization"),
+        body: (await req.json()) as Post,
+      });
+      return new Response(null, { status: 200 });
     },
   ],
   [
@@ -345,6 +358,7 @@ export async function reset() {
     jewelryStatus: 200,
     jewelryAsked: 0,
     posts: [],
+    jewelryPosts: [],
     postStatus: 200,
     officePosts: [],
     officeStatus: 200,
@@ -992,6 +1006,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(/^posting bank requests is set up$/, () => {
     world.env.token = "bot-token";
     world.env.bankRequestsChannelId = "requests-channel";
+    world.env.jewelryChannelId = "jewelry-channel";
   });
   // The site reads its settings as it starts, so this one starts afresh. Sign-ins outlast it.
   step(/^the site restarts$/, () => {
@@ -1054,6 +1069,24 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       const [post] = world.posts;
       expect(post.auth).toBe("Bot bot-token");
       expect(post.body.allowed_mentions).toEqual({ parse: [] });
+      expect(
+        post.body.embeds.map((e) => ({
+          title: e.title,
+          url: e.url ?? "",
+          description: e.description,
+          footer: e.footer?.text ?? "",
+          thumbnail: e.thumbnail?.url ?? "",
+        }))
+      ).toEqual(rows);
+    }
+  );
+  step(
+    /^the bot posts in #jewelry-requests:$/,
+    (rows: Record<string, string>[]) => {
+      expect(world.posts).toHaveLength(0);
+      expect(world.jewelryPosts).toHaveLength(1);
+      const [post] = world.jewelryPosts;
+      expect(post.auth).toBe("Bot bot-token");
       expect(
         post.body.embeds.map((e) => ({
           title: e.title,

@@ -35,6 +35,7 @@ const {
   bankDistDir,
   token,
   bankRequestsChannelId,
+  jewelryChannelId,
   bankOfficeChannelId,
 } = process.env;
 
@@ -99,6 +100,11 @@ const poster: Poster | null =
         baseUrl: bankWebUrl,
         icon: (id) => wiki.get(id)?.icon,
       }
+    : null;
+// Made-to-order jewelry posts to the jewelers' channel, as the bank's requests do to theirs.
+const jewelryPoster: Poster | null =
+  poster && jewelryChannelId
+    ? { ...poster, channelId: jewelryChannelId }
     : null;
 
 let page: Buffer | null = null;
@@ -204,14 +210,20 @@ async function bankRequest(
   if (!postAllowed(me.id)) return send(req, res, 429, "text/plain", "Too many");
   const raw = await body(req, 65536);
   if (raw == null) return send(req, res, 413, "text/plain", "Too large");
+  let parsed: { channel?: string; embeds?: unknown } | null;
   let post;
   try {
-    post = readPost(JSON.parse(raw));
+    parsed = JSON.parse(raw);
+    post = readPost(parsed);
   } catch {
+    parsed = null;
     post = null;
   }
   if (!post) return send(req, res, 400, "text/plain", "Bad request");
-  if (!(await postRequest(poster, me, post)))
+  // A post without a channel is an older page's bank request.
+  const to = parsed?.channel === "jewelry" ? jewelryPoster : poster;
+  if (!to) return send(req, res, 503, "text/plain", "Posting isn't set up");
+  if (!(await postRequest(to, me, post)))
     return send(req, res, 502, "text/plain", "Discord didn't take it");
   log(`bank web: ${me.name} (${me.id}) posted a bank request`);
   send(req, res, 204, "text/plain", "");

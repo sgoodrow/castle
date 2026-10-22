@@ -26,6 +26,20 @@ Feature: Posting a bank request
       | Cloak of Flames                     |                                   | • mulea (inventory 1)     |        | https://bank.example.com/icons/77.png |
     And the log says "bank web: Alice (id-Alice) posted a bank request"
 
+  Scenario: Made-to-order jewelry is posted to the jewelry requests channel
+    When Alice posts the bank request:
+      """
+      {"channel": "jewelry", "embeds": [
+        {"title": "Bank request", "description": "• Golden Cat Eye Bracelet (13pp)", "color": 5793266},
+        {"title": "Golden Cat Eye Bracelet", "description": "Made to order.", "color": 0, "item": 14618}
+      ]}
+      """
+    Then the answer is 204
+    And the bot posts in #jewelry-requests:
+      | title                            | url                               | description                      | footer | thumbnail                             |
+      | @Alice has placed a bank request | https://discord.com/users/id-Alice | • Golden Cat Eye Bracelet (13pp) |        |                                       |
+      | Golden Cat Eye Bracelet          |                                   | Made to order.                   |        |                                       |
+
   Scenario: The bank tells the page who's signed in, for its preview
     When Alice asks for the bank
     Then the bank says Alice is signed in as "Alice"

@@ -50,3 +50,14 @@ Feature: Jewelry
     And I open my tab
     And I send my tab to Discord
     Then the post reads "Made to order."
+
+  Scenario: A tab with bank items and jewelry shows a post for each channel
+    Given the jewelers also make jewelry to order
+    And I have opened the bank page
+    When I add 1 "Cloak of Flames" to my tab
+    And I add 1 "Black Sapphire Velium Necklace" to my tab
+    And I open my tab
+    And I send my tab to Discord
+    Then the post reads "Cloak of Flames"
+    And the post reads "Black Sapphire Velium Necklace"
+    And the post reads "#jewelry-requests"

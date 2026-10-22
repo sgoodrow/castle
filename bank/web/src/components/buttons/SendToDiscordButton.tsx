@@ -10,8 +10,8 @@ const failure = (status: number | null) =>
   : status === 429 ? "That's a lot of requests. Try again in a few minutes."
   : "Couldn't post it. Try again in a moment.";
 
-// Posts the tab to #bank-requests once confirmed in a modal that shows the post itself.
-export function SendToDiscordButton({ msg, onSent }: { msg: RequestMessage; onSent: () => void }) {
+// Posts the tab's messages, one per channel, once confirmed in a modal that shows each post itself.
+export function SendToDiscordButton({ msgs, onSent }: { msgs: RequestMessage[]; onSent: () => void }) {
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,12 +19,17 @@ export function SendToDiscordButton({ msg, onSent }: { msg: RequestMessage; onSe
   const send = async () => {
     setSending(true);
     setError(null);
-    const status = await fetch("/api/bank-request", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(msg),
-    }).then(r => r.status, () => null);
+    // In order, and stopping at the first that fails, so a retry never repeats one that went through.
+    let status: number | null = 204;
+    for (const msg of msgs) {
+      status = await fetch("/api/bank-request", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(msg),
+      }).then(r => r.status, () => null);
+      if (status !== 204) break;
+    }
     setSending(false);
     if (status === 204) { close(); onSent(); } else setError(failure(status));
   };
@@ -35,7 +40,7 @@ export function SendToDiscordButton({ msg, onSent }: { msg: RequestMessage; onSe
       </Button>
       <Modal opened={open} onClose={close} size={520} centered styles={{ body: { paddingBottom: 0 } }} title={<Text fw={600}>Post these?</Text>}>
         <Stack gap="sm">
-          <DiscordMessagePane msg={msg} />
+          {msgs.map(msg => <DiscordMessagePane key={msg.channel} msg={msg} />)}
           {/* Stuck to the bottom of the modal as the post scrolls, so the choice is always in view. */}
           <Stack gap="xs" py="sm" style={{ position: "sticky", bottom: 0, background: "var(--mantine-color-body)", borderTop: "1px solid var(--mantine-color-default-border)" }}>
             {error && <Text fz="sm" c="red" role="alert">{error}</Text>}

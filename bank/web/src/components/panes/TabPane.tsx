@@ -5,7 +5,7 @@ import { ITEMS, bankRequest, priceText, requestedFrom, type ClassId } from "../.
 import { tabTotal, totalText } from "../../tab";
 import type { Tab } from "../../state";
 import { ItemImage } from "../ItemImage";
-import { requestMessage } from "../../request";
+import { requestMessages } from "../../request";
 import { SendToDiscordButton } from "../buttons/SendToDiscordButton";
 
 interface Props {
@@ -28,7 +28,7 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
   const dkp = lines.some(l => l.price.kind === "pp" && l.price.dkp);
   const auction = lines.some(l => l.price.kind === "auction");
   const mq = lines.some(l => !l.it.jewelry && requestedFrom(l.it).mq);
-  const msg = requestMessage(tab, cls);
+  const msgs = requestMessages(tab, cls);
 
   return (
     <div>
@@ -72,10 +72,10 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
               A banker will tell you how to set up each multiquest.
             </Text>
           )}
-          {msg && (
+          {msgs.length > 0 && (
             <>
               <Divider />
-              <SendToDiscordButton msg={msg} onSent={onSent} />
+              <SendToDiscordButton msgs={msgs} onSent={onSent} />
             </>
           )}
         </Stack>
