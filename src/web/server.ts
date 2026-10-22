@@ -72,11 +72,13 @@ if (!auth && !NO_AUTH)
 const CACHE = bankCacheDir || path.join(ROOT, "bank/cache");
 const wiki = new WikiCache(CACHE);
 // Bankers hear in the bank office when a bank sheet breaks or reads again. Without the bot's token
-// and the channel, the sheets only log, as they did before.
-const bankOffice = (message: string) =>
+// and the channel the post fails, so nothing is recorded as told, and the alert goes out once it's set up.
+const bankOffice = (text: string) =>
   token && bankOfficeChannelId
-    ? postToChannel(token, bankOfficeChannelId, message)
-    : Promise.resolve();
+    ? postToChannel(token, bankOfficeChannelId, text)
+    : Promise.reject(
+        new Error("the bot's token or the bank office channel isn't set")
+      );
 const alert = (file: string, sheet: string) =>
   new SheetAlert(path.join(CACHE, file), sheet, bankOffice);
 const api = new BankApi(

@@ -135,9 +135,7 @@ export class SpellSheet {
       );
     } catch (e) {
       log(`bank web: spell sheet: ${e}`);
-      await this.alert.report(
-        "it couldn't be read, so the bank keeps its last copy if it has one"
-      );
+      await this.alert.unreadable();
       return;
     }
     const [forbidden = [], ...classes] = tabs;
@@ -154,9 +152,7 @@ export class SpellSheet {
         }
     } catch (e) {
       log(`bank web: spell sheet: ${e}`);
-      await this.alert.report(
-        "it couldn't be read, so the bank keeps its last copy if it has one"
-      );
+      await this.alert.unreadable();
       return;
     }
     // The forbidden list wins over whatever a class tab says.

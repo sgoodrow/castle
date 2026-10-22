@@ -127,6 +127,23 @@ Feature: The Sky sheet
     Then the bank office is told "The Plane of Sky sheet has a problem: no such item Phosporic Globe."
     And the bank office has been told 1 time
 
+  Scenario: Bankers are told when the Sky sheet can't be read, and when it reads again
+    Given the bank office is set up
+    And the Sky sheet's announcements tab is:
+      """
+      Items,Island,Item Counts,Notes
+      Efreeti Statuette,Island 4,6,
+      """
+    And Google answers the Sky sheet with 500
+    When the site reads the Sky sheet
+    And the site reads the Sky sheet
+    Then the bank office is told "The Plane of Sky sheet has a problem: it couldn't be read, so the bank keeps its last copy if it has one."
+    And the bank office has been told 1 time
+    Given Google answers the Sky sheet with 200
+    When the site reads the Sky sheet
+    Then the bank office is told "The Plane of Sky sheet reads again."
+    And the bank office has been told 2 times
+
   Scenario: Names that are no item are logged
     Given the Sky sheet's announcements tab is:
       """

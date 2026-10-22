@@ -94,9 +94,7 @@ export class ResearchSheet {
       names = tabs.flat();
     } catch (e) {
       log(`bank web: research sheet: ${e}`);
-      await this.alert.report(
-        "it couldn't be read, so the bank keeps its last copy if it has one"
-      );
+      await this.alert.unreadable();
       return;
     }
     const unknown = [

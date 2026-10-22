@@ -158,3 +158,16 @@ Feature: The spell sheet
     And the site reads the spell sheet
     Then the bank office is told "The spell sheet has a problem: no such spell Cantana of Soothing."
     And the bank office has been told 1 time
+
+  Scenario: A problem found before the bank office is set up is told once it is
+    Given the spell sheet's "Bard Songs" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      34,Cantana of Soothing,0,,,50pp
+      """
+    When the site reads the spell sheet
+    And the bank office is set up
+    And the site restarts
+    And the site reads the spell sheet
+    Then the bank office is told "The spell sheet has a problem: no such spell Cantana of Soothing."
+    And the bank office has been told 1 time

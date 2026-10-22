@@ -89,3 +89,15 @@ Feature: The research sheet
     When the site reads the research sheet
     Then the bank office is told "The research sheet has a problem: no such item Words of Nothing."
     And the bank office has been told 1 time
+
+  Scenario: Bankers are told when the research sheet can't be read, and when it reads again
+    Given the bank office is set up
+    And Google answers the research sheet with 500
+    When the site reads the research sheet
+    And the site reads the research sheet
+    Then the bank office is told "The research sheet has a problem: it couldn't be read, so the bank keeps its last copy if it has one."
+    And the bank office has been told 1 time
+    Given Google answers the research sheet with 200
+    When the site reads the research sheet
+    Then the bank office is told "The research sheet reads again."
+    And the bank office has been told 2 times

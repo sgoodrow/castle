@@ -18,6 +18,13 @@ export class SheetAlert {
     this.reported = existsSync(file) ? readFileSync(file, "utf-8") : "";
   }
 
+  // The sheet couldn't be read at all, so the bank keeps its last copy.
+  unreadable() {
+    return this.report(
+      "it couldn't be read, so the bank keeps its last copy if it has one"
+    );
+  }
+
   // Pass what's wrong, e.g. "no such spell Bedlam", or "" once the sheet reads cleanly.
   async report(problem: string) {
     if (problem === this.reported) return;
@@ -25,7 +32,10 @@ export class SheetAlert {
       ? `${this.sheet} has a problem: ${problem}.`
       : `${this.sheet} reads again.`;
     try {
-      await this.post(message.slice(0, 2000)); // Discord's limit for one message
+      // Discord's limit for one message; a cut list says so, rather than ending mid-name
+      await this.post(
+        message.length > 2000 ? message.slice(0, 1997) + "..." : message
+      );
     } catch (e) {
       log(`bank web: ${this.sheet}: couldn't tell the bank office: ${e}`);
       return;

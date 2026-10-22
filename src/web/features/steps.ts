@@ -854,6 +854,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   );
   step(/^the site reads the Sky sheet$/, async () => {
     await site();
+    world.skyAsked = 0;
     await world.mod!.readSkySheet();
     expect(world.skyAsked).toBe(1);
   });
