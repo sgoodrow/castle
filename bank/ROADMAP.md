@@ -72,8 +72,11 @@ UX (agreed):
 - **Decided:** a research item is picked up at North Freeport Bank. The details pane says where, and so does it for Sky items (the East Freeport docks). The Discord request doesn't: the #bank-requests instructions already say where each kind of item is picked up. Request lines use the bot's existing formats: "Research spell: Necromancer, 49, Lich" (the member's class if it can scribe it) and "Research component: Words of Odus".
 - **Decided:** no class or race filtering for components. Their item data says every class can use them, and the wiki pages the server caches don't say otherwise. The sheet's class tabs do say which class uses each one, if that's ever wanted.
 
-**Later phases**
-- Jewelry data is in a Google Sheet today. Read it as it is, or move it to something bankers manage from Discord?
+**Phase 5: Jewelry**
+- What we know: the jewelers' "Castle Jewelcrafting Table" Google Sheet (linked from the jewelry request card) has a price table of about 100 recipes: name, slot, stats, bar cost, gem cost, trivial, success rate, average cost, a 20% commission and the guild price. Jewelers set gem prices at its top, and the guild prices follow. A member who brings some or all of the materials pays only for the materials the guild provides, and owns the risk of a failed combine. Its "All Items" tab is the Cgjewelry mule's inventory, the same uploads the database has.
+- **Decided:** read the sheet as it is. The database stays the source of truth for stock.
+- **Decided:** jewelry is part of the one catalog, at the same URL with no new navigation. Jewelry items are searchable and requested like any other item, made to order, with their materials and guild price in the details pane.
+- **Decided:** jewelry lines post to #jewelry-requests, not #bank-requests, so jewelers watch a quieter channel. The site routes each line, so the member never picks a channel.
 
 ## How work runs
 
