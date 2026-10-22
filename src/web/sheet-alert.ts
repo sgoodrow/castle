@@ -32,7 +32,7 @@ export class SheetAlert {
       ? `${this.sheet} has a problem: ${problem}.`
       : `${this.sheet} reads again.`;
     try {
-      // Discord's limit for one message; a cut list says so, rather than ending mid-name
+      // Discord's limit for one message. A cut message ends with "...", so bankers can tell it's cut
       await this.post(
         message.length > 2000 ? message.slice(0, 1997) + "..." : message
       );

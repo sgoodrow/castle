@@ -171,3 +171,10 @@ Feature: The spell sheet
     And the site reads the spell sheet
     Then the bank office is told "The spell sheet has a problem: no such spell Cantana of Soothing."
     And the bank office has been told 1 time
+
+  Scenario: A long list of problems is cut to fit one Discord message, and says so
+    Given the bank office is set up
+    And the spell sheet's "Bard Songs" tab has 150 spells the bank doesn't know
+    When the site reads the spell sheet
+    Then the bank office is told a cut message of at most 2000 characters
+    And the bank office has been told 1 time

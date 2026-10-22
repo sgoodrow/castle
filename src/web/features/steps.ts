@@ -73,6 +73,7 @@ const SETTINGS = [
   "githubErrorToken",
   "token",
   "bankRequestsChannelId",
+  "bankOfficeChannelId",
   ...Object.keys(SIGN_IN),
 ];
 
@@ -809,6 +810,20 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     if (!gid) throw new Error(`The spell sheet has no tab ${tab}`);
     world.sheet[gid] = csv;
   });
+  step(
+    /^the spell sheet's "(.*)" tab has (\d+) spells the bank doesn't know$/,
+    (tab: string, n: string) => {
+      const gid = TAB_IDS[tab];
+      if (!gid) throw new Error(`The spell sheet has no tab ${tab}`);
+      const rows = Array.from(
+        { length: +n },
+        (_, i) => `34,Imaginary Spell ${i + 1},0,,,50pp`
+      );
+      world.sheet[gid] = ["Level,Name,# In Bank,Banker*,,Cost", ...rows].join(
+        "\n"
+      );
+    }
+  );
   step(/^Google answers the spell sheet with (\d+)$/, (status: string) => {
     world.sheetStatus = +status;
   });
@@ -1009,6 +1024,14 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   });
   step(/^the bank office is told "(.*)"$/, (text: string) =>
     expect(world.officePosts.join("\n")).toContain(text)
+  );
+  step(
+    /^the bank office is told a cut message of at most (\d+) characters$/,
+    (n: string) => {
+      const last = world.officePosts[world.officePosts.length - 1] ?? "";
+      expect(last.length).toBeLessThanOrEqual(+n);
+      expect(last.endsWith("...")).toBe(true);
+    }
   );
   step(/^the bank office has been told (\d+) times?$/, (n: string) =>
     expect(world.officePosts).toHaveLength(+n)
