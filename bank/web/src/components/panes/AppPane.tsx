@@ -155,7 +155,7 @@ export function AppPane() {
           </Group>
         }>
         <TabPane tab={tab} cls={f.cls} onSelect={id => { closeTab(); select(id); }} onRemove={id => setQty(id, 0)}
-          onSent={() => { setTab({}); setTabOpen(false); }}
+          onSent={chans => { setTab({}); setTabOpen(false); say(`Posted to ${chans.map(channelName).join(" and ")}`, true); }}
           onPosted={msg => { setTab(t => Object.fromEntries(Object.entries(t).filter(([id]) => !msg.items.includes(+id)))); say(`Posted to ${channelName(msg.channel)}`, true); }}
           sending={sending} onSending={setSending} />
       </Drawer>

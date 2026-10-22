@@ -11,7 +11,9 @@ const failure = (status: number | null) =>
   : "Couldn't post it. Try again in a moment.";
 
 // Posts the tab's messages, one per channel, once confirmed in a modal that shows each post itself.
-export function SendToDiscordButton({ msgs, onSent, onPosted, sending, onSending }: { msgs: RequestMessage[]; onSent: () => void; onPosted: (msg: RequestMessage) => void; sending: boolean; onSending: (on: boolean) => void }) {
+export function SendToDiscordButton({ msgs, onSent, onPosted, sending, onSending }: { msgs: RequestMessage[]; onSent: (channels: RequestMessage["channel"][]) => void; onPosted: (msg: RequestMessage) => void; sending: boolean; onSending: (on: boolean) => void }) {
+  // The channels that have confirmed so far, across attempts, so the last confirmation names them all.
+  const [confirmed, setConfirmed] = useState<RequestMessage["channel"][]>([]);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Can't close mid-send: the rest would still go out after the modal shut.
@@ -21,6 +23,7 @@ export function SendToDiscordButton({ msgs, onSent, onPosted, sending, onSending
     setError(null);
     // In order, stopping at the first that fails. Each post that goes through takes its items off the
     // tab, so a retry only ever sends what's still on it.
+    const done = [...confirmed];
     let status: number | null = 204;
     for (const msg of msgs) {
       status = await fetch("/api/bank-request", {
@@ -31,9 +34,11 @@ export function SendToDiscordButton({ msgs, onSent, onPosted, sending, onSending
       }).then(r => r.status, () => null);
       if (status !== 204) break;
       onPosted(msg);
+      done.push(msg.channel);
+      setConfirmed([...done]);
     }
     onSending(false);
-    if (status === 204) { setOpen(false); onSent(); } else setError(failure(status));
+    if (status === 204) { setConfirmed([]); setOpen(false); onSent(done); } else setError(failure(status));
   };
   return (
     <>

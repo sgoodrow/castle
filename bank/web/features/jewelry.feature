@@ -67,8 +67,18 @@ Feature: Jewelry
     When the site accepts posts to #jewelry-requests again
     And I send my tab to Discord again
     And I confirm the retry
-    Then I'm told "Posted to #jewelry-requests"
+    Then I'm told "Posted to #bank-requests and #jewelry-requests"
     And the tab button shows "0pp"
+
+  Scenario: A mixed tab that posts in full says where both posts went
+    Given the jewelers also make jewelry to order
+    And I have opened the bank page
+    When I add 1 "Cloak of Flames" to my tab
+    And I add 1 "Black Sapphire Velium Necklace" to my tab
+    And I open my tab
+    And I send my tab to Discord
+    And I confirm the post
+    Then I'm told "Posted to #bank-requests and #jewelry-requests"
 
   Scenario: A tab with bank items and jewelry shows a post for each channel
     Given the jewelers also make jewelry to order
