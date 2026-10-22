@@ -148,8 +148,8 @@ export class JewelrySheet {
       .join("; ");
     if (text && text !== this.problems) log(`bank web: jewelry sheet: ${text}`);
     this.problems = text;
+    this.byId = byId; // the new copy first, so a slow Discord post doesn't hold it back
     await this.report(text ? `The jewelry sheet needs fixing: ${text}.` : "");
-    this.byId = byId;
     writeFileSync(this.file, JSON.stringify([...byId]));
   }
 
