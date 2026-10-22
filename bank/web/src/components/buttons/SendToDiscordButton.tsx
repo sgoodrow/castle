@@ -15,20 +15,24 @@ export function SendToDiscordButton({ msgs, onSent }: { msgs: RequestMessage[]; 
   const [open, setOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const close = () => { setOpen(false); setError(null); };
+  // How many of the posts have gone through, so a retry picks up at the first one that didn't.
+  const [posted, setPosted] = useState(0);
+  const close = () => { setOpen(false); setError(null); setPosted(0); };
   const send = async () => {
     setSending(true);
     setError(null);
-    // In order, and stopping at the first that fails, so a retry never repeats one that went through.
+    // In order, and stopping at the first that fails. A retry starts at that one, so a post that
+    // went through is never repeated.
     let status: number | null = 204;
-    for (const msg of msgs) {
+    for (let i = posted; i < msgs.length; i++) {
       status = await fetch("/api/bank-request", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(msg),
+        body: JSON.stringify(msgs[i]),
       }).then(r => r.status, () => null);
       if (status !== 204) break;
+      setPosted(i + 1);
     }
     setSending(false);
     if (status === 204) { close(); onSent(); } else setError(failure(status));
