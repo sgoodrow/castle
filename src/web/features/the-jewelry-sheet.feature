@@ -165,6 +165,22 @@ Feature: The jewelry sheet
     Then the log says "bank web: jewelry sheet: no such item Initiate Signet Ring"
     And the bank sends no jewelry
 
+  Scenario: A price the sheet shows with a thousands separator is read
+    Given the jewelry sheet's price table is:
+      """
+      ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
+      ,Golden Cat Eye Bracelet,Wrist,7cha,11,156,95%,12,0.15,,"1,200",,
+      """
+    When the site reads the jewelry sheet
+    And Someone asks for the bank
+    Then the bank sends item 14618, "Golden Cat Eye Bracelet", made to order with:
+      | field     | value                            |
+      | materials | [{"what": "Material", "pp": 11}] |
+      | trivial   | 156                              |
+      | success   | 0.95                             |
+      | price     | 1200                             |
+      | note      | ""                               |
+
   Scenario: A copy is kept, so the bank still knows its jewelry when Google is down
     Given a saved copy of the jewelry sheet prices item 14618 at 13pp
     And Google answers the jewelry sheet with 500

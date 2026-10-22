@@ -80,7 +80,9 @@ const api = new BankApi(
   new JewelrySheet(CACHE, (message) =>
     token && jewelryChannelId
       ? postToChannel(token, jewelryChannelId, message)
-      : Promise.resolve()
+      : Promise.reject(
+          new Error("the bot's token or jewelryChannelId isn't set")
+        )
   )
 );
 // Posting bank requests needs the bot's token and the channel; without them the page is told so.

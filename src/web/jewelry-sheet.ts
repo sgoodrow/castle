@@ -26,7 +26,11 @@ export type Recipe = {
   note: string;
 };
 
-const whole = (s: string) => (/^\d+$/.test(s.trim()) ? +s.trim() : null);
+// The export shows the sheet's displayed numbers, so "1,200" is 1200.
+const whole = (s: string) => {
+  const t = s.trim().replace(/,/g, "");
+  return /^\d+$/.test(t) ? +t : null;
+};
 const percent = (s: string) => {
   const m = s.trim().match(/^(\d+(?:\.\d+)?)%$/);
   return m ? +m[1] / 100 : null;
