@@ -1,5 +1,5 @@
 Feature: Expiring old bank requests
-  Every hour the bot removes the requests it posted to #bank-requests, from the bank page or
+  The bot removes the requests it posted to #bank-requests, from the bank page or
   /bank request, once they're 30 days old, and DMs each member the request it removed. Players' own
   posts and the bot's instructions stay, however old.
 
