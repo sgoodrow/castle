@@ -1023,7 +1023,9 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     world.officeStatus = 200;
   });
   step(/^the bank office is told "(.*)"$/, (text: string) =>
-    expect(world.officePosts.join("\n")).toContain(text)
+    expect(world.officePosts[world.officePosts.length - 1] ?? "").toContain(
+      text
+    )
   );
   step(
     /^the bank office is told a cut message of at most (\d+) characters$/,

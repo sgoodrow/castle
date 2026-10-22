@@ -40,7 +40,7 @@ UX (agreed):
 - Post: just the request. "• Spell: Bedlam (DKP auction)" and the same total. No process or instructions.
 - Other spells use the sheet's cost as written, e.g. Aegis 50pp, and "200p OR 1DKP" is no longer lowered to the market price.
 - Sorting by price puts DKP auctions above any platinum price.
-- Built on: the sheet's public CSV export, cached on the server and refreshed about hourly; sheet names that match no item are logged and posted to the bank office, which also hears when a sheet can't be read or reads again. The page gets one price type with a case per kind (pp, pp or DKP, auction, free, ask a banker), so every screen must handle auctions.
+- Built on: the sheet's public CSV export, cached on the server and refreshed about hourly; sheet problems, such as names that match no item, are logged and posted to the bank office, which also hears when a sheet can't be read or reads again. The page gets one price type with a case per kind (pp, pp or DKP, auction, free, ask a banker), so every screen must handle auctions.
 
 **Requests**
 - **Decided:** a request holds up to 9 different items, with any quantity of each. Discord posts at most 10 embeds a message: one for the summary and one per item. 9 item cards from the real bank use under half of Discord's 6,000-character limit. A tab saved before the limit keeps its first 9 items.

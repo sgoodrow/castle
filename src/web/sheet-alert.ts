@@ -6,6 +6,13 @@
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { log } from "../shared/logger";
 
+// Cuts a long message to fit, marked with "...". Doesn't split a surrogate pair.
+function cut(message: string) {
+  let head = message.slice(0, 1997);
+  if (/[\uD800-\uDBFF]$/.test(head)) head = head.slice(0, -1);
+  return head + "...";
+}
+
 export class SheetAlert {
   private reported: string; // what was last posted; "" while the sheet reads cleanly
 
@@ -33,9 +40,7 @@ export class SheetAlert {
       : `${this.sheet} reads again.`;
     try {
       // Discord's limit for one message. A cut message ends with "...", so bankers can tell it's cut
-      await this.post(
-        message.length > 2000 ? message.slice(0, 1997) + "..." : message
-      );
+      await this.post(message.length > 2000 ? cut(message) : message);
     } catch (e) {
       log(`bank web: ${this.sheet}: couldn't tell the bank office: ${e}`);
       return;
