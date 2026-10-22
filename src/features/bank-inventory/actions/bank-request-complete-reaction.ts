@@ -10,6 +10,8 @@ import {
 } from "discord.js";
 import {
   bankRequestsChannelId,
+  jewelerRoleId,
+  jewelryChannelId,
   bankerRoleId,
   officerRoleId,
   bankTransactionsChannelId,
@@ -81,17 +83,26 @@ const isBanker = async (userId: string) => {
   );
 };
 
+// Jewelry requests are filled by the jewelers as well as the bankers.
+const isFiller = async (userId: string, channelId: string) => {
+  if (await isBanker(userId)) return true;
+  if (channelId !== jewelryChannelId) return false;
+  const member = await getMember(userId);
+  return !!member?.roles.cache.has(jewelerRoleId);
+};
+
 class BankRequestFinishedReactionAction extends ReactionAction {
   public async execute() {
-    // filter channel
-    if (this.message.channel.id !== bankRequestsChannelId) {
+    // filter channel: bank requests, and jewelry requests the jewelers fill
+    const channelId = this.message.channel.id;
+    if (channelId !== bankRequestsChannelId && channelId !== jewelryChannelId) {
       return;
     }
     const request = parseBankRequest(this.message);
 
     // mark finished
     if (this.reaction.emoji.name === "✅") {
-      if (!(await isBanker(this.user.id))) {
+      if (!(await isFiller(this.user.id, channelId))) {
         return;
       }
       const bankTransactionsChannel = await getTextChannel(
@@ -107,7 +118,7 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     if (this.reaction.emoji.name === "❌") {
       if (
         !isRequester(request, this.user.id) &&
-        !(await isBanker(this.user.id))
+        !(await isFiller(this.user.id, channelId))
       ) {
         return;
       }

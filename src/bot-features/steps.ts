@@ -191,7 +191,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
 
   // ---------- members ----------
   step(
-    /^(\w+) is a Castle (member|banker|officer|mod)$/,
+    /^(\w+) is a Castle (member|banker|officer|mod|jeweler)$/,
     (name: string, role: string) => {
       world.members[name] = {
         id: newId(),
@@ -206,6 +206,21 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   });
 
   // ---------- bank requests ----------
+  step(
+    /^(\w+) placed a jewelry request in #(\S+):$/,
+    (name: string, channel: string, lines: string) => {
+      const { id } = member(name);
+      post(channel, BOT_ID, {
+        embeds: [
+          {
+            title: `@${name} has placed a bank request`,
+            url: `https://discord.com/users/${id}`,
+            description: lines,
+          },
+        ],
+      });
+    }
+  );
   step(
     /^(\w+) placed a bank request on the bank page(?: (\d+) days ago)?:$/,
     (name: string, days: string | undefined, lines: string) => {

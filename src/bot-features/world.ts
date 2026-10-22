@@ -13,6 +13,8 @@ export const ENV = {
   sharedCharactersGoogleSheetId: "accounts-sheet",
   raidChatChannelId: "raid-chat",
   bankRequestsChannelId: "bank-requests",
+  jewelryChannelId: "jewelry-requests",
+  jewelerRoleId: "jeweler",
   bankTransactionsChannelId: "bank-transactions",
   modRoleId: "mod",
   officerRoleId: "officer",
