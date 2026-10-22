@@ -131,3 +131,17 @@ export const WITH_RESEARCH: Payload = {
   },
   spells: { ...PAYLOAD.spells, 506: { name: "Lich", lv: levels({ NEC: 49, SHD: 60 }) } },
 };
+
+// The usual stock plus two pieces of jewelry the jewelers make to order: one the jewelry mule holds
+// one of, and one the bank holds none of.
+export const WITH_JEWELRY: Payload = {
+  ...PAYLOAD,
+  bank: [...PAYLOAD.bank, ["Cgjewelry", "General1", 1041, 1]],
+  items: {
+    ...items,
+    1041: { name: "Golden Cat Eye Bracelet", cha: 7, slots: 1536, type: 29,
+      jewelry: { materials: [{ what: "Material", pp: 11 }], trivial: 156, success: 0.95, price: 13, note: "" } },
+    1042: { name: "Black Sapphire Velium Necklace", hp: 65, mana: 65, slots: 32, type: 29,
+      jewelry: { materials: [{ what: "Bar", pp: 252 }, { what: "Gem", pp: 350 }], trivial: 287, success: 0.8625, price: 822, note: "" } },
+  },
+};

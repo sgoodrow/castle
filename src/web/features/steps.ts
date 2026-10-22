@@ -18,6 +18,7 @@ import { SourceMapGenerator } from "source-map";
 import { CLASS_TABS, FORBIDDEN_TAB } from "../spell-sheet";
 import { MQ_TAB, SKY_SHEET, SKY_TAB } from "../sky-sheet";
 import { RESEARCH_SHEET, RESEARCH_TABS, researchKey } from "../research-sheet";
+import { JEWELRY_SHEET } from "../jewelry-sheet";
 import type { DefineStep } from "../../testing/gherkin";
 
 type Slot = {
@@ -73,6 +74,7 @@ const SETTINGS = [
   "githubErrorToken",
   "token",
   "bankRequestsChannelId",
+  "jewelryChannelId",
   "bankOfficeChannelId",
   "bankSheetAlerts",
   ...Object.keys(SIGN_IN),
@@ -107,7 +109,11 @@ interface World {
   research: Record<string, string>; // the research sheet's class tabs as CSV, by tab id
   researchStatus: number;
   researchAsked: number;
+  jewelry: string | null; // the jewelry sheet's price table as CSV
+  jewelryStatus: number;
+  jewelryAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
+  jewelryPosts: { auth: string | null; body: Post }[]; // what the bot posted to #jewelry-requests
   postStatus: number;
   officePosts: string[]; // what the bot told the bank office, once Discord took it
   officeStatus: number;
@@ -145,6 +151,17 @@ const ROUTES: Route[] = [
       const { content } = (await req.json()) as { content: string };
       if (world.officeStatus === 200) world.officePosts.push(content);
       return new Response(null, { status: world.officeStatus });
+    },
+  ],
+  [
+    "POST",
+    /^https:\/\/discord\.com\/api\/v10\/channels\/jewelry-channel\/messages$/,
+    async (req) => {
+      world.jewelryPosts.push({
+        auth: req.headers.get("authorization"),
+        body: (await req.json()) as Post,
+      });
+      return new Response(null, { status: 200 });
     },
   ],
   [
@@ -254,6 +271,17 @@ ROUTES.push([
     });
   },
 ]);
+// The jewelry sheet's price table: the scenario's, or an empty one with its header.
+ROUTES.push([
+  "GET",
+  new RegExp(`^${JEWELRY_SHEET.replace(/[.?]/g, "\\$&")}$`),
+  () => {
+    world.jewelryAsked++;
+    return new Response(world.jewelry ?? ",ITEM NAME,SLOT\n", {
+      status: world.jewelryStatus,
+    });
+  },
+]);
 // The spell sheet's tabs: the scenario's, or empty ones with their headers.
 ROUTES.push([
   "GET",
@@ -329,7 +357,11 @@ export async function reset() {
     research: {},
     researchStatus: 200,
     researchAsked: 0,
+    jewelry: null,
+    jewelryStatus: 200,
+    jewelryAsked: 0,
     posts: [],
+    jewelryPosts: [],
     postStatus: 200,
     officePosts: [],
     officeStatus: 200,
@@ -628,7 +660,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       world.slots.push({
         charName: r.banker,
         slot: r.spot,
-        itemId: itemId(r.item),
+        itemId: r.id ? +r.id : itemId(r.item), // an id tells apart items that share a name
         count: r.count ? +r.count : null,
         updatedAt: new Date(r.uploaded || "2026-05-01T00:00:00Z"),
         item:
@@ -673,6 +705,11 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     }
   );
   step(
+    /^the bank links item (\d+) to the wiki page "(.*)"$/,
+    (id: string, page: string) =>
+      expect(bank().items[+id].wiki).toBe(`https://wiki.project1999.com${page}`)
+  );
+  step(
     /^the bank describes "(.*)" as unknown, with its wiki page$/,
     (name: string) =>
       expect(bank().items[itemId(name)]).toEqual({
@@ -709,6 +746,9 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   );
   step(/^the bank sends no Sky part for "(.*)"$/, (name: string) =>
     expect(bank().items[itemId(name)]).not.toHaveProperty("sky")
+  );
+  step(/^the bank sends no Sky part for item (\d+)$/, (id: string) =>
+    expect(bank().items[+id]).not.toHaveProperty("sky")
   );
   step(/^the bank sends the spells (".*)$/, (names: string) => {
     expect(
@@ -921,6 +961,49 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       expect(bank().items[itemId(name)], name).not.toHaveProperty("research");
   });
 
+  // ---------- the jewelry sheet ----------
+  step(/^the jewelry sheet's price table is:$/, (csv: string) => {
+    world.jewelry = csv;
+  });
+  step(/^Google answers the jewelry sheet with (\d+)$/, (status: string) => {
+    world.jewelryStatus = +status;
+  });
+  step(
+    /^a saved copy of the jewelry sheet prices item (\d+) at (\d+)pp$/,
+    (id: string, pp: string) => {
+      mkdirSync(path.join(world.dir, "cache"), { recursive: true });
+      writeFileSync(
+        path.join(world.dir, "cache/jewelry-sheet.json"),
+        JSON.stringify([
+          [
+            +id,
+            { materials: [], trivial: 0, success: 1, price: +pp, note: "" },
+          ],
+        ])
+      );
+    }
+  );
+  step(/^the site reads the jewelry sheet$/, async () => {
+    await site();
+    await world.mod!.readJewelrySheet();
+    expect(world.jewelryAsked).toBe(1);
+  });
+  step(
+    /^the bank sends item (\d+), "(.*)", made to order with:$/,
+    (id: string, name: string, rows: Record<string, string>[]) => {
+      const it = bank().items[+id];
+      expect(it?.name).toBe(name);
+      const want = Object.fromEntries(
+        rows.map((r) => [r.field, JSON.parse(r.value)])
+      );
+      expect(it).toHaveProperty("jewelry", want);
+    }
+  );
+  step(/^the bank sends no jewelry$/, () => {
+    for (const it of Object.values(bank().items))
+      expect(it).not.toHaveProperty("jewelry");
+  });
+
   step(/^the site refreshes the wiki$/, async () => {
     await site();
     // The refresh waits a second between wiki pages to be polite; a test needn't wait for real.
@@ -938,6 +1021,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(/^posting bank requests is set up$/, () => {
     world.env.token = "bot-token";
     world.env.bankRequestsChannelId = "requests-channel";
+    world.env.jewelryChannelId = "jewelry-channel";
   });
   // The site reads its settings as it starts, so this one starts afresh. Sign-ins outlast it.
   step(/^the site restarts$/, () => {
@@ -945,6 +1029,10 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   });
   step(/^the site restarts without the bot's token$/, () => {
     delete world.env.token;
+    world.base = "";
+  });
+  step(/^the site restarts without the jewelry channel$/, () => {
+    delete world.env.jewelryChannelId;
     world.base = "";
   });
   step(/^Discord refuses posts$/, () => {
@@ -985,6 +1073,19 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(/^(\w+) posts a bank request that isn't JSON$/, (who: string) =>
     request(who, "/api/bank-request", { method: "POST", body: "not json" })
   );
+  step(
+    /^(\w+) posts a bank request to #(\w+)$/,
+    (who: string, channel: string) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: JSON.stringify({
+          channel,
+          embeds: [
+            { title: "Bank request", description: "• Pearl (1)", color: 1 },
+          ],
+        }),
+      })
+  );
   step(/^(\w+) posts (\d+) bank requests$/, async (who: string, n: string) => {
     world.answers = [];
     for (let i = 0; i < +n; i++)
@@ -1000,6 +1101,24 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       const [post] = world.posts;
       expect(post.auth).toBe("Bot bot-token");
       expect(post.body.allowed_mentions).toEqual({ parse: [] });
+      expect(
+        post.body.embeds.map((e) => ({
+          title: e.title,
+          url: e.url ?? "",
+          description: e.description,
+          footer: e.footer?.text ?? "",
+          thumbnail: e.thumbnail?.url ?? "",
+        }))
+      ).toEqual(rows);
+    }
+  );
+  step(
+    /^the bot posts in #jewelry-requests:$/,
+    (rows: Record<string, string>[]) => {
+      expect(world.posts).toHaveLength(0);
+      expect(world.jewelryPosts).toHaveLength(1);
+      const [post] = world.jewelryPosts;
+      expect(post.auth).toBe("Bot bot-token");
       expect(
         post.body.embeds.map((e) => ({
           title: e.title,
@@ -1158,8 +1277,8 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     );
   });
   step(
-    /^the wiki and all three sheets are refreshed again every (\d+) minutes$/,
-    (min: string) => expect(world.every).toEqual(Array(4).fill(+min * 60e3))
+    /^the wiki and all four sheets are refreshed again every (\d+) minutes$/,
+    (min: string) => expect(world.every).toEqual(Array(5).fill(+min * 60e3))
   );
   step(
     /^a promise fails with (an error|the bare value) "(.*)" and nothing catches it$/,

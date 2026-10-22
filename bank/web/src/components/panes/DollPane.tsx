@@ -1,5 +1,5 @@
 import { Stack, Text, UnstyledButton } from "@mantine/core";
-import { IconBook2, IconDiamond, IconWind, type Icon } from "@tabler/icons-react";
+import { IconBook2, IconBox, IconWind, type Icon } from "@tabler/icons-react";
 import { DOLL, chipForBit, fitsBit, type Item, type SlotChip } from "../../data";
 import type { Filters } from "../../state";
 import classes from "./DollPane.module.css";
@@ -11,7 +11,7 @@ type KindCell = "spell" | "sky" | "other";
 const KIND_CELLS: { kind: KindCell; label: string; icon: Icon }[] = [
   { kind: "spell", label: "Spells", icon: IconBook2 },
   { kind: "sky", label: "Sky", icon: IconWind },
-  { kind: "other", label: "Other", icon: IconDiamond },
+  { kind: "other", label: "Other", icon: IconBox },
 ];
 interface Props {
   item: Item | null;

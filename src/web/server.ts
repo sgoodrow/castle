@@ -16,6 +16,7 @@ import { WikiCache } from "./wiki-cache";
 import { SpellSheet } from "./spell-sheet";
 import { SkySheet } from "./sky-sheet";
 import { ResearchSheet } from "./research-sheet";
+import { JewelrySheet } from "./jewelry-sheet";
 import { SheetAlert } from "./sheet-alert";
 
 dotenv.config();
@@ -34,6 +35,7 @@ const {
   bankDistDir,
   token,
   bankRequestsChannelId,
+  jewelryChannelId,
   bankOfficeChannelId,
   bankSheetAlerts,
 } = process.env;
@@ -90,18 +92,26 @@ const api = new BankApi(
   wiki,
   new SpellSheet(CACHE, alert("spell-sheet.alert", "The spell sheet")),
   new SkySheet(CACHE, alert("sky-sheet.alert", "The Plane of Sky sheet")),
-  new ResearchSheet(CACHE, alert("research-sheet.alert", "The research sheet"))
+  new ResearchSheet(CACHE, alert("research-sheet.alert", "The research sheet")),
+  new JewelrySheet(CACHE, alert("jewelry-sheet.alert", "The jewelry sheet"))
 );
-// Posting bank requests needs the bot's token and the channel; without them the page is told so.
-const poster: Poster | null =
-  token && bankRequestsChannelId
+// Posting needs the bot's token and the channel; without them the page is told so. Bank requests
+// post to their channel, and made-to-order jewelry to the jewelers' channel.
+const posterFor = (channelId: string | undefined): Poster | null =>
+  token && channelId
     ? {
         token,
-        channelId: bankRequestsChannelId,
+        channelId,
         baseUrl: bankWebUrl,
         icon: (id) => wiki.get(id)?.icon,
       }
     : null;
+const poster = posterFor(bankRequestsChannelId);
+const jewelryPoster = posterFor(jewelryChannelId);
+if (token && bankRequestsChannelId && !jewelryChannelId)
+  log(
+    "bank web: jewelry requests can't be posted: the jewelry requests channel isn't set"
+  );
 
 let page: Buffer | null = null;
 // The page reports its errors with this commit, so they're mapped with the right source map.
@@ -202,18 +212,38 @@ async function bankRequest(
   res: ServerResponse,
   me: Session
 ) {
-  if (!poster) return send(req, res, 503, "text/plain", "Posting isn't set up");
   if (!postAllowed(me.id)) return send(req, res, 429, "text/plain", "Too many");
   const raw = await body(req, 65536);
   if (raw == null) return send(req, res, 413, "text/plain", "Too large");
+  let parsed: { channel?: string; embeds?: unknown } | null;
   let post;
   try {
-    post = readPost(JSON.parse(raw));
+    parsed = JSON.parse(raw);
+    post = readPost(parsed);
   } catch {
+    parsed = null;
     post = null;
   }
-  if (!post) return send(req, res, 400, "text/plain", "Bad request");
-  if (!(await postRequest(poster, me, post)))
+  // Only the two channels, or no channel at all for an older page's bank request.
+  const channel = parsed?.channel;
+  if (
+    !post ||
+    (channel !== undefined && channel !== "bank" && channel !== "jewelry")
+  )
+    return send(req, res, 400, "text/plain", "Bad request");
+  // A post without a channel is an older page's bank request.
+  const to = channel === "jewelry" ? jewelryPoster : poster;
+  if (!to)
+    return send(
+      req,
+      res,
+      503,
+      "text/plain",
+      channel === "jewelry"
+        ? "Posting jewelry isn't set up"
+        : "Posting isn't set up"
+    );
+  if (!(await postRequest(to, me, post)))
     return send(req, res, 502, "text/plain", "Discord didn't take it");
   log(`bank web: ${me.name} (${me.id}) posted a bank request`);
   send(req, res, 204, "text/plain", "");
@@ -330,6 +360,7 @@ export function handle(req: IncomingMessage, res: ServerResponse) {
 export const readSpellSheet = () => api.refreshSheet();
 export const readSkySheet = () => api.refreshSkySheet();
 export const readResearchSheet = () => api.refreshResearchSheet();
+export const readJewelrySheet = () => api.refreshJewelrySheet();
 export const refreshWiki = () => api.refreshWiki();
 
 // Listening, the wiki refresh and the process handlers only start when this file is run, so tests can import it.
@@ -342,7 +373,7 @@ export function start() {
     )
   );
 
-  // Keep icons, auctions, spell prices, Sky islands and research items current in the background; the page never waits on the
+  // Keep icons, auctions, spell prices, Sky islands, research items and jewelry current in the background; the page never waits on the
   // wiki or the sheets.
   const inBackground = (what: string, run: () => Promise<unknown>) => () =>
     run().catch((err) => {
@@ -353,7 +384,7 @@ export function start() {
         stack,
         feature: what,
         outcome:
-          "The bank page kept showing what it had before: icons, auctions, spell prices, Sky islands or research items go stale until a refresh works.",
+          "The bank page kept showing what it had before: icons, auctions, spell prices, Sky islands, research items or jewelry go stale until a refresh works.",
       });
     });
   for (const refresh of [
@@ -361,6 +392,7 @@ export function start() {
     inBackground("spell sheet refresh", readSpellSheet),
     inBackground("sky sheet refresh", readSkySheet),
     inBackground("research sheet refresh", readResearchSheet),
+    inBackground("jewelry sheet refresh", readJewelrySheet),
   ]) {
     refresh();
     setInterval(refresh, WIKI_EVERY);

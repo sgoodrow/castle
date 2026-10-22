@@ -14,6 +14,7 @@ import { SearchPane } from "./SearchPane";
 import { FilterPane } from "./FilterPane";
 import { TabPane } from "./TabPane";
 import { tabTotal, totalShort, totalText } from "../../tab";
+import { channelName } from "../../request";
 import { UpdatedText } from "../texts/UpdatedText";
 import { DevOptionsPane } from "./DevOptionsPane";
 import { ClearFiltersButton } from "../buttons/ClearFiltersButton";
@@ -30,7 +31,9 @@ export function AppPane() {
   const sm = useMediaQuery("(min-width: 48em)", true); // tablets and up get the table
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [tabOpen, setTabOpen] = useState(false);
-  const closeTab = () => setTabOpen(false);
+  const [sending, setSending] = useState(false); // a tab post is in flight
+  // The tab stays open while a post is in flight, so its send state isn't unmounted mid-send.
+  const closeTab = () => { if (!sending) setTabOpen(false); };
 
   const items = useMemo(() => filterItems(f), [f]);
   // Filters change the URL in place, so Back still leaves the page rather than undoing a click.
@@ -60,6 +63,7 @@ export function AppPane() {
       // Shake the count so it's clear it has hit the ceiling. Transform only, so nothing moves.
       row.querySelector("[data-qty]")?.animate(
         [0, -4, 4, -3, 3, 0].map(x => ({ transform: `translateX(${x}px)` })), { duration: 300, easing: "ease-out" });
+      if (it.jewelry) return say(`Up to ${max} ${it.name} per request`, false);
       if (max < it.total) return say(`One DKP auction at a time for ${it.name}`, false);
       return say(it.total === 1 ? "The bank only has one, and it's on your tab" : `The bank only has ${it.total}, all on your tab`, false);
     }
@@ -151,7 +155,9 @@ export function AppPane() {
           </Group>
         }>
         <TabPane tab={tab} cls={f.cls} onSelect={id => { closeTab(); select(id); }} onRemove={id => setQty(id, 0)}
-          onSent={() => { setTab({}); closeTab(); say("Posted to #bank-requests", true); }} />
+          onSent={chans => { setTab({}); setTabOpen(false); say(`Posted to ${chans.map(channelName).join(" and ")}`, true); }}
+          onPosted={msg => { setTab(t => Object.fromEntries(Object.entries(t).filter(([id]) => !msg.items.includes(+id)))); say(`Posted to ${channelName(msg.channel)}`, true); }}
+          sending={sending} onSending={setSending} />
       </Drawer>
       {!md && (
         <Drawer opened={!!sel} onClose={() => select(null)} position="right" size="min(440px, 100%)" withinPortal withCloseButton={false} styles={{ title: { flex: 1 } }}
