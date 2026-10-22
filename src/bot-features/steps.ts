@@ -10,7 +10,12 @@ const MINUTE = 60 * 1000;
 const PUBLIC_SHEET = "public-sheet";
 const BOT_TAB = "Bot Info";
 
-let bots: PrismaPublicAccounts;
+let bots: PrismaPublicAccounts | undefined;
+// The bot this scenario started; a scenario that never starts it has no bot to ask.
+const started = () => {
+  if (!bots) throw new Error("the bot has not started in this scenario");
+  return bots;
+};
 
 // Rows as Google Sheets gives them: a table's "row" column is the sheet's row number, and its other
 // columns are the tab's, in order. Like the real API, a row's blank cells after its last filled one
@@ -18,13 +23,19 @@ let bots: PrismaPublicAccounts;
 const rowsOf = (table: Record<string, string>[]): Row[] =>
   table.map(({ row, ...cells }) => {
     const filled = Object.entries(cells);
-    while (filled.length && !filled.at(-1)![1]) filled.pop();
-    return { ...Object.fromEntries(filled), rowIndex: Number(row) } as Row;
+    let end = filled.length;
+    while (end > 0 && !filled[end - 1][1]) end--;
+    return {
+      ...Object.fromEntries(filled.slice(0, end)),
+      rowIndex: Number(row),
+    } as Row;
   });
 
 // Until the bot has finished loading the bots, and told raid chat whatever it tells it.
 const loaded = async () => {
-  await bots.guardReady().catch(() => undefined);
+  await started()
+    .guardReady()
+    .catch(() => undefined);
   await new Promise((r) => setImmediate(r));
 };
 
@@ -52,6 +63,14 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     (klass: string, name: string) => {
       world.sheets[PUBLIC_SHEET] = {
         [BOT_TAB]: rowsOf([{ row: "2", Name: ` ${name} `, Class: klass }]),
+      };
+    }
+  );
+  step(
+    /^the "Bot Info" sheet has a (\w+) with spaces around its class: "(.*)"$/,
+    (klass: string, name: string) => {
+      world.sheets[PUBLIC_SHEET] = {
+        [BOT_TAB]: rowsOf([{ row: "2", Name: name, Class: ` ${klass} ` }]),
       };
     }
   );
@@ -123,6 +142,9 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(/^the bot starts$/, async () => {
     const { PrismaPublicAccounts } = await import("../services/bot/bot-prisma");
     bots = new PrismaPublicAccounts();
+    world.restore.push(() => {
+      bots = undefined;
+    });
     // A load still running when a scenario fails mustn't land in the next one.
     world.restore.push(loaded);
     await loaded();
@@ -134,10 +156,10 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     }
   });
   step(/^bot commands are on$/, () =>
-    expect(bots.guardReady()).resolves.toBeUndefined()
+    expect(started().guardReady()).resolves.toBeUndefined()
   );
   step(/^bot commands are off, saying:$/, (text: string) =>
-    expect(bots.guardReady()).rejects.toMatchObject({ message: text })
+    expect(started().guardReady()).rejects.toMatchObject({ message: text })
   );
   step(/^the log says "(.*)"$/, (text: string) =>
     expect(world.logs.join("\n")).toContain(text)

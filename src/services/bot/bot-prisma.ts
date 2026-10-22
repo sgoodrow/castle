@@ -134,7 +134,7 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       const roles = await accounts.getRolesForAccount(name);
       bots.push({
         name,
-        class: cell(BOT_SPREADSHEET_COLUMNS.Class),
+        class: cell(BOT_SPREADSHEET_COLUMNS.Class).trim(),
         level: cell(BOT_SPREADSHEET_COLUMNS.Level),
         location: cell(BOT_SPREADSHEET_COLUMNS.CurrentLocation),
         checkoutTime: time.isValid() ? time.toString() : "",

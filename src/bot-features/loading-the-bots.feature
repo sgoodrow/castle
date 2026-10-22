@@ -180,3 +180,10 @@ Feature: Loading the bots
     Then the stored bots are:
       | name  |
       | Gimel |
+
+  Scenario: A class with spaces around it is stored trimmed, so the Wizard check still sees it
+    Given the "Bot Info" sheet has a Wizard with spaces around its class: "Gimel"
+    When the bot starts
+    Then the stored bots are:
+      | name  | class  |
+      | Gimel | Wizard |
