@@ -108,6 +108,16 @@ jobs:
       pull-requests: write
       issues: write
       actions: write # to start Test on the scenario's branch
+    # The bot's features run on real Postgres (src/bot-features/database.ts).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
         with:
@@ -127,21 +137,24 @@ jobs:
           github_token: ${{ github.token }}
           prompt: |
             Issue #${{ github.event.issue.number }} in ${{ github.repository }} describes a behaviour of the
-            guild bank that no test covers. The repo owner sent it to you to write the scenario for it.
+            guild bank or bot that no test covers. The repo owner sent it to you to write the scenario for it.
             Read it with `gh issue view ${{ github.event.issue.number }} --comments`. The scenario states
             a product requirement: the owner reviews it before it merges, and it may need their changes.
 
             1. Write the scenario as a Gherkin feature, beside the others: bank/web/features for the bank
-               page (run by vitest), src/web/features for its server (also vitest; a new
-               .feature there needs a one-line <name>.test.ts calling runFeature, like the others). Use the
-               issue's proposed scenario as a start, in the style of the features there, reusing their
-               steps and adding steps to that folder's steps.ts where needed. Fixture data for the page
-               is in bank/web/src/__fixtures__.
-            2. Run it with `npm --prefix bank/web run test:run -- features` or `npx vitest run src/web/features`
+               page (run by vitest), src/web/features for the bank's server, src/bot-features for the bot's
+               loading features, or src/features/<area>/ beside the area's code for the rest of the bot (all
+               run by vitest). A new .feature needs a one-line <name>.test.ts calling runFeature, like its
+               neighbours. Use the issue's proposed scenario as a start, in the style of the features there,
+               reusing their steps and adding steps to that folder's steps.ts where needed. Fixture data for the
+               page is in bank/web/src/__fixtures__; the bot's data is written inline in its scenarios.
+            2. Run it with `npm --prefix bank/web run test:run -- features` for the page, or `npx vitest run <the
+               feature's folder>` for the server and the bot (the bot's needs Postgres on port 5433, which this job has)
                and see it pass.
-            3. Change tests only: files in bank/web/features, src/web/features and bank/web/src/__fixtures__.
+            3. Change tests only: files in bank/web/features, src/web/features, src/bot-features, src/features
+               (*.feature and *.test.ts) and bank/web/src/__fixtures__.
                Never change source code. The one other change allowed is raising the coverage threshold
-               of the file the scenario covers, in vitest.config.mts (src/web) or bank/web/vite.config.ts
+               of the file the scenario covers, in vitest.config.mts (the bot and the server) or bank/web/vite.config.ts
                (the page), to what the run now reaches. Never lower, drop or otherwise change thresholds
                or any other setting, and never delete, skip or loosen an existing test or scenario. CI
                fails the PR if you do.
