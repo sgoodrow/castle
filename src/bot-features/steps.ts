@@ -6,6 +6,7 @@ import { prismaClient } from "..";
 import type { DefineStep } from "../testing/gherkin";
 import type { PrismaPublicAccounts } from "../services/bot/bot-prisma";
 import { BOT_ID, newId, post, world, type Message, type Row } from "./world";
+import { commandOpening } from "../features/bank-request-info/bank-request";
 
 const MINUTE = 60 * 1000;
 const PUBLIC_SHEET = "public-sheet";
@@ -297,6 +298,34 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         },
         daysAgo(days)
       );
+    }
+  );
+  // A member's own message, which reads like a request but isn't the bot's.
+  step(/^(\w+) typed in #(\S+):$/, (name: string, channel: string, text: string) => {
+    post(channel, member(name).id, { content: text });
+  });
+  step(
+    /^(\w+) reacts (✅|❌) to (\w+)'s typed message in #(\S+)$/,
+    async (by: string, emoji: string, whose: string, channel: string) => {
+      const { tryBankRequestComplete } =
+        await import("../features/bank-inventory/actions/bank-request-complete-reaction");
+      const message = (world.channels[channel] ?? []).findLast(
+        (m) => m.author.id === member(whose).id
+      );
+      const user = { id: member(by).id, toString: () => `<@${member(by).id}>` };
+      await tryBankRequestComplete(
+        { partial: false, emoji: { name: emoji }, message } as never,
+        user as never
+      );
+    }
+  );
+  // A request that @mentions someone besides its member, as /bank request can.
+  step(
+    /^(\w+) placed a jewelry request in #(\S+) mentioning (\w+):$/,
+    (name: string, channel: string, other: string, lines: string) => {
+      post(channel, BOT_ID, {
+        content: `${commandOpening(`<@${member(name).id}>`)} ${lines.trim()} <@${member(other).id}>`,
+      });
     }
   );
   step(/^the bot's jewelry instructions are in #jewelry-requests$/, () => {

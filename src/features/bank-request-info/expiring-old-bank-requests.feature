@@ -43,9 +43,9 @@ Feature: Expiring old bank requests
     And Bob's request is no longer in #jewelry-requests
     And Bob is sent a DM:
       """
-      Your <Castle> bank request has been dismissed, as it was open for 30 days.
+      Your <Castle> jewelry request has been dismissed, as it was open for 30 days.
 
-      **Sorry we missed you!** Please post your bank request again the next time you are available to have it fulfilled.
+      **Sorry we missed you!** Please post your jewelry request again the next time you are available to have it fulfilled.
 
       > • Golden Cat Eye Bracelet (13pp)
       """

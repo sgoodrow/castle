@@ -23,7 +23,7 @@ import {
 } from "../../../shared/action/reaction-action";
 import { requesterId } from "../../../shared/bank-request-author";
 import { readBankRequest } from "../../bank-request-info/bank-request";
-import { getMember, getTextChannel } from "../../..";
+import { client, getMember, getTextChannel } from "../../..";
 
 export const tryBankRequestComplete = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -44,11 +44,6 @@ const parseBankRequest = (message: Message | PartialMessage): BankRequest => {
     ? { kind: "site", requesterId: id, embed }
     : { kind: "command", message };
 };
-
-const isRequester = (request: BankRequest, userId: string) =>
-  request.kind === "site"
-    ? request.requesterId === userId
-    : request.message.mentions.users.has(userId);
 
 const transactionMessage = (
   request: BankRequest,
@@ -99,15 +94,14 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     if (channelId !== bankRequestsChannelId && channelId !== jewelryChannelId) {
       return;
     }
-    // Only a request can be filled or cancelled, not the channel's own instructions.
-    if (
-      !readBankRequest({
-        content: this.message.content as string,
-        embeds: this.message.embeds,
-      })
-    ) {
-      return;
-    }
+    // Only a request the bot posted can be filled or cancelled, not the channel's own instructions
+    // or a member's own message that reads like one.
+    if (this.message.author?.id !== client.user?.id) return;
+    const requested = readBankRequest({
+      content: this.message.content as string,
+      embeds: this.message.embeds,
+    });
+    if (!requested) return;
     const request = parseBankRequest(this.message);
 
     // mark finished
@@ -127,7 +121,7 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     // cancel
     if (this.reaction.emoji.name === "❌") {
       if (
-        !isRequester(request, this.user.id) &&
+        requested.requesterId !== this.user.id &&
         !(await isFiller(this.user.id, channelId))
       ) {
         return;

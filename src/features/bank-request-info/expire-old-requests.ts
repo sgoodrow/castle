@@ -26,7 +26,8 @@ export const expireOldRequests = async (
   channel: MessageSource<Post>,
   botId: string,
   now: number,
-  notify: (userId: string, text: string) => Promise<unknown>
+  notify: (userId: string, text: string) => Promise<unknown>,
+  what = "bank request"
 ) => {
   let removed = 0;
   for await (const m of channelMessages(channel)) {
@@ -46,7 +47,7 @@ export const expireOldRequests = async (
     // A member who doesn't take DMs still has theirs removed.
     await notify(
       request.requesterId,
-      dismissal([request.text], `, as it was open for ${MAX_AGE_DAYS} days`)
+      dismissal([request.text], `, as it was open for ${MAX_AGE_DAYS} days`, what)
     ).catch(() =>
       log(
         `bank requests: couldn't DM ${request.requesterId} about their removed request`
@@ -65,10 +66,17 @@ const refreshBankRequests = async () => {
   if (!botId) return;
   // Jewelry requests expire the same way bank requests do.
   let removed = 0;
-  for (const channelId of [bankRequestsChannelId, jewelryChannelId]) {
+  for (const [channelId, what] of [
+    [bankRequestsChannelId, "bank request"],
+    [jewelryChannelId, "jewelry request"],
+  ] as const) {
     const channel = await getTextChannel(channelId);
-    removed += await expireOldRequests(channel, botId, Date.now(), (id, text) =>
-      client.users.send(id, text)
+    removed += await expireOldRequests(
+      channel,
+      botId,
+      Date.now(),
+      (id, text) => client.users.send(id, text),
+      what
     );
   }
   if (removed)

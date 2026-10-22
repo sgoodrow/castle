@@ -5,11 +5,11 @@ import { quote } from "../../shared/string-util";
 // A DM holds 2,000 characters.
 const MAX_DM = 2000;
 
-export const dismissal = (requests: string[], why = "") =>
+export const dismissal = (requests: string[], why = "", what = "bank request") =>
   truncate(
-    `Your <Castle> bank request has been dismissed${why}.
+    `Your <Castle> ${what} has been dismissed${why}.
 
-**Sorry we missed you!** Please post your bank request again the next time you are available to have it fulfilled.
+**Sorry we missed you!** Please post your ${what} again the next time you are available to have it fulfilled.
 
 ${requests.map(quote).join("\n\n")}`,
     { length: MAX_DM }
