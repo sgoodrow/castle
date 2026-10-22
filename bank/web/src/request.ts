@@ -12,25 +12,19 @@ export interface RequestMessage { embeds: Embed[] }
 const BLURPLE = 0x5865f2;
 const GREY = 0x4e5058;
 
-// How each card lists its spots: "all" of them, the login route's characters first, or only the
-// "route" characters' spots, with a count of the rest.
-export type SpotList = "all" | "route";
-
 // Where a banker finds it: up to six spots, then how many more as Discord's dim subtext (`-# `).
 // The login route's characters come first, then the rest, each by character, then spot, so one
 // character's spots sit together and a banker logs in to each character once for the whole request.
-function spots(it: Item, route: string[], list: SpotList) {
+function spots(it: Item, route: string[]) {
   const onRoute = (h: Item["holders"][number]) => route.includes(h.char);
   const sorted = [...requestedFrom(it).holders].sort((a, b) =>
     +onRoute(b) - +onRoute(a) || a.char.localeCompare(b.char) || a.loc.localeCompare(b.loc, undefined, { numeric: true }));
-  const listed = list === "route" && sorted.some(onRoute) ? sorted.filter(onRoute) : sorted;
-  const shown = listed.slice(0, 6).map(h => `• ${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
+  const shown = sorted.slice(0, 6).map(h => `• ${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
   const more = sorted.length - shown.length;
-  const elsewhere = listed.length < sorted.length;
-  return [...shown, ...(more > 0 ? [`-# …and ${more} more${elsewhere ? " on other characters" : ""}`] : [])].join("\n");
+  return [...shown, ...(more > 0 ? [`-# …and ${more} more`] : [])].join("\n");
 }
 
-export function requestMessage(tab: Tab, cls: ClassId | null, list: SpotList = "all"): RequestMessage | null {
+export function requestMessage(tab: Tab, cls: ClassId | null): RequestMessage | null {
   const lines = Object.entries(tab).flatMap(([id, qty]) => {
     const it = ITEMS[+id];
     return it ? [{ it, qty, req: bankRequest(it, cls, qty) }] : [];
@@ -52,6 +46,6 @@ export function requestMessage(tab: Tab, cls: ClassId | null, list: SpotList = "
     color: BLURPLE,
   };
   // One embed per item. The tab holds at most MAX_TAB_ITEMS, so this fits Discord's ten.
-  const embeds: Embed[] = [request, ...cards.map(l => ({ title: l.it.name, description: spots(l.it, route, list), color: GREY, item: l.it.id }))];
+  const embeds: Embed[] = [request, ...cards.map(l => ({ title: l.it.name, description: spots(l.it, route), color: GREY, item: l.it.id }))];
   return { embeds };
 }

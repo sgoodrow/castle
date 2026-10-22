@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 // Dev only: candidate looks to click between while iterating. Each option sets
 // html[data-<key>] and is remembered across reloads. "primary" swaps the theme's primary colour.
 export const OPTIONS: { key: string; label: string; values: string[] }[] = [
-  // Bank request cards: every spot with the login route first, or only the route's spots.
-  { key: "spots", label: "Request spots", values: ["all", "route"] },
 ];
 
 const STORE = "castle-bank-dev";

@@ -54,23 +54,3 @@ Feature: Filling a request in few logins
     When I open my tab
     And I send my tab to Discord
     Then the post reads "2 logins: Mulea, Muleb"
-
-  Scenario: The cards can list only the planned logins' spots
-    Given the bank holds the usual stock
-    And the bank also holds:
-      | character | spot     | item           | count |
-      | Mulec     | General1 | Bone Chips     | 3     |
-      | Mulec     | General2 | Spell: Lifetap | 1     |
-      | Mulec     | General3 | Spell: Splurt  | 1     |
-    And I have opened the bank page
-    And the request cards list only the planned logins' spots
-    And I have added "Spell: Lifetap" to my tab
-    And I have added "Spell: Splurt" to my tab
-    And I have added "Bone Chips" to my tab
-    When I open my tab
-    And I send my tab to Discord
-    Then the post reads "1 login: Mulec"
-    And the post reads "• Mulec (inventory 1) ×3"
-    And the post reads "…and 2 more on other characters"
-    And the post doesn't read "Mulea"
-    And the post doesn't read "Muleb"
