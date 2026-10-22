@@ -716,6 +716,9 @@ export const steps = ({
   step(/^the bank sends no Sky part for "(.*)"$/, (name: string) =>
     expect(bank().items[itemId(name)]).not.toHaveProperty("sky")
   );
+  step(/^the bank sends no Sky part for item (\d+)$/, (id: string) =>
+    expect(bank().items[+id]).not.toHaveProperty("sky")
+  );
   step(/^the bank sends the spells (".*)$/, (names: string) => {
     expect(
       Object.values(bank().spells)

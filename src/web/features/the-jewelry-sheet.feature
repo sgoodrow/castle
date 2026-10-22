@@ -44,6 +44,22 @@ Feature: The jewelry sheet
       | note      | ""                               |
     And the bank describes 2 items
 
+  Scenario: Jewelry is never Sky, even when the Sky sheet lists its name
+    Given the Sky sheet's announcements tab is:
+      """
+      Items,Island,Item Counts,Notes,Missing Items
+      Golden Cat Eye Bracelet,Island 4,1,,
+      """
+    And the jewelry sheet's price table is:
+      """
+      ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
+      ,Golden Cat Eye Bracelet,Wrist,7cha,11,156,95%,12,0.15,,13,,
+      """
+    When the site reads the Sky sheet
+    And the site reads the jewelry sheet
+    And Someone asks for the bank
+    Then the bank sends no Sky part for item 14618
+
   Scenario: A recipe the jewelers say not to ask for is left out
     Given the jewelry sheet's price table is:
       """

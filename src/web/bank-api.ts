@@ -182,10 +182,10 @@ export class BankApi {
     }
     // A Sky item is one the Sky sheet lists, or one only the Sky mules (or multiquest holders) hold.
     for (const [id, it] of Object.entries(items)) {
+      if (it.jewelry) continue; // jewelry is made to order, never Sky, even when the Sky sheet names it
       const part = this.sky.get(it.name as string);
       if (part) it.sky = part;
-      else if (!offSky.has(+id) && !it.jewelry)
-        it.sky = { islands: [], note: "" };
+      else if (!offSky.has(+id)) it.sky = { islands: [], note: "" };
     }
     // A research item is one the research sheet lists and a research mule holds, so the everyday
     // items some recipes take, such as a Dagger, keep their usual price.
