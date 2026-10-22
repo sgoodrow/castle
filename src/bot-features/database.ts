@@ -99,17 +99,26 @@ export async function createDatabase() {
   };
 }
 
-// Empties every table, for a fresh start each scenario.
+// Empties every table, for a fresh start each scenario. A background task of the last scenario
+// can still hold a lock for a moment, so a deadlock is retried.
 export async function emptyTables(url: string) {
   const db = await connect(url);
   try {
     const { rows } = await db.query<{ tablename: string }>(
       "select tablename from pg_tables where schemaname = 'public'"
     );
-    if (rows.length)
-      await db.query(
-        `truncate ${rows.map((r) => `"${r.tablename}"`).join(", ")} restart identity cascade`
-      );
+    if (!rows.length) return;
+    const sql = `truncate ${rows.map((r) => `"${r.tablename}"`).join(", ")} restart identity cascade`;
+    for (let attempt = 1; ; attempt++) {
+      try {
+        await db.query(sql);
+        return;
+      } catch (err) {
+        if ((err as { code?: string }).code !== "40P01" || attempt === 5)
+          throw err;
+        await new Promise((r) => setTimeout(r, 50 * attempt));
+      }
+    }
   } finally {
     await db.end();
   }
