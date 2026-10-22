@@ -78,3 +78,37 @@ Feature: The spell sheet
       """
     When the site reads the spell sheet
     Then the log says "bank web: spell sheet: no such spell Cantana of Soothing; can't read the cost of Composition of Ervaj "ask Vijo""
+
+  Scenario: Bankers are told once when the spell sheet breaks, and again when it reads again
+    Given the bank office is set up
+    And the spell sheet's "Bard Songs" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      34,Cantana of Soothing,0,,,50pp
+      """
+    When the site reads the spell sheet
+    And the site reads the spell sheet
+    Then the bank office is told "The spell sheet needs fixing: no such spell Cantana of Soothing."
+    And the bank office has been told 1 time
+    Given the spell sheet's "Bard Songs" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      34,Aegis,0,,,50pp
+      """
+    When the site reads the spell sheet
+    Then the bank office is told "The spell sheet reads again."
+    And the bank office has been told 2 times
+
+  Scenario: A message the bank office refuses is tried again on the next read
+    Given the bank office is set up
+    And the bank office refuses posts
+    And the spell sheet's "Bard Songs" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      34,Cantana of Soothing,0,,,50pp
+      """
+    When the site reads the spell sheet
+    And the bank office accepts posts again
+    And the site reads the spell sheet
+    Then the bank office is told "The spell sheet needs fixing: no such spell Cantana of Soothing."
+    And the bank office has been told 1 time

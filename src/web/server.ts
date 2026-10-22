@@ -9,13 +9,14 @@ import { commit, describeError, reportError } from "../shared/error-reports";
 import { log } from "../shared/logger";
 import { Auth, Session } from "./auth";
 import { BankApi } from "./bank-api";
-import { postRequest, readPost, type Poster } from "./bank-post";
+import { postRequest, postToChannel, readPost, type Poster } from "./bank-post";
 import { PageMap } from "./page-map";
 import { message, send } from "./respond";
 import { WikiCache } from "./wiki-cache";
 import { SpellSheet } from "./spell-sheet";
 import { SkySheet } from "./sky-sheet";
 import { ResearchSheet } from "./research-sheet";
+import { SheetAlert } from "./sheet-alert";
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ const {
   bankDistDir,
   token,
   bankRequestsChannelId,
+  bankOfficeChannelId,
 } = process.env;
 
 const GIT_REV = commit();
@@ -69,12 +71,18 @@ if (!auth && !NO_AUTH)
 
 const CACHE = bankCacheDir || path.join(ROOT, "bank/cache");
 const wiki = new WikiCache(CACHE);
+// Bankers hear in the bank office when a bank sheet breaks or reads again. Without the bot's token
+// and the channel, the sheets only log, as they did before.
+const bankOffice = (message: string) =>
+  token && bankOfficeChannelId
+    ? postToChannel(token, bankOfficeChannelId, message)
+    : Promise.resolve();
 const api = new BankApi(
   path.join(ROOT, "bank/data"),
   wiki,
-  new SpellSheet(CACHE),
-  new SkySheet(CACHE),
-  new ResearchSheet(CACHE)
+  new SpellSheet(CACHE, new SheetAlert("The spell sheet", bankOffice)),
+  new SkySheet(CACHE, new SheetAlert("The Plane of Sky sheet", bankOffice)),
+  new ResearchSheet(CACHE, new SheetAlert("The research sheet", bankOffice))
 );
 // Posting bank requests needs the bot's token and the channel; without them the page is told so.
 const poster: Poster | null =

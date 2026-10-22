@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { log } from "../shared/logger";
 import { parseCsv } from "./spell-sheet";
+import { SheetAlert } from "./sheet-alert";
 
 export const SKY_SHEET =
   "https://docs.google.com/spreadsheets/d/1zznLAdu688lxfQ7TuBzBx11wuT9eLClakOuMa8rveKg/export?format=csv&gid=";
@@ -85,7 +86,10 @@ export class SkySheet {
   private file: string;
   private problems = ""; // logged once, not every refresh
 
-  constructor(dir: string) {
+  constructor(
+    dir: string,
+    private alert: SheetAlert
+  ) {
     mkdirSync(dir, { recursive: true });
     this.file = path.join(dir, "sky-sheet.json");
     if (existsSync(this.file)) {
@@ -126,6 +130,9 @@ export class SkySheet {
       rows = mqRows(await this.tab(MQ_TAB));
     } catch (e) {
       log(`bank web: sky sheet: ${e}`);
+      await this.alert.report(
+        `The Plane of Sky sheet couldn't be read, so the bank keeps its last copy. The error: ${e}`
+      );
       return;
     }
     const problems: string[] = [];
@@ -164,6 +171,9 @@ export class SkySheet {
     writeFileSync(
       this.file,
       JSON.stringify({ parts: [...this.parts], mq: this.held })
+    );
+    await this.alert.report(
+      text ? `The Plane of Sky sheet needs fixing: ${text}.` : ""
     );
   }
 }

@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { log } from "../shared/logger";
 import { parseCsv } from "./spell-sheet";
+import { SheetAlert } from "./sheet-alert";
 
 export const RESEARCH_SHEET =
   "https://docs.google.com/spreadsheets/d/19LwqVtvpSHeU-IR81uTD9YE5GKphenpcpqzb0TEYjOg/export?format=csv&gid=";
@@ -53,7 +54,10 @@ export class ResearchSheet {
   private file: string;
   private problems = ""; // logged once, not every refresh
 
-  constructor(dir: string) {
+  constructor(
+    dir: string,
+    private alert: SheetAlert
+  ) {
     mkdirSync(dir, { recursive: true });
     this.file = path.join(dir, "research-sheet.json");
     if (existsSync(this.file)) {
@@ -90,6 +94,9 @@ export class ResearchSheet {
       names = tabs.flat();
     } catch (e) {
       log(`bank web: research sheet: ${e}`);
+      await this.alert.report(
+        `The research sheet couldn't be read, so the bank keeps its last copy. The error: ${e}`
+      );
       return;
     }
     const unknown = [
@@ -101,5 +108,8 @@ export class ResearchSheet {
     this.problems = problems;
     this.keys = new Set(names.map(researchKey));
     writeFileSync(this.file, JSON.stringify([...this.keys]));
+    await this.alert.report(
+      problems ? `The research sheet needs fixing: ${problems}.` : ""
+    );
   }
 }
