@@ -129,7 +129,8 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       // Named as badBotRows checks them: a padded name is still the bot's name.
       const name = cell(BOT_SPREADSHEET_COLUMNS.Name).trim();
       if (!name) continue; // a blank row
-      const time = moment(row[BOT_SPREADSHEET_COLUMNS.CheckoutTime]);
+      // A blank checkout time is stored blank, not as now: moment(undefined) is now.
+      const time = moment(cell(BOT_SPREADSHEET_COLUMNS.CheckoutTime));
       const roles = await accounts.getRolesForAccount(name);
       bots.push({
         name,

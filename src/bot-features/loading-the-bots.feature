@@ -166,13 +166,13 @@ Feature: Loading the bots
   Scenario: A row that ends in blank cells still loads
     Google Sheets leaves those cells out of the row altogether.
     Given the "Bot Info" sheet has these rows:
-      | row | Name  | Class  | Level | Current Location | Current Bot Pilot | Bind Location | Factioned | CoV Faction |
-      | 2   | Aleph | Wizard | 60    |                  |                   |               |           |             |
+      | row | Name  | Class  | Level | Current Location | Current Bot Pilot | Bind Location | Factioned | CoV Faction | Date and Time (EST) of pilot login |
+      | 2   | Aleph | Wizard | 60    |                  |                   |               |           |             |                                    |
     When the bot starts
     Then bot commands are on
     And the stored bots are:
-      | name  | level | location | pilot | bind | factioned | faction |
-      | Aleph | 60    |          |       |      | no        |         |
+      | name  | level | location | pilot | bind | factioned | faction | checkout |
+      | Aleph | 60    |          |       |      | no        |         |          |
 
   Scenario: A padded name is stored trimmed, the way the bot checks it
     Given the "Bot Info" sheet has a Rogue named with spaces around it: "Gimel"

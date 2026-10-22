@@ -92,6 +92,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         pilot: b.currentPilot,
         bind: b.bindLocation,
         factioned: b.factioned ? "yes" : "no",
+        checkout: b.checkoutTime,
         faction: b.faction,
         "required roles": b.requiredRoles.join(", "),
       };
@@ -139,7 +140,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     expect(bots.guardReady()).resolves.toBeUndefined()
   );
   step(/^bot commands are off, saying:$/, (text: string) =>
-    expect(bots.guardReady()).rejects.toThrow(text)
+    expect(bots.guardReady()).rejects.toMatchObject({ message: text })
   );
   step(/^the log says "(.*)"$/, (text: string) =>
     expect(world.logs.join("\n")).toContain(text)
