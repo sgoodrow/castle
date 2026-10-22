@@ -36,6 +36,11 @@ const JEWELRY_ALIASES = new Map<string, string>([
   ["Silver Wolf's Eye Necklace", "Silver Wolfs Eye Necklace"],
   ["Velium Rose Engagement Ring", "Rose Velium Engagement Ring"],
 ]);
+// The wiki has these recipes under the sheet's spelling, so their pages are found by that name.
+const WIKI_TITLES = new Map(
+  [...JEWELRY_ALIASES].map(([sheet, game]) => [game, sheet])
+);
+const wikiTitle = (name: string) => WIKI_TITLES.get(name) ?? name;
 const JEWELRY_STATS = [
   "ac",
   "hp",
@@ -98,7 +103,7 @@ export class BankApi {
       if (s.item && s.item.name !== "Empty" && !db?.nodrop)
         seen.set(s.itemId!, {
           id: s.itemId!,
-          name: s.item.name,
+          name: wikiTitle(s.item.name),
           icon: db?.icon,
         });
     }
@@ -107,7 +112,7 @@ export class BankApi {
       ...this.jewelry.all().keys(),
     ]) {
       const db = this.itemdb[id];
-      if (db) seen.set(id, { id, name: db.name, icon: db.icon });
+      if (db) seen.set(id, { id, name: wikiTitle(db.name), icon: db.icon });
     }
     await this.wiki.refresh([...seen.values()]);
   }
@@ -243,7 +248,7 @@ export class BankApi {
       name, // the inventory file's spelling matches the P99 client
       ...(price ? { price } : {}),
       ...(sheet ? { sheet } : {}),
-      wiki: wikiUrl(name),
+      wiki: wikiUrl(wikiTitle(name)),
       ...(w?.icon ? { icon: w.icon } : {}),
       ...(w?.green ? { green: w.green } : {}),
     };
