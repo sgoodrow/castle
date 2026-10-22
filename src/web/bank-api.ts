@@ -22,6 +22,10 @@ type DbItem = {
 const SPELL_KEYS = ["click", "proc", "worn", "focus", "scroll"];
 // What a piece of jewelry gives. Jewelry made with unenchanted metal gives nothing, and shares the
 // name of the jewelry the recipe means.
+// Names two stat-bearing items share, pinned to the one the recipe makes.
+const JEWELRY_PINNED: Record<string, number> = {
+  "Fire Emerald Velium Ring": 30343, // the one without the -1 skill modifier of 30355
+};
 const JEWELRY_STATS = [
   "ac",
   "hp",
@@ -142,6 +146,10 @@ export class BankApi {
       if (!it.nodrop && JEWELRY_STATS.some((k) => it[k]))
         ids.set(it.name, [...(ids.get(it.name) ?? []), +id]);
     return this.jewelry.refresh((name): Lookup => {
+      // Two items share this name, and the jewelers make the one pinned here. Scott chose it.
+      const pinned = JEWELRY_PINNED[name];
+      if (pinned != null)
+        return ids.get(name)?.includes(pinned) ? pinned : "no such item";
       const [id, ...more] = ids.get(name) ?? [];
       if (id == null) return "no such item";
       return more.length ? "more than one item" : id;

@@ -90,8 +90,8 @@ Feature: The jewelry sheet
       """
     When the site reads the jewelry sheet
     And Someone asks for the bank
-    Then the log says "bank web: jewelry sheet: no such item Velium Wolf's Eye Necklace; more than one item called Fire Emerald Velium Ring"
-    And the bank describes 1 item
+    Then the log says "bank web: jewelry sheet: no such item Velium Wolf's Eye Necklace"
+    And the bank describes 2 items
 
   Scenario: A recipe row whose costs aren't numbers keeps the old copy
     Given a saved copy of the jewelry sheet prices item 14618 at 13pp
