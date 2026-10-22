@@ -162,6 +162,7 @@ export class WikiCache {
       const had = this.items.get(id);
       this.items.set(id, {
         ...(had ?? rec),
+        url,
         fetchedAt: Date.now() - MAX_AGE + RETRY,
       });
       return;

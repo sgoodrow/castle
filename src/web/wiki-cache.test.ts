@@ -8,7 +8,7 @@ import {
 } from "fs";
 import { tmpdir } from "os";
 import path from "path";
-import { parseTracker, WikiCache, WikiItem } from "./wiki-cache";
+import { parseTracker, WikiCache, WikiItem, wikiUrl } from "./wiki-cache";
 
 vi.mock("../shared/logger", () => ({ log: vi.fn() }));
 
@@ -112,7 +112,12 @@ describe("WikiCache", () => {
       await fetchItem(cache);
 
       const rec = cache.get(ID)!;
-      expect(rec).toMatchObject({ url: "u", icon: 99, green: had.green });
+      // The address is the one this name has now, so a stale one is fetched again after a restart.
+      expect(rec).toMatchObject({
+        url: wikiUrl(NAME),
+        icon: 99,
+        green: had.green,
+      });
       // Retried in about a day, not right away and not after a full week.
       expect(rec.fetchedAt).toBeGreaterThan(1);
       expect(rec.fetchedAt).toBeLessThan(Date.now());
