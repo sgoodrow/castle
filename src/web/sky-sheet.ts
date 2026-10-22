@@ -81,8 +81,9 @@ export type Lookup = number | "no such item" | "more than one item";
 export type MqHolding = [holder: string, id: number, count: number];
 
 // Item names the database has more than one item for, by lowercase name, and the id the sheet means
-// by each. Add one only once a banker confirms which item it is. Leather Cord is the one the Plane of
-// Sky drops (the wiki page: 1.0 weight, small, no class), not the 20835 stack of 20.
+// by each. Add one only once someone who knows the sheet confirms which item it is. Leather Cord is
+// 3656, which Scott chose from the wiki page: the Plane of Sky drop, 1.0 weight, small, no class.
+// No banker has confirmed it yet.
 export const SKY_ITEM_IDS = new Map<string, number>([["leather cord", 3656]]);
 
 export class SkySheet {
