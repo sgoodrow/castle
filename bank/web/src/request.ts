@@ -27,7 +27,9 @@ function spots(it: Item, from: string[]) {
 export function requestMessage(tab: Tab, cls: ClassId | null): RequestMessage | null {
   const lines = Object.entries(tab).flatMap(([id, qty]) => {
     const it = ITEMS[+id];
-    return it ? [{ it, qty, req: bankRequest(it, cls, qty) }] : [];
+    if (!it) return [];
+    const req = bankRequest(it, cls, qty);
+    return [{ it, qty, req, auction: req.price.kind === "auction" }];
   });
   if (!lines.length) return null;
   const total = totalText(tabTotal(tab, cls));

@@ -1,6 +1,7 @@
 import { requestedFrom, type Item } from "./data";
 
-export interface Need { it: Item; qty: number }
+// A DKP auction line isn't fetched from the bank, so its holders aren't logins either.
+export interface Need { it: Item; qty: number; auction: boolean }
 // A line on the route: the characters a banker takes it from, in route order, and the stop it's
 // picked up at (the first of them). Multiquest lines have none and come after the last stop.
 export type Planned<N extends Need> = N & { from: string[]; stop: number };
@@ -17,7 +18,7 @@ export function loginRoute<N extends Need>(needs: N[]): Route<N> {
   const lines = needs.map(n => {
     const from = requestedFrom(n.it);
     const held = new Map<string, number>();
-    if (!from.mq) for (const h of from.holders) held.set(h.char, (held.get(h.char) ?? 0) + h.count);
+    if (!from.mq && !n.auction) for (const h of from.holders) held.set(h.char, (held.get(h.char) ?? 0) + h.count);
     const total = [...held.values()].reduce((a, b) => a + b, 0);
     return { n, held, need: Math.min(n.qty, total) };
   });
