@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import { Subcommand } from "../../../shared/command/subcommand";
 import { bankData } from "../bank-data";
-import { bankRequestsChannelId } from "../../../config";
+import { bankRequestsChannelId, bankWebUrl } from "../../../config";
 import { getTextChannel } from "../../..";
 import { commandOpening } from "../../bank-request-info/bank-request";
 import { autoCompleteStockedItems } from "../helpers";
@@ -71,11 +71,22 @@ class BankRequest extends Subcommand {
         : "";
 
       const bankRequestsChannel = await getTextChannel(bankRequestsChannelId);
-      await bankRequestsChannel.send({
+      const posted = await bankRequestsChannel.send({
         content: message,
         embeds: [stockEmbed],
       });
-      interaction.deleteReply();
+      // Only the requester sees this reply, so it can point them to the site without cluttering
+      // the channel.
+      await interaction.editReply({
+        content: [
+          `Your request is posted in ${posted.url}.`,
+          ...(bankWebUrl
+            ? [
+                `Next time, try the [bank site](${bankWebUrl}): see prices and stock, and request several items at once.`,
+              ]
+            : []),
+        ].join("\n"),
+      });
     }
   }
 
