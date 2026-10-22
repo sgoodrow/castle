@@ -9,7 +9,7 @@ export function filterItems(f: Filters, list: Item[] = ITEM_LIST) {
   const char = { cls: f.cls, race: f.race };
   const onlyUsable = f.cls != null || f.race != null;
   const found = list.filter(it => {
-    if (f.kind === "sky" ? !it.sky : f.kind !== "all" && it.kind !== f.kind) return false;
+    if (f.kind === "sky" ? !it.sky : f.kind === "jewelry" ? !it.jewelry : f.kind !== "all" && it.kind !== f.kind) return false;
     if (bits && !bits.some(b => (it.slots || 0) & (1 << b))) return false;
     if (onlyUsable && (it.kind === "gear" || it.kind === "spell") && !usable(it, char)) return false;
     if (terms.length) {

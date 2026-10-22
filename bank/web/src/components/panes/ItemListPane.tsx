@@ -1,5 +1,5 @@
 import { Badge, Text, Tooltip, UnstyledButton, Group } from "@mantine/core";
-import { IconArrowDown, IconArrowUp } from "@tabler/icons-react";
+import { IconArrowDown, IconArrowUp, IconDiamond } from "@tabler/icons-react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { memo, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import { BuyPane } from "./BuyPane";
@@ -10,6 +10,7 @@ import { ItemImage } from "../ItemImage";
 import { CollapsibleLayout } from "../CollapsibleLayout";
 import { OverflowText } from "../texts/OverflowText";
 import classes from "./ItemListPane.module.css";
+import { useDevOption } from "../../devOptions";
 
 
 interface Props {
@@ -61,6 +62,7 @@ interface RowProps {
 // One item. Memoized: selecting or filtering only re-renders the rows that changed.
 const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index, start, measure }: RowProps) {
   const btn = useRef<HTMLButtonElement>(null);
+  const madeBadge = useDevOption("jewelryBadge") === "icon" && !!it.jewelry && it.holders.length === 0;
   return (
     <li ref={measure} data-index={index} className={classes.item} style={{ transform: `translateY(${start}px)` }}>
       <UnstyledButton
@@ -76,6 +78,7 @@ const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index
         <Group gap={6} wrap="nowrap" className={classes.name}>
           {it.lore && <Badge size="xs" variant="outline" color="gray" style={{ flex: "none" }}>LORE</Badge>}
           <OverflowText fw={600} fz="sm" className={classes.nameText}>{it.name}</OverflowText>
+          {madeBadge && <IconDiamond size={14} stroke={1.75} aria-label="Made to order" style={{ flex: "none", color: "var(--mantine-color-dimmed)" }} />}
           {!usable && <Badge size="xs" variant="outline" color="red" style={{ flex: "none" }}>CAN'T USE</Badge>}
         </Group>
         <OverflowText fz="xs" className={classes.stats}>{stats(it)}</OverflowText>

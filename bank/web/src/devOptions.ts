@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 // Dev only: candidate looks to click between while iterating. Each option sets
 // html[data-<key>] and is remembered across reloads. "primary" swaps the theme's primary colour.
 export const OPTIONS: { key: string; label: string; values: string[] }[] = [
+  { key: "jewelryDetails", label: "Jewelry", values: ["breakdown", "brief"] },
+  { key: "jewelryCell", label: "Filter", values: ["jewelry", "none"] },
+  { key: "jewelryBadge", label: "Row", values: ["plain", "icon"] },
 ];
 
 const STORE = "castle-bank-dev";

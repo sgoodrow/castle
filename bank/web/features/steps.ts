@@ -4,7 +4,7 @@ import { cleanup, render, screen, waitFor, within } from "@testing-library/react
 import userEvent, { type UserEvent } from "@testing-library/user-event";
 import { http, HttpResponse } from "msw";
 import { expect } from "vitest";
-import { PAYLOAD, WITH_RESEARCH, WITH_SHEET, WITH_SKY } from "../src/__fixtures__/bank";
+import { PAYLOAD, WITH_JEWELRY, WITH_RESEARCH, WITH_SHEET, WITH_SKY } from "../src/__fixtures__/bank";
 import { bankPage } from "../src/app";
 import { ALL_CLASSES, CLASS_BIT, CLASSES, ITEM_LIST, bankRequest, maskText, prettyLoc, type EqClassLevels, type Payload } from "../src/data";
 import { server } from "./support/setup";
@@ -96,6 +96,7 @@ step(/^the bank holds the usual stock$/, () => { world.payload = PAYLOAD; });
 step(/^the bank also holds spells priced by the spell sheet$/, () => { world.payload = WITH_SHEET; });
 step(/^the bank also holds the Plane of Sky items$/, () => { world.payload = WITH_SKY; });
 step(/^the bank also holds research spells and components$/, () => { world.payload = WITH_RESEARCH; });
+step(/^the jewelers also make jewelry to order$/, () => { world.payload = WITH_JEWELRY; });
 step(/^the bank is empty$/, () => { world.payload = { ...PAYLOAD, bank: [], items: {} }; });
 // Rows land after the usual stock, in the order given, the way the database may return them.
 step(/^the bank also holds:$/, ({ table }) => {
@@ -132,7 +133,7 @@ step(/^I clear the filters$/, () => world.user.click(screen.getByRole("button", 
 step(/^I (?:pick|have picked) the (class|race) "(.*)"$/, (_, kind, name) => world.user.click(picker(kind, name)));
 step(/^I play (?:an? )?(.+)$/, (_, name) => (/^any/.test(name) ? undefined : world.user.click(picker("class", name))));
 step(/^I pick the (\w+) slot$/, (_, slot) => world.user.click(first(slots(slot), `${slot} slot`)));
-step(/^I pick "(Spells|Sky|Other)"$/, (_, kind) => world.user.click(notWorn(kind)));
+step(/^I pick "(Spells|Sky|Jewelry|Other)"$/, (_, kind) => world.user.click(notWorn(kind)));
 
 const sortHeader = (column: string) => within(list().parentElement!).getByRole("button", { name: column });
 step(/^I (?:sort|have sorted) by "(Item|Guild price)"(?: again)?$/, (_, column) => world.user.click(sortHeader(column)));
@@ -146,7 +147,7 @@ step(/^the bank lists (".*)$/, (_, names) => { for (const n of quoted(names)) ro
 step(/^the bank doesn't list (".*)$/, (_, names) => { for (const n of quoted(names)) expect(listed()).not.toContain(n); });
 step(/^the (class|race) "(.*)" is (not )?picked$/, (_, kind, name, not) => { expect(pressed(picker(kind, name))).toBe(!not); });
 step(/^the (\w+) slots? (?:is|are) (not )?picked$/, (_, slot, not) => { for (const b of slots(slot)) expect(pressed(b)).toBe(!not); });
-step(/^"(Spells|Sky|Other)" is (not )?picked$/, (_, kind, not) => { expect(pressed(notWorn(kind))).toBe(!not); });
+step(/^"(Spells|Sky|Jewelry|Other)" is (not )?picked$/, (_, kind, not) => { expect(pressed(notWorn(kind))).toBe(!not); });
 step(/^the search box reads "(.*)"$/, (_, q) => { expect(searchBox()).toHaveProperty("value", q); });
 step(/^I can (not )?clear the filters$/, (_, not) => {
   expect(screen.getByRole("button", { name: "Clear filters" })).toHaveProperty("disabled", !!not);

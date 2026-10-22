@@ -1,7 +1,8 @@
 // Everything the bank page shows, read from the bot's database: who holds what, plus stats
 // (the item DB in bank/data), banker prices, icons and auctions from the wiki cache, and spell
 // prices from the bankers' spell sheet, which items are Plane of Sky quest parts from the Sky sheet,
-// and which are research spells and components from the research sheet.
+// which are research spells and components from the research sheet, and what the jewelers make to
+// order from the jewelry sheet.
 import { readFileSync } from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
@@ -9,6 +10,7 @@ import { WikiCache, wikiUrl } from "./wiki-cache";
 import { SpellSheet, spellKey } from "./spell-sheet";
 import { SkySheet, isSkyMule, type Lookup } from "./sky-sheet";
 import { ResearchSheet, isResearchMule, researchKey } from "./research-sheet";
+import { JewelrySheet } from "./jewelry-sheet";
 
 type DbItem = {
   name: string;
@@ -18,6 +20,25 @@ type DbItem = {
 };
 
 const SPELL_KEYS = ["click", "proc", "worn", "focus", "scroll"];
+// What a piece of jewelry gives. Jewelry made with unenchanted metal gives nothing, and shares the
+// name of the jewelry the recipe means.
+const JEWELRY_STATS = [
+  "ac",
+  "hp",
+  "mana",
+  "str",
+  "sta",
+  "agi",
+  "dex",
+  "wis",
+  "int",
+  "cha",
+  "mr",
+  "fr",
+  "cr",
+  "dr",
+  "pr",
+];
 const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export class BankApi {
@@ -30,7 +51,8 @@ export class BankApi {
     private wiki: WikiCache,
     private sheet: SpellSheet,
     private sky: SkySheet,
-    private research: ResearchSheet
+    private research: ResearchSheet,
+    private jewelry: JewelrySheet
   ) {
     this.itemdb = JSON.parse(
       readFileSync(path.join(dataDir, "itemdb.json"), "utf-8")
@@ -66,7 +88,10 @@ export class BankApi {
           icon: db?.icon,
         });
     }
-    for (const [, id] of this.sky.mq()) {
+    for (const id of [
+      ...this.sky.mq().map(([, id]) => id),
+      ...this.jewelry.all().keys(),
+    ]) {
       const db = this.itemdb[id];
       if (db) seen.set(id, { id, name: db.name, icon: db.icon });
     }
@@ -108,6 +133,20 @@ export class BankApi {
     );
   }
 
+  // The id of the jewelry a recipe makes: the one item of that name, spelt as the game spells it,
+  // that gives something.
+  refreshJewelrySheet() {
+    const ids = new Map<string, number[]>();
+    for (const [id, it] of Object.entries(this.itemdb))
+      if (JEWELRY_STATS.some((k) => it[k]))
+        ids.set(it.name, [...(ids.get(it.name) ?? []), +id]);
+    return this.jewelry.refresh((name): Lookup => {
+      const [id, ...more] = ids.get(name) ?? [];
+      if (id == null) return "no such item";
+      return more.length ? "more than one item" : id;
+    });
+  }
+
   async bank() {
     let latest = 0;
     const rows: [string, string, number, number][] = [];
@@ -133,6 +172,13 @@ export class BankApi {
       if (!items[id])
         items[id] = this.describe(id, this.itemdb[id].name, null, spells);
       offSky.delete(id);
+    }
+    // Jewelry the jewelers make to order is sent whether or not the bank holds any.
+    for (const [id, recipe] of this.jewelry.all()) {
+      const db = this.itemdb[id];
+      if (!db) continue; // the item database lost it since the refresh
+      items[id] ??= this.describe(id, db.name, null, spells);
+      items[id].jewelry = recipe;
     }
     // A Sky item is one the Sky sheet lists, or one only the Sky mules (or multiquest holders) hold.
     for (const [id, it] of Object.entries(items)) {

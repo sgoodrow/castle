@@ -17,8 +17,10 @@ const GREY = 0x4e5058;
 const byCharThenSpot = (a: Item["holders"][number], b: Item["holders"][number]) =>
   a.char.localeCompare(b.char) || a.loc.localeCompare(b.loc, undefined, { numeric: true });
 
+// Jewelry the bank holds none of is made to order.
 function spots(it: Item) {
-  const { holders } = requestedFrom(it);
+  const holders = it.jewelry ? it.holders : requestedFrom(it).holders;
+  if (!holders.length) return "Made to order.";
   const shown = [...holders].sort(byCharThenSpot).slice(0, 6).map(h => `• ${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
   const more = holders.length - shown.length;
   return [...shown, ...(more > 0 ? [`-# …and ${more} more`] : [])].join("\n");

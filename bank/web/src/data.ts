@@ -23,7 +23,13 @@ export interface RawItem {
   sheet?: SheetPrice; // a scroll's price on the bankers' spell sheet
   sky?: SkyPart; // a Plane of Sky item: on the Sky sheet, or held only by the Sky mules
   research?: true; // a research spell or component: on the research sheet, and a research mule holds it
+  jewelry?: Recipe; // made to order by the jewelers, as their sheet prices it
 }
+
+// What the jewelers' sheet says about a piece of jewelry they make: what the guild spends on each
+// part of its materials ("Bar" and "Gem", or "Material"), the combine's trivial and success rate
+// (0.95 for 95%), the guild price in platinum, and the jewelers' note, e.g. "Don't ask for this".
+export interface Recipe { materials: { what: string; pp: number }[]; trivial: number; success: number; price: number; note: string }
 
 // A spell's price on the bankers' spell sheet: platinum, maybe with a DKP alternative, or a DKP auction.
 export type SheetPrice = { kind: "pp"; pp: number; dkp: number | null } | { kind: "auction" };
@@ -86,13 +92,17 @@ export interface Auctions {
   older: number;
   hasTracker: boolean;
 }
-export interface Item extends RawItem {
+interface Listed extends RawItem {
   id: number;
-  holders: Holders;
   total: number;
   kind: Kind;
   auc: Auctions;
 }
+// An item is listed because someone holds it, or because the jewelers make it to order, when the
+// bank may hold none.
+export type HeldItem = Listed & { jewelry?: undefined; holders: Holders };
+export type JewelryItem = Listed & { jewelry: Recipe; holders: Holder[] };
+export type Item = HeldItem | JewelryItem;
 
 // Set once by loadBank, before the first render.
 export const SPELLS: Record<string, Spell> = {};
@@ -211,6 +221,11 @@ export function loadBank(p: Payload) {
   SNAPSHOT_AT = new Date(p.snapshot);
   NOW = new Date(p.today + "T00:00:00");
   ME = p.me.name;
+  const list = (it: Item) => ITEM_LIST.push(ITEMS[it.id] = it);
+  const listed = (id: number, raw: RawItem) => ({ ...raw, id, total: 0, kind: kindOf(raw), auc: auctions(raw) });
+  // Jewelry first: it's listed held or not, and whoever holds some is added below.
+  for (const [id, raw] of Object.entries(p.items))
+    if (raw.jewelry) list({ ...listed(+id, raw), jewelry: raw.jewelry, holders: [] });
   const hold = (id: number, holder: Holder) => {
     const it = ITEMS[id];
     if (it) {
@@ -221,7 +236,7 @@ export function loadBank(p: Payload) {
     const raw = p.items[id];
     // NO DROP items can't leave the bank, so they're never shown, unless they're held for a multiquest.
     if (!raw || (raw.nodrop && !holder.mq) || (isBag(raw) && !raw.sky)) return;
-    ITEM_LIST.push(ITEMS[id] = { ...raw, id, holders: [holder], total: holder.count, kind: kindOf(raw), auc: auctions(raw) });
+    list({ ...listed(id, raw), jewelry: undefined, holders: [holder], total: holder.count });
   };
   for (const [char, loc, id, count] of p.bank) hold(id, { char, loc, count, mq: false });
   for (const [char, id, count] of p.mq) hold(id, { char, loc: "Multiquest", count, mq: true });
@@ -300,7 +315,7 @@ export function prettyLoc(loc: string) {
 
 // Who a request takes an item from: the bank, when it holds any, or else the characters holding it
 // for multiquesting.
-export function requestedFrom(it: Item): { mq: boolean; holders: Holders } {
+export function requestedFrom(it: HeldItem): { mq: boolean; holders: Holders } {
   const [first, ...rest] = it.holders.filter(h => !h.mq);
   return first ? { mq: false, holders: [first, ...rest] } : { mq: true, holders: it.holders };
 }
@@ -330,9 +345,10 @@ export function priceText(price: Price, qty = 1) {
 const pp = (pp: number, dkp = false, fromMarket = false): Price => ({ kind: "pp", pp, dkp, fromMarket });
 const AUCTION_COST = "A banker starts an auction at 1 DKP.";
 
-// A price a banker set with the bot beats research, the spell sheet and the Plane of Sky rules,
-// which beat the rules and the market.
+// The jewelers' sheet prices what they make. Otherwise a price a banker set with the bot beats
+// research, the spell sheet and the Plane of Sky rules, which beat the rules and the market.
 export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest {
+  if (it.jewelry) return jewelryRequest(it, it.jewelry, qty);
   const req = it.research ? researchRequest(it, cls, qty) : it.sky ? skyRequest(it, it.sky, qty) : ruleRequest(it, cls, qty);
   if (it.price) {
     const n = it.price.match(/\d+/);
@@ -353,14 +369,23 @@ export const auctionOnly = (it: Item) => {
 // Different items one request can hold: Discord posts ten embeds a message, one for the summary
 // and one per item.
 export const MAX_TAB_ITEMS = 9;
-export const tabLimit = (it: Item) => (auctionOnly(it) ? 1 : requestedFrom(it).holders.reduce((n, h) => n + h.count, 0));
+// Jewelry is made to order, so a member can ask for more than the bank holds.
+export const JEWELRY_TAB_LIMIT = 10;
+export const tabLimit = (it: Item) =>
+  it.jewelry ? JEWELRY_TAB_LIMIT : auctionOnly(it) ? 1 : requestedFrom(it).holders.reduce((n, h) => n + h.count, 0);
+// Jewelry goes to the jewelers at their sheet's price, in their own request format: name, count,
+// then the materials the member brings and the total.
+function jewelryRequest(it: Item, recipe: Recipe, qty: number): BankRequest {
+  const price = pp(recipe.price);
+  return { text: `Jewelry: ${it.name}, ${qty} (${priceText(price, qty)})`, price, cost: "Made to order by the guild's jewelers." };
+}
 // The Sky mules: cgskya … cgskyhh and gmskyone … gmskyseven.
 export const isSkyMule = (char: string) => /sky/i.test(char);
 const SKY_PICKUP = "the East Freeport docks";
 // Research spells and components are free, from North Freeport Bank. A scroll's line names the
 // member's class if it can scribe it, like a dropped spell's.
 const RESEARCH_PICKUP = "North Freeport Bank";
-function researchRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
+function researchRequest(it: HeldItem, cls: ClassId | null, qty: number): BankRequest {
   const sp = spellOf(it.scroll);
   const spell = sp || it.kind === "spell";
   const x = qty > 1 ? ` x${qty}` : "";
@@ -380,7 +405,7 @@ const skyWhat = (sky: SkyPart) => sky.islands.length
 // marks "dkp bid" go to DKP auction. Every other Sky item is 250pp, once the member has won the DKP
 // items its quest needs; a banker checks that. An item only held for multiquesting is requested
 // too, and a banker tells the member how to set it up.
-function skyRequest(it: Item, sky: SkyPart, qty: number): BankRequest {
+function skyRequest(it: HeldItem, sky: SkyPart, qty: number): BankRequest {
   const what = skyWhat(sky);
   const from = requestedFrom(it);
   if (from.mq) {
@@ -393,7 +418,7 @@ function skyRequest(it: Item, sky: SkyPart, qty: number): BankRequest {
     return { text, price: { kind: "auction" }, cost: AUCTION_COST, pickup: SKY_PICKUP };
   return { text, price: pp(250), cost: `${what}: 250pp, once you've won the DKP items its quest needs. Pick up at ${SKY_PICKUP}.`, pickup: SKY_PICKUP };
 }
-function ruleRequest(it: Item, cls: ClassId | null, qty: number): BankRequest {
+function ruleRequest(it: HeldItem, cls: ClassId | null, qty: number): BankRequest {
   const [holder] = requestedFrom(it).holders;
   const mule = holder.char || "Mule";
   const sp = spellOf(it.scroll);

@@ -27,7 +27,7 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
   const total = tabTotal(tab, cls);
   const dkp = lines.some(l => l.price.kind === "pp" && l.price.dkp);
   const auction = lines.some(l => l.price.kind === "auction");
-  const mq = lines.some(l => requestedFrom(l.it).mq);
+  const mq = lines.some(l => !l.it.jewelry && requestedFrom(l.it).mq);
   const msg = requestMessage(tab, cls);
 
   return (

@@ -8,6 +8,7 @@ import { AuctionPane } from "./AuctionPane";
 import { MarketWarningText } from "../texts/MarketWarningText";
 import { CollapsibleLayout } from "../CollapsibleLayout";
 import { StatPane } from "./StatPane";
+import { JewelryPane } from "./JewelryPane";
 
 interface Props {
   it: Item | null;
@@ -90,6 +91,12 @@ export function DetailPane({ it, canUse, cls, qty, onAdd, onRemove, onClose, bar
         {priceCard}
         {cantUse}
         <Divider />
+        {it.jewelry && (
+          <Section title="Made to order">
+            <JewelryPane it={it} />
+          </Section>
+        )}
+        {it.jewelry && it.holders.length > 0 && <Divider />}
         {it.holders.length > 0 && (
           <Section title={`Bank location · ${count(it.holders)}`}>
             <HolderBadges holders={[...inBank, ...mq]} />
