@@ -18,7 +18,7 @@ The guild bank offers many services. To a member they're all the same thing: an 
 | 2 | Dropped spells | Spells in stock, priced by level (51–54, 55–60) | Done |
 | 3 | Forbidden spells | A price of "Auction" instead of pp or DKP, and a tab total that allows for auction lines | Done |
 | 4 | Plane of Sky | A second inventory, fixed prices, auctions, and "must have won X first" | Done |
-| 5 | Jewelry | Made-to-order items, a discount for materials you bring, posted to #jewelry-requests | Not started |
+| 5 | Jewelry | Made-to-order items, a discount for materials you bring, posted to #jewelry-requests | In progress |
 | 6 | Research spells | Research spells and components, free, picked up at North Freeport Bank | Done |
 | — | Recharges, bounties, PP4DKP | Rarer, one-off services | Parked |
 
@@ -75,8 +75,8 @@ UX (agreed):
 **Phase 5: Jewelry**
 - What we know: the jewelers' "Castle Jewelcrafting Table" Google Sheet (linked from the jewelry request card) has a price table of about 100 recipes: name, slot, stats, bar cost, gem cost, trivial, success rate, average cost, a 20% commission and the guild price. Jewelers set gem prices at its top, and the guild prices follow. A member who brings some or all of the materials pays only for the materials the guild provides, and owns the risk of a failed combine. Its "All Items" tab is the Cgjewelry mule's inventory, the same uploads the database has.
 - **Decided:** read the sheet as it is. The database stays the source of truth for stock.
-- **Decided:** jewelry is part of the one catalog, at the same URL with no new navigation. Jewelry items are searchable and requested like any other item, made to order, with their materials and guild price in the details pane.
-- **Decided:** jewelry lines post to #jewelry-requests, not #bank-requests, so jewelers watch a quieter channel. The site routes each line, so the member never picks a channel.
+- **Decided:** jewelry is part of the one catalog, at the same URL with no new navigation. Jewelry items are searchable and requested like any other item, made to order, at the guild price, with the same details as any other item.
+- **Decided:** jewelry lines post to #jewelry-requests, not #bank-requests, so jewelers watch a quieter channel. The site routes each line, so the member never picks a channel. Until that routing and the ✅/❌ handling for jewelers exist, jewelry must not reach main.
 - What we know: every recipe name matches two items, the jewelry and a copy made with unenchanted metal that gives nothing. The site matches a sheet name exactly to the one item of that name that gives something. On Oct 22, 2026, 93 of the 100 names matched. Five "Wolf's Eye" names are "Wolfs Eye" in the game, "Velium Rose Engagement Ring" is "Rose Velium Engagement Ring", and "Fire Emerald Velium Ring" is two items that both give something. The site logs the names it can't match.
 - In progress: the UX, iterated live. Jewelry needs its post routed to #jewelry-requests, and the ✅/❌ reactions accepted there, before members see it.
 

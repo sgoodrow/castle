@@ -70,7 +70,7 @@ export function recipes(rows: string[][]): [name: string, recipe: Recipe][] {
         `${name}: no material costs, trivial, success rate and guild price`
       );
     const note = cells[col("Notes")] ?? "";
-    if (note === "Don't ask for this") continue; // the jewelers keep these off the bank
+    if (note.replace(/’/g, "'") === "Don't ask for this") continue; // the jewelers keep these off the bank
     out.push([name, { materials, trivial, success, price, note }]);
   }
   if (!head) throw new Error("no ITEM NAME header");
@@ -117,15 +117,18 @@ export class JewelrySheet {
     const byId = new Map<number, Recipe>();
     const noItem: string[] = [];
     const twoItems: string[] = [];
+    const dupes: string[] = [];
     for (const [name, recipe] of rows) {
       const id = lookup(name);
       if (id === "no such item") noItem.push(name);
       else if (id === "more than one item") twoItems.push(name);
+      else if (byId.has(id)) dupes.push(name);
       else byId.set(id, recipe);
     }
     const text = [
       noItem.length && `no such item ${noItem.join(", ")}`,
       twoItems.length && `more than one item called ${twoItems.join(", ")}`,
+      dupes.length && `more than one row for ${dupes.join(", ")}`,
     ]
       .filter(Boolean)
       .join("; ");

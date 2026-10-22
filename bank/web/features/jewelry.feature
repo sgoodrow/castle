@@ -1,8 +1,7 @@
 Feature: Jewelry
   The guild's jewelers make jewelry to order, at the prices on their sheet. A member finds it in the
-  one catalog like anything else, held or not, under Jewelry too, and requests it in the jewelers'
-  "Jewelry:" format. The details say what the guild spends on the materials, since a member who
-  brings some pays only for the rest, and owns the risk of a failed combine.
+  one catalog like anything else, held or not, and requests it in the jewelers' "Jewelry:" format.
+  Its details are the same as any item's. A member can order more than the bank holds, up to ten.
 
   Scenario Outline: Jewelry has the jewelers' price
     Given the jewelers also make jewelry to order
@@ -30,6 +29,13 @@ Feature: Jewelry
     And I have opened the bank page
     When I add 3 "Golden Cat Eye Bracelet" to my tab
     Then the tab button shows "39pp"
+
+  Scenario: Jewelry stops at ten, and says so
+    Given the jewelers also make jewelry to order
+    And I have opened the bank page
+    When I add 10 "Golden Cat Eye Bracelet" to my tab
+    And I add 1 "Golden Cat Eye Bracelet" to my tab
+    Then I am told "Up to 10 Golden Cat Eye Bracelet per request"
 
   Scenario: The post for jewelry the bank holds none of says it's made to order
     Given the jewelers also make jewelry to order

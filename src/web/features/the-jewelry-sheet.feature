@@ -110,11 +110,18 @@ Feature: The jewelry sheet
       | note      | ""    |
 
   Scenario: A tab without an ITEM NAME header keeps the old copy
-    Given the jewelry sheet's price table is:
+    Given a saved copy of the jewelry sheet prices item 14618 at 13pp
+    And the jewelry sheet's price table is:
       """
       Something else entirely
       """
     When the site reads the jewelry sheet
     And Someone asks for the bank
     Then the log says "bank web: jewelry sheet: Error: no ITEM NAME header"
-    And the bank sends no jewelry
+    And the bank sends item 14618, "Golden Cat Eye Bracelet", made to order with:
+      | field     | value                                                |
+      | materials | []                                                   |
+      | trivial   | 0                                                    |
+      | success   | 1                                                    |
+      | price     | 13                                                   |
+      | note      | ""                                                   |

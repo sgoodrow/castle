@@ -373,8 +373,8 @@ export const MAX_TAB_ITEMS = 9;
 export const JEWELRY_TAB_LIMIT = 10;
 export const tabLimit = (it: Item) =>
   it.jewelry ? JEWELRY_TAB_LIMIT : auctionOnly(it) ? 1 : requestedFrom(it).holders.reduce((n, h) => n + h.count, 0);
-// Jewelry goes to the jewelers at their sheet's price, in their own request format: name, count,
-// then the materials the member brings and the total.
+// Jewelry goes to the jewelers at their sheet's price, in their own request format: name, count
+// and the total.
 function jewelryRequest(it: Item, recipe: Recipe, qty: number): BankRequest {
   const price = pp(recipe.price);
   return { text: `Jewelry: ${it.name}, ${qty} (${priceText(price, qty)})`, price, cost: "Made to order by the guild's jewelers." };

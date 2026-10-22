@@ -60,6 +60,7 @@ export function AppPane() {
       // Shake the count so it's clear it has hit the ceiling. Transform only, so nothing moves.
       row.querySelector("[data-qty]")?.animate(
         [0, -4, 4, -3, 3, 0].map(x => ({ transform: `translateX(${x}px)` })), { duration: 300, easing: "ease-out" });
+      if (it.jewelry) return say(`Up to ${max} ${it.name} per request`, false);
       if (max < it.total) return say(`One DKP auction at a time for ${it.name}`, false);
       return say(it.total === 1 ? "The bank only has one, and it's on your tab" : `The bank only has ${it.total}, all on your tab`, false);
     }
