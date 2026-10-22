@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Fails when a test-gap branch changes more than tests. Those branches state a product requirement
-# as a scenario, so they may only touch the features (and the page's test fixtures) and raise a
-# file's coverage threshold. Nothing else: no source, no other settings, no CI.
+# as a scenario, so they may only touch the features (the bot's and the bank's, and the page's test
+# fixtures) and raise a file's coverage threshold. Nothing else: no source, no other settings, no CI.
 # The Test workflow runs it on test-gap/* branches, which Claude writes (.github/workflows/auto-fix.yml).
 set -euo pipefail
 
@@ -10,7 +10,8 @@ mb=$(git merge-base "$base" HEAD)
 fail=0
 problem() { echo "::error::$1"; fail=1; }
 
-TESTS='^(bank/web/features|src/web/features|bank/web/src/__fixtures__)/'
+# The bot's features and their steps (src/bot-features), and each area's feature with its one-line test.
+TESTS='^(bank/web/features|src/web/features|src/bot-features|bank/web/src/__fixtures__)/|^src/features/.+\.(feature|test\.ts)$'
 CONFIGS='^(vitest\.config\.mts|bank/web/vite\.config\.ts)$'
 # One file's thresholds on one line, as both configs write them:
 #   './src/web/auth.ts': { lines: 100, branches: 100, functions: 100 },
