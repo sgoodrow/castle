@@ -15,7 +15,7 @@ export default defineConfig({
       provider: "v8",
       // Count every file, not just the ones a test imports, so the total is honest.
       include: ["src/**/*.ts"],
-      exclude: ["src/**/*.test.ts", "src/web/features/**"],
+      exclude: ["src/**/*.test.ts", "src/web/features/**", "src/bot-features/**", "src/testing/**"],
       reporter: ["text-summary", "text"],
       // Files with tests can't lose coverage. Raise these as tests grow; add a file here once it has tests.
       thresholds: {
@@ -35,6 +35,9 @@ export default defineConfig({
         "src/features/spawn-timers/commands/helpers/timer.ts": { lines: 79, branches: 57, functions: 66 },
         "src/features/spawn-timers/commands/parsers/argument-parser.ts": { lines: 91, branches: 84, functions: 100 },
         "src/features/spawn-timers/commands/parsers/time-parser.ts": { lines: 100, branches: 81, functions: 100 },
+        "src/services/bot/bot-prisma.ts": { lines: 22, branches: 96, functions: 38 },
+        "src/services/bot/bot-sheet-alerts.ts": { lines: 100, branches: 92, functions: 100 },
+        "src/services/sheet-updater/public-sheet.ts": { lines: 54, branches: 83, functions: 45 },
         "src/shared/error-reports.ts": { lines: 89, branches: 77, functions: 100 },
         "src/web/auth.ts": { lines: 100, branches: 100, functions: 100 },
         "src/web/bank-api.ts": { lines: 100, branches: 92, functions: 100 },

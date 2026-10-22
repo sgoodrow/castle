@@ -132,16 +132,18 @@ export class PrismaPublicAccounts implements IPublicAccountService {
       const roles = await accounts.getRolesForAccount(
         row[BOT_SPREADSHEET_COLUMNS.Name]
       );
+      // Google Sheets leaves out a row's blank cells after its last filled one.
+      const cell = (column: BOT_SPREADSHEET_COLUMNS) => row[column] ?? "";
       bots.push({
-        name: row[BOT_SPREADSHEET_COLUMNS.Name],
-        class: row[BOT_SPREADSHEET_COLUMNS.Class],
-        level: row[BOT_SPREADSHEET_COLUMNS.Level],
-        location: row[BOT_SPREADSHEET_COLUMNS.CurrentLocation],
+        name: cell(BOT_SPREADSHEET_COLUMNS.Name),
+        class: cell(BOT_SPREADSHEET_COLUMNS.Class),
+        level: cell(BOT_SPREADSHEET_COLUMNS.Level),
+        location: cell(BOT_SPREADSHEET_COLUMNS.CurrentLocation),
         checkoutTime: time.isValid() ? time.toString() : "",
-        currentPilot: row[BOT_SPREADSHEET_COLUMNS.CurrentPilot],
-        bindLocation: row[BOT_SPREADSHEET_COLUMNS.BindLocation],
-        factioned: row[BOT_SPREADSHEET_COLUMNS.Factioned] !== "",
-        faction: row[BOT_SPREADSHEET_COLUMNS.Faction] || "",
+        currentPilot: cell(BOT_SPREADSHEET_COLUMNS.CurrentPilot),
+        bindLocation: cell(BOT_SPREADSHEET_COLUMNS.BindLocation),
+        factioned: cell(BOT_SPREADSHEET_COLUMNS.Factioned) !== "",
+        faction: cell(BOT_SPREADSHEET_COLUMNS.Faction),
         requiredRoles: roles.map((r) => r.id),
       });
     }
