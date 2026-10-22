@@ -73,6 +73,7 @@ const SETTINGS = [
   "githubErrorToken",
   "token",
   "bankRequestsChannelId",
+  "raidChatChannelId",
   ...Object.keys(SIGN_IN),
 ];
 
@@ -108,6 +109,7 @@ interface World {
   jewelryStatus: number;
   jewelryAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
+  raidPosts: string[]; // what the bot said in raid chat
   postStatus: number;
   logs: string[];
   every: number[];
@@ -136,6 +138,14 @@ interface Post {
   }[];
 }
 const ROUTES: Route[] = [
+  [
+    "POST",
+    /^https:\/\/discord\.com\/api\/v10\/channels\/raid-chat\/messages$/,
+    async (req) => {
+      world.raidPosts.push(((await req.json()) as { content: string }).content);
+      return new Response(null, { status: 200 });
+    },
+  ],
   [
     "POST",
     /^https:\/\/discord\.com\/api\/v10\/channels\/requests-channel\/messages$/,
@@ -332,6 +342,7 @@ export async function reset() {
     jewelryStatus: 200,
     jewelryAsked: 0,
     posts: [],
+    raidPosts: [],
     postStatus: 200,
     logs: [],
     every: [],
@@ -927,6 +938,13 @@ export const steps = ({
         ])
       );
     }
+  );
+  step(/^raid chat is set up$/, () => {
+    world.env.token = "bot-token";
+    world.env.raidChatChannelId = "raid-chat";
+  });
+  step(/^raid chat is told "(.*)"$/, (text: string) =>
+    expect(world.raidPosts.some((m) => m.includes(text))).toBe(true)
   );
   step(/^the site reads the jewelry sheet$/, async () => {
     await site();

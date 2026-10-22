@@ -137,8 +137,9 @@ export class BankApi {
   // that gives something.
   refreshJewelrySheet() {
     const ids = new Map<string, number[]>();
+    // NO DROP items can't leave the bank, so a recipe can't make one: the sheet's name gets logged.
     for (const [id, it] of Object.entries(this.itemdb))
-      if (JEWELRY_STATS.some((k) => it[k]))
+      if (!it.nodrop && JEWELRY_STATS.some((k) => it[k]))
         ids.set(it.name, [...(ids.get(it.name) ?? []), +id]);
     return this.jewelry.refresh((name): Lookup => {
       const [id, ...more] = ids.get(name) ?? [];

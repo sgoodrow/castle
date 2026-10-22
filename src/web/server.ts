@@ -9,7 +9,7 @@ import { commit, describeError, reportError } from "../shared/error-reports";
 import { log } from "../shared/logger";
 import { Auth, Session } from "./auth";
 import { BankApi } from "./bank-api";
-import { postRequest, readPost, type Poster } from "./bank-post";
+import { postRequest, postToChannel, readPost, type Poster } from "./bank-post";
 import { PageMap } from "./page-map";
 import { message, send } from "./respond";
 import { WikiCache } from "./wiki-cache";
@@ -34,6 +34,7 @@ const {
   bankDistDir,
   token,
   bankRequestsChannelId,
+  raidChatChannelId,
 } = process.env;
 
 const GIT_REV = commit();
@@ -76,7 +77,11 @@ const api = new BankApi(
   new SpellSheet(CACHE),
   new SkySheet(CACHE),
   new ResearchSheet(CACHE),
-  new JewelrySheet(CACHE)
+  new JewelrySheet(CACHE, (message) =>
+    token && raidChatChannelId
+      ? postToChannel(token, raidChatChannelId, message)
+      : Promise.resolve()
+  )
 );
 // Posting bank requests needs the bot's token and the channel; without them the page is told so.
 const poster: Poster | null =

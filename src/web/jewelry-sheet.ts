@@ -87,8 +87,13 @@ export class JewelrySheet {
   private byId = new Map<number, Recipe>();
   private file: string;
   private problems = ""; // logged once, not every refresh
+  private reported = ""; // told to raid chat once, and "reads again" once it's fixed
 
-  constructor(dir: string) {
+  // `alert` tells raid chat, where the jewelers' sheet is edited, what needs fixing.
+  constructor(
+    dir: string,
+    private alert: (message: string) => Promise<void> = async () => {}
+  ) {
     mkdirSync(dir, { recursive: true });
     this.file = path.join(dir, "jewelry-sheet.json");
     if (existsSync(this.file)) {
@@ -118,6 +123,9 @@ export class JewelrySheet {
       rows = recipes(parseCsv(await res.text()));
     } catch (e) {
       log(`bank web: jewelry sheet: ${e}`);
+      await this.report(
+        `The jewelry sheet couldn't be read, so the bank keeps its last copy. The error: ${e}`
+      );
       return;
     }
     const byId = new Map<number, Recipe>();
@@ -140,7 +148,21 @@ export class JewelrySheet {
       .join("; ");
     if (text && text !== this.problems) log(`bank web: jewelry sheet: ${text}`);
     this.problems = text;
+    await this.report(text ? `The jewelry sheet needs fixing: ${text}.` : "");
     this.byId = byId;
     writeFileSync(this.file, JSON.stringify([...byId]));
+  }
+
+  // Posts a problem once, and "reads again" once it's gone. Only after posting does it count, so a
+  // failed post is tried again.
+  private async report(problem: string) {
+    if (problem === this.reported) return;
+    const message = problem || "The jewelry sheet reads again.";
+    try {
+      await this.alert(message.slice(0, 2000)); // Discord's limit for one message
+      this.reported = problem;
+    } catch (e) {
+      log(`bank web: jewelry sheet: couldn't tell raid chat: ${e}`);
+    }
   }
 }

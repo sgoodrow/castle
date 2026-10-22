@@ -129,6 +129,34 @@ Feature: The jewelry sheet
       | price     | 13    |
       | note      | ""    |
 
+  Scenario: A jewelry sheet that won't read is reported to raid chat
+    Given raid chat is set up
+    And a saved copy of the jewelry sheet prices item 14618 at 13pp
+    And Google answers the jewelry sheet with 500
+    When the site reads the jewelry sheet
+    Then raid chat is told "The jewelry sheet couldn't be read, so the bank keeps its last copy"
+
+  Scenario: A row whose name is wrong is reported to raid chat
+    Given raid chat is set up
+    And the jewelry sheet's price table is:
+      """
+      ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
+      ,Velium Wolf's Eye Necklace,Neck,10mr,256,250,95%,269,0,,269,,
+      """
+    When the site reads the jewelry sheet
+    Then raid chat is told "The jewelry sheet needs fixing: no such item Velium Wolf's Eye Necklace."
+
+  Scenario: A recipe for a NO DROP item is logged, not sent
+    Given the jewelry sheet's price table is:
+      """
+      ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
+      ,Initiate Signet Ring,Finger,1str,11,156,95%,12,0.15,,13,,
+      """
+    When the site reads the jewelry sheet
+    And Someone asks for the bank
+    Then the log says "bank web: jewelry sheet: no such item Initiate Signet Ring"
+    And the bank sends no jewelry
+
   Scenario: A copy is kept, so the bank still knows its jewelry when Google is down
     Given a saved copy of the jewelry sheet prices item 14618 at 13pp
     And Google answers the jewelry sheet with 500
