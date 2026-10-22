@@ -28,13 +28,19 @@ const { steps } = await import("./steps");
 // The path is relative to this folder.
 export function runFeature(file: string) {
   vi.setConfig({ testTimeout: 20000 });
+  // The bot's TypeORM connection opens as its code loads; let it open, so the feature doesn't end
+  // while it's still connecting.
+  beforeAll(async () => {
+    const { dataSource } = await import("../db/data-source");
+    await vi.waitUntil(() => dataSource.isInitialized, { timeout: 10000 });
+  });
   beforeEach(reset);
   afterEach(teardown);
   afterAll(async () => {
     const { prismaClient } = await import("..");
     const { dataSource } = await import("../db/data-source");
     await prismaClient.$disconnect();
-    if (dataSource.isInitialized) await dataSource.destroy();
+    await dataSource.destroy();
     await drop();
   });
   describeFeature(path.join(__dirname, file), library(steps));
