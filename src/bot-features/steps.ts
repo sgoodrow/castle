@@ -318,6 +318,11 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         { partial: false, emoji: { name: emoji }, message } as never,
         user as never
       );
+      // A handler error is swallowed, so a scenario that expects nothing checks for the bot's ⚠️.
+      const errors = (world.channels[channel] ?? []).filter((m) =>
+        m.content.startsWith("⚠️")
+      );
+      expect(errors.map((m) => m.content)).toEqual([]);
     }
   );
   // A request that @mentions someone besides its member, as /bank request can.
@@ -357,6 +362,12 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         { partial: false, emoji: { name: emoji }, message } as never,
         user as never
       );
+      // A handler error is swallowed, so a scenario that expects nothing checks for the bot's ⚠️.
+      expect(
+        (world.channels[channel] ?? [])
+          .filter((m) => m.content.startsWith("⚠️"))
+          .map((m) => m.content)
+      ).toEqual([]);
     }
   );
   step(/^the bot's instructions are still in #bank-requests$/, () =>

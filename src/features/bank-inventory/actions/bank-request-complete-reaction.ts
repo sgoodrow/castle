@@ -94,9 +94,13 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     if (channelId !== bankRequestsChannelId && channelId !== jewelryChannelId) {
       return;
     }
-    // Only a request the bot posted can be filled or cancelled, not the channel's own instructions
-    // or a member's own message that reads like one.
-    if (this.message.author?.id !== client.user?.id) return;
+    // A bank request is only one the bot posted, so a member's message that reads like one is ignored.
+    // Jewelry requests are typed by members, which is how the jewelers take them.
+    if (
+      channelId === bankRequestsChannelId &&
+      this.message.author?.id !== client.user?.id
+    )
+      return;
     const requested = readBankRequest({
       content: this.message.content as string,
       embeds: this.message.embeds,

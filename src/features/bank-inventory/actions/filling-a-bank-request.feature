@@ -99,13 +99,24 @@ Feature: Filling a bank request
     When Alice reacts ❌ to Alice's request in #jewelry-requests
     Then Alice's request is no longer in #jewelry-requests
 
-  Scenario: A jeweler can't fill a request a member typed by hand
+  Scenario: A jeweler fills a jewelry request a member typed by hand
     Given Frances is a Castle jeweler
     And Alice typed in #jewelry-requests:
       """
       ✍️ <@Alice> requests: 2 rings
       """
     When Frances reacts ✅ to Alice's typed message in #jewelry-requests
+    Then the bot posts in #bank-transactions:
+      | content |
+      | <@Alice>: ✍️ <@Alice> requests: 2 rings -- ✅ by <@Frances> |
+
+  Scenario: A jeweler can't fill a request a member typed in #bank-requests
+    Given Frances is a Castle jeweler
+    And Alice typed in #bank-requests:
+      """
+      ✍️ <@Alice> requests: 2 rings
+      """
+    When Frances reacts ✅ to Alice's typed message in #bank-requests
     Then nothing is posted in #bank-transactions
 
   Scenario: A member mentioned in a jewelry request can't cancel it
