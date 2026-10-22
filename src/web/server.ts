@@ -35,6 +35,7 @@ const {
   token,
   bankRequestsChannelId,
   bankOfficeChannelId,
+  bankSheetAlerts,
 } = process.env;
 
 const GIT_REV = commit();
@@ -71,13 +72,16 @@ if (!auth && !NO_AUTH)
 
 const CACHE = bankCacheDir || path.join(ROOT, "bank/cache");
 const wiki = new WikiCache(CACHE);
-// Bankers hear in the bank office when a bank sheet breaks or reads again. Without the bot's token
-// and the channel the post fails, so nothing is recorded as told, and the alert goes out once it's set up.
+// Bankers hear in the bank office when a bank sheet breaks or reads again. Until bankSheetAlerts is
+// "on", or without the bot's token and the channel, the post fails: nothing is recorded as told, so
+// the alert goes out once alerts are on. The problems still log in the meantime.
 const bankOffice = (text: string) =>
-  token && bankOfficeChannelId
+  token && bankOfficeChannelId && bankSheetAlerts === "on"
     ? postToChannel(token, bankOfficeChannelId, text)
     : Promise.reject(
-        new Error("the bot's token or the bank office channel isn't set")
+        new Error(
+          "bank sheet alerts are off, or the token or channel isn't set"
+        )
       );
 const alert = (file: string, sheet: string) =>
   new SheetAlert(path.join(CACHE, file), sheet, bankOffice);

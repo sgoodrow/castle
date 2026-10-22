@@ -74,6 +74,7 @@ const SETTINGS = [
   "token",
   "bankRequestsChannelId",
   "bankOfficeChannelId",
+  "bankSheetAlerts",
   ...Object.keys(SIGN_IN),
 ];
 
@@ -1013,6 +1014,11 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
 
   // ---------- bank office alerts ----------
   step(/^the bank office is set up$/, () => {
+    world.env.token = "bot-token";
+    world.env.bankOfficeChannelId = "bank-office";
+    world.env.bankSheetAlerts = "on";
+  });
+  step(/^the bank office is set up with its alerts switched off$/, () => {
     world.env.token = "bot-token";
     world.env.bankOfficeChannelId = "bank-office";
   });

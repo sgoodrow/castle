@@ -178,3 +178,25 @@ Feature: The spell sheet
     When the site reads the spell sheet
     Then the bank office is told a cut message of at most 2000 characters
     And the bank office has been told 1 time
+
+  Scenario: While bank sheet alerts are switched off, bankers aren't told, and the problem still logs
+    Given the bank office is set up with its alerts switched off
+    And the spell sheet's "Bard Songs" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      34,Cantana of Soothing,0,,,50pp
+      """
+    When the site reads the spell sheet
+    Then the bank office has been told 0 times
+    And the log says "bank web: spell sheet: no such spell Cantana of Soothing"
+
+  Scenario: A name with a backtick is shown with an apostrophe to bankers
+    Given the bank office is set up
+    And the spell sheet's "Bard Songs" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      34,Imaginary`Song,0,,,50pp
+      """
+    When the site reads the spell sheet
+    Then the bank office is told "The spell sheet has a problem: no such spell Imaginary'Song."
+    And the bank office has been told 1 time

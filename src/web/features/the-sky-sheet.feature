@@ -90,7 +90,7 @@ Feature: The Sky sheet
     And Someone asks for the bank
     Then the bank holds for multiquesting:
       | holder | item | id | count |
-    And the log says "bank web: sky sheet: multiquest: no such item Blood Sky Sapphire; multiquest: more than one item called Leather Cord; multiquest: no holder for "`````````" (Griffon Eye)"
+    And the log says "bank web: sky sheet: multiquest: no such item Blood Sky Sapphire; multiquest: more than one item called Leather Cord; multiquest: no holder for Griffon Eye"
 
   Scenario: A copy is kept, so the bank still knows its Sky items when Google is down
     Given a saved copy of the Sky sheet puts "Efreeti Statuette" on island 4
