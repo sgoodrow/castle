@@ -95,7 +95,8 @@ export class BankApi {
     return this.sky.refresh((name): Lookup => {
       const key = name.trim().toLowerCase();
       const chosen = SKY_ITEM_IDS.get(key);
-      if (chosen !== undefined) return chosen;
+      if (chosen !== undefined)
+        return this.itemdb[chosen] ? chosen : "no such item";
       const all = ids.get(key) ?? [];
       const nodrop = all.filter((id) => this.itemdb[id].nodrop);
       if (!all.length) return "no such item";
