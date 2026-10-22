@@ -365,9 +365,12 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     // The handler reports its errors with console.error rather than throwing, so a scenario must
     // fail on one, or a negative like "no one is sent a DM" would pass with the handler broken.
     const errors = vi.spyOn(console, "error").mockImplementation(() => {});
-    await expireOldBankRequests({});
-    expect(errors.mock.calls).toEqual([]);
-    errors.mockRestore();
+    try {
+      await expireOldBankRequests({});
+      expect(errors.mock.calls).toEqual([]);
+    } finally {
+      errors.mockRestore();
+    }
   });
   step(
     /^(\w+)'s request is (still|no longer) in #(\S+)$/,
