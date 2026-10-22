@@ -17,6 +17,7 @@ import { SpellSheet } from "./spell-sheet";
 import { SkySheet } from "./sky-sheet";
 import { ResearchSheet } from "./research-sheet";
 import { JewelrySheet } from "./jewelry-sheet";
+import { SheetAlert } from "./sheet-alert";
 
 dotenv.config();
 
@@ -34,7 +35,7 @@ const {
   bankDistDir,
   token,
   bankRequestsChannelId,
-  jewelryChannelId,
+  bankOfficeChannelId,
 } = process.env;
 
 const GIT_REV = commit();
@@ -71,19 +72,23 @@ if (!auth && !NO_AUTH)
 
 const CACHE = bankCacheDir || path.join(ROOT, "bank/cache");
 const wiki = new WikiCache(CACHE);
+// Bankers hear in the bank office when a bank sheet breaks or reads again. Without the bot's token
+// and the channel the post fails, so nothing is recorded as told, and the alert goes out once it's set up.
+const bankOffice = (text: string) =>
+  token && bankOfficeChannelId
+    ? postToChannel(token, bankOfficeChannelId, text)
+    : Promise.reject(
+        new Error("the bot's token or the bank office channel isn't set")
+      );
+const alert = (file: string, sheet: string) =>
+  new SheetAlert(path.join(CACHE, file), sheet, bankOffice);
 const api = new BankApi(
   path.join(ROOT, "bank/data"),
   wiki,
-  new SpellSheet(CACHE),
-  new SkySheet(CACHE),
-  new ResearchSheet(CACHE),
-  new JewelrySheet(CACHE, (message) =>
-    token && jewelryChannelId
-      ? postToChannel(token, jewelryChannelId, message)
-      : Promise.reject(
-          new Error("the bot's token or jewelryChannelId isn't set")
-        )
-  )
+  new SpellSheet(CACHE, alert("spell-sheet.alert", "The spell sheet")),
+  new SkySheet(CACHE, alert("sky-sheet.alert", "The Plane of Sky sheet")),
+  new ResearchSheet(CACHE, alert("research-sheet.alert", "The research sheet")),
+  new JewelrySheet(CACHE, alert("jewelry-sheet.alert", "The jewelry sheet"))
 );
 // Posting bank requests needs the bot's token and the channel; without them the page is told so.
 const poster: Poster | null =

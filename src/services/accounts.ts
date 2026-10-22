@@ -106,6 +106,8 @@ export const accounts = {
     await authorize(sheet);
     await sheet.loadInfo();
     const rows = await sheet.sheetsByIndex[0].getRows();
+    // The sheet replaces what's cached, so an account taken off it is gone at once.
+    cache.clear();
     rows.forEach((r) => {
       const a: Account = {
         characters: r[SPREADSHEET_COLUMNS.Characters],

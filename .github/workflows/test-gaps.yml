@@ -1,10 +1,11 @@
 name: Test gaps
 
-# Once a day Claude reads the bank's coverage and features and files up to 3 issues labelled
-# `test-gap`, each a behaviour of the bank no scenario covers, written as a product requirement.
+# Once a day Claude reads the coverage and features of the bank and the bot and writes up to 3 gaps:
+# behaviours no scenario covers, each written as a product requirement. A script files them as issues
+# labelled `test-gap`, never more than TEST_GAP_DAILY_CAP (a repo variable, 3 by default) a UTC day.
 # They're proposals: the repo owner reads each one, closes it if it isn't a requirement, or adds
 # `fix-test-gap` to send it to the fixer (.github/workflows/auto-fix.yml), whose PR they review too.
-# Only the bank counts: its page (bank/web) and its server (src/web).
+# The bank is its page (bank/web) and its server (src/web); the bot is the rest of src.
 on:
   schedule:
     - cron: "17 9 * * *"
@@ -20,6 +21,16 @@ jobs:
     permissions:
       contents: read
       issues: write
+    # The bot's features run on real Postgres (src/bot-features/database.ts).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,58 +44,83 @@ jobs:
       # Coverage for Claude to read. The thresholds are Test's job, so a miss here doesn't stop the run.
       - name: Page coverage
         run: npm --prefix bank/web run test:ci 2>&1 | tee page-coverage.txt || true
-      - name: Server coverage
-        run: >-
-          npx vitest run --coverage src/web --coverage.include='src/web/**/*.ts'
-          2>&1 | tee server-coverage.txt || true
+      - name: Bot and server coverage
+        run: npx vitest run --coverage 2>&1 | tee bot-coverage.txt || true
 
       - name: Labels
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh label create test-gap --force --color FBCA04 \
-            --description "A bank behaviour no test covers, proposed as a product requirement"
+            --description "A bank or bot behaviour no test covers, proposed as a product requirement"
           gh label create fix-test-gap --force --color 0E8A16 \
             --description "Owner only: write the scenario for this test gap and open a PR"
 
+      # The most issues still allowed today (UTC), counting the test-gap issues already filed today,
+      # closed or not. The agent is told this number, and the filing step files no more than it.
+      - name: Daily cap
+        id: cap
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CAP: ${{ vars.TEST_GAP_DAILY_CAP || 3 }}
+        run: |
+          filed=$(gh issue list --label test-gap --state all --search "created:>=$(date -u +%F)" --limit 200 --json number --jq length)
+          left=$((CAP - filed))
+          if ((left < 0)); then left=0; fi
+          echo "Filed today: $filed of $CAP."
+          echo "left=$left" >> "$GITHUB_OUTPUT"
+          mkdir -p "$RUNNER_TEMP/test-gap-drafts"
+
       - uses: anthropics/claude-code-action@v1
+        if: steps.cap.outputs.left != '0'
         env:
           GH_TOKEN: ${{ github.token }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           github_token: ${{ github.token }}
           prompt: |
-            Find behaviours of the guild bank in ${{ github.repository }} that no test covers, and file
-            the most important as issues. Each one you file proposes a product requirement: the repo owner
-            reads it and decides whether the bank should behave that way. Nothing you file is accepted
-            until they say so.
+            Find behaviours of the guild bank or the guild bot in ${{ github.repository }} that no test covers,
+            and write up the most important as issues. Each one you write proposes a product requirement: the
+            repo owner reads it and decides whether it should behave that way. Nothing is accepted until they say so.
 
             The bank is its page, bank/web (React; scenarios in bank/web/features, run by vitest), and its
-            server, src/web (scenarios in src/web/features, run by vitest). Ignore the rest of the bot.
-            Coverage from this morning is in page-coverage.txt and server-coverage.txt. Read bank/ROADMAP.md
-            for what the bank is meant to do.
+            server, src/web (scenarios in src/web/features, run by vitest). The bot is the rest of src: its
+            loading features are in src/bot-features and the other areas' are beside their code in src/features
+            (*.feature, each run by its *.test.ts). Coverage from this morning is in page-coverage.txt and
+            bot-coverage.txt. Read bank/ROADMAP.md for what the bank is meant to do.
 
             1. Read what's already filed: `gh issue list --label test-gap --state all --limit 200 --json number,title,state,closedAt,body`.
-               Don't file anything an open issue covers, or one closed in the last 180 days. A closed
+               Don't write up anything an open issue covers, or one closed in the last 180 days. A closed
                issue means the owner decided it isn't a requirement, or it's covered now.
-            2. Find real gaps: something a member or a banker would notice if it broke, that no scenario
-               covers. Untested pricing and tab rules, filters, sorting, sign-in, error paths and branches
-               in the bank's rules are what count. Use the coverage to find unrun lines and branches, then
-               read the features to be sure no scenario covers the behaviour. Skip glue code a test can't
+            2. Find real gaps: something a member, a banker or a guild officer would notice if it broke, that no
+               scenario covers. Untested pricing and tab rules, filters, sorting, sign-in, error paths, approvals,
+               expiry and branches in the rules are what count. Use the coverage to find unrun lines and branches,
+               then read the features to be sure no scenario covers the behaviour. Skip glue code a test can't
                reach (Discord, network, process start-up) and anything only a developer would see.
-            3. File at most 3, the ones that matter most to members and bankers; fewer, or none, is fine.
-               File each with `gh issue create --label test-gap --title "<the behaviour, in a few plain words>" --body-file <file>`,
-               writing the body to a file in ${{ runner.temp }} first. The body has:
+            3. Write up at most ${{ steps.cap.outputs.left }} of them, the ones that matter most to members, bankers
+               and officers; fewer, or none, is fine. Write each as a draft file in ${{ runner.temp }}/test-gap-drafts/,
+               named 1.md, 2.md and so on. A draft's first line is "# <the behaviour, in a few plain words>", and the
+               rest is the body. The body has:
                - **Requirement**: the behaviour in plain words, as a member or banker would describe it.
                  No code names here.
                - **Proposed scenario**: a Gherkin scenario in a ```gherkin block, in the style of the
                  features in that folder, reusing their steps where they fit.
                - **Where**: the source file and lines it covers, and the feature file it would go in.
                - **Why it's a gap**: what's uncovered (the coverage numbers) and why no scenario covers it.
-               - A last line: "This is a proposed requirement. Close this issue if the bank shouldn't
+               - A last line: "This is a proposed requirement. Close this issue if the bank or bot shouldn't
                  behave this way; add the `fix-test-gap` label to have the scenario written."
+               A script files the drafts as issues after you finish; you can't file them yourself.
 
             Don't change any file in the repo.
           claude_args: >-
             --max-turns 60
-            --allowedTools "Read,Glob,Grep,Write(/${{ runner.temp }}/**),Bash(gh issue list:*),Bash(gh issue view:*),Bash(gh issue create:*)"
+            --allowedTools "Read,Glob,Grep,Write(/${{ runner.temp }}/**),Bash(gh issue list:*),Bash(gh issue view:*)"
+
+      # Files the drafts, at most the cap's number left. Runs even if the agent stopped partway, so
+      # whatever it finished is filed.
+      - name: File the drafts
+        if: always() && steps.cap.outputs.left != '0'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash .github/scripts/file-test-gap-issues.sh "$RUNNER_TEMP/test-gap-drafts" "${{ steps.cap.outputs.left }}"

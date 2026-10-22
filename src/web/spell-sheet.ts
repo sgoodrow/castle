@@ -5,6 +5,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { log } from "../shared/logger";
+import { SheetAlert } from "./sheet-alert";
 
 const SHEET =
   "https://docs.google.com/spreadsheets/d/14XhfTVWPmy3GxjG4OQQH241yqvyuZh-ednaqmFRzq28/export?format=csv&gid=";
@@ -97,7 +98,10 @@ export class SpellSheet {
   private file: string;
   private problems = ""; // logged once, not every refresh
 
-  constructor(dir: string) {
+  constructor(
+    dir: string,
+    private alert: SheetAlert
+  ) {
     mkdirSync(dir, { recursive: true });
     this.file = path.join(dir, "spell-sheet.json");
     if (existsSync(this.file)) {
@@ -131,6 +135,7 @@ export class SpellSheet {
       );
     } catch (e) {
       log(`bank web: spell sheet: ${e}`);
+      await this.alert.unreadable();
       return;
     }
     const [forbidden = [], ...classes] = tabs;
@@ -147,6 +152,7 @@ export class SpellSheet {
         }
     } catch (e) {
       log(`bank web: spell sheet: ${e}`);
+      await this.alert.unreadable();
       return;
     }
     // The forbidden list wins over whatever a class tab says.
@@ -167,5 +173,6 @@ export class SpellSheet {
     this.problems = problems;
     this.prices = prices;
     writeFileSync(this.file, JSON.stringify([...prices]));
+    await this.alert.report(problems);
   }
 }

@@ -8,6 +8,7 @@ import path from "path";
 import { log } from "../shared/logger";
 import { parseCsv } from "./spell-sheet";
 import type { Lookup } from "./sky-sheet";
+import { SheetAlert } from "./sheet-alert";
 
 // The price table is the sheet's first tab, which an export without a tab id reads.
 export const JEWELRY_SHEET =
@@ -93,12 +94,10 @@ export class JewelrySheet {
   private byId = new Map<number, Recipe>();
   private file: string;
   private problems = ""; // logged once, not every refresh
-  private reported = ""; // told to the jewelry requests channel once, and "reads again" once it's fixed
 
-  // `alert` tells the jewelry requests channel what needs fixing.
   constructor(
     dir: string,
-    private alert: (message: string) => Promise<void> = async () => {}
+    private alert: SheetAlert
   ) {
     mkdirSync(dir, { recursive: true });
     this.file = path.join(dir, "jewelry-sheet.json");
@@ -129,9 +128,7 @@ export class JewelrySheet {
       rows = recipes(parseCsv(await res.text()));
     } catch (e) {
       log(`bank web: jewelry sheet: ${e}`);
-      await this.report(
-        `The jewelry sheet couldn't be read, so the bank keeps its last copy. The error: ${e}`
-      );
+      await this.alert.unreadable();
       return;
     }
     const byId = new Map<number, Recipe>();
@@ -155,22 +152,7 @@ export class JewelrySheet {
     if (text && text !== this.problems) log(`bank web: jewelry sheet: ${text}`);
     this.problems = text;
     this.byId = byId; // the new copy first, so a slow Discord post doesn't hold it back
-    await this.report(text ? `The jewelry sheet needs fixing: ${text}.` : "");
+    await this.alert.report(text);
     writeFileSync(this.file, JSON.stringify([...byId]));
-  }
-
-  // Posts a problem once, and "reads again" once it's gone. Only after posting does it count, so a
-  // failed post is tried again.
-  private async report(problem: string) {
-    if (problem === this.reported) return;
-    const message = problem || "The jewelry sheet reads again.";
-    try {
-      await this.alert(message.slice(0, 2000)); // Discord's limit for one message
-      this.reported = problem;
-    } catch (e) {
-      log(
-        `bank web: jewelry sheet: couldn't tell the jewelry requests channel: ${e}`
-      );
-    }
   }
 }

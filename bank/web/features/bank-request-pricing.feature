@@ -99,7 +99,7 @@ Feature: Bank request pricing
     When I open my tab
     And I send my tab to Discord
     And I confirm the post
-    Then #bank-requests gets my request for "Cloak of Flames", "Fine Steel Long Sword", "Spell: Lifetap", "Spell: Aegolism", "Bone Chips", "Pearl", "Scaled Tunic", "Spell: Splurt", "Spell: Bedlam"
+    Then #bank-requests gets my request for "Cloak of Flames", "Spell: Lifetap", "Spell: Aegolism", "Bone Chips", "Fine Steel Long Sword", "Pearl", "Scaled Tunic", "Spell: Splurt", "Spell: Bedlam"
 
   Scenario: A tab saved before the limit keeps its first 9 items
     Given the bank holds the usual stock

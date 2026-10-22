@@ -129,30 +129,30 @@ Feature: The jewelry sheet
       | price     | 13    |
       | note      | ""    |
 
-  Scenario: A jewelry sheet that won't read is reported to the jewelry requests channel
-    Given the jewelry requests channel is set up
+  Scenario: A jewelry sheet that won't read is reported to the bank office
+    Given the bank office is set up
     And a saved copy of the jewelry sheet prices item 14618 at 13pp
     And Google answers the jewelry sheet with 500
     When the site reads the jewelry sheet
-    Then the jewelry requests channel is told "The jewelry sheet couldn't be read, so the bank keeps its last copy"
+    Then the bank office is told "The jewelry sheet has a problem: it couldn't be read, so the bank keeps its last copy if it has one."
 
-  Scenario: A jewelry sheet problem the channel won't take is logged
-    Given the jewelry requests channel is set up
-    And the jewelry requests channel refuses posts
+  Scenario: A jewelry sheet problem the bank office won't take is logged
+    Given the bank office is set up
+    And the bank office refuses posts
     And a saved copy of the jewelry sheet prices item 14618 at 13pp
     And Google answers the jewelry sheet with 500
     When the site reads the jewelry sheet
-    Then the log says "bank web: jewelry sheet: couldn't tell the jewelry requests channel: Error: Discord answered 500"
+    Then the log says "bank web: The jewelry sheet: couldn't tell the bank office: Error: Discord answered 500"
 
-  Scenario: A row whose name is wrong is reported to the jewelry requests channel
-    Given the jewelry requests channel is set up
+  Scenario: A row whose name is wrong is reported to the bank office
+    Given the bank office is set up
     And the jewelry sheet's price table is:
       """
       ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
       ,Velium Wolf's Eye Necklace,Neck,10mr,256,250,95%,269,0,,269,,
       """
     When the site reads the jewelry sheet
-    Then the jewelry requests channel is told "The jewelry sheet needs fixing: no such item Velium Wolf's Eye Necklace."
+    Then the bank office is told "The jewelry sheet has a problem: no such item Velium Wolf's Eye Necklace."
 
   Scenario: A recipe for a NO DROP item is logged, not sent
     Given the jewelry sheet's price table is:
