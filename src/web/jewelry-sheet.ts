@@ -49,7 +49,13 @@ export function recipes(rows: string[][]): [name: string, recipe: Recipe][] {
     const col = (h: string) => head!.indexOf(h);
     const name = cells[col("ITEM NAME")] ?? "";
     const rest = cells.filter((_, i) => i !== col("ITEM NAME"));
-    if (!name || rest.every((c) => !c || c === "None")) continue; // a blank row or a title
+    if (!name) {
+      // A blank row is the sheet's spacer; one with costs in it is a recipe with its name lost.
+      if (rest.some((c) => c && c !== "None"))
+        throw new Error("a row has costs but no ITEM NAME");
+      continue;
+    }
+    if (rest.every((c) => !c || c === "None")) continue; // a title
     const materials = head.flatMap((h, i) => {
       const m = h.match(/^(BAR|GEM|MATERIAL) COST \(pp\)$/);
       if (!m) return [];

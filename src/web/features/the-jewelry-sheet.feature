@@ -111,6 +111,24 @@ Feature: The jewelry sheet
       | price     | 13    |
       | note      | ""    |
 
+  Scenario: A row with costs but no name keeps the old copy
+    Given a saved copy of the jewelry sheet prices item 14618 at 13pp
+    And the jewelry sheet's price table is:
+      """
+      ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
+      ,,Wrist,7cha,11,156,95%,12,0.15,,13,,
+      """
+    When the site reads the jewelry sheet
+    And Someone asks for the bank
+    Then the log says "bank web: jewelry sheet: Error: a row has costs but no ITEM NAME"
+    And the bank sends item 14618, "Golden Cat Eye Bracelet", made to order with:
+      | field     | value |
+      | materials | []    |
+      | trivial   | 0     |
+      | success   | 1     |
+      | price     | 13    |
+      | note      | ""    |
+
   Scenario: A copy is kept, so the bank still knows its jewelry when Google is down
     Given a saved copy of the jewelry sheet prices item 14618 at 13pp
     And Google answers the jewelry sheet with 500
