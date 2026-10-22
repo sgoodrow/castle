@@ -99,6 +99,13 @@ Feature: Filling a bank request
     When Alice reacts ❌ to Alice's request in #jewelry-requests
     Then Alice's request is no longer in #jewelry-requests
 
+  Scenario: A ✅ on the jewelry instructions does nothing
+    Given Dana is a Castle banker
+    And the bot's jewelry instructions are in #jewelry-requests
+    When Dana reacts ✅ to the bot's instructions in #jewelry-requests
+    Then nothing is posted in #bank-transactions
+    And the bot's jewelry instructions are still in #jewelry-requests
+
   Scenario Outline: Officers and mods can fill requests too
     Given Erin is a Castle <role>
     And Alice placed a bank request on the bank page:

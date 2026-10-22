@@ -22,6 +22,7 @@ import {
   reactionActionExecutor,
 } from "../../../shared/action/reaction-action";
 import { requesterId } from "../../../shared/bank-request-author";
+import { readBankRequest } from "../../bank-request-info/bank-request";
 import { getMember, getTextChannel } from "../../..";
 
 export const tryBankRequestComplete = (
@@ -96,6 +97,15 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     // filter channel: bank requests, and jewelry requests the jewelers fill
     const channelId = this.message.channel.id;
     if (channelId !== bankRequestsChannelId && channelId !== jewelryChannelId) {
+      return;
+    }
+    // Only a request can be filled or cancelled, not the channel's own instructions.
+    if (
+      !readBankRequest({
+        content: this.message.content ?? "",
+        embeds: this.message.embeds,
+      })
+    ) {
       return;
     }
     const request = parseBankRequest(this.message);

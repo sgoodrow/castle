@@ -299,6 +299,36 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       );
     }
   );
+  step(/^the bot's jewelry instructions are in #jewelry-requests$/, () => {
+    post("jewelry-requests", BOT_ID, {
+      embeds: [
+        { title: "Jewelry requests", description: "How to ask for jewelry" },
+      ],
+    });
+  });
+  step(/^the bot's jewelry instructions are still in #jewelry-requests$/, () =>
+    expect(
+      (world.channels["jewelry-requests"] ?? []).filter(
+        (m) => m.embeds[0]?.title === "Jewelry requests" && !m.gone
+      )
+    ).toHaveLength(1)
+  );
+  step(
+    /^(\w+) reacts (✅|❌) to the bot's instructions in #(\S+)$/,
+    async (by: string, emoji: string, channel: string) => {
+      const { tryBankRequestComplete } =
+        await import("../features/bank-inventory/actions/bank-request-complete-reaction");
+      const message = (world.channels[channel] ?? []).findLast(
+        (m) => m.author.id === BOT_ID
+      );
+      if (!message) throw new Error(`no bot message in #${channel}`);
+      const user = { id: member(by).id, toString: () => `<@${member(by).id}>` };
+      await tryBankRequestComplete(
+        { partial: false, emoji: { name: emoji }, message } as never,
+        user as never
+      );
+    }
+  );
   step(/^the bot's instructions are still in #bank-requests$/, () =>
     expect(
       (world.channels["bank-requests"] ?? []).filter(
