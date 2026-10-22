@@ -87,9 +87,9 @@ export class JewelrySheet {
   private byId = new Map<number, Recipe>();
   private file: string;
   private problems = ""; // logged once, not every refresh
-  private reported = ""; // told to raid chat once, and "reads again" once it's fixed
+  private reported = ""; // told to the jewelry requests channel once, and "reads again" once it's fixed
 
-  // `alert` tells raid chat, where the jewelers' sheet is edited, what needs fixing.
+  // `alert` tells the jewelry requests channel what needs fixing.
   constructor(
     dir: string,
     private alert: (message: string) => Promise<void> = async () => {}
@@ -162,7 +162,9 @@ export class JewelrySheet {
       await this.alert(message.slice(0, 2000)); // Discord's limit for one message
       this.reported = problem;
     } catch (e) {
-      log(`bank web: jewelry sheet: couldn't tell raid chat: ${e}`);
+      log(
+        `bank web: jewelry sheet: couldn't tell the jewelry requests channel: ${e}`
+      );
     }
   }
 }

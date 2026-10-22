@@ -34,7 +34,7 @@ const {
   bankDistDir,
   token,
   bankRequestsChannelId,
-  raidChatChannelId,
+  jewelryChannelId,
 } = process.env;
 
 const GIT_REV = commit();
@@ -78,8 +78,8 @@ const api = new BankApi(
   new SkySheet(CACHE),
   new ResearchSheet(CACHE),
   new JewelrySheet(CACHE, (message) =>
-    token && raidChatChannelId
-      ? postToChannel(token, raidChatChannelId, message)
+    token && jewelryChannelId
+      ? postToChannel(token, jewelryChannelId, message)
       : Promise.resolve()
   )
 );

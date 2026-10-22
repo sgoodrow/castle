@@ -73,7 +73,7 @@ const SETTINGS = [
   "githubErrorToken",
   "token",
   "bankRequestsChannelId",
-  "raidChatChannelId",
+  "jewelryChannelId",
   ...Object.keys(SIGN_IN),
 ];
 
@@ -109,8 +109,8 @@ interface World {
   jewelryStatus: number;
   jewelryAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
-  raidPosts: string[]; // what the bot said in raid chat
-  raidStatus: number;
+  jewelryPosts: string[]; // what the bot said in the jewelry requests channel
+  channelStatus: number;
   postStatus: number;
   logs: string[];
   every: number[];
@@ -141,10 +141,12 @@ interface Post {
 const ROUTES: Route[] = [
   [
     "POST",
-    /^https:\/\/discord\.com\/api\/v10\/channels\/raid-chat\/messages$/,
+    /^https:\/\/discord\.com\/api\/v10\/channels\/jewelry-requests\/messages$/,
     async (req) => {
-      world.raidPosts.push(((await req.json()) as { content: string }).content);
-      return new Response(null, { status: world.raidStatus });
+      world.jewelryPosts.push(
+        ((await req.json()) as { content: string }).content
+      );
+      return new Response(null, { status: world.channelStatus });
     },
   ],
   [
@@ -343,8 +345,8 @@ export async function reset() {
     jewelryStatus: 200,
     jewelryAsked: 0,
     posts: [],
-    raidPosts: [],
-    raidStatus: 200,
+    jewelryPosts: [],
+    channelStatus: 200,
     postStatus: 200,
     logs: [],
     every: [],
@@ -941,15 +943,15 @@ export const steps = ({
       );
     }
   );
-  step(/^raid chat is set up$/, () => {
+  step(/^the jewelry requests channel is set up$/, () => {
     world.env.token = "bot-token";
-    world.env.raidChatChannelId = "raid-chat";
+    world.env.jewelryChannelId = "jewelry-requests";
   });
-  step(/^raid chat refuses posts$/, () => {
-    world.raidStatus = 500;
+  step(/^the jewelry requests channel refuses posts$/, () => {
+    world.channelStatus = 500;
   });
-  step(/^raid chat is told "(.*)"$/, (text: string) =>
-    expect(world.raidPosts.some((m) => m.includes(text))).toBe(true)
+  step(/^the jewelry requests channel is told "(.*)"$/, (text: string) =>
+    expect(world.jewelryPosts.some((m) => m.includes(text))).toBe(true)
   );
   step(/^the site reads the jewelry sheet$/, async () => {
     await site();
