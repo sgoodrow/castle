@@ -37,7 +37,7 @@ Every PR gets a review from a fresh agent before anyone asks the user about it, 
    - **Fit:** the rules in this file (one component per file and its naming, UX options in `OPTIONS`, Gherkin features, static analysis over defensive checks), the roadmap updated when a phase or question changed, and code that reads like its neighbours.
 3. **The agent posts its findings as a GitHub review** on the PR (a comment review: the PRs are opened from the user's account, which can't approve its own PR). The review names the head commit it read, lists each finding with its file and line, and ends with exactly one verdict line: `Verdict: clean` or `Verdict: changes needed`.
 4. **Fix everything it flags,** or reply on the finding with why it's wrong. Then start another fresh agent on the new head commit. Repeat until a review of the current head says `Verdict: clean`.
-5. **Merge by tier**, always with `gh pr merge N --squash --match-head-commit <sha>`, where `<sha>` is the commit the clean review and green CI ran on:
+5. **Merge by tier**, always as a squash pinned to one commit (`gh pr merge N --squash --match-head-commit <sha>`, or the GitHub tool's squash merge with that expected head sha), where `<sha>` is the commit the clean review and green CI ran on:
    - **Docs and tests only:** merge without asking, once every CI check passed on that commit. A PR is in this tier when this prints nothing:
      ```
      git diff --name-only --no-renames origin/main...HEAD | grep -vE '\.md$|^(bank/web/features|src/web/features|bank/web/src/__fixtures__)/|\.test\.tsx?$'
