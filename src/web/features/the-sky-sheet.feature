@@ -83,18 +83,30 @@ Feature: The Sky sheet
       """
       ,ITEM,CLASS,,
       Rabbie,Blood Sky Sapphire,Druid,,
-      Kelra,Leather Cord,Cleric,,
+      Kelra,Large Sky Sapphire,Cleric,,
       `````````,Griffon Eye,Druid,,
       """
     When the site reads the Sky sheet
     And Someone asks for the bank
     Then the bank holds for multiquesting:
       | holder | item | id | count |
-    And the log says "bank web: sky sheet: multiquest: no such item Blood Sky Sapphire; multiquest: more than one item called Leather Cord; multiquest: no holder for Griffon Eye"
+    And the log says "bank web: sky sheet: multiquest: no such item Blood Sky Sapphire; multiquest: more than one item called Large Sky Sapphire; multiquest: no holder for Griffon Eye"
 
   Scenario: A name the sheet means one item by is matched to that item
-    Given the Sky name "Leather Cord" means item 20835
+    Given the Sky name "Large Sky Sapphire" means item 20778
     And the Sky sheet's Multiquest tab is:
+      """
+      ,ITEM,CLASS,,
+      Kelra,Large Sky Sapphire,Cleric,,
+      """
+    When the site reads the Sky sheet
+    And Someone asks for the bank
+    Then the bank holds for multiquesting:
+      | holder | item               | id    | count |
+      | Kelra  | Large Sky Sapphire | 20778 | 1     |
+
+  Scenario: The Leather Cord the Plane of Sky drops is the one Multiquest holds
+    Given the Sky sheet's Multiquest tab is:
       """
       ,ITEM,CLASS,,
       Kelra,Leather Cord,Cleric,,
@@ -102,21 +114,21 @@ Feature: The Sky sheet
     When the site reads the Sky sheet
     And Someone asks for the bank
     Then the bank holds for multiquesting:
-      | holder | item        | id    | count |
-      | Kelra  | Leather Cord | 20835 | 1     |
+      | holder | item         | id   | count |
+      | Kelra  | Leather Cord | 3656 | 1     |
 
   Scenario: A name matched to an item the database lacks is logged
-    Given the Sky name "Leather Cord" means item 99999
+    Given the Sky name "Large Sky Sapphire" means item 99999
     And the Sky sheet's Multiquest tab is:
       """
       ,ITEM,CLASS,,
-      Kelra,Leather Cord,Cleric,,
+      Kelra,Large Sky Sapphire,Cleric,,
       """
     When the site reads the Sky sheet
     And Someone asks for the bank
     Then the bank holds for multiquesting:
       | holder | item | id | count |
-    And the log says "bank web: sky sheet: multiquest: no such item Leather Cord"
+    And the log says "bank web: sky sheet: multiquest: no such item Large Sky Sapphire"
 
   Scenario: A copy is kept, so the bank still knows its Sky items when Google is down
     Given a saved copy of the Sky sheet puts "Efreeti Statuette" on island 4

@@ -81,8 +81,9 @@ export type Lookup = number | "no such item" | "more than one item";
 export type MqHolding = [holder: string, id: number, count: number];
 
 // Item names the database has more than one item for, by lowercase name, and the id the sheet means
-// by each. Add one only once a banker confirms which item it is.
-export const SKY_ITEM_IDS = new Map<string, number>();
+// by each. Add one only once a banker confirms which item it is. Leather Cord is the one the Plane of
+// Sky drops (the wiki page: 1.0 weight, small, no class), not the 20835 stack of 20.
+export const SKY_ITEM_IDS = new Map<string, number>([["leather cord", 3656]]);
 
 export class SkySheet {
   private parts = new Map<string, SkyPart>();
