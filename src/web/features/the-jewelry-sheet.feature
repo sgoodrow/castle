@@ -136,6 +136,14 @@ Feature: The jewelry sheet
     When the site reads the jewelry sheet
     Then raid chat is told "The jewelry sheet couldn't be read, so the bank keeps its last copy"
 
+  Scenario: A jewelry sheet problem raid chat won't take is logged
+    Given raid chat is set up
+    And raid chat refuses posts
+    And a saved copy of the jewelry sheet prices item 14618 at 13pp
+    And Google answers the jewelry sheet with 500
+    When the site reads the jewelry sheet
+    Then the log says "bank web: jewelry sheet: couldn't tell raid chat: Error: Discord answered 500"
+
   Scenario: A row whose name is wrong is reported to raid chat
     Given raid chat is set up
     And the jewelry sheet's price table is:

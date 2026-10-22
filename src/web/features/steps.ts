@@ -110,6 +110,7 @@ interface World {
   jewelryAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
   raidPosts: string[]; // what the bot said in raid chat
+  raidStatus: number;
   postStatus: number;
   logs: string[];
   every: number[];
@@ -143,7 +144,7 @@ const ROUTES: Route[] = [
     /^https:\/\/discord\.com\/api\/v10\/channels\/raid-chat\/messages$/,
     async (req) => {
       world.raidPosts.push(((await req.json()) as { content: string }).content);
-      return new Response(null, { status: 200 });
+      return new Response(null, { status: world.raidStatus });
     },
   ],
   [
@@ -343,6 +344,7 @@ export async function reset() {
     jewelryAsked: 0,
     posts: [],
     raidPosts: [],
+    raidStatus: 200,
     postStatus: 200,
     logs: [],
     every: [],
@@ -942,6 +944,9 @@ export const steps = ({
   step(/^raid chat is set up$/, () => {
     world.env.token = "bot-token";
     world.env.raidChatChannelId = "raid-chat";
+  });
+  step(/^raid chat refuses posts$/, () => {
+    world.raidStatus = 500;
   });
   step(/^raid chat is told "(.*)"$/, (text: string) =>
     expect(world.raidPosts.some((m) => m.includes(text))).toBe(true)
