@@ -5,6 +5,12 @@ export interface BankSection {
   bullets: string[];
 }
 
+// A category the bank site sells. Its spreadsheet stays linked for the rare cases the site doesn't
+// cover.
+export interface InventorySection extends BankSection {
+  spreadsheet: string;
+}
+
 // Something members ask for in a post of their own; `request` tells them what to write.
 export interface BankService extends BankSection {
   request: string;
@@ -12,9 +18,10 @@ export interface BankService extends BankSection {
 
 // What the bank site sells, one field each on the Castle Bank Inventory card. Members request
 // these from the site.
-export const inventory: BankSection[] = [
+export const inventory: InventorySection[] = [
   {
     title: "Miscellaneous",
+    spreadsheet: "https://tinyurl.com/castle-misc-list",
     bullets: [
       "Tradeskilling INT Gear check in/out (free in Thurgadin)",
       "Leatherfoot Raiders Skullcap (450p+Dragoon Dirk in Rivervale Bank)",
@@ -28,6 +35,7 @@ export const inventory: BankSection[] = [
   },
   {
     title: "Dropped Spells",
+    spreadsheet: "https://tinyurl.com/castle-spell-spreadsheet",
     bullets: [
       "North Freeport Bank",
       "You must be able to scribe the spell.",
@@ -38,6 +46,7 @@ export const inventory: BankSection[] = [
   },
   {
     title: "Plane of Sky",
+    spreadsheet: "https://tinyurl.com/castle-sky-bank",
     bullets: [
       "East Freeport Docks",
       "You must have already won the other required DKP items.",
@@ -49,6 +58,7 @@ export const inventory: BankSection[] = [
   },
   {
     title: "Research Spells & Components",
+    spreadsheet: "https://tinyurl.com/castle-research",
     bullets: ["North Freeport Bank", "Free"],
   },
 ];

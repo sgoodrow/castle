@@ -22,8 +22,14 @@ export const bankRequestEmbeds = (channel: string) => [
       bankWebUrl ? "__Castle Bank Inventory__" : "Castle Bank Inventory"
     }`,
     url: bankWebUrl || undefined,
-    description:
+    // Discord doesn't link field names, so the spreadsheets are listed here.
+    description: [
       "Shop the Castle Bank's inventory. Prices and rules are described below.",
+      "",
+      `Spreadsheets: ${inventory
+        .map(({ title, spreadsheet }) => `[${title}](${spreadsheet})`)
+        .join(" · ")}`,
+    ].join("\n"),
     fields: inventory.map((section) => ({
       name: section.title,
       value: list(section),
