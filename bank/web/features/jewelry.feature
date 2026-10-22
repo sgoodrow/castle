@@ -4,13 +4,6 @@ Feature: Jewelry
   "Jewelry:" format. The details say what the guild spends on the materials, since a member who
   brings some pays only for the rest, and owns the risk of a failed combine.
 
-  Scenario: Jewelry is listed whether or not the bank holds any
-    Given the jewelers also make jewelry to order
-    And I have opened the bank page
-    When I pick "Jewelry"
-    Then the bank lists only "Golden Cat Eye Bracelet", "Black Sapphire Velium Necklace"
-    And "Jewelry" is picked
-
   Scenario Outline: Jewelry has the jewelers' price
     Given the jewelers also make jewelry to order
     And I have opened the bank page
@@ -37,20 +30,6 @@ Feature: Jewelry
     And I have opened the bank page
     When I add 3 "Golden Cat Eye Bracelet" to my tab
     Then the tab button shows "39pp"
-
-  Scenario: The details show what the materials cost the guild
-    Given the jewelers also make jewelry to order
-    And I have opened the bank page
-    When I click "Black Sapphire Velium Necklace" in the bank
-    Then the page says:
-      | text                                                                                          |
-      | Made to order                                                                                 |
-      | Bar                                                                                           |
-      | 252pp                                                                                         |
-      | Gem                                                                                           |
-      | 350pp                                                                                         |
-      | 86%                                                                                           |
-      | Bring your own materials and pay only for the ones the guild provides. A failed combine is on you. |
 
   Scenario: The post for jewelry the bank holds none of says it's made to order
     Given the jewelers also make jewelry to order

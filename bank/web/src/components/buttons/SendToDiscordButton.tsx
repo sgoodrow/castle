@@ -33,7 +33,7 @@ export function SendToDiscordButton({ msg, onSent }: { msg: RequestMessage; onSe
       <Button fullWidth color="#5865f2" leftSection={<IconBrandDiscordFilled size={18} />} onClick={() => setOpen(true)}>
         Send to Discord
       </Button>
-      <Modal opened={open} onClose={close} size={520} centered styles={{ body: { paddingBottom: 0 } }} title={<Text fw={600}>Post this in #bank-requests?</Text>}>
+      <Modal opened={open} onClose={close} size={520} centered styles={{ body: { paddingBottom: 0 } }} title={<Text fw={600}>Post these?</Text>}>
         <Stack gap="sm">
           <DiscordMessagePane msg={msg} />
           {/* Stuck to the bottom of the modal as the post scrolls, so the choice is always in view. */}

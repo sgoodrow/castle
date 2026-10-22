@@ -35,13 +35,6 @@ Feature: The jewelry sheet
       | success   | 0.8625                                                |
       | price     | 822                                                   |
       | note      | ""                                                    |
-    And the bank sends item 14700, "Black Sapphire Silvered Necklace", made to order with:
-      | field     | value                                               |
-      | materials | [{"what": "Bar", "pp": 1}, {"what": "Gem", "pp": 350}] |
-      | trivial   | 68                                                  |
-      | success   | 0.95                                                |
-      | price     | 442                                                 |
-      | note      | "Don't ask for this"                                |
     And the bank sends item 14618, "Golden Cat Eye Bracelet", made to order with:
       | field     | value                            |
       | materials | [{"what": "Material", "pp": 11}] |
@@ -49,7 +42,17 @@ Feature: The jewelry sheet
       | success   | 0.95                             |
       | price     | 13                               |
       | note      | ""                               |
-    And the bank describes 3 items
+    And the bank describes 2 items
+
+  Scenario: A recipe the jewelers say not to ask for is left out
+    Given the jewelry sheet's price table is:
+      """
+      ,ITEM NAME,SLOT,STATS,BAR COST (pp),GEM COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes
+      ,Black Sapphire Silvered Necklace,Neck,3ac / 30hp / 30mp,1,350,68,95%,369,0.2,,442,Don't ask for this
+      """
+    When the site reads the jewelry sheet
+    And Someone asks for the bank
+    Then the bank sends no jewelry
 
   Scenario: The wiki refresh covers jewelry the bank doesn't hold, so each gets its icon
     Given the jewelry sheet's price table is:

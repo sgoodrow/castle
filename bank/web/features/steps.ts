@@ -133,7 +133,7 @@ step(/^I clear the filters$/, () => world.user.click(screen.getByRole("button", 
 step(/^I (?:pick|have picked) the (class|race) "(.*)"$/, (_, kind, name) => world.user.click(picker(kind, name)));
 step(/^I play (?:an? )?(.+)$/, (_, name) => (/^any/.test(name) ? undefined : world.user.click(picker("class", name))));
 step(/^I pick the (\w+) slot$/, (_, slot) => world.user.click(first(slots(slot), `${slot} slot`)));
-step(/^I pick "(Spells|Sky|Jewelry|Other)"$/, (_, kind) => world.user.click(notWorn(kind)));
+step(/^I pick "(Spells|Sky|Other)"$/, (_, kind) => world.user.click(notWorn(kind)));
 
 const sortHeader = (column: string) => within(list().parentElement!).getByRole("button", { name: column });
 step(/^I (?:sort|have sorted) by "(Item|Guild price)"(?: again)?$/, (_, column) => world.user.click(sortHeader(column)));
@@ -147,7 +147,7 @@ step(/^the bank lists (".*)$/, (_, names) => { for (const n of quoted(names)) ro
 step(/^the bank doesn't list (".*)$/, (_, names) => { for (const n of quoted(names)) expect(listed()).not.toContain(n); });
 step(/^the (class|race) "(.*)" is (not )?picked$/, (_, kind, name, not) => { expect(pressed(picker(kind, name))).toBe(!not); });
 step(/^the (\w+) slots? (?:is|are) (not )?picked$/, (_, slot, not) => { for (const b of slots(slot)) expect(pressed(b)).toBe(!not); });
-step(/^"(Spells|Sky|Jewelry|Other)" is (not )?picked$/, (_, kind, not) => { expect(pressed(notWorn(kind))).toBe(!not); });
+step(/^"(Spells|Sky|Other)" is (not )?picked$/, (_, kind, not) => { expect(pressed(notWorn(kind))).toBe(!not); });
 step(/^the search box reads "(.*)"$/, (_, q) => { expect(searchBox()).toHaveProperty("value", q); });
 step(/^I can (not )?clear the filters$/, (_, not) => {
   expect(screen.getByRole("button", { name: "Clear filters" })).toHaveProperty("disabled", !!not);
@@ -215,7 +215,7 @@ step(/^I open my tab$/, async () => {
 });
 step(/^my tab says "(.*)"$/, async (_, text) => { within(await tab()).getAllByText(reading(text)); });
 step(/^my tab lists (".*)$/, async (_, lines) => { for (const l of quoted(lines)) within(await tab()).getAllByText(reading(l)); });
-const confirm = () => screen.findByRole("dialog", { name: "Post this in #bank-requests?" });
+const confirm = () => screen.findByRole("dialog", { name: "Post these?" });
 step(/^the post reads "(.*)"$/, async (_, text) => {
   expect(norm((await confirm()).textContent)).toContain(text);
 });

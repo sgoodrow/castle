@@ -70,6 +70,7 @@ export function recipes(rows: string[][]): [name: string, recipe: Recipe][] {
         `${name}: no material costs, trivial, success rate and guild price`
       );
     const note = cells[col("Notes")] ?? "";
+    if (note === "Don't ask for this") continue; // the jewelers keep these off the bank
     out.push([name, { materials, trivial, success, price, note }]);
   }
   if (!head) throw new Error("no ITEM NAME header");

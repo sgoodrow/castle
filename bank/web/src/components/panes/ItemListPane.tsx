@@ -10,7 +10,6 @@ import { ItemImage } from "../ItemImage";
 import { CollapsibleLayout } from "../CollapsibleLayout";
 import { OverflowText } from "../texts/OverflowText";
 import classes from "./ItemListPane.module.css";
-import { useDevOption } from "../../devOptions";
 
 
 interface Props {
@@ -62,7 +61,7 @@ interface RowProps {
 // One item. Memoized: selecting or filtering only re-renders the rows that changed.
 const Row = memo(function Row({ it, selected, usable, qty, table, cls, on, index, start, measure }: RowProps) {
   const btn = useRef<HTMLButtonElement>(null);
-  const madeBadge = useDevOption("jewelryBadge") === "icon" && !!it.jewelry && it.holders.length === 0;
+  const madeBadge = !!it.jewelry && it.holders.length === 0;
   return (
     <li ref={measure} data-index={index} className={classes.item} style={{ transform: `translateY(${start}px)` }}>
       <UnstyledButton

@@ -1,18 +1,16 @@
 import { Stack, Text, UnstyledButton } from "@mantine/core";
-import { IconBook2, IconBox, IconDiamond, IconWind, type Icon } from "@tabler/icons-react";
+import { IconBook2, IconBox, IconWind, type Icon } from "@tabler/icons-react";
 import { DOLL, chipForBit, fitsBit, type Item, type SlotChip } from "../../data";
 import type { Filters } from "../../state";
-import { useDevOption } from "../../devOptions";
 import classes from "./DollPane.module.css";
 
 
-// The things that aren't worn, the Plane of Sky mules' stock and the jewelers' work, which are kept
-// and priced apart, in a row under the doll.
-type KindCell = "spell" | "sky" | "jewelry" | "other";
+// The things that aren't worn, and the Plane of Sky mules' stock, which is kept and priced apart,
+// in a row under the doll.
+type KindCell = "spell" | "sky" | "other";
 const KIND_CELLS: { kind: KindCell; label: string; icon: Icon }[] = [
   { kind: "spell", label: "Spells", icon: IconBook2 },
   { kind: "sky", label: "Sky", icon: IconWind },
-  { kind: "jewelry", label: "Jewelry", icon: IconDiamond },
   { kind: "other", label: "Other", icon: IconBox },
 ];
 interface Props {
@@ -26,7 +24,6 @@ interface Props {
 // The inventory window as a slot picker, with spells, Plane of Sky and other things below.
 // It also lights up where the item under the pointer is worn.
 export function DollPane({ item, slot, kind, onSlot, onKind }: Props) {
-  const cells = useDevOption("jewelryCell") === "jewelry" ? KIND_CELLS : KIND_CELLS.filter(c => c.kind !== "jewelry");
   return (
     <Stack gap={6}>
       <Text fz="xs" fw={600} tt="uppercase" c="dimmed" style={{ letterSpacing: "0.06em" }}>Filter by slot</Text>
@@ -52,8 +49,8 @@ export function DollPane({ item, slot, kind, onSlot, onKind }: Props) {
           );
         })}
       </div>
-      <div className={classes.kinds} role="group" aria-label="Not worn" style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}>
-        {cells.map(c => {
+      <div className={classes.kinds} role="group" aria-label="Not worn">
+        {KIND_CELLS.map(c => {
           const on = kind === c.kind;
           const KindIcon = c.icon;
           return (

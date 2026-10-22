@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { CLASSES, CLASS_NAME, MAX_TAB_ITEMS, RACES, RACE_NAME, SLOT_CHIPS, type ClassId, type Kind, type RaceId, type SlotChip } from "./data";
 
-// "sky" is the Plane of Sky items, whatever their kind, and "jewelry" what the jewelers make.
-export type KindFilter = "all" | Kind | "sky" | "jewelry";
+// "sky" is the Plane of Sky items, whatever their kind.
+export type KindFilter = "all" | Kind | "sky";
 export interface Filters {
   cls: ClassId | null; // null means any
   race: RaceId | null;
@@ -34,7 +34,7 @@ export interface Search {
   sort?: Sort;
   item?: number; // the item whose details are open
 }
-const KINDS: Exclude<KindFilter, "all">[] = ["gear", "spell", "other", "sky", "jewelry"];
+const KINDS: Exclude<KindFilter, "all">[] = ["gear", "spell", "other", "sky"];
 const str = (v: unknown) => (typeof v === "string" && v ? v : undefined);
 // A positive whole number: from the address bar it's text, from the page's own links a number.
 const id = (v: unknown) => { const n = Number(typeof v === "number" ? v : str(v)); return n > 0 && Number.isInteger(n) ? n : undefined; };
@@ -107,7 +107,7 @@ export function useTab() {
   return [tab, setTab] as const;
 }
 
-export const KIND_LABEL: Record<KindFilter, string> = { all: "All", gear: "Gear", spell: "Spells", other: "Other", sky: "Sky", jewelry: "Jewelry" };
+export const KIND_LABEL: Record<KindFilter, string> = { all: "All", gear: "Gear", spell: "Spells", other: "Other", sky: "Sky" };
 
 // The active filters, each with what clears it.
 export function activeChips(f: Filters): { label: string; clear: Partial<Filters> }[] {
