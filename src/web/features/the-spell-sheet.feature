@@ -215,3 +215,18 @@ Feature: The spell sheet
     Then the bank describes "Spell: Summon: Muzzle of Mardu" with:
       | field | value                                    |
       | sheet | {"kind": "pp", "pp": 50, "dkp": null}    |
+
+  Scenario: A spell the sheet names differently is forbidden under its alias too
+    Given the bankers' uploads hold:
+      | banker | spot     | item                           | count |
+      | mulea  | General5 | Spell: Summon: Muzzle of Mardu | 1     |
+    And the spell sheet's "Forbidden Spells" tab is:
+      """
+      Magician,Necromancer,Wizard,Enchanter
+      Muzzle of Mardu,,,
+      """
+    When the site reads the spell sheet
+    And Someone asks for the bank
+    Then the bank describes "Spell: Summon: Muzzle of Mardu" with:
+      | field | value               |
+      | sheet | {"kind": "auction"} |

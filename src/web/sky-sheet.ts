@@ -82,7 +82,7 @@ export type MqHolding = [holder: string, id: number, count: number];
 
 // Names that two NO DROP items share, by lowercase name, and the id the sheet means. Add one only
 // once a banker confirms which item it is.
-export const SKY_ITEM_IDS: Record<string, number> = {};
+export const SKY_ITEM_IDS = new Map<string, number>();
 
 export class SkySheet {
   private parts = new Map<string, SkyPart>();
