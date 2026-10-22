@@ -128,6 +128,15 @@ Feature: Filling a bank request
     When Dana reacts ✅ to Alice's typed message in #bank-requests
     Then nothing is posted in #bank-transactions
 
+  Scenario: A member can't cancel a request someone else typed that names them
+    Given Mallory is a Castle member
+    And Mallory typed in #jewelry-requests:
+      """
+      ✍️ <@Carol> requests: 2 rings
+      """
+    When Carol reacts ❌ to Mallory's typed message in #jewelry-requests
+    Then Mallory's typed message is still in #jewelry-requests
+
   Scenario: A member mentioned in a jewelry request can't cancel it
     Given Bob placed a jewelry request in #jewelry-requests mentioning Carol:
       """

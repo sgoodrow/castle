@@ -127,8 +127,12 @@ class BankRequestFinishedReactionAction extends ReactionAction {
 
     // cancel
     if (this.reaction.emoji.name === "❌") {
+      // A member's own typed request is theirs, whoever it names; the bot's names its requester.
+      const requester = this.message.author?.bot
+        ? requested.requesterId
+        : this.message.author?.id;
       if (
-        requested.requesterId !== this.user.id &&
+        requester !== this.user.id &&
         !(await isFiller(this.user.id, channelId))
       ) {
         return;

@@ -325,6 +325,13 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       expect(errors.map((m) => m.content)).toEqual([]);
     }
   );
+  step(/^(\w+)'s typed message is still in #(\S+)$/, (name: string, channel: string) => {
+    expect(
+      (world.channels[channel] ?? []).filter(
+        (m) => m.author.id === member(name).id && !m.gone
+      )
+    ).toHaveLength(1);
+  });
   // A request that @mentions someone besides its member, as /bank request can.
   step(
     /^(\w+) placed a jewelry request in #(\S+) mentioning (\w+):$/,
