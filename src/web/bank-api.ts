@@ -26,6 +26,16 @@ const SPELL_KEYS = ["click", "proc", "worn", "focus", "scroll"];
 const JEWELRY_PINNED: Record<string, number> = {
   "Fire Emerald Velium Ring": 30343, // the one without the -1 skill modifier of 30355
 };
+// The sheet spells six recipes differently from the game, which the item database keeps. The sheet's
+// spelling is matched to the game's here, from this reviewed list, so the sheet never has to change.
+const JEWELRY_ALIASES = new Map<string, string>([
+  ["Velium Wolf's Eye Necklace", "Wolfs Eye Velium Necklace"],
+  ["Wolf's Eye Platinum Necklace", "Wolfs Eye Platinum Necklace"],
+  ["Wolf's Eye Golden Bracelet", "Wolfs Eye Golden Bracelet"],
+  ["Wolf's Eye Electrum Bracelet", "Wolfs Eye Electrum Bracelet"],
+  ["Silver Wolf's Eye Necklace", "Silver Wolfs Eye Necklace"],
+  ["Velium Rose Engagement Ring", "Rose Velium Engagement Ring"],
+]);
 const JEWELRY_STATS = [
   "ac",
   "hp",
@@ -145,7 +155,8 @@ export class BankApi {
     for (const [id, it] of Object.entries(this.itemdb))
       if (!it.nodrop && JEWELRY_STATS.some((k) => it[k]))
         ids.set(it.name, [...(ids.get(it.name) ?? []), +id]);
-    return this.jewelry.refresh((name): Lookup => {
+    return this.jewelry.refresh((sheetName): Lookup => {
+      const name = JEWELRY_ALIASES.get(sheetName) ?? sheetName;
       // Two items share this name, and the jewelers make the one pinned here. Scott chose it.
       const pinned = JEWELRY_PINNED[name];
       if (pinned != null)

@@ -84,14 +84,24 @@ Feature: The jewelry sheet
     Given the jewelry sheet's price table is:
       """
       ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
-      ,Velium Wolf's Eye Necklace,Neck,10mr,256,250,95%,269,0,,269,,
+      ,Velium Wolf's Eye Ring,Neck,10mr,256,250,95%,269,0,,269,,
       ,Fire Emerald Velium Ring,Finger,6str / 6dex,338,276,94.50%,357,0.2,,428,,
       ,Golden Cat Eye Bracelet,Wrist,7cha,11,156,95%,12,0.15,,13,,
       """
     When the site reads the jewelry sheet
     And Someone asks for the bank
-    Then the log says "bank web: jewelry sheet: no such item Velium Wolf's Eye Necklace"
+    Then the log says "bank web: jewelry sheet: no such item Velium Wolf's Eye Ring"
     And the bank describes 2 items
+
+  Scenario: A recipe the sheet spells differently from the game is sent under the game's name
+    Given the jewelry sheet's price table is:
+      """
+      ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
+      ,Wolf's Eye Golden Bracelet,Wrist,7mr,14,175,95%,15,0,,15,,
+      """
+    When the site reads the jewelry sheet
+    And Someone asks for the bank
+    Then the bank describes 2 items
 
   Scenario: A recipe row whose costs aren't numbers keeps the old copy
     Given a saved copy of the jewelry sheet prices item 14618 at 13pp
@@ -149,10 +159,10 @@ Feature: The jewelry sheet
     And the jewelry sheet's price table is:
       """
       ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
-      ,Velium Wolf's Eye Necklace,Neck,10mr,256,250,95%,269,0,,269,,
+      ,Velium Wolf's Eye Ring,Neck,10mr,256,250,95%,269,0,,269,,
       """
     When the site reads the jewelry sheet
-    Then the bank office is told "The jewelry sheet has a problem: no such item Velium Wolf's Eye Necklace."
+    Then the bank office is told "The jewelry sheet has a problem: no such item Velium Wolf's Eye Ring."
 
   Scenario: A recipe for a NO DROP item is logged, not sent
     Given the jewelry sheet's price table is:
