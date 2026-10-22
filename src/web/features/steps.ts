@@ -1054,6 +1054,19 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(/^(\w+) posts a bank request that isn't JSON$/, (who: string) =>
     request(who, "/api/bank-request", { method: "POST", body: "not json" })
   );
+  step(
+    /^(\w+) posts a bank request to #(\w+)$/,
+    (who: string, channel: string) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: JSON.stringify({
+          channel,
+          embeds: [
+            { title: "Bank request", description: "• Pearl (1)", color: 1 },
+          ],
+        }),
+      })
+  );
   step(/^(\w+) posts (\d+) bank requests$/, async (who: string, n: string) => {
     world.answers = [];
     for (let i = 0; i < +n; i++)

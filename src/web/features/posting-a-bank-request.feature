@@ -62,6 +62,11 @@ Feature: Posting a bank request
     When Alice posts a bank request of 0 embeds
     Then the answer is 400 "Bad request"
 
+  Scenario: A post to a channel that isn't one of the request channels is refused
+    When Alice posts a bank request to #jewlery
+    Then the answer is 400 "Bad request"
+    And the bot posts nothing
+
   Scenario: A post of more embeds than Discord allows is refused
     When Alice posts a bank request of 11 embeds
     Then the answer is 400 "Bad request"

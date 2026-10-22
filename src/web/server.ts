@@ -216,9 +216,15 @@ async function bankRequest(
     parsed = null;
     post = null;
   }
-  if (!post) return send(req, res, 400, "text/plain", "Bad request");
+  // Only the two channels, or no channel at all for an older page's bank request.
+  const channel = parsed?.channel;
+  if (
+    !post ||
+    (channel !== undefined && channel !== "bank" && channel !== "jewelry")
+  )
+    return send(req, res, 400, "text/plain", "Bad request");
   // A post without a channel is an older page's bank request.
-  const to = parsed?.channel === "jewelry" ? jewelryPoster : poster;
+  const to = channel === "jewelry" ? jewelryPoster : poster;
   if (!to) return send(req, res, 503, "text/plain", "Posting isn't set up");
   if (!(await postRequest(to, me, post)))
     return send(req, res, 502, "text/plain", "Discord didn't take it");
