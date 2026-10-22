@@ -75,7 +75,8 @@ Feature: Expiring old bank requests
   Scenario: A DM is cut to fit Discord's 2,000 characters
     Given Bob placed a bank request on the bank page 40 days ago for 100 lines
     When the bot clears out old bank requests
-    Then Bob is sent a DM of at most 2,000 characters
+    Then Bob is sent a DM starting "Your <Castle> bank request has been dismissed" and quoting "• Cloak of Flames (800p)"
+    And Bob is sent a DM of at most 2,000 characters
 
   Scenario: A request a banker removed as the cleanup reached it is skipped
     Given Alice placed a bank request on the bank page 40 days ago:

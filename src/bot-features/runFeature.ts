@@ -40,7 +40,7 @@ export function runFeature(dir: string, file: string) {
     const { prismaClient } = await import("..");
     const { dataSource } = await import("../db/data-source");
     await prismaClient.$disconnect();
-    await dataSource.destroy();
+    if (dataSource.isInitialized) await dataSource.destroy();
     await drop();
   });
   describeFeature(path.join(dir, file), library(steps));

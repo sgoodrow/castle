@@ -418,6 +418,15 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     expect(world.dms.filter((d) => d.to === name)).toEqual([])
   );
   step(
+    /^(\w+) is sent a DM starting "(.*)" and quoting "(.*)"$/,
+    (name: string, opening: string, quoted: string) => {
+      const [dm, ...more] = world.dms.filter((d) => d.to === name);
+      expect(more).toEqual([]);
+      expect(dm?.text.startsWith(opening)).toBe(true);
+      expect(dm?.text).toContain(`> ${quoted}`);
+    }
+  );
+  step(
     /^(\w+) is sent a DM of at most ([\d,]+) characters$/,
     (name: string, n: string) => {
       const [dm, ...more] = world.dms.filter((d) => d.to === name);
