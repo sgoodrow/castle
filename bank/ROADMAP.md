@@ -83,4 +83,4 @@ UX (agreed):
 - This file is the plan. Read it before planning bank work, and update it in the same PR that changes a phase's status or answers a question.
 - One phase at a time: settle the open questions, agree the UX with the user, build, then test it live.
 - Ship in small increments. Each PR targets `main` and leaves the page working, so it can be released on its own. Don't stack PRs on unreleased branches. A phase that isn't finished can still ship, as long as members only see what's ready.
-- Merging to `main` deploys to production. Every merge needs the user's go-ahead.
+- Merging to `main` deploys to production. Every PR gets a fresh-agent review first, and a PR that changes production code needs the user's go-ahead to merge (`CLAUDE.md`, "Reviewing and merging a PR").
