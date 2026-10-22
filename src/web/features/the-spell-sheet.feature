@@ -200,3 +200,33 @@ Feature: The spell sheet
     When the site reads the spell sheet
     Then the bank office is told "The spell sheet has a problem: no such spell Imaginary'Song."
     And the bank office has been told 1 time
+
+  Scenario: A spell the sheet names differently from the item database gets its sheet price
+    Given the bankers' uploads hold:
+      | banker | spot     | item                           | count |
+      | mulea  | General5 | Spell: Summon: Muzzle of Mardu | 1     |
+    And the spell sheet's "Bard Songs" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      34,Muzzle of Mardu,0,,,50pp
+      """
+    When the site reads the spell sheet
+    And Someone asks for the bank
+    Then the bank describes "Spell: Summon: Muzzle of Mardu" with:
+      | field | value                                    |
+      | sheet | {"kind": "pp", "pp": 50, "dkp": null}    |
+
+  Scenario: A spell the sheet names differently is forbidden under its alias too
+    Given the bankers' uploads hold:
+      | banker | spot     | item                           | count |
+      | mulea  | General5 | Spell: Summon: Muzzle of Mardu | 1     |
+    And the spell sheet's "Forbidden Spells" tab is:
+      """
+      Magician,Necromancer,Wizard,Enchanter
+      Muzzle of Mardu,,,
+      """
+    When the site reads the spell sheet
+    And Someone asks for the bank
+    Then the bank describes "Spell: Summon: Muzzle of Mardu" with:
+      | field | value               |
+      | sheet | {"kind": "auction"} |

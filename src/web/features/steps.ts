@@ -100,6 +100,7 @@ interface World {
   sheetStatus: number;
   sheetAsked: number;
   sky: string | null; // the Sky sheet's announcements tab as CSV
+  skyNames: Record<string, number>; // names the scenario matches to one item
   mq: string | null; // and its Multiquest tab
   skyStatus: number;
   skyAsked: number;
@@ -321,6 +322,7 @@ export async function reset() {
     sheetStatus: 200,
     sheetAsked: 0,
     sky: null,
+    skyNames: {},
     mq: null,
     skyStatus: 200,
     skyAsked: 0,
@@ -852,6 +854,9 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(/^the Sky sheet's Multiquest tab is:$/, (csv: string) => {
     world.mq = csv;
   });
+  step(/^the Sky name "(.*)" means item (\d+)$/, (name: string, id: string) => {
+    world.skyNames[name.toLowerCase()] = +id;
+  });
   step(/^Google answers the Sky sheet with (\d+)$/, (status: string) => {
     world.skyStatus = +status;
   });
@@ -870,6 +875,10 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   );
   step(/^the site reads the Sky sheet$/, async () => {
     await site();
+    // The site's copy of the module is loaded by now, so this is the table it reads.
+    const { SKY_ITEM_IDS } = await import("../sky-sheet");
+    for (const [name, id] of Object.entries(world.skyNames))
+      SKY_ITEM_IDS.set(name, id);
     world.skyAsked = 0;
     await world.mod!.readSkySheet();
     expect(world.skyAsked).toBe(1);

@@ -7,7 +7,7 @@ import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { WikiCache, wikiUrl } from "./wiki-cache";
 import { SpellSheet, spellKey } from "./spell-sheet";
-import { SkySheet, isSkyMule, type Lookup } from "./sky-sheet";
+import { SKY_ITEM_IDS, SkySheet, isSkyMule, type Lookup } from "./sky-sheet";
 import { ResearchSheet, isResearchMule, researchKey } from "./research-sheet";
 
 type DbItem = {
@@ -93,7 +93,11 @@ export class BankApi {
       ids.set(k, [...(ids.get(k) ?? []), +id]);
     }
     return this.sky.refresh((name): Lookup => {
-      const all = ids.get(name.trim().toLowerCase()) ?? [];
+      const key = name.trim().toLowerCase();
+      const chosen = SKY_ITEM_IDS.get(key);
+      if (chosen !== undefined)
+        return this.itemdb[chosen] ? chosen : "no such item";
+      const all = ids.get(key) ?? [];
       const nodrop = all.filter((id) => this.itemdb[id].nodrop);
       if (!all.length) return "no such item";
       if (all.length === 1) return all[0];
