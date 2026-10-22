@@ -80,6 +80,10 @@ export type Lookup = number | "no such item" | "more than one item";
 // [holder, item id, count]: who holds how many of an item for multiquesting.
 export type MqHolding = [holder: string, id: number, count: number];
 
+// Names that two NO DROP items share, by lowercase name, and the id the sheet means. Add one only
+// once a banker confirms which item it is.
+export const SKY_ITEM_IDS: Record<string, number> = {};
+
 export class SkySheet {
   private parts = new Map<string, SkyPart>();
   private held: MqHolding[] = [];

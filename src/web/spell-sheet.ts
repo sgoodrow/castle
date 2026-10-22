@@ -93,6 +93,12 @@ export function classCosts(rows: string[][]): [name: string, cost: string][] {
     .filter(([n]) => n);
 }
 
+// Spells the sheet names differently from the item database, by the sheet's name. Add one only
+// once the item database has the spell under the other name.
+export const SPELL_ITEMS: Record<string, string> = {
+  "Muzzle of Mardu": "Spell: Summon: Muzzle of Mardu",
+};
+
 export class SpellSheet {
   private prices = new Map<string, SheetPrice>();
   private file: string;
@@ -145,10 +151,11 @@ export class SpellSheet {
     try {
       for (const tab of classes)
         for (const [name, cost] of classCosts(tab)) {
+          const item = SPELL_ITEMS[name] ?? name;
           const price = parseCost(cost);
-          if (price) prices.set(spellKey(name), price);
+          if (price) prices.set(spellKey(item), price);
           else unreadable.push(`${name} "${cost}"`);
-          if (!known.has(spellKey(name))) unknown.add(name);
+          if (!known.has(spellKey(item))) unknown.add(name);
         }
     } catch (e) {
       log(`bank web: spell sheet: ${e}`);
@@ -157,8 +164,9 @@ export class SpellSheet {
     }
     // The forbidden list wins over whatever a class tab says.
     for (const name of forbiddenNames(forbidden)) {
-      prices.set(spellKey(name), { kind: "auction" });
-      if (!known.has(spellKey(name))) unknown.add(name);
+      const item = SPELL_ITEMS[name] ?? name;
+      prices.set(spellKey(item), { kind: "auction" });
+      if (!known.has(spellKey(item))) unknown.add(name);
     }
     const problems = [
       ...(unknown.size
