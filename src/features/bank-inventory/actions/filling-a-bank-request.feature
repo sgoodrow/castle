@@ -107,8 +107,8 @@ Feature: Filling a bank request
       """
     When Frances reacts ✅ to Alice's typed message in #jewelry-requests
     Then the bot posts in #bank-transactions:
-      | content |
-      | <@Alice>: ✍️ <@Alice> requests: 2 rings -- ✅ by <@Frances> |
+      | content | pings |
+      | <@Alice>: ✍️ <@Alice> requests: 2 rings -- ✅ by <@Frances> | no |
 
   Scenario: A jeweler can't fill a request a member typed in #bank-requests
     Given Frances is a Castle jeweler
@@ -117,6 +117,15 @@ Feature: Filling a bank request
       ✍️ <@Alice> requests: 2 rings
       """
     When Frances reacts ✅ to Alice's typed message in #bank-requests
+    Then nothing is posted in #bank-transactions
+
+  Scenario: A banker can't fill a request a member typed in #bank-requests either
+    Given Dana is a Castle banker
+    And Alice typed in #bank-requests:
+      """
+      ✍️ <@Alice> requests: 2 rings
+      """
+    When Dana reacts ✅ to Alice's typed message in #bank-requests
     Then nothing is posted in #bank-transactions
 
   Scenario: A member mentioned in a jewelry request can't cancel it

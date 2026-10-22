@@ -67,8 +67,10 @@ const transactionMessage = (
   }
   const { message } = request;
   const content = `${message.content} -- ✅ by ${banker}`;
+  // What a member typed can mention anyone, so the copy never pings, as the request itself doesn't.
   return {
     content: message.author?.bot ? content : `${message.author}: ${content}`,
+    allowedMentions: { parse: [] },
   };
 };
 
