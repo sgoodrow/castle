@@ -19,7 +19,7 @@ const rowsOf = (table: Record<string, string>[]): Row[] =>
   table.map(({ row, ...cells }) => {
     const filled = Object.entries(cells);
     while (filled.length && !filled.at(-1)![1]) filled.pop();
-    return { ...Object.fromEntries(filled), rowIndex: Number(row) };
+    return { ...Object.fromEntries(filled), rowIndex: Number(row) } as Row;
   });
 
 // Until the bot has finished loading the bots, and told raid chat whatever it tells it.
@@ -100,9 +100,6 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     });
     expect(shown, world.logs.join("\n")).toEqual(table);
   });
-  step(/^no bots are stored$/, async () =>
-    expect(await prismaClient.bot.count()).toBe(0)
-  );
 
   // ---------- Discord ----------
   step(/^Discord can't be reached$/, () => {
