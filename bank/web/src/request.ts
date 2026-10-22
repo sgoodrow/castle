@@ -8,7 +8,8 @@ import { loginRoute } from "./route";
 // `item` is the item whose icon goes in the corner (the bot links its public /icons/ image).
 export interface Embed { title: string; description: string; color: number; item?: number; footer?: string }
 // Where the post goes: the bank requests channel, or the jewelry requests channel for made-to-order jewelry.
-export interface RequestMessage { embeds: Embed[]; channel: "bank" | "jewelry" }
+// `items` are the tab items on the post, so a post that goes through can take them off the tab.
+export interface RequestMessage { embeds: Embed[]; channel: "bank" | "jewelry"; items: number[] }
 export const channelName = (channel: RequestMessage["channel"]) => channel === "jewelry" ? "#jewelry-requests" : "#bank-requests";
 
 const BLURPLE = 0x5865f2;
@@ -59,6 +60,6 @@ function requestMessage(lines: Line[], total: string, channel: RequestMessage["c
   };
   // One embed per item. The tab holds at most MAX_TAB_ITEMS, so this fits Discord's ten.
   const embeds: Embed[] = [request, ...cards.map(l => ({ title: l.it.name, description: spots(l.it, l.from), color: GREY, item: l.it.id }))];
-  return { embeds, channel };
+  return { embeds, channel, items: lines.map(l => l.it.id) };
 }
 type Line = { it: Item; qty: number; req: ReturnType<typeof bankRequest>; auction: boolean };

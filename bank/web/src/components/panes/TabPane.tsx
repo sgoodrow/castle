@@ -14,12 +14,13 @@ interface Props {
   onSelect: (id: number) => void;
   onRemove: (id: number) => void;
   onSent: (channels: RequestMessage["channel"][]) => void;
+  onPosted: (items: number[]) => void;
   sending: boolean; // a post is in flight, so the tab stays open until it lands
   onSending: (on: boolean) => void;
 }
 
 // The running tab: what's on it, what it costs, and one button to post it to #bank-requests.
-export function TabPane({ tab, cls, onSelect, onRemove, onSent, sending, onSending }: Props) {
+export function TabPane({ tab, cls, onSelect, onRemove, onSent, onPosted, sending, onSending }: Props) {
   // Ids the bank no longer shows (sold, or NO DROP) are skipped.
   const lines = Object.entries(tab).flatMap(([id, qty]) => {
     const it = ITEMS[+id];
@@ -77,7 +78,7 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent, sending, onSendi
           {msgs.length > 0 && (
             <>
               <Divider />
-              <SendToDiscordButton msgs={msgs} onSent={onSent} sending={sending} onSending={onSending} />
+              <SendToDiscordButton msgs={msgs} onSent={onSent} onPosted={onPosted} sending={sending} onSending={onSending} />
             </>
           )}
         </Stack>

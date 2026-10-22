@@ -11,35 +11,29 @@ const failure = (status: number | null) =>
   : "Couldn't post it. Try again in a moment.";
 
 // Posts the tab's messages, one per channel, once confirmed in a modal that shows each post itself.
-export function SendToDiscordButton({ msgs, onSent, sending, onSending }: { msgs: RequestMessage[]; onSent: (channels: RequestMessage["channel"][]) => void; sending: boolean; onSending: (on: boolean) => void }) {
+export function SendToDiscordButton({ msgs, onSent, onPosted, sending, onSending }: { msgs: RequestMessage[]; onSent: (channels: RequestMessage["channel"][]) => void; onPosted: (items: number[]) => void; sending: boolean; onSending: (on: boolean) => void }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // The posts that have gone through, as their JSON, so a retry skips them and picks up at the first
-  // one that didn't. Kept across cancelling; a post is only skipped when it's exactly the same.
-  const [sent, setSent] = useState<string[]>([]);
   // Can't close mid-send: the rest would still go out after the modal shut.
   const close = () => { if (sending) return; setOpen(false); setError(null); };
   const send = async () => {
     onSending(true);
     setError(null);
-    // In order, stopping at the first that fails.
-    const done = [...sent];
+    // In order, stopping at the first that fails. Each post that goes through takes its items off the
+    // tab, so a retry only ever sends what's still on it.
     let status: number | null = 204;
     for (const msg of msgs) {
-      const body = JSON.stringify(msg);
-      if (done.includes(body)) continue;
       status = await fetch("/api/bank-request", {
         method: "POST",
         credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
-        body,
+        body: JSON.stringify(msg),
       }).then(r => r.status, () => null);
       if (status !== 204) break;
-      done.push(body);
-      setSent([...done]);
+      onPosted(msg.items);
     }
     onSending(false);
-    if (status === 204) { setSent([]); setOpen(false); onSent(msgs.map(m => m.channel)); } else setError(failure(status));
+    if (status === 204) { setOpen(false); onSent(msgs.map(m => m.channel)); } else setError(failure(status));
   };
   return (
     <>

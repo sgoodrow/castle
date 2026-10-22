@@ -9,7 +9,7 @@ import { bankPage } from "../src/app";
 import { ALL_CLASSES, CLASS_BIT, CLASSES, ITEM_LIST, bankRequest, maskText, prettyLoc, type EqClassLevels, type Payload } from "../src/data";
 import { server } from "./support/setup";
 
-interface World { payload: Payload; status: number; user: UserEvent; reports: string[]; posts: { embeds: { title: string; description: string }[] }[]; postStatus: number }
+interface World { payload: Payload; status: number; user: UserEvent; reports: string[]; posts: { embeds: { title: string; description: string }[] }[]; postStatus: number; jewelryStatus: number }
 let world: World;
 
 // A fresh page, bank and browser for every scenario.
@@ -18,14 +18,16 @@ export function reset() {
   server.resetHandlers();
   localStorage.clear();
   history.replaceState(null, "", "/");
-  world = { payload: PAYLOAD, status: 200, user: userEvent.setup(), reports: [], posts: [], postStatus: 204 };
+  world = { payload: PAYLOAD, status: 200, user: userEvent.setup(), reports: [], posts: [], postStatus: 204, jewelryStatus: 0 };
   server.use(http.post("/api/errors", async ({ request }) => {
     world.reports.push(((await request.json()) as { message: string }).message);
     return new HttpResponse(null, { status: 204 });
   }));
   server.use(http.post("/api/bank-request", async ({ request }) => {
-    if (world.postStatus === 204) world.posts.push((await request.json()) as World["posts"][number]);
-    return new HttpResponse(null, { status: world.postStatus });
+    const post = (await request.json()) as World["posts"][number] & { channel: string };
+    const status = post.channel === "jewelry" && world.jewelryStatus ? world.jewelryStatus : world.postStatus;
+    if (status === 204) world.posts.push(post);
+    return new HttpResponse(null, { status });
   }));
 }
 
@@ -230,8 +232,13 @@ step(/^the post reads, in order:$/, async ({ table }) => {
 });
 step(/^I send my tab to Discord$/, async () => { await world.user.click(within(await tab()).getByRole("button", { name: "Send to Discord" })); });
 step(/^I confirm the post$/, async () => { await world.user.click(within(await confirm()).getByRole("button", { name: "Send" })); });
+step(/^I send my tab to Discord again$/, async () => { await world.user.click(within(await tab()).getByRole("button", { name: "Send to Discord" })); });
+step(/^I confirm the retry$/, async () => { await world.user.click(within(await confirm()).getByRole("button", { name: "Send" })); });
 step(/^I'm told "(.*)" before it posts$/, async (_, text) => { await within(await confirm()).findByText(text); });
 step(/^the site (?:refuses|has refused) posts with (\d+)$/, (_, status) => { world.postStatus = +status; });
+step(/^the site refuses posts to #jewelry-requests with (\d+)$/, (_, status) => { world.jewelryStatus = +status; });
+step(/^the site accepts posts to #jewelry-requests again$/, () => { world.jewelryStatus = 0; });
+step(/^my tab doesn't list (".*)$/, async (_, lines) => { for (const l of quoted(lines)) expect(within(await tab()).queryByText(reading(l))).toBeNull(); });
 step(/^#bank-requests gets my request for (".*)$/, async (_, names) => {
   await waitFor(() => expect(world.posts).toHaveLength(1));
   expect(world.posts[0]?.embeds.slice(1).map(e => e.title)).toEqual(quoted(names));

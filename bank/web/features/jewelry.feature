@@ -51,6 +51,25 @@ Feature: Jewelry
     And I send my tab to Discord
     Then the post reads "Made to order."
 
+  Scenario: A post the site refuses keeps its items on my tab, and the one that went through comes off
+    Given the jewelers also make jewelry to order
+    And I have opened the bank page
+    When I add 1 "Cloak of Flames" to my tab
+    And I add 1 "Black Sapphire Velium Necklace" to my tab
+    And I open my tab
+    And the site refuses posts to #jewelry-requests with 502
+    When I send my tab to Discord
+    And I confirm the post
+    Then I'm told "Couldn't post it. Try again in a moment."
+    And #bank-requests gets my request for "Cloak of Flames"
+    And my tab doesn't list "Cloak of Flames"
+    And my tab lists "Black Sapphire Velium Necklace"
+    When the site accepts posts to #jewelry-requests again
+    And I send my tab to Discord again
+    And I confirm the retry
+    Then I'm told "Posted to #jewelry-requests"
+    And the tab button shows "0pp"
+
   Scenario: A tab with bank items and jewelry shows a post for each channel
     Given the jewelers also make jewelry to order
     And I have opened the bank page
