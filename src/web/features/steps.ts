@@ -18,6 +18,7 @@ import { SourceMapGenerator } from "source-map";
 import { CLASS_TABS, FORBIDDEN_TAB } from "../spell-sheet";
 import { MQ_TAB, SKY_SHEET, SKY_TAB } from "../sky-sheet";
 import { RESEARCH_SHEET, RESEARCH_TABS, researchKey } from "../research-sheet";
+import type { DefineStep } from "../../testing/gherkin";
 
 type Slot = {
   charName: string;
@@ -449,13 +450,7 @@ const reportOf = (title: string) => {
 };
 const settle = () => new Promise((r) => setTimeout(r, 100));
 
-// A step gets its pattern's groups, then its table or doc string, if it has one.
-export type Step = (...args: never[]) => unknown;
-export const steps = ({
-  defineStep: step,
-}: {
-  defineStep: (pattern: RegExp, fn: Step) => void;
-}) => {
+export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   // ---------- how the site is set up ----------
   step(/^the bank site is set up for Discord sign-in$/, () =>
     Object.assign(world.env, SIGN_IN)

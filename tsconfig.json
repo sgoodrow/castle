@@ -12,5 +12,5 @@
     "experimentalDecorators": true,
     "types": ["node"]
   },
-  "exclude": ["./node_modules", "./vitest.config.mts", "**/*.test.ts", "src/web/features", "./bank"]
+  "exclude": ["./node_modules", "./vitest.config.mts", "**/*.test.ts", "src/web/features", "src/bot-features", "src/testing", "./bank"]
 }
