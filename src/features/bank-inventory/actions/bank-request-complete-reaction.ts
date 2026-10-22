@@ -85,8 +85,6 @@ const isFiller = async (userId: string, channelId: string) => {
 
 class BankRequestFinishedReactionAction extends ReactionAction {
   public async execute() {
-    // A reaction on an uncached message arrives without its content or embeds.
-    if (this.message.partial) await this.message.fetch();
     // filter channel: bank requests, and jewelry requests the jewelers fill
     const channelId = this.message.channel.id;
     if (channelId !== bankRequestsChannelId && channelId !== jewelryChannelId) {
