@@ -30,8 +30,12 @@ KEEP = {
     "proceffect": "proc", "proclevel": "proclvl", "worneffect": "worn", "worntype": "worntype",
     "focuseffect": "focus", "scrolleffect": "scroll", "bardtype": "bardtype", "bardvalue": "bardval",
 }
-# Quarm's name for 16337 is Al'Kabor; the game's uploads and the bankers' sheets say Ap'Sagor.
-GAME_NAME = {16337: "Spell: Wrath of Ap'Sagor"}
+# Quarm's list spells these items differently from the game's uploads and the bankers' sheets; the game's spelling wins.
+GAME_NAME = {
+    16337: "Spell: Wrath of Ap'Sagor",
+    11701: "A Faded Velishoul's Tome Page",
+    16093: "Velishoul's Tome Pg.76",
+}
 # A value equal to the default carries no information, so it is dropped.
 DEFAULT = {"click": -1, "proc": -1, "worn": -1, "focus": -1, "scroll": -1, "charges": 0}
 
