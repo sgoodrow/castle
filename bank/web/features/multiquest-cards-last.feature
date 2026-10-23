@@ -16,6 +16,6 @@ Feature: Multiquest cards come last
     Then the post reads "2 logins: Gmskytwo, Mulea"
     And the post reads, in order:
       | line                      |
-      | Gmskytwo (inventory 1)  |
-      | Mulea (pack 1, slot 2)  |
-      | Gmskytwo (multiquest)   |
+      | • Gmskytwo (inventory 1)  |
+      | • Mulea (pack 1, slot 2)  |
+      | • Gmskytwo (multiquest)   |

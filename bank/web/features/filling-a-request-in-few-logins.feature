@@ -19,12 +19,12 @@ Feature: Filling a request in few logins
     Then the post reads "1 login: Mulec"
     And the post reads, in order:
       | line                          |
-      | Mulec (inventory 2)         |
-      | Mulea (inventory 2)         |
-      | Mulec (inventory 1) ×3      |
-      | Mulea (pack 5, slot 1) ×20  |
-      | Mulec (inventory 3)         |
-      | Muleb (bank 5) ×2           |
+      | • Mulec (inventory 2)         |
+      | • Mulea (inventory 2)         |
+      | • Mulec (inventory 1) ×3      |
+      | • Mulea (pack 5, slot 1) ×20  |
+      | • Mulec (inventory 3)         |
+      | • Muleb (bank 5) ×2           |
 
   Scenario: The item cards follow the logins
     Given the bank holds the usual stock

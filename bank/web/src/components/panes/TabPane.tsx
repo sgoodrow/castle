@@ -5,7 +5,6 @@ import { ITEMS, bankRequest, priceText, requestedFrom, type ClassId } from "../.
 import { tabTotal, totalText } from "../../tab";
 import type { Tab } from "../../state";
 import { ItemImage } from "../ItemImage";
-import { useDevOption } from "../../devOptions";
 import { requestMessages, type RequestMessage } from "../../request";
 import { SendToDiscordButton } from "../buttons/SendToDiscordButton";
 
@@ -32,8 +31,7 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent, onPosted, sendin
   const dkp = lines.some(l => l.price.kind === "pp" && l.price.dkp);
   const auction = lines.some(l => l.price.kind === "auction");
   const mq = lines.some(l => !l.it.jewelry && requestedFrom(l.it).mq);
-  const jewelryBullets = useDevOption("jewelryLayout") === "bullets";
-  const msgs = requestMessages(tab, cls, { jewelryBullets });
+  const msgs = requestMessages(tab, cls);
 
   return (
     <div>

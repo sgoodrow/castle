@@ -42,5 +42,5 @@ Feature: Research spells and components
     Then the tab button shows "0pp"
     When I open my tab
     And I send my tab to Discord
-    Then the post reads "3 × Words of Odus (0pp)"
+    Then the post reads "• 3 × Words of Odus (0pp)"
     And the post doesn't read "Pick up at"

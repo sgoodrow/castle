@@ -205,7 +205,7 @@ Feature: Bank request pricing
     And my tab says "800pp + 1 DKP auction + 1 unknown cost"
     And my tab says "A banker starts a DKP auction for each auction item."
     When I send my tab to Discord
-    Then the post reads "Spell: Bedlam (DKP auction)"
+    Then the post reads "• Spell: Bedlam (DKP auction)"
     And the post reads "Total: 800pp + 1 DKP auction + 1 unknown cost"
 
   Scenario: Seeing the request as it will look in Discord
@@ -219,11 +219,11 @@ Feature: Bank request pricing
     When I send my tab to Discord
     Then the post reads "@Alice has placed a bank request"
     And the post links "Cloak of Flames" to "https://wiki.project1999.com/Cloak_of_Flames"
-    And the post reads "Cloak of Flames (800pp)"
-    And the post reads "3 × Pearl (free)"
+    And the post reads "• Cloak of Flames (800pp)"
+    And the post reads "• 3 × Pearl (free)"
     And the post reads "Total: 800pp + 1 unknown cost"
-    And the post reads "Mulea (pack 1, slot 2)"
-    And the post reads "Muleb (bank 2) ×4"
+    And the post reads "• Mulea (pack 1, slot 2)"
+    And the post reads "• Muleb (bank 2) ×4"
     And the post doesn't read "✅"
 
   Scenario: A banker finds each item's spots grouped by character
@@ -240,12 +240,12 @@ Feature: Bank request pricing
     And I send my tab to Discord
     Then the post reads, in order:
       | line                           |
-      | Mulea (pack 5, slot 1) ×20   |
-      | Mulea (pack 5, slot 2)       |
-      | Mulea (pack 8, slot 10) ×2   |
-      | Muleb (bank bag 1, slot 4) ×15 |
-      | Muleb (bank bag 1, slot 10)  |
-      | Mulec (inventory 1) ×3       |
+      | • Mulea (pack 5, slot 1) ×20   |
+      | • Mulea (pack 5, slot 2)       |
+      | • Mulea (pack 8, slot 10) ×2   |
+      | • Muleb (bank bag 1, slot 4) ×15 |
+      | • Muleb (bank bag 1, slot 10)  |
+      | • Mulec (inventory 1) ×3       |
 
   Scenario: Sending my tab to #bank-requests
     Given the bank holds the usual stock

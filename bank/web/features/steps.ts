@@ -222,7 +222,10 @@ step(/^the post reads "(.*)"$/, async (_, text) => {
   expect(norm((await confirm()).textContent)).toContain(text);
 });
 step(/^the post links "(.*)" to "(.*)"$/, async (_, name, href) => {
-  expect(within(await confirm()).getByRole("link", { name }).getAttribute("href")).toBe(href);
+  // An item is linked wherever it's named, so the summary and its card both carry the link.
+  const hrefs = within(await confirm()).getAllByRole("link", { name }).map(a => a.getAttribute("href"));
+  expect(hrefs.length).toBeGreaterThan(0);
+  expect(new Set(hrefs)).toEqual(new Set([href]));
 });
 step(/^the post doesn't read "(.*)"$/, async (_, text) => {
   expect(norm((await confirm()).textContent)).not.toContain(text);
@@ -244,8 +247,8 @@ step(/^the site accepts posts to #jewelry-requests again$/, () => { world.jewelr
 step(/^my tab doesn't list (".*)$/, async (_, lines) => { for (const l of quoted(lines)) expect(within(await tab()).queryByText(reading(l))).toBeNull(); });
 step(/^#bank-requests gets my request for (".*)$/, async (_, names) => {
   await waitFor(() => expect(world.posts).toHaveLength(1));
-  // Each field's first line is its item's name, linked to the wiki, then its price in brackets.
-  const cardNames = world.posts[0]?.embeds.flatMap(e => (e.fields ?? []).map(f => f.value.split("\n")[0]!.replace(/ \([^()]*\)$/, "").replace(/^\d+ × /, "").replace(/^\[(.+)\]\(.+\)$/, "$1")));
+  // Each card's first line is its item's name, linked to the wiki.
+  const cardNames = world.posts[0]?.embeds.slice(1).flatMap(e => (e.fields ?? []).map(f => f.value.split("\n")[0]!.replace(/^\d+ × /, "").replace(/^\[(.+)\]\(.+\)$/, "$1")));
   expect(cardNames).toEqual(quoted(names));
 });
 step(/^nothing is posted$/, () => expect(world.posts).toEqual([]));
