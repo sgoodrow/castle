@@ -1,14 +1,14 @@
-import { ITEMS, bankRequest, type ClassId } from "./data";
+import { ITEMS, bankRequest, type ClassId, type Item } from "./data";
 import type { Tab } from "./state";
 
 // What the tab adds up to in platinum, how many lines go to DKP auction, and how many still need a
 // banker's price.
 export type TabTotal = { pp: number; auctions: number; unknown: number };
-export function tabTotal(tab: Tab, cls: ClassId | null): TabTotal {
+export function tabTotal(tab: Tab, cls: ClassId | null, keep: (it: Item) => boolean = () => true): TabTotal {
   const t = { pp: 0, auctions: 0, unknown: 0 };
   for (const [id, qty] of Object.entries(tab)) {
     const it = ITEMS[+id];
-    if (!it) continue; // no longer in the bank
+    if (!it || !keep(it)) continue; // no longer in the bank, or posted elsewhere
     const req = bankRequest(it, cls, qty);
     switch (req.price.kind) {
       case "pp": t.pp += req.price.pp * qty; break;

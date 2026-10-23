@@ -26,6 +26,20 @@ Feature: Posting a bank request
       | Cloak of Flames                     |                                   | • mulea (inventory 1)     |        | https://bank.example.com/icons/77.png |
     And the log says "bank web: Alice (id-Alice) posted a bank request"
 
+  Scenario: Made-to-order jewelry is posted to the jewelry requests channel
+    When Alice posts the bank request:
+      """
+      {"channel": "jewelry", "embeds": [
+        {"title": "Bank request", "description": "• Golden Cat Eye Bracelet (13pp)", "color": 5793266},
+        {"title": "Golden Cat Eye Bracelet", "description": "Made to order.", "color": 0, "item": 14618}
+      ]}
+      """
+    Then the answer is 204
+    And the bot posts in #jewelry-requests:
+      | title                            | url                               | description                      | footer | thumbnail                             |
+      | @Alice has placed a bank request | https://discord.com/users/id-Alice | • Golden Cat Eye Bracelet (13pp) |        |                                       |
+      | Golden Cat Eye Bracelet          |                                   | Made to order.                   |        |                                       |
+
   Scenario: The bank tells the page who's signed in, for its preview
     When Alice asks for the bank
     Then the bank says Alice is signed in as "Alice"
@@ -47,6 +61,18 @@ Feature: Posting a bank request
   Scenario: A post with no embeds is refused
     When Alice posts a bank request of 0 embeds
     Then the answer is 400 "Bad request"
+
+  Scenario: A jewelry post to a site with no jewelry channel says so
+    Given posting bank requests is set up
+    And the site restarts without the jewelry channel
+    When Alice posts a bank request to #jewelry
+    Then the answer is 503 "Posting jewelry isn't set up"
+    And the bot posts nothing
+
+  Scenario: A post to a channel that isn't one of the request channels is refused
+    When Alice posts a bank request to #jewlery
+    Then the answer is 400 "Bad request"
+    And the bot posts nothing
 
   Scenario: A post of more embeds than Discord allows is refused
     When Alice posts a bank request of 11 embeds

@@ -103,11 +103,13 @@ export class WikiCache {
     try {
       const now = Date.now();
       const due = wanted
-        .filter(
-          (w) =>
-            !this.items.has(w.id) ||
-            now - this.items.get(w.id)!.fetchedAt > MAX_AGE
-        )
+        .filter((w) => {
+          const rec = this.items.get(w.id);
+          // A page cached under another address (say, before a spelling was aliased) is fetched again now.
+          return (
+            !rec || rec.url !== wikiUrl(w.name) || now - rec.fetchedAt > MAX_AGE
+          );
+        })
         .sort(
           (a, b) =>
             (this.items.get(a.id)?.fetchedAt ?? 0) -
@@ -160,6 +162,7 @@ export class WikiCache {
       const had = this.items.get(id);
       this.items.set(id, {
         ...(had ?? rec),
+        url,
         fetchedAt: Date.now() - MAX_AGE + RETRY,
       });
       return;

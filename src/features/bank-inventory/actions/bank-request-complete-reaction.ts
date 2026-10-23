@@ -10,6 +10,8 @@ import {
 } from "discord.js";
 import {
   bankRequestsChannelId,
+  jewelerRoleId,
+  jewelryChannelId,
   bankerRoleId,
   officerRoleId,
   bankTransactionsChannelId,
@@ -20,7 +22,8 @@ import {
   reactionActionExecutor,
 } from "../../../shared/action/reaction-action";
 import { requesterId } from "../../../shared/bank-request-author";
-import { getMember, getTextChannel } from "../../..";
+import { readBankRequest } from "../../bank-request-info/bank-request";
+import { client, getMember, getTextChannel } from "../../..";
 
 export const tryBankRequestComplete = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -41,11 +44,6 @@ const parseBankRequest = (message: Message | PartialMessage): BankRequest => {
     ? { kind: "site", requesterId: id, embed }
     : { kind: "command", message };
 };
-
-const isRequester = (request: BankRequest, userId: string) =>
-  request.kind === "site"
-    ? request.requesterId === userId
-    : request.message.mentions.users.has(userId);
 
 const transactionMessage = (
   request: BankRequest,
@@ -69,29 +67,46 @@ const transactionMessage = (
   }
   const { message } = request;
   const content = `${message.content} -- ✅ by ${banker}`;
+  if (message.author?.bot) return { content };
+  // What a member typed can mention anyone, so its copy never pings.
   return {
-    content: message.author?.bot ? content : `${message.author}: ${content}`,
+    content: `${message.author}: ${content}`,
+    allowedMentions: { parse: [] },
   };
 };
 
-const isBanker = async (userId: string) => {
+// Jewelry requests are filled by the jewelers as well as the bankers.
+const isFiller = async (userId: string, channelId: string) => {
   const member = await getMember(userId);
-  return [bankerRoleId, officerRoleId, modRoleId].some((role) =>
-    member?.roles.cache.has(role)
-  );
+  const has = (role: string) => !!member?.roles.cache.has(role);
+  if ([bankerRoleId, officerRoleId, modRoleId].some(has)) return true;
+  return channelId === jewelryChannelId && has(jewelerRoleId);
 };
 
 class BankRequestFinishedReactionAction extends ReactionAction {
   public async execute() {
-    // filter channel
-    if (this.message.channel.id !== bankRequestsChannelId) {
+    // filter channel: bank requests, and jewelry requests the jewelers fill
+    const channelId = this.message.channel.id;
+    if (channelId !== bankRequestsChannelId && channelId !== jewelryChannelId) {
       return;
     }
+    // A bank request is only one the bot posted, so a member's message that reads like one is ignored.
+    // Jewelry requests are typed by members, which is how the jewelers take them.
+    if (
+      channelId === bankRequestsChannelId &&
+      this.message.author?.id !== client.user?.id
+    )
+      return;
+    const requested = readBankRequest({
+      content: this.message.content as string,
+      embeds: this.message.embeds,
+    });
+    if (!requested) return;
     const request = parseBankRequest(this.message);
 
     // mark finished
     if (this.reaction.emoji.name === "✅") {
-      if (!(await isBanker(this.user.id))) {
+      if (!(await isFiller(this.user.id, channelId))) {
         return;
       }
       const bankTransactionsChannel = await getTextChannel(
@@ -105,9 +120,13 @@ class BankRequestFinishedReactionAction extends ReactionAction {
 
     // cancel
     if (this.reaction.emoji.name === "❌") {
+      // A member's own typed request is theirs, whoever it names; the bot's names its requester.
+      const requester = this.message.author?.bot
+        ? requested.requesterId
+        : this.message.author?.id;
       if (
-        !isRequester(request, this.user.id) &&
-        !(await isBanker(this.user.id))
+        requester !== this.user.id &&
+        !(await isFiller(this.user.id, channelId))
       ) {
         return;
       }

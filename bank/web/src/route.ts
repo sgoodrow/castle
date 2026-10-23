@@ -16,7 +16,8 @@ const BUDGET = 20_000;
 // single one holds enough of it.
 export function loginRoute<N extends Need>(needs: N[]): Route<N> {
   const lines = needs.map(n => {
-    const from = requestedFrom(n.it);
+    // Jewelry the bank holds is found in its tabs, never on a multiquest holder.
+    const from = n.it.jewelry ? { mq: false, holders: n.it.holders.filter(h => !h.mq) } : requestedFrom(n.it);
     const held = new Map<string, number>();
     if (!from.mq && !n.auction) for (const h of from.holders) held.set(h.char, (held.get(h.char) ?? 0) + h.count);
     const total = [...held.values()].reduce((a, b) => a + b, 0);

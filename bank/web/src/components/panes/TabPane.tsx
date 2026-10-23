@@ -5,7 +5,7 @@ import { ITEMS, bankRequest, priceText, requestedFrom, type ClassId } from "../.
 import { tabTotal, totalText } from "../../tab";
 import type { Tab } from "../../state";
 import { ItemImage } from "../ItemImage";
-import { requestMessage } from "../../request";
+import { requestMessages, type RequestMessage } from "../../request";
 import { SendToDiscordButton } from "../buttons/SendToDiscordButton";
 
 interface Props {
@@ -13,11 +13,14 @@ interface Props {
   cls: ClassId | null;
   onSelect: (id: number) => void;
   onRemove: (id: number) => void;
-  onSent: () => void;
+  onSent: (channels: RequestMessage["channel"][]) => void;
+  onPosted: (msg: RequestMessage) => void;
+  sending: boolean; // a post is in flight, so the tab stays open until it lands
+  onSending: (on: boolean) => void;
 }
 
 // The running tab: what's on it, what it costs, and one button to post it to #bank-requests.
-export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
+export function TabPane({ tab, cls, onSelect, onRemove, onSent, onPosted, sending, onSending }: Props) {
   // Ids the bank no longer shows (sold, or NO DROP) are skipped.
   const lines = Object.entries(tab).flatMap(([id, qty]) => {
     const it = ITEMS[+id];
@@ -27,8 +30,8 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
   const total = tabTotal(tab, cls);
   const dkp = lines.some(l => l.price.kind === "pp" && l.price.dkp);
   const auction = lines.some(l => l.price.kind === "auction");
-  const mq = lines.some(l => requestedFrom(l.it).mq);
-  const msg = requestMessage(tab, cls);
+  const mq = lines.some(l => !l.it.jewelry && requestedFrom(l.it).mq);
+  const msgs = requestMessages(tab, cls);
 
   return (
     <div>
@@ -72,10 +75,10 @@ export function TabPane({ tab, cls, onSelect, onRemove, onSent }: Props) {
               A banker will tell you how to set up each multiquest.
             </Text>
           )}
-          {msg && (
+          {msgs.length > 0 && (
             <>
               <Divider />
-              <SendToDiscordButton msg={msg} onSent={onSent} />
+              <SendToDiscordButton msgs={msgs} onSent={onSent} onPosted={onPosted} sending={sending} onSending={onSending} />
             </>
           )}
         </Stack>

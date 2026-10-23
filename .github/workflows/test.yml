@@ -15,6 +15,16 @@ jobs:
   # The bot and the bank web server. Coverage can't drop in any file with tests (vitest.config.mts).
   bot:
     runs-on: ubuntu-latest
+    # The bot's features run on real Postgres (src/bot-features/database.ts).
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
     steps:
       - uses: actions/checkout@v4
         with:

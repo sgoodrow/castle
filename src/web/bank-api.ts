@@ -1,14 +1,16 @@
 // Everything the bank page shows, read from the bot's database: who holds what, plus stats
 // (the item DB in bank/data), banker prices, icons and auctions from the wiki cache, and spell
 // prices from the bankers' spell sheet, which items are Plane of Sky quest parts from the Sky sheet,
-// and which are research spells and components from the research sheet.
+// which are research spells and components from the research sheet, and what the jewelers make to
+// order from the jewelry sheet.
 import { readFileSync } from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
 import { WikiCache, wikiUrl } from "./wiki-cache";
 import { SpellSheet, spellKey } from "./spell-sheet";
-import { SkySheet, isSkyMule, type Lookup } from "./sky-sheet";
+import { SKY_ITEM_IDS, SkySheet, isSkyMule, type Lookup } from "./sky-sheet";
 import { ResearchSheet, isResearchMule, researchKey } from "./research-sheet";
+import { JewelrySheet } from "./jewelry-sheet";
 
 type DbItem = {
   name: string;
@@ -18,6 +20,40 @@ type DbItem = {
 };
 
 const SPELL_KEYS = ["click", "proc", "worn", "focus", "scroll"];
+// What a piece of jewelry gives. Jewelry made with unenchanted metal gives nothing, and shares the
+// name of the jewelry the recipe means.
+// Names two stat-bearing items share, pinned to the one the recipe makes.
+const JEWELRY_PINNED: Record<string, number> = {
+  "Fire Emerald Velium Ring": 30343, // the one without the -1 skill modifier of 30355
+};
+// The sheet spells two recipes differently from the game, which the item database keeps. The sheet's
+// spelling is matched to the game's here, from this reviewed list, so the sheet never has to change.
+const JEWELRY_ALIASES = new Map<string, string>([
+  ["Velium Wolf's Eye Necklace", "Wolf's Eye Velium Necklace"],
+  ["Velium Rose Engagement Ring", "Rose Velium Engagement Ring"],
+]);
+// The wiki has these recipes under the sheet's spelling, so their pages are found by that name.
+const WIKI_TITLES = new Map(
+  [...JEWELRY_ALIASES].map(([sheet, game]) => [game, sheet])
+);
+const wikiTitle = (name: string) => WIKI_TITLES.get(name) ?? name;
+const JEWELRY_STATS = [
+  "ac",
+  "hp",
+  "mana",
+  "str",
+  "sta",
+  "agi",
+  "dex",
+  "wis",
+  "int",
+  "cha",
+  "mr",
+  "fr",
+  "cr",
+  "dr",
+  "pr",
+];
 const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export class BankApi {
@@ -30,7 +66,8 @@ export class BankApi {
     private wiki: WikiCache,
     private sheet: SpellSheet,
     private sky: SkySheet,
-    private research: ResearchSheet
+    private research: ResearchSheet,
+    private jewelry: JewelrySheet
   ) {
     this.itemdb = JSON.parse(
       readFileSync(path.join(dataDir, "itemdb.json"), "utf-8")
@@ -62,13 +99,16 @@ export class BankApi {
       if (s.item && s.item.name !== "Empty" && !db?.nodrop)
         seen.set(s.itemId!, {
           id: s.itemId!,
-          name: s.item.name,
+          name: wikiTitle(s.item.name),
           icon: db?.icon,
         });
     }
-    for (const [, id] of this.sky.mq()) {
+    for (const id of [
+      ...this.sky.mq().map(([, id]) => id),
+      ...this.jewelry.all().keys(),
+    ]) {
       const db = this.itemdb[id];
-      if (db) seen.set(id, { id, name: db.name, icon: db.icon });
+      if (db) seen.set(id, { id, name: wikiTitle(db.name), icon: db.icon });
     }
     await this.wiki.refresh([...seen.values()]);
   }
@@ -93,7 +133,11 @@ export class BankApi {
       ids.set(k, [...(ids.get(k) ?? []), +id]);
     }
     return this.sky.refresh((name): Lookup => {
-      const all = ids.get(name.trim().toLowerCase()) ?? [];
+      const key = name.trim().toLowerCase();
+      const chosen = SKY_ITEM_IDS.get(key);
+      if (chosen !== undefined)
+        return this.itemdb[chosen] ? chosen : "no such item";
+      const all = ids.get(key) ?? [];
       const nodrop = all.filter((id) => this.itemdb[id].nodrop);
       if (!all.length) return "no such item";
       if (all.length === 1) return all[0];
@@ -106,6 +150,26 @@ export class BankApi {
     return this.research.refresh(
       new Set(Object.values(this.itemdb).map((it) => researchKey(it.name)))
     );
+  }
+
+  // The id of the jewelry a recipe makes: the one item of that name, spelt as the game spells it,
+  // that gives something.
+  refreshJewelrySheet() {
+    const ids = new Map<string, number[]>();
+    // NO DROP items can't leave the bank, so a recipe can't make one: the sheet's name gets logged.
+    for (const [id, it] of Object.entries(this.itemdb))
+      if (!it.nodrop && JEWELRY_STATS.some((k) => it[k]))
+        ids.set(it.name, [...(ids.get(it.name) ?? []), +id]);
+    return this.jewelry.refresh((sheetName): Lookup => {
+      const name = JEWELRY_ALIASES.get(sheetName) ?? sheetName;
+      // Two items share this name, and the jewelers make the one pinned here. Scott chose it.
+      const pinned = JEWELRY_PINNED[name];
+      if (pinned != null)
+        return ids.get(name)?.includes(pinned) ? pinned : "no such item";
+      const [id, ...more] = ids.get(name) ?? [];
+      if (id == null) return "no such item";
+      return more.length ? "more than one item" : id;
+    });
   }
 
   async bank() {
@@ -134,8 +198,16 @@ export class BankApi {
         items[id] = this.describe(id, this.itemdb[id].name, null, spells);
       offSky.delete(id);
     }
+    // Jewelry the jewelers make to order is sent whether or not the bank holds any.
+    for (const [id, recipe] of this.jewelry.all()) {
+      const db = this.itemdb[id];
+      if (!db) continue; // the item database lost it since the refresh
+      items[id] ??= this.describe(id, db.name, null, spells);
+      items[id].jewelry = recipe;
+    }
     // A Sky item is one the Sky sheet lists, or one only the Sky mules (or multiquest holders) hold.
     for (const [id, it] of Object.entries(items)) {
+      if (it.jewelry) continue; // jewelry is made to order, never Sky, even when the Sky sheet names it
       const part = this.sky.get(it.name as string);
       if (part) it.sky = part;
       else if (!offSky.has(+id)) it.sky = { islands: [], note: "" };
@@ -176,7 +248,7 @@ export class BankApi {
       name, // the inventory file's spelling matches the P99 client
       ...(price ? { price } : {}),
       ...(sheet ? { sheet } : {}),
-      wiki: wikiUrl(name),
+      wiki: wikiUrl(wikiTitle(name)),
       ...(w?.icon ? { icon: w.icon } : {}),
       ...(w?.green ? { green: w.green } : {}),
     };

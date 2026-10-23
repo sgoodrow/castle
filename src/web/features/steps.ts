@@ -18,6 +18,8 @@ import { SourceMapGenerator } from "source-map";
 import { CLASS_TABS, FORBIDDEN_TAB } from "../spell-sheet";
 import { MQ_TAB, SKY_SHEET, SKY_TAB } from "../sky-sheet";
 import { RESEARCH_SHEET, RESEARCH_TABS, researchKey } from "../research-sheet";
+import { JEWELRY_SHEET } from "../jewelry-sheet";
+import type { DefineStep } from "../../testing/gherkin";
 
 type Slot = {
   charName: string;
@@ -72,6 +74,9 @@ const SETTINGS = [
   "githubErrorToken",
   "token",
   "bankRequestsChannelId",
+  "jewelryChannelId",
+  "bankOfficeChannelId",
+  "bankSheetAlerts",
   ...Object.keys(SIGN_IN),
 ];
 
@@ -97,14 +102,21 @@ interface World {
   sheetStatus: number;
   sheetAsked: number;
   sky: string | null; // the Sky sheet's announcements tab as CSV
+  skyNames: Record<string, number>; // names the scenario matches to one item
   mq: string | null; // and its Multiquest tab
   skyStatus: number;
   skyAsked: number;
   research: Record<string, string>; // the research sheet's class tabs as CSV, by tab id
   researchStatus: number;
   researchAsked: number;
+  jewelry: string | null; // the jewelry sheet's price table as CSV
+  jewelryStatus: number;
+  jewelryAsked: number;
   posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
+  jewelryPosts: { auth: string | null; body: Post }[]; // what the bot posted to #jewelry-requests
   postStatus: number;
+  officePosts: string[]; // what the bot told the bank office, once Discord took it
+  officeStatus: number;
   logs: string[];
   every: number[];
   handlers: Record<string, (err: unknown) => void>;
@@ -132,6 +144,26 @@ interface Post {
   }[];
 }
 const ROUTES: Route[] = [
+  [
+    "POST",
+    /^https:\/\/discord\.com\/api\/v10\/channels\/bank-office\/messages$/,
+    async (req) => {
+      const { content } = (await req.json()) as { content: string };
+      if (world.officeStatus === 200) world.officePosts.push(content);
+      return new Response(null, { status: world.officeStatus });
+    },
+  ],
+  [
+    "POST",
+    /^https:\/\/discord\.com\/api\/v10\/channels\/jewelry-channel\/messages$/,
+    async (req) => {
+      world.jewelryPosts.push({
+        auth: req.headers.get("authorization"),
+        body: (await req.json()) as Post,
+      });
+      return new Response(null, { status: 200 });
+    },
+  ],
   [
     "POST",
     /^https:\/\/discord\.com\/api\/v10\/channels\/requests-channel\/messages$/,
@@ -239,6 +271,17 @@ ROUTES.push([
     });
   },
 ]);
+// The jewelry sheet's price table: the scenario's, or an empty one with its header.
+ROUTES.push([
+  "GET",
+  new RegExp(`^${JEWELRY_SHEET.replace(/[.?]/g, "\\$&")}$`),
+  () => {
+    world.jewelryAsked++;
+    return new Response(world.jewelry ?? ",ITEM NAME,SLOT\n", {
+      status: world.jewelryStatus,
+    });
+  },
+]);
 // The spell sheet's tabs: the scenario's, or empty ones with their headers.
 ROUTES.push([
   "GET",
@@ -307,14 +350,21 @@ export async function reset() {
     sheetStatus: 200,
     sheetAsked: 0,
     sky: null,
+    skyNames: {},
     mq: null,
     skyStatus: 200,
     skyAsked: 0,
     research: {},
     researchStatus: 200,
     researchAsked: 0,
+    jewelry: null,
+    jewelryStatus: 200,
+    jewelryAsked: 0,
     posts: [],
+    jewelryPosts: [],
     postStatus: 200,
+    officePosts: [],
+    officeStatus: 200,
     logs: [],
     every: [],
     handlers: {},
@@ -449,13 +499,7 @@ const reportOf = (title: string) => {
 };
 const settle = () => new Promise((r) => setTimeout(r, 100));
 
-// A step gets its pattern's groups, then its table or doc string, if it has one.
-export type Step = (...args: never[]) => unknown;
-export const steps = ({
-  defineStep: step,
-}: {
-  defineStep: (pattern: RegExp, fn: Step) => void;
-}) => {
+export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   // ---------- how the site is set up ----------
   step(/^the bank site is set up for Discord sign-in$/, () =>
     Object.assign(world.env, SIGN_IN)
@@ -616,7 +660,7 @@ export const steps = ({
       world.slots.push({
         charName: r.banker,
         slot: r.spot,
-        itemId: itemId(r.item),
+        itemId: r.id ? +r.id : itemId(r.item), // an id tells apart items that share a name
         count: r.count ? +r.count : null,
         updatedAt: new Date(r.uploaded || "2026-05-01T00:00:00Z"),
         item:
@@ -661,6 +705,11 @@ export const steps = ({
     }
   );
   step(
+    /^the bank links item (\d+) to the wiki page "(.*)"$/,
+    (id: string, page: string) =>
+      expect(bank().items[+id].wiki).toBe(`https://wiki.project1999.com${page}`)
+  );
+  step(
     /^the bank describes "(.*)" as unknown, with its wiki page$/,
     (name: string) =>
       expect(bank().items[itemId(name)]).toEqual({
@@ -697,6 +746,9 @@ export const steps = ({
   );
   step(/^the bank sends no Sky part for "(.*)"$/, (name: string) =>
     expect(bank().items[itemId(name)]).not.toHaveProperty("sky")
+  );
+  step(/^the bank sends no Sky part for item (\d+)$/, (id: string) =>
+    expect(bank().items[+id]).not.toHaveProperty("sky")
   );
   step(/^the bank sends the spells (".*)$/, (names: string) => {
     expect(
@@ -801,6 +853,20 @@ export const steps = ({
     if (!gid) throw new Error(`The spell sheet has no tab ${tab}`);
     world.sheet[gid] = csv;
   });
+  step(
+    /^the spell sheet's "(.*)" tab has (\d+) spells the bank doesn't know$/,
+    (tab: string, n: string) => {
+      const gid = TAB_IDS[tab];
+      if (!gid) throw new Error(`The spell sheet has no tab ${tab}`);
+      const rows = Array.from(
+        { length: +n },
+        (_, i) => `34,Imaginary Spell ${i + 1},0,,,50pp`
+      );
+      world.sheet[gid] = ["Level,Name,# In Bank,Banker*,,Cost", ...rows].join(
+        "\n"
+      );
+    }
+  );
   step(/^Google answers the spell sheet with (\d+)$/, (status: string) => {
     world.sheetStatus = +status;
   });
@@ -816,6 +882,7 @@ export const steps = ({
   );
   step(/^the site reads the spell sheet$/, async () => {
     await site();
+    world.sheetAsked = 0;
     await world.mod!.readSpellSheet();
     expect(world.sheetAsked).toBe(Object.keys(TAB_IDS).length);
   });
@@ -826,6 +893,9 @@ export const steps = ({
   });
   step(/^the Sky sheet's Multiquest tab is:$/, (csv: string) => {
     world.mq = csv;
+  });
+  step(/^the Sky name "(.*)" means item (\d+)$/, (name: string, id: string) => {
+    world.skyNames[name.toLowerCase()] = +id;
   });
   step(/^Google answers the Sky sheet with (\d+)$/, (status: string) => {
     world.skyStatus = +status;
@@ -845,6 +915,11 @@ export const steps = ({
   );
   step(/^the site reads the Sky sheet$/, async () => {
     await site();
+    // The site's copy of the module is loaded by now, so this is the table it reads.
+    const { SKY_ITEM_IDS } = await import("../sky-sheet");
+    for (const [name, id] of Object.entries(world.skyNames))
+      SKY_ITEM_IDS.set(name, id);
+    world.skyAsked = 0;
     await world.mod!.readSkySheet();
     expect(world.skyAsked).toBe(1);
   });
@@ -873,6 +948,7 @@ export const steps = ({
   });
   step(/^the site reads the research sheet$/, async () => {
     await site();
+    world.researchAsked = 0;
     await world.mod!.readResearchSheet();
     expect(world.researchAsked).toBe(RESEARCH_TABS.length);
   });
@@ -883,6 +959,49 @@ export const steps = ({
   step(/^the bank doesn't give away (".*)$/, (names: string) => {
     for (const name of quoted(names))
       expect(bank().items[itemId(name)], name).not.toHaveProperty("research");
+  });
+
+  // ---------- the jewelry sheet ----------
+  step(/^the jewelry sheet's price table is:$/, (csv: string) => {
+    world.jewelry = csv;
+  });
+  step(/^Google answers the jewelry sheet with (\d+)$/, (status: string) => {
+    world.jewelryStatus = +status;
+  });
+  step(
+    /^a saved copy of the jewelry sheet prices item (\d+) at (\d+)pp$/,
+    (id: string, pp: string) => {
+      mkdirSync(path.join(world.dir, "cache"), { recursive: true });
+      writeFileSync(
+        path.join(world.dir, "cache/jewelry-sheet.json"),
+        JSON.stringify([
+          [
+            +id,
+            { materials: [], trivial: 0, success: 1, price: +pp, note: "" },
+          ],
+        ])
+      );
+    }
+  );
+  step(/^the site reads the jewelry sheet$/, async () => {
+    await site();
+    await world.mod!.readJewelrySheet();
+    expect(world.jewelryAsked).toBe(1);
+  });
+  step(
+    /^the bank sends item (\d+), "(.*)", made to order with:$/,
+    (id: string, name: string, rows: Record<string, string>[]) => {
+      const it = bank().items[+id];
+      expect(it?.name).toBe(name);
+      const want = Object.fromEntries(
+        rows.map((r) => [r.field, JSON.parse(r.value)])
+      );
+      expect(it).toHaveProperty("jewelry", want);
+    }
+  );
+  step(/^the bank sends no jewelry$/, () => {
+    for (const it of Object.values(bank().items))
+      expect(it).not.toHaveProperty("jewelry");
   });
 
   step(/^the site refreshes the wiki$/, async () => {
@@ -902,10 +1021,18 @@ export const steps = ({
   step(/^posting bank requests is set up$/, () => {
     world.env.token = "bot-token";
     world.env.bankRequestsChannelId = "requests-channel";
+    world.env.jewelryChannelId = "jewelry-channel";
   });
   // The site reads its settings as it starts, so this one starts afresh. Sign-ins outlast it.
+  step(/^the site restarts$/, () => {
+    world.base = "";
+  });
   step(/^the site restarts without the bot's token$/, () => {
     delete world.env.token;
+    world.base = "";
+  });
+  step(/^the site restarts without the jewelry channel$/, () => {
+    delete world.env.jewelryChannelId;
     world.base = "";
   });
   step(/^Discord refuses posts$/, () => {
@@ -946,6 +1073,19 @@ export const steps = ({
   step(/^(\w+) posts a bank request that isn't JSON$/, (who: string) =>
     request(who, "/api/bank-request", { method: "POST", body: "not json" })
   );
+  step(
+    /^(\w+) posts a bank request to #(\w+)$/,
+    (who: string, channel: string) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: JSON.stringify({
+          channel,
+          embeds: [
+            { title: "Bank request", description: "• Pearl (1)", color: 1 },
+          ],
+        }),
+      })
+  );
   step(/^(\w+) posts (\d+) bank requests$/, async (who: string, n: string) => {
     world.answers = [];
     for (let i = 0; i < +n; i++)
@@ -972,6 +1112,24 @@ export const steps = ({
       ).toEqual(rows);
     }
   );
+  step(
+    /^the bot posts in #jewelry-requests:$/,
+    (rows: Record<string, string>[]) => {
+      expect(world.posts).toHaveLength(0);
+      expect(world.jewelryPosts).toHaveLength(1);
+      const [post] = world.jewelryPosts;
+      expect(post.auth).toBe("Bot bot-token");
+      expect(
+        post.body.embeds.map((e) => ({
+          title: e.title,
+          url: e.url ?? "",
+          description: e.description,
+          footer: e.footer?.text ?? "",
+          thumbnail: e.thumbnail?.url ?? "",
+        }))
+      ).toEqual(rows);
+    }
+  );
   step(/^the bot has posted (\d+) bank requests?$/, (n: string) =>
     expect(world.posts).toHaveLength(+n)
   );
@@ -980,6 +1138,39 @@ export const steps = ({
     /^the bank says (\w+) is signed in as "(.*)"$/,
     (_: string, name: string) =>
       expect((JSON.parse(text()) as { me: unknown }).me).toEqual({ name })
+  );
+
+  // ---------- bank office alerts ----------
+  step(/^the bank office is set up$/, () => {
+    world.env.token = "bot-token";
+    world.env.bankOfficeChannelId = "bank-office";
+    world.env.bankSheetAlerts = "on";
+  });
+  step(/^the bank office is set up with its alerts switched off$/, () => {
+    world.env.token = "bot-token";
+    world.env.bankOfficeChannelId = "bank-office";
+  });
+  step(/^the bank office refuses posts$/, () => {
+    world.officeStatus = 500;
+  });
+  step(/^the bank office accepts posts again$/, () => {
+    world.officeStatus = 200;
+  });
+  step(/^the bank office is told "(.*)"$/, (text: string) =>
+    expect(world.officePosts[world.officePosts.length - 1] ?? "").toContain(
+      text
+    )
+  );
+  step(
+    /^the bank office is told a cut message of at most (\d+) characters$/,
+    (n: string) => {
+      const last = world.officePosts[world.officePosts.length - 1] ?? "";
+      expect(last.length).toBeLessThanOrEqual(+n);
+      expect(last.endsWith("...")).toBe(true);
+    }
+  );
+  step(/^the bank office has been told (\d+) times?$/, (n: string) =>
+    expect(world.officePosts).toHaveLength(+n)
   );
 
   // ---------- page errors ----------
@@ -1086,8 +1277,8 @@ export const steps = ({
     );
   });
   step(
-    /^the wiki and all three sheets are refreshed again every (\d+) minutes$/,
-    (min: string) => expect(world.every).toEqual(Array(4).fill(+min * 60e3))
+    /^the wiki and all four sheets are refreshed again every (\d+) minutes$/,
+    (min: string) => expect(world.every).toEqual(Array(5).fill(+min * 60e3))
   );
   step(
     /^a promise fails with (an error|the bare value) "(.*)" and nothing catches it$/,
