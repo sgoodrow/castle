@@ -77,8 +77,6 @@ for row in d["rows"]:
         # IdleQuest numbers some focus spells past the end of Quarm's spell table.
         if r["focuseffect"] not in spells:
             r["focuseffect"] = -1
-    # Set after the IdleQuest match above, which compares names with Quarm's spelling.
-    r["Name"] = GAME_NAME.get(r["id"], r["Name"])
     out = {}
     for src, dst in KEEP.items():
         v = r.get(src)
@@ -88,6 +86,8 @@ for row in d["rows"]:
             v = int(v)
         out[dst] = v
     # EQ marks LORE items with a leading '*' in the lore text; nodrop/norent 0 means NO DROP / NO RENT.
+    # Applied to the output, so the IdleQuest match above still sees Quarm's spelling.
+    out["name"] = GAME_NAME.get(r["id"], out["name"])
     out["nodrop"] = r.get("nodrop") == 0
     out["norent"] = r.get("norent") == 0
     out["lore"] = str(r.get("lore") or "").startswith("*")
