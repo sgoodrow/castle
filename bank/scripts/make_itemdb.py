@@ -30,6 +30,8 @@ KEEP = {
     "proceffect": "proc", "proclevel": "proclvl", "worneffect": "worn", "worntype": "worntype",
     "focuseffect": "focus", "scrolleffect": "scroll", "bardtype": "bardtype", "bardvalue": "bardval",
 }
+# Quarm's list spells this item differently from the game's uploads and the bankers' sheets; the game's spelling wins.
+GAME_NAME = {16337: "Spell: Wrath of Ap'Sagor"}
 # A value equal to the default carries no information, so it is dropped.
 DEFAULT = {"click": -1, "proc": -1, "worn": -1, "focus": -1, "scroll": -1, "charges": 0}
 
@@ -83,7 +85,15 @@ for row in d["rows"]:
     out["nodrop"] = r.get("nodrop") == 0
     out["norent"] = r.get("norent") == 0
     out["lore"] = str(r.get("lore") or "").startswith("*")
+    # Applied to the output, after the IdleQuest match above, which still sees Quarm's spelling.
+    if r["id"] in GAME_NAME:
+        out["name"] = GAME_NAME[r["id"]]
+    # Quarm drops the apostrophe from the Wolf's Eye family; the game and the bankers' sheets keep it.
+    if "name" in out:
+        out["name"] = re.sub(r"\bWolfs Eye\b", "Wolf's Eye", out["name"])
     items[r["id"]] = out
+# A GAME_NAME id that a re-pulled item list no longer has would otherwise be a silent no-op.
+assert all(i in items for i in GAME_NAME), "GAME_NAME id missing from the item list"
 
 # Only keep spells that items reference.
 used = set()

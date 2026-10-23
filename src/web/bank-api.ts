@@ -26,14 +26,10 @@ const SPELL_KEYS = ["click", "proc", "worn", "focus", "scroll"];
 const JEWELRY_PINNED: Record<string, number> = {
   "Fire Emerald Velium Ring": 30343, // the one without the -1 skill modifier of 30355
 };
-// The sheet spells six recipes differently from the game, which the item database keeps. The sheet's
+// The sheet spells two recipes differently from the game, which the item database keeps. The sheet's
 // spelling is matched to the game's here, from this reviewed list, so the sheet never has to change.
 const JEWELRY_ALIASES = new Map<string, string>([
-  ["Velium Wolf's Eye Necklace", "Wolfs Eye Velium Necklace"],
-  ["Wolf's Eye Platinum Necklace", "Wolfs Eye Platinum Necklace"],
-  ["Wolf's Eye Golden Bracelet", "Wolfs Eye Golden Bracelet"],
-  ["Wolf's Eye Electrum Bracelet", "Wolfs Eye Electrum Bracelet"],
-  ["Silver Wolf's Eye Necklace", "Silver Wolfs Eye Necklace"],
+  ["Velium Wolf's Eye Necklace", "Wolf's Eye Velium Necklace"],
   ["Velium Rose Engagement Ring", "Rose Velium Engagement Ring"],
 ]);
 // The wiki has these recipes under the sheet's spelling, so their pages are found by that name.
