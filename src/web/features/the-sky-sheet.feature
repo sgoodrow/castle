@@ -137,6 +137,27 @@ Feature: The Sky sheet
       | Griffon's Beak     | Griffons Beak     | 20781 |
       | Blood Sky Sapphire | Bloodsky Sapphire | 20996 |
 
+  Scenario Outline: A Sky item the announcements tab spells differently from the game gets its island
+    Given the bankers' uploads hold:
+      | banker | spot     | item        | count |
+      | cgskya | General1 | <game name> | 1     |
+    And the Sky sheet's announcements tab is:
+      """
+      Items,Island,Item Counts,Notes,Missing Items
+      <sheet name>,Island <island>,6,,
+      """
+    When the site reads the Sky sheet
+    And Someone asks for the bank
+    Then the bank describes "<game name>" with:
+      | field | value                               |
+      | sky   | {"islands": [<island>], "note": ""} |
+
+    Examples:
+      | sheet name       | game name         | island |
+      | Augmentor's Gem  | Augmentors Gem    | 2      |
+      | Mithril Air Ring | Mithril  Air Ring | 5      |
+      | Wilder's Girdle  | Wilders Girdle    | 5      |
+
   Scenario: A name matched to an item the database lacks is logged
     Given the Sky name "Large Sky Sapphire" means item 99999
     And the Sky sheet's Multiquest tab is:

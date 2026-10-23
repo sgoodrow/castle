@@ -212,7 +212,10 @@ export class BankApi {
     // A Sky item is one the Sky sheet lists, or one only the Sky mules (or multiquest holders) hold.
     for (const [id, it] of Object.entries(items)) {
       if (it.jewelry) continue; // jewelry is made to order, never Sky, even when the Sky sheet names it
-      const part = this.sky.get(it.name as string);
+      // The sheet may spell it differently from the game: try the names the reviewed list gives it.
+      const names = [it.name as string];
+      for (const [n, i] of SKY_ITEM_IDS) if (i === +id) names.push(n);
+      const part = names.map((n) => this.sky.get(n)).find(Boolean);
       if (part) it.sky = part;
       else if (!offSky.has(+id)) it.sky = { islands: [], note: "" };
     }

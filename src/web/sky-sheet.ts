@@ -10,8 +10,8 @@ import { SheetAlert } from "./sheet-alert";
 
 export const SKY_SHEET =
   "https://docs.google.com/spreadsheets/d/1zznLAdu688lxfQ7TuBzBx11wuT9eLClakOuMa8rveKg/export?format=csv&gid=";
-// The tabs, by id, which survives a rename. "Item Counts and announcements" spells its item names as
-// the bank's uploads spell them.
+// The tabs, by id, which survives a rename. "Item Counts and announcements" mostly spells its item
+// names as the bank's uploads spell them; SKY_ITEM_IDS covers the ones it doesn't.
 export const SKY_TAB = "2041401641";
 export const MQ_TAB = "412443712"; // "Multiquest"
 
@@ -80,8 +80,8 @@ export type Lookup = number | "no such item" | "more than one item";
 // [holder, item id, count]: who holds how many of an item for multiquesting.
 export type MqHolding = [holder: string, id: number, count: number];
 
-// The id the sheet means by a name, by lowercase name: names the database has more than one item
-// for, and names the sheet spells differently from the game. Add a shared name only once a banker
+// The id the sheet means by a name, on either tab, by lowercase name: names the database has more
+// than one item for, and names the sheet spells differently from the game. Add a shared name only once a banker
 // confirms which item it is. Leather Cord is 3656, which Scott chose from the wiki page: the Plane
 // of Sky drop, 1.0 weight, small, no class. No banker has confirmed it yet. The others are the only
 // item the game spells that way, apostrophes dropped, words joined or spaced as the game has them.
