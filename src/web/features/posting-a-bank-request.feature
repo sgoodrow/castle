@@ -123,11 +123,12 @@ Feature: Posting a bank request
       | embed                                                              |
       | null                                                               |
       | {"title": "", "description": "", "color": 0}                       |
-      | {"title": "T", "description": 1, "color": 0}                       |
-      | {"title": "T", "description": "", "color": 16777216}               |
-      | {"title": "T", "description": "", "color": -1}                     |
-      | {"title": "T", "description": "", "color": 0.5}                    |
+      | {"description": 1, "color": 0}                                     |
+      | {"description": "", "color": 16777216}                             |
+      | {"description": "", "color": -1}                                   |
+      | {"description": "", "color": 0.5}                                  |
       | {"description": "", "color": 0, "fields": {}}                      |
+      | {"description": "", "color": 0, "fields": [null]}                  |
       | {"description": "", "color": 0, "fields": [{"name": "", "value": "v"}]} |
       | {"description": "", "color": 0, "fields": [{"name": "n", "value": ""}]} |
       | {"description": "", "color": 0, "footer": 1}                       |
