@@ -82,7 +82,7 @@ Feature: The Sky sheet
     Given the Sky sheet's Multiquest tab is:
       """
       ,ITEM,CLASS,,
-      Rabbie,Blood Sky Sapphire,Druid,,
+      Rabbie,Imaginary Sky Gem,Druid,,
       Kelra,Large Sky Sapphire,Cleric,,
       `````````,Griffon Eye,Druid,,
       """
@@ -90,7 +90,7 @@ Feature: The Sky sheet
     And Someone asks for the bank
     Then the bank holds for multiquesting:
       | holder | item | id | count |
-    And the log says "bank web: sky sheet: multiquest: no such item Blood Sky Sapphire; multiquest: more than one item called Large Sky Sapphire; multiquest: no holder for Griffon Eye"
+    And the log says "bank web: sky sheet: multiquest: no such item Imaginary Sky Gem; multiquest: more than one item called Large Sky Sapphire; multiquest: no holder for Griffon Eye"
 
   Scenario: A name the sheet means one item by is matched to that item
     Given the Sky name "Large Sky Sapphire" means item 20778
@@ -116,6 +116,26 @@ Feature: The Sky sheet
     Then the bank holds for multiquesting:
       | holder | item         | id   | count |
       | Kelra  | Leather Cord | 3656 | 1     |
+
+  Scenario Outline: A Sky item the sheet spells differently from the game is still the game's item
+    Given the Sky sheet's Multiquest tab is:
+      """
+      ,ITEM,CLASS,,
+      Kelra,<sheet name>,Cleric,,
+      """
+    When the site reads the Sky sheet
+    And Someone asks for the bank
+    Then the bank holds for multiquesting:
+      | holder | item        | id   | count |
+      | Kelra  | <game name> | <id> | 1     |
+
+    Examples:
+      | sheet name         | game name         | id    |
+      | Augmentor's Gem    | Augmentors Gem    | 20741 |
+      | Mithril Air Ring   | Mithril  Air Ring | 20747 |
+      | Wilder's Girdle    | Wilders Girdle    | 20734 |
+      | Griffon's Beak     | Griffons Beak     | 20781 |
+      | Blood Sky Sapphire | Bloodsky Sapphire | 20996 |
 
   Scenario: A name matched to an item the database lacks is logged
     Given the Sky name "Large Sky Sapphire" means item 99999

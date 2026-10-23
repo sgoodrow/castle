@@ -97,6 +97,7 @@ export function classCosts(rows: string[][]): [name: string, cost: string][] {
 // one only once the item database has the spell under the other name.
 export const SPELL_ITEMS = new Map<string, string>([
   [spellKey("Muzzle of Mardu"), "Spell: Summon: Muzzle of Mardu"],
+  [spellKey("Improved Invis to Undead"), "Spell: Improved Invis vs Undead"],
 ]);
 
 export class SpellSheet {

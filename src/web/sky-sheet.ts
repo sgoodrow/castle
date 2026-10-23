@@ -80,11 +80,19 @@ export type Lookup = number | "no such item" | "more than one item";
 // [holder, item id, count]: who holds how many of an item for multiquesting.
 export type MqHolding = [holder: string, id: number, count: number];
 
-// Item names the database has more than one item for, by lowercase name, and the id the sheet means
-// by each. Add one only once a banker confirms which item it is. Leather Cord is 3656, which Scott
-// chose from the wiki page: the Plane of Sky drop, 1.0 weight, small, no class. No banker has
-// confirmed it yet.
-export const SKY_ITEM_IDS = new Map<string, number>([["leather cord", 3656]]);
+// The id the sheet means by a name, by lowercase name: names the database has more than one item
+// for, and names the sheet spells differently from the game. Add a shared name only once a banker
+// confirms which item it is. Leather Cord is 3656, which Scott chose from the wiki page: the Plane
+// of Sky drop, 1.0 weight, small, no class. No banker has confirmed it yet. The others are the only
+// item the game spells that way, apostrophes dropped, words joined or spaced as the game has them.
+export const SKY_ITEM_IDS = new Map<string, number>([
+  ["leather cord", 3656],
+  ["augmentor's gem", 20741], // Augmentors Gem
+  ["mithril air ring", 20747], // Mithril  Air Ring, two spaces
+  ["wilder's girdle", 20734], // Wilders Girdle
+  ["griffon's beak", 20781], // Griffons Beak
+  ["blood sky sapphire", 20996], // Bloodsky Sapphire
+]);
 
 export class SkySheet {
   private parts = new Map<string, SkyPart>();
