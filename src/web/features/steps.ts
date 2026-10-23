@@ -1051,12 +1051,48 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   );
   const embeds = (n: number, description = "x") =>
     JSON.stringify({
-      embeds: Array.from({ length: n }, (_, i) => ({
-        title: `Embed ${i + 1}`,
-        description,
-        color: 0,
-      })),
+      embeds: Array.from({ length: n }, () => ({ description, color: 0 })),
     });
+  // A post of one embed whose one field has the given name and value.
+  const field = (name: string, value: string) =>
+    JSON.stringify({
+      embeds: [{ description: "", color: 0, fields: [{ name, value }] }],
+    });
+  step(
+    /^(\w+) posts a bank request with (\d+) fields$/,
+    (who: string, n: string) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: JSON.stringify({
+          embeds: [
+            {
+              description: "",
+              color: 0,
+              fields: Array.from({ length: +n }, () => ({
+                name: "n",
+                value: "v",
+              })),
+            },
+          ],
+        }),
+      })
+  );
+  step(
+    /^(\w+) posts a bank request with a field name of (\d+) characters$/,
+    (who: string, n: string) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: field("x".repeat(+n), "v"),
+      })
+  );
+  step(
+    /^(\w+) posts a bank request with a field value of (\d+) characters$/,
+    (who: string, n: string) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: field("n", "x".repeat(+n)),
+      })
+  );
   step(
     /^(\w+) posts a bank request of (\d+) embeds?$/,
     (who: string, n: string) =>
@@ -1088,9 +1124,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         method: "POST",
         body: JSON.stringify({
           channel,
-          embeds: [
-            { title: "Bank request", description: "• Pearl (1)", color: 1 },
-          ],
+          embeds: [{ description: "• Pearl (1)", color: 1 }],
         }),
       })
   );

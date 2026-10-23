@@ -7,6 +7,7 @@ import type { DefineStep } from "../testing/gherkin";
 import type { PrismaPublicAccounts } from "../services/bot/bot-prisma";
 import { BOT_ID, newId, post, world, type Message, type Row } from "./world";
 import { commandOpening } from "../features/bank-request-info/bank-request";
+import { requesterId, requesterLine } from "../shared/bank-request-author";
 
 const MINUTE = 60 * 1000;
 const PUBLIC_SHEET = "public-sheet";
@@ -58,10 +59,7 @@ const requestOf = (name: string, channel = "bank-requests") => {
     (m) =>
       m.author.id === BOT_ID &&
       (m.content.includes(`<@${id}>`) ||
-        m.embeds.some(
-          (e) =>
-            e.url?.endsWith(`/${id}`) || e.description?.includes(`<@${id}>`)
-        ))
+        m.embeds.some((e) => requesterId(e) === id))
   );
   if (!found) throw new Error(`${name} has no request in #${channel}`);
   return found;
@@ -83,7 +81,8 @@ const shown = (m: Message, columns: string[]) => {
     content: m.content,
     title: embed?.title ?? "",
     url: embed?.url ?? "",
-    description: embed?.description ?? "",
+    // A post's lines read on one row, so a line break shows as " / ".
+    description: (embed?.description ?? "").trim().replace(/\n+/g, " / "),
     pings: m.pings ? "yes" : "no",
   };
   return Object.fromEntries(columns.map((c) => [c, cells[c]]));
@@ -234,15 +233,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       post(
         "bank-requests",
         BOT_ID,
-        {
-          embeds: [
-            {
-              title: `@${name} has placed a bank request`,
-              url: `https://discord.com/users/${id}`,
-              description: lines,
-            },
-          ],
-        },
+        { embeds: [{ description: `${requesterLine(id, name)}\n\n${lines}` }] },
         daysAgo(days)
       );
     }
@@ -496,7 +487,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       const theirs = (world.channels["bank-requests"] ?? []).filter(
         (m) =>
           m.content.includes(`<@${id}>`) ||
-          m.embeds.some((e) => e.url?.endsWith(`/${id}`))
+          m.embeds.some((e) => requesterId(e) === id)
       );
       expect(theirs.length).toBeGreaterThan(0);
       expect(theirs.map((m) => m.gone)).toEqual(

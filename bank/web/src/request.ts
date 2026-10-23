@@ -50,8 +50,8 @@ export function requestMessages(tab: Tab, cls: ClassId | null): RequestMessage[]
   return posts.filter((m): m is RequestMessage => m !== null);
 }
 
-// An item's name, linked to its P99 wiki page. The page's address can hold brackets, which would end
-// the link early, so they're written as their escapes.
+// An item's name, linked to its P99 wiki page. The page's address can hold parentheses, which would
+// end the link early, so they're written as their escapes.
 const itemName = (it: Item) => it.wiki ? `[${it.name}](${it.wiki.replace(/\(/g, "%28").replace(/\)/g, "%29")})` : it.name;
 
 function requestMessage(lines: Line[], total: string, channel: RequestMessage["channel"]): RequestMessage {

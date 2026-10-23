@@ -1,4 +1,4 @@
-import { requesterId } from "../../shared/bank-request-author";
+import { requestBody, requesterId } from "../../shared/bank-request-author";
 import { Icon } from "./types";
 
 // /bank request opens its post with the request icon and a mention of the member.
@@ -13,7 +13,8 @@ export const readBankRequest = (post: {
 }) => {
   const embed = post.embeds[0];
   const site = embed && requesterId(embed);
-  if (site) return { requesterId: site, text: embed.description ?? "" };
+  if (site)
+    return { requesterId: site, text: requestBody(embed.description ?? "") };
   const command = post.content.match(COMMAND)?.[1];
   return command ? { requesterId: command, text: post.content } : null;
 };

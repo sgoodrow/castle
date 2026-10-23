@@ -85,6 +85,29 @@ Feature: Posting a bank request
     When Alice posts a bank request with a 4097-character description
     Then the answer is 400 "Bad request"
 
+  Scenario: The first embed leaves room for the line naming the member
+    When Alice posts a bank request with a 3990-character description
+    Then the answer is 400 "Bad request"
+
+  Scenario: A post of more fields than one embed holds is refused
+    When Alice posts a bank request with 26 fields
+    Then the answer is 400 "Bad request"
+
+  Scenario: A field name too long for Discord is refused
+    When Alice posts a bank request with a field name of 257 characters
+    Then the answer is 400 "Bad request"
+
+  Scenario: A field value too long for Discord is refused
+    When Alice posts a bank request with a field value of 1025 characters
+    Then the answer is 400 "Bad request"
+
+  Scenario: A post of its own title is refused, since the member's line heads it
+    When Alice posts the bank request:
+      """
+      {"embeds": [{"title": "Bank request", "description": "• Pearl (1)", "color": 0}]}
+      """
+    Then the answer is 400 "Bad request"
+
   Scenario: A post longer than Discord allows in all is refused
     When Alice posts a bank request of 3 embeds with 2000-character descriptions
     Then the answer is 400 "Bad request"

@@ -11,7 +11,6 @@ const DISCORD = "https://discord.com/api/v10";
 // display name is at most 32 characters, and the line holds the profile link too).
 const REQUESTER = 160;
 const MAX_EMBEDS = 10;
-const MAX_TITLE = 256;
 const MAX_DESCRIPTION = 4096;
 const MAX_FIELDS = 25;
 const MAX_FIELD_NAME = 256;
@@ -25,7 +24,6 @@ export interface PostField {
 }
 
 export interface PostEmbed {
-  title?: string;
   description: string;
   color: number;
   fields?: PostField[];
@@ -58,8 +56,11 @@ export function readPost(body: unknown): PostEmbed[] | null {
       string,
       unknown
     >;
-    if (title !== undefined && !isFilled(title, MAX_TITLE)) return null;
-    if (!isText(description, MAX_DESCRIPTION)) return null;
+    // The page sends no titles. The server heads the first embed with the line naming the member.
+    if (title !== undefined) return null;
+    // The first embed also carries that line, so it has less room left.
+    const limit = out.length ? MAX_DESCRIPTION : MAX_DESCRIPTION - REQUESTER;
+    if (!isText(description, limit)) return null;
     if (!isInt(color) || color < 0 || color > 0xffffff) return null;
     if (footer !== undefined && !isText(footer, MAX_FOOTER)) return null;
     if (fields !== undefined && !Array.isArray(fields)) return null;
@@ -70,13 +71,8 @@ export function readPost(body: unknown): PostEmbed[] | null {
       (n, f) => n + f!.name.length + f!.value.length,
       0
     );
-    total +=
-      (title?.length ?? 0) +
-      description.length +
-      (footer?.length ?? 0) +
-      fieldText;
+    total += description.length + (footer?.length ?? 0) + fieldText;
     out.push({
-      ...(title ? { title } : {}),
       description,
       color,
       ...(fields?.length ? { fields: read as PostField[] } : {}),
@@ -108,7 +104,6 @@ export async function postRequest(
     body: JSON.stringify({
       allowed_mentions: { parse: [] },
       embeds: embeds.map((e, i) => ({
-        ...(e.title ? { title: e.title } : {}),
         description:
           i === 0
             ? `${requesterLine(me.id, me.name)}\n\n${e.description}`

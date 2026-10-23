@@ -17,8 +17,8 @@ Feature: Filling a bank request
       """
     When Dana reacts ✅ to Alice's request
     Then the bot posts in #bank-transactions:
-      | content       | title                            | url                             | description              | pings |
-      | ✅ by <@Dana> | @Alice has placed a bank request | https://discord.com/users/Alice | • Cloak of Flames (800p) | no    |
+      | content       | description                                                                            | pings |
+      | ✅ by <@Dana> | [@Alice](https://discord.com/users/Alice) has placed a bank request. / • Cloak of Flames (800p) | no    |
     And Alice's request is no longer in #bank-requests
 
   Scenario: A banker fills a request posted before titles named members
@@ -28,8 +28,8 @@ Feature: Filling a bank request
       """
     When Dana reacts ✅ to Alice's request
     Then the bot posts in #bank-transactions:
-      | content       | title | url | description                                         | pings |
-      | ✅ by <@Dana> |       |     | <@Alice> has placed a bank request.\n\n• Pearl (free) | no    |
+      | content       | description                                            | pings |
+      | ✅ by <@Dana> | <@Alice> has placed a bank request. / • Pearl (free) | no    |
 
   Scenario: A banker fills a request from the bank page with nothing in it
     Given Alice placed a bank request on the bank page:
@@ -37,8 +37,8 @@ Feature: Filling a bank request
       """
     When Dana reacts ✅ to Alice's request
     Then the bot posts in #bank-transactions:
-      | content       | title                            | description |
-      | ✅ by <@Dana> | @Alice has placed a bank request |             |
+      | content       | description                                                 |
+      | ✅ by <@Dana> | [@Alice](https://discord.com/users/Alice) has placed a bank request. |
 
   Scenario: A banker fills a /bank request
     Given Bob placed a bank request with /bank request: "Cloak of Flames"
