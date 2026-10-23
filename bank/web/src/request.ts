@@ -32,8 +32,8 @@ function spots(it: Item, from: string[], inline: boolean) {
     +planned(b) - +planned(a) || a.char.localeCompare(b.char) || a.loc.localeCompare(b.loc, undefined, { numeric: true }));
   const shown = sorted.slice(0, 6).map(h => `${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
   const more = sorted.length - shown.length;
-  if (inline) return [...shown, ...(more > 0 ? [`…and ${more} more`] : [])].join(", ");
-  return [...shown.map(s => `• ${s}`), ...(more > 0 ? [`-# …and ${more} more`] : [])].join("\n");
+  const rest = more > 0 ? [`…and ${more} more`] : [];
+  return inline ? [...shown, ...rest].join(", ") : [...shown.map(s => `• ${s}`), ...rest.map(r => `-# ${r}`)].join("\n");
 }
 
 // A tab's bank items and its jewelry each post to their own channel, so a mixed tab gives two posts.
@@ -80,8 +80,9 @@ function requestMessage(lines: Line[], total: string, channel: RequestMessage["c
   // Jewelry is one embed: each item is a linked bullet, with where it's held under it.
   const jewelry = channel === "jewelry";
   const rows = jewelry
-    ? cards.flatMap(l => {
-      const where = spots(l.it, l.from, true);
+    ? lines.flatMap(l => {
+      // Jewelry has no logins to plan, so its items stay in the tab's order.
+      const where = spots(l.it, [], true);
       return [`• ${quantity(l.qty)}${itemName(l.it)} (${priceText(l.req.price, l.qty)})`, ...(where ? [`-# ${where}`] : [])];
     })
     : lines.map(l => `• ${quantity(l.qty)}${itemName(l.it)} (${priceText(l.req.price, l.qty)})`);

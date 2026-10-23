@@ -10,8 +10,9 @@ const hex = (c: number) => `#${c.toString(16).padStart(6, "0")}`;
 // The little markdown the bot uses: [links](address), **bold**, `-# ` subtext and line breaks.
 const LINK = /(\[[^\]]+\]\(https?:\/\/[^)\s]+\))/;
 const bold = (s: string) => s.split(/\*\*(.+?)\*\*/).map((part, j) => (j % 2 ? <b key={j} style={{ color: D.name }}>{part}</b> : part));
+// Only the pieces the link pattern captured are links; the text between them is never read as one.
 const inline = (s: string) => s.split(LINK).map((part, j) => {
-  const link = part.match(/^\[([^\]]+)\]\((.+)\)$/);
+  const link = j % 2 ? part.match(/^\[([^\]]+)\]\((.+)\)$/) : null;
   return link ? <a key={j} href={link[2]} target="_blank" rel="noreferrer" style={{ color: D.link }}>{link[1]}</a> : bold(part);
 });
 const md = (s: string) => s.split("\n").map((line, i) => (
