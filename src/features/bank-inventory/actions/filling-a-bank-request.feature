@@ -48,6 +48,110 @@ Feature: Filling a bank request
       | ✍️ <@Bob> requests: Cloak of Flames -- ✅ by <@Dana> |       |
     And Bob's request is no longer in #bank-requests
 
+  Scenario: A jeweler fills a jewelry request
+    Given Frances is a Castle jeweler
+    And Alice placed a jewelry request in #jewelry-requests:
+      """
+      • Golden Cat Eye Bracelet (13pp)
+      """
+    When Frances reacts ✅ to Alice's request in #jewelry-requests
+    Then the bot posts in #bank-transactions:
+      | content       | title                            | description                        | pings |
+      | ✅ by <@Frances> | @Alice has placed a bank request | • Golden Cat Eye Bracelet (13pp) | no    |
+    And Alice's request is no longer in #jewelry-requests
+
+  Scenario: A member who isn't a jeweler can't fill a jewelry request
+    Given Bob is a Castle member
+    And Alice placed a jewelry request in #jewelry-requests:
+      """
+      • Golden Cat Eye Bracelet (13pp)
+      """
+    When Bob reacts ✅ to Alice's request in #jewelry-requests
+    Then nothing is posted in #bank-transactions
+    And Alice's request is still in #jewelry-requests
+
+  Scenario: A jeweler can't fill a bank request
+    Given Frances is a Castle jeweler
+    And Alice placed a bank request on the bank page:
+      """
+      • Cloak of Flames (800p)
+      """
+    When Frances reacts ✅ to Alice's request
+    Then nothing is posted in #bank-transactions
+    And Alice's request is still in #bank-requests
+
+  Scenario: A banker fills a jewelry request
+    Given Alice placed a jewelry request in #jewelry-requests:
+      """
+      • Golden Cat Eye Bracelet (13pp)
+      """
+    When Dana reacts ✅ to Alice's request in #jewelry-requests
+    Then the bot posts in #bank-transactions:
+      | content       | title                            | description                      | pings |
+      | ✅ by <@Dana> | @Alice has placed a bank request | • Golden Cat Eye Bracelet (13pp) | no    |
+    And Alice's request is no longer in #jewelry-requests
+
+  Scenario: A member cancels their own jewelry request
+    Given Alice placed a jewelry request in #jewelry-requests:
+      """
+      • Golden Cat Eye Bracelet (13pp)
+      """
+    When Alice reacts ❌ to Alice's request in #jewelry-requests
+    Then Alice's request is no longer in #jewelry-requests
+
+  Scenario: A jeweler fills a jewelry request a member typed by hand
+    Given Frances is a Castle jeweler
+    And Alice typed in #jewelry-requests:
+      """
+      ✍️ <@Alice> requests: 2 rings
+      """
+    When Frances reacts ✅ to Alice's typed message in #jewelry-requests
+    Then the bot posts in #bank-transactions:
+      | content | pings |
+      | <@Alice>: ✍️ <@Alice> requests: 2 rings -- ✅ by <@Frances> | no |
+
+  Scenario: A jeweler can't fill a request a member typed in #bank-requests
+    Given Frances is a Castle jeweler
+    And Alice typed in #bank-requests:
+      """
+      ✍️ <@Alice> requests: 2 rings
+      """
+    When Frances reacts ✅ to Alice's typed message in #bank-requests
+    Then nothing is posted in #bank-transactions
+
+  Scenario: A banker can't fill a request a member typed in #bank-requests either
+    Given Dana is a Castle banker
+    And Alice typed in #bank-requests:
+      """
+      ✍️ <@Alice> requests: 2 rings
+      """
+    When Dana reacts ✅ to Alice's typed message in #bank-requests
+    Then nothing is posted in #bank-transactions
+
+  Scenario: A member can't cancel a request someone else typed that names them
+    Given Mallory is a Castle member
+    And Mallory typed in #jewelry-requests:
+      """
+      ✍️ <@Carol> requests: 2 rings
+      """
+    When Carol reacts ❌ to Mallory's typed message in #jewelry-requests
+    Then Mallory's typed message is still in #jewelry-requests
+
+  Scenario: A member mentioned in a jewelry request can't cancel it
+    Given Bob placed a jewelry request in #jewelry-requests mentioning Carol:
+      """
+      • Golden Cat Eye Bracelet (13pp)
+      """
+    When Carol reacts ❌ to Bob's request in #jewelry-requests
+    Then Bob's request is still in #jewelry-requests
+
+  Scenario: A ✅ on the jewelry instructions does nothing
+    Given Dana is a Castle banker
+    And the bot's jewelry instructions are in #jewelry-requests
+    When Dana reacts ✅ to the bot's instructions in #jewelry-requests
+    Then nothing is posted in #bank-transactions
+    And the bot's jewelry instructions are still in #jewelry-requests
+
   Scenario Outline: Officers and mods can fill requests too
     Given Erin is a Castle <role>
     And Alice placed a bank request on the bank page:

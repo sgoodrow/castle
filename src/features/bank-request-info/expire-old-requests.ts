@@ -1,5 +1,5 @@
 import { Message } from "discord.js";
-import { bankRequestsChannelId } from "../../config";
+import { bankRequestsChannelId, jewelryChannelId } from "../../config";
 import { client, getTextChannel } from "../..";
 import {
   Options,
@@ -11,9 +11,9 @@ import { log } from "../../shared/logger";
 import { DAYS } from "../../shared/time";
 import { dismissal } from "./dismissal";
 
-// Requests the bot posted to #bank-requests, from the bank page or /bank request, are removed once
-// they're 30 days old, and the member is sent each one by DM. Players' own posts, and the bot's
-// instructions, are left alone.
+// Requests the bot posted to #bank-requests and #jewelry-requests, from the bank page or /bank request,
+// are removed once they're 30 days old, and the member is sent each one by DM. Players' own posts,
+// and the bot's instructions, are left alone.
 export const MAX_AGE_DAYS = 30;
 
 type Post = Pick<
@@ -26,7 +26,8 @@ export const expireOldRequests = async (
   channel: MessageSource<Post>,
   botId: string,
   now: number,
-  notify: (userId: string, text: string) => Promise<unknown>
+  notify: (userId: string, text: string) => Promise<unknown>,
+  what = "bank request"
 ) => {
   let removed = 0;
   for await (const m of channelMessages(channel)) {
@@ -46,7 +47,11 @@ export const expireOldRequests = async (
     // A member who doesn't take DMs still has theirs removed.
     await notify(
       request.requesterId,
-      dismissal([request.text], `, as it was open for ${MAX_AGE_DAYS} days`)
+      dismissal(
+        [request.text],
+        `, as it was open for ${MAX_AGE_DAYS} days`,
+        what
+      )
     ).catch(() =>
       log(
         `bank requests: couldn't DM ${request.requesterId} about their removed request`
@@ -62,13 +67,22 @@ export const expireOldBankRequests = (options: Options) =>
 const refreshBankRequests = async () => {
   const botId = client.user?.id;
   if (!botId) return;
-  const channel = await getTextChannel(bankRequestsChannelId);
-  const removed = await expireOldRequests(
-    channel,
-    botId,
-    Date.now(),
-    (id, text) => client.users.send(id, text)
-  );
+  // Jewelry the bot posts expires the same way bank requests do. Members' typed jewelry requests
+  // are left to the jewelers.
+  let removed = 0;
+  for (const [channelId, what] of [
+    [bankRequestsChannelId, "bank request"],
+    [jewelryChannelId, "jewelry request"],
+  ] as const) {
+    const channel = await getTextChannel(channelId);
+    removed += await expireOldRequests(
+      channel,
+      botId,
+      Date.now(),
+      (id, text) => client.users.send(id, text),
+      what
+    );
+  }
   if (removed)
     log(
       `bank requests: removed ${removed} request(s) over ${MAX_AGE_DAYS} days old`

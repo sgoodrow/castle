@@ -6,6 +6,7 @@ import { prismaClient } from "..";
 import type { DefineStep } from "../testing/gherkin";
 import type { PrismaPublicAccounts } from "../services/bot/bot-prisma";
 import { BOT_ID, newId, post, world, type Message, type Row } from "./world";
+import { commandOpening } from "../features/bank-request-info/bank-request";
 
 const MINUTE = 60 * 1000;
 const PUBLIC_SHEET = "public-sheet";
@@ -186,7 +187,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
 
   // ---------- members ----------
   step(
-    /^(\w+) is a Castle (member|banker|officer|mod)$/,
+    /^(\w+) is a Castle (member|banker|officer|mod|jeweler)$/,
     (name: string, role: string) => {
       world.members[name] = {
         id: newId(),
@@ -201,6 +202,31 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   });
 
   // ---------- bank requests ----------
+  step(
+    /^(\w+) placed a jewelry request in #(\S+)(?: (\d+) days ago)?:$/,
+    (
+      name: string,
+      channel: string,
+      days: string | undefined,
+      lines: string
+    ) => {
+      const { id } = member(name);
+      post(
+        channel,
+        BOT_ID,
+        {
+          embeds: [
+            {
+              title: `@${name} has placed a bank request`,
+              url: `https://discord.com/users/${id}`,
+              description: lines,
+            },
+          ],
+        },
+        daysAgo(days)
+      );
+    }
+  );
   step(
     /^(\w+) placed a bank request on the bank page(?: (\d+) days ago)?:$/,
     (name: string, days: string | undefined, lines: string) => {
@@ -267,6 +293,83 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         },
         daysAgo(days)
       );
+    }
+  );
+  // A member's own message, which reads like a request but isn't the bot's.
+  step(/^(\w+) typed in #(\S+):$/, (name: string, channel: string, text: string) => {
+    post(channel, member(name).id, { content: named(text) });
+  });
+  step(
+    /^(\w+) reacts (✅|❌) to (\w+)'s typed message in #(\S+)$/,
+    async (by: string, emoji: string, whose: string, channel: string) => {
+      const { tryBankRequestComplete } =
+        await import("../features/bank-inventory/actions/bank-request-complete-reaction");
+      const message = (world.channels[channel] ?? []).findLast(
+        (m) => m.author.id === member(whose).id
+      );
+      if (!message) throw new Error(`${whose} has typed no message in #${channel}`);
+      const user = { id: member(by).id, toString: () => `<@${member(by).id}>` };
+      await tryBankRequestComplete(
+        { partial: false, emoji: { name: emoji }, message } as never,
+        user as never
+      );
+      // A handler error is swallowed, so a scenario that expects nothing checks for the bot's ⚠️.
+      const errors = (world.channels[channel] ?? []).filter((m) =>
+        m.content.startsWith("⚠️")
+      );
+      expect(errors.map((m) => m.content)).toEqual([]);
+    }
+  );
+  step(/^(\w+)'s typed message is still in #(\S+)$/, (name: string, channel: string) => {
+    expect(
+      (world.channels[channel] ?? []).filter(
+        (m) => m.author.id === member(name).id && !m.gone
+      )
+    ).toHaveLength(1);
+  });
+  // A request that @mentions someone besides its member, as /bank request can.
+  step(
+    /^(\w+) placed a jewelry request in #(\S+) mentioning (\w+):$/,
+    (name: string, channel: string, other: string, lines: string) => {
+      post(channel, BOT_ID, {
+        content: `${commandOpening(`<@${member(name).id}>`)} ${lines.trim()} <@${member(other).id}>`,
+      });
+    }
+  );
+  step(/^the bot's jewelry instructions are in #jewelry-requests$/, () => {
+    post("jewelry-requests", BOT_ID, {
+      embeds: [
+        { title: "Jewelry requests", description: "How to ask for jewelry" },
+      ],
+    });
+  });
+  step(/^the bot's jewelry instructions are still in #jewelry-requests$/, () =>
+    expect(
+      (world.channels["jewelry-requests"] ?? []).filter(
+        (m) => m.embeds[0]?.title === "Jewelry requests" && !m.gone
+      )
+    ).toHaveLength(1)
+  );
+  step(
+    /^(\w+) reacts (✅|❌) to the bot's instructions in #(\S+)$/,
+    async (by: string, emoji: string, channel: string) => {
+      const { tryBankRequestComplete } =
+        await import("../features/bank-inventory/actions/bank-request-complete-reaction");
+      const message = (world.channels[channel] ?? []).findLast(
+        (m) => m.author.id === BOT_ID
+      );
+      if (!message) throw new Error(`no bot message in #${channel}`);
+      const user = { id: member(by).id, toString: () => `<@${member(by).id}>` };
+      await tryBankRequestComplete(
+        { partial: false, emoji: { name: emoji }, message } as never,
+        user as never
+      );
+      // A handler error is swallowed, so a scenario that expects nothing checks for the bot's ⚠️.
+      expect(
+        (world.channels[channel] ?? [])
+          .filter((m) => m.content.startsWith("⚠️"))
+          .map((m) => m.content)
+      ).toEqual([]);
     }
   );
   step(/^the bot's instructions are still in #bank-requests$/, () =>

@@ -29,6 +29,27 @@ Feature: Expiring old bank requests
       """
     And the log says "bank requests: removed 1 request(s) over 30 days old"
 
+  Scenario: A jewelry request is removed at 30 days, the same as a bank request
+    Given Alice placed a jewelry request in #jewelry-requests 29 days ago:
+      """
+      • Golden Cat Eye Bracelet (13pp)
+      """
+    And Bob placed a jewelry request in #jewelry-requests 30 days ago:
+      """
+      • Golden Cat Eye Bracelet (13pp)
+      """
+    When the bot clears out old bank requests
+    Then Alice's request is still in #jewelry-requests
+    And Bob's request is no longer in #jewelry-requests
+    And Bob is sent a DM:
+      """
+      Your <Castle> jewelry request has been dismissed, as it was open for 30 days.
+
+      **Sorry we missed you!** Please post your jewelry request again the next time you are available to have it fulfilled.
+
+      > • Golden Cat Eye Bracelet (13pp)
+      """
+
   Scenario: A /bank request is removed at 30 days, and its member told
     Given Bob placed a bank request with /bank request 45 days ago: "Cloak of Flames x 1"
     When the bot clears out old bank requests
