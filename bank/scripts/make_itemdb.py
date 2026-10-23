@@ -88,8 +88,6 @@ for row in d["rows"]:
     # Applied to the output, after the IdleQuest match above, which still sees Quarm's spelling.
     if r["id"] in GAME_NAME:
         out["name"] = GAME_NAME[r["id"]]
-    # Quarm drops the apostrophe from the Wolf's Eye family; the game and the bankers' sheets keep it.
-    out["name"] = out["name"].replace("Wolfs Eye", "Wolf's Eye")
     items[r["id"]] = out
 # A GAME_NAME id that a re-pulled item list no longer has would otherwise be a silent no-op.
 assert all(i in items for i in GAME_NAME), "GAME_NAME id missing from the item list"
