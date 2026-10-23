@@ -1,7 +1,6 @@
 import { ITEMS, bankRequest, prettyLoc, priceText, requestedFrom, type ClassId, type Item } from "./data";
 import type { Tab } from "./state";
 import { tabTotal, totalText } from "./tab";
-import { loginRoute } from "./route";
 
 // One #bank-requests post for the whole tab, in the shape Discord's API takes, so the page can
 // preview exactly what the bot will send. The summary is one embed; the items' cards are the fields
@@ -14,7 +13,6 @@ export interface RequestMessage { embeds: Embed[]; channel: "bank" | "jewelry"; 
 export const channelName = (channel: RequestMessage["channel"]) => channel === "jewelry" ? "#jewelry-requests" : "#bank-requests";
 
 const BLURPLE = 0x5865f2;
-const GREY = 0x4e5058;
 // Discord's fields need a name, and a field name can't hold a link. A blank name keeps the card's
 // link at the top of its value.
 export const BLANK = "\u200b";
@@ -63,38 +61,27 @@ const itemName = (it: Item) => {
   return it.wiki ? `[${name}](${it.wiki.replace(/\(/g, "%28").replace(/\)/g, "%29")})` : name;
 };
 
-// The multiquest holders of a bank item that also has bankers' holders. Those are listed as a dim line
-// under the item, since the bankers' spots are the ones a banker can take it from right away.
-const multiquestLine = (it: Item) => {
-  if (it.jewelry) return "";
-  const names = [...new Set(it.holders.filter(h => h.mq).map(h => h.char))];
-  return !names.length || requestedFrom(it).mq ? "" : `-# Multiquest: ${names.join(", ")}\n`;
+// The multiquest holders of a bank item, named on its line, since players coordinate those directly
+// with the holder.
+const multiquest = (it: Item) => {
+  const held = it.holders.filter(h => h.mq);
+  return held.length ? `MQ: ${held.map(h => `${h.char}${h.count > 1 ? ` ×${h.count}` : ""}`).join(", ")}` : "";
 };
 
+// The bank post is one embed: the total, then a field per item with its linked name and price, and the
+// multiquest holders under it. Where to find the items is for the banker's DM, not the post.
+// Jewelry is one embed too, of linked bullets, with the bank tabs that hold each item under it.
 function requestMessage(lines: Line[], total: string, channel: RequestMessage["channel"]): RequestMessage {
-  // Cards follow the route: the items on its first character, then the next. Multiquest items,
-  // which aren't on it, come last.
-  const { logins, lines: cards } = loginRoute(lines);
-  // Jewelry is made to order, so there's no login to name for it.
-  const shownLogins = channel === "bank" ? logins : [];
-  // Jewelry is one embed: each item is a linked bullet, with where it's held under it.
-  const jewelry = channel === "jewelry";
-  const rows = jewelry
-    ? lines.flatMap(l => {
-      // Jewelry has no logins to plan, so its items stay in the tab's order.
-      const where = spots(l.it, [], true);
-      return [`• ${quantity(l.qty)}${itemName(l.it)} (${priceText(l.req.price, l.qty)})`, ...(where ? [`-# ${where}`] : [])];
-    })
-    : lines.map(l => `• ${quantity(l.qty)}${itemName(l.it)} (${priceText(l.req.price, l.qty)})`);
-  // The site opens this with a line naming the member, linked to their Discord profile.
-  const request: Embed = {
-    description: [...rows, "", `**Total: ${total}**`, ...(shownLogins.length ? [`-# ${shownLogins.length === 1 ? "1 login" : `${shownLogins.length} logins`}: ${shownLogins.join(", ")}`] : [])].join("\n"),
-    color: BLURPLE,
-  };
   const items = lines.map(l => l.it.id);
-  if (jewelry) return { embeds: [request], channel, items };
-  // One field per item, in the order of the logins.
-  const fields = cards.map(l => ({ name: BLANK, value: `${quantity(l.qty)}${itemName(l.it)}\n${multiquestLine(l.it)}${spots(l.it, l.from, false)}` }));
-  return { embeds: [request, { description: "", color: GREY, fields }], channel, items };
+  const price = (l: Line) => `${quantity(l.qty)}${itemName(l.it)} (${priceText(l.req.price, l.qty)})`;
+  if (channel === "jewelry") {
+    const rows = lines.flatMap(l => {
+      const where = spots(l.it, [], true);
+      return [`• ${price(l)}`, ...(where ? [`-# ${where}`] : [])];
+    });
+    return { embeds: [{ description: [...rows, "", `**Total: ${total}**`].join("\n"), color: BLURPLE }], channel, items };
+  }
+  const fields = lines.map(l => ({ name: BLANK, value: [price(l), multiquest(l.it)].filter(Boolean).join(" · ") }));
+  return { embeds: [{ description: `**Total: ${total}**`, color: BLURPLE, fields }], channel, items };
 }
 type Line = { it: Item; qty: number; req: ReturnType<typeof bankRequest>; auction: boolean };
