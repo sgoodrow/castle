@@ -93,7 +93,7 @@ Feature: The jewelry sheet
     Then the log says "bank web: jewelry sheet: no such item Velium Wolf's Eye Ring"
     And the bank describes 2 items
 
-  Scenario: A recipe the sheet spells differently from the game is sent under the game's name
+  Scenario: A recipe the sheet and the game spell alike is sent under that name
     Given the jewelry sheet's price table is:
       """
       ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
@@ -101,7 +101,7 @@ Feature: The jewelry sheet
       """
     When the site reads the jewelry sheet
     And Someone asks for the bank
-    Then the bank sends item 14646, "Wolfs Eye Golden Bracelet", made to order with:
+    Then the bank sends item 14646, "Wolf's Eye Golden Bracelet", made to order with:
       | field     | value                            |
       | materials | [{"what": "Material", "pp": 14}] |
       | trivial   | 175                              |
