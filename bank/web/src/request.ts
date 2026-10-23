@@ -56,8 +56,20 @@ export function requestMessages(tab: Tab, cls: ClassId | null): RequestMessage[]
 const quantity = (qty: number) => (qty > 1 ? `${qty} × ` : "");
 
 // An item's name, linked to its P99 wiki page. The page's address can hold parentheses, which would
-// end the link early, so they're written as their escapes.
-const itemName = (it: Item) => it.wiki ? `[${it.name}](${it.wiki.replace(/\(/g, "%28").replace(/\)/g, "%29")})` : it.name;
+// end the link early, so they're written as their escapes. A name's own markdown characters, such as a
+// backtick, are escaped so they can't open code or break the link around them.
+const itemName = (it: Item) => {
+  const name = it.name.replace(/[\\`*_~|[\]]/g, "\\$&");
+  return it.wiki ? `[${name}](${it.wiki.replace(/\(/g, "%28").replace(/\)/g, "%29")})` : name;
+};
+
+// The multiquest holders of a bank item that also has bankers' holders. Those are listed as a dim line
+// under the item, since the bankers' spots are the ones a banker can take it from right away.
+const multiquestLine = (it: Item) => {
+  if (it.jewelry) return "";
+  const names = [...new Set(it.holders.filter(h => h.mq).map(h => h.char))];
+  return !names.length || requestedFrom(it).mq ? "" : `-# Multiquest: ${names.join(", ")}\n`;
+};
 
 function requestMessage(lines: Line[], total: string, channel: RequestMessage["channel"]): RequestMessage {
   // Cards follow the route: the items on its first character, then the next. Multiquest items,
@@ -81,7 +93,7 @@ function requestMessage(lines: Line[], total: string, channel: RequestMessage["c
   const items = lines.map(l => l.it.id);
   if (jewelry) return { embeds: [request], channel, items };
   // One field per item, in the order of the logins.
-  const fields = cards.map(l => ({ name: BLANK, value: `${quantity(l.qty)}${itemName(l.it)}\n${spots(l.it, l.from, false)}` }));
+  const fields = cards.map(l => ({ name: BLANK, value: `${quantity(l.qty)}${itemName(l.it)}\n${multiquestLine(l.it)}${spots(l.it, l.from, false)}` }));
   return { embeds: [request, { description: "", color: GREY, fields }], channel, items };
 }
 type Line = { it: Item; qty: number; req: ReturnType<typeof bankRequest>; auction: boolean };
