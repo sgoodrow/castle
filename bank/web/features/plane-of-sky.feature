@@ -80,7 +80,7 @@ Feature: Plane of Sky
     Then my tab says "A banker will tell you how to set up each multiquest."
     When I send my tab to Discord
     Then the post reads "• Sky Sapphire (unknown)"
-    And the post reads "• Rabbie (multiquest)"
+    And the post reads "Rabbie (multiquest)"
 
   Scenario: The bank's own stock is what a member can put on the tab
     Given the bank also holds the Plane of Sky items

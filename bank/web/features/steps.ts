@@ -244,8 +244,8 @@ step(/^the site accepts posts to #jewelry-requests again$/, () => { world.jewelr
 step(/^my tab doesn't list (".*)$/, async (_, lines) => { for (const l of quoted(lines)) expect(within(await tab()).queryByText(reading(l))).toBeNull(); });
 step(/^#bank-requests gets my request for (".*)$/, async (_, names) => {
   await waitFor(() => expect(world.posts).toHaveLength(1));
-  // Each card's first line is its item's name, linked to the wiki.
-  const cardNames = world.posts[0]?.embeds.slice(1).flatMap(e => (e.fields ?? []).map(f => f.value.split("\n")[0]!.replace(/^\d+ × /, "").replace(/^\[(.+)\]\(.+\)$/, "$1")));
+  // Each login's field lists its items, one line each, linked to the wiki, with their spots in subtext.
+  const cardNames = world.posts[0]?.embeds.slice(1).flatMap(e => (e.fields ?? []).flatMap(f => f.value.split("\n").filter(l => !l.startsWith("-# ")).map(l => l.replace(/^\d+ × /, "").replace(/^\[(.+)\]\(.+\)$/, "$1"))));
   expect(cardNames).toEqual(quoted(names));
 });
 step(/^nothing is posted$/, () => expect(world.posts).toEqual([]));

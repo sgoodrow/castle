@@ -12,5 +12,5 @@ Feature: DKP auction lines take no login
     Then the post reads "1 login: Mulea"
     And the post reads, in order:
       | line                     |
-      | • Mulea (pack 5, slot 1) |
-      | • Mulec (inventory 1)    |
+      | Mulea (pack 5, slot 1) |
+      | Mulec (inventory 1)    |

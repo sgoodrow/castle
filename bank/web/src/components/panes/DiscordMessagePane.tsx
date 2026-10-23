@@ -1,7 +1,7 @@
 import { Group, Stack, Text } from "@mantine/core";
 import { Fragment } from "react";
 import { ME } from "../../data";
-import { channelName, type RequestMessage } from "../../request";
+import { BLANK, channelName, type RequestMessage } from "../../request";
 
 // Discord's own dark theme, so the preview looks like the post it stands for.
 const D = { bg: "#313338", embed: "#2b2d31", text: "#dbdee1", muted: "#949ba4", name: "#f2f3f5", link: "#00a8fc" };
@@ -37,6 +37,7 @@ export function DiscordMessagePane({ msg }: { msg: RequestMessage }) {
           {e.description && <Text fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(e.description)}</Text>}
           {e.fields?.map((f, j) => (
             <Stack key={j} gap={0}>
+              {f.name !== BLANK && <Text fz="xs" fw={600} c={D.name}>{f.name}</Text>}
               <Text fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(f.value)}</Text>
             </Stack>
           ))}
