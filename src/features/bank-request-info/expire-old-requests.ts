@@ -61,9 +61,8 @@ export const expireOldRequests = async (
   return removed;
 };
 
-export const expireOldBankRequests = (options: Options) => {
+export const expireOldBankRequests = (options: Options) =>
   readyActionExecutor(refreshBankRequests, options);
-};
 
 const refreshBankRequests = async () => {
   const botId = client.user?.id;

@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { log } from "../shared/logger";
 import { parseCsv } from "./spell-sheet";
+import { SheetAlert } from "./sheet-alert";
 
 export const SKY_SHEET =
   "https://docs.google.com/spreadsheets/d/1zznLAdu688lxfQ7TuBzBx11wuT9eLClakOuMa8rveKg/export?format=csv&gid=";
@@ -79,13 +80,22 @@ export type Lookup = number | "no such item" | "more than one item";
 // [holder, item id, count]: who holds how many of an item for multiquesting.
 export type MqHolding = [holder: string, id: number, count: number];
 
+// Item names the database has more than one item for, by lowercase name, and the id the sheet means
+// by each. Add one only once a banker confirms which item it is. Leather Cord is 3656, which Scott
+// chose from the wiki page: the Plane of Sky drop, 1.0 weight, small, no class. No banker has
+// confirmed it yet.
+export const SKY_ITEM_IDS = new Map<string, number>([["leather cord", 3656]]);
+
 export class SkySheet {
   private parts = new Map<string, SkyPart>();
   private held: MqHolding[] = [];
   private file: string;
   private problems = ""; // logged once, not every refresh
 
-  constructor(dir: string) {
+  constructor(
+    dir: string,
+    private alert: SheetAlert
+  ) {
     mkdirSync(dir, { recursive: true });
     this.file = path.join(dir, "sky-sheet.json");
     if (existsSync(this.file)) {
@@ -126,6 +136,7 @@ export class SkySheet {
       rows = mqRows(await this.tab(MQ_TAB));
     } catch (e) {
       log(`bank web: sky sheet: ${e}`);
+      await this.alert.unreadable();
       return;
     }
     const problems: string[] = [];
@@ -144,7 +155,7 @@ export class SkySheet {
     for (const [h, n] of rows) {
       const holder = charName(h);
       const id = lookup(n);
-      if (!holder) noName.push(`"${h}" (${n})`);
+      if (!holder) noName.push(n);
       else if (id === "no such item") noItem.push(n);
       else if (id === "more than one item") twoItems.push(n);
       else {
@@ -165,5 +176,6 @@ export class SkySheet {
       this.file,
       JSON.stringify({ parts: [...this.parts], mq: this.held })
     );
+    await this.alert.report(text);
   }
 }

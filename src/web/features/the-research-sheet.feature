@@ -78,3 +78,26 @@ Feature: The research sheet
     And Someone asks for the bank
     Then the bank gives away "Words of Odus"
     And the log says "bank web: research sheet: Error: no Spell and Name of Rune columns"
+
+  Scenario: Bankers are told when the research sheet names no such item
+    Given the bank office is set up
+    And the research sheet's Necromancer tab is:
+      """
+      Spell,Level,Title,Count
+,,Words of Nothing,
+      """
+    When the site reads the research sheet
+    Then the bank office is told "The research sheet has a problem: no such item Words of Nothing."
+    And the bank office has been told 1 time
+
+  Scenario: Bankers are told when the research sheet can't be read, and when it reads again
+    Given the bank office is set up
+    And Google answers the research sheet with 500
+    When the site reads the research sheet
+    And the site reads the research sheet
+    Then the bank office is told "The research sheet has a problem: it couldn't be read, so the bank keeps its last copy if it has one."
+    And the bank office has been told 1 time
+    Given Google answers the research sheet with 200
+    When the site reads the research sheet
+    Then the bank office is told "The research sheet reads again."
+    And the bank office has been told 2 times

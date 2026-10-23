@@ -1,7 +1,7 @@
 import { Group, Stack, Text } from "@mantine/core";
 import { Fragment } from "react";
 import { ITEMS, ME } from "../../data";
-import type { RequestMessage } from "../../request";
+import { channelName, type RequestMessage } from "../../request";
 import { ItemImage } from "../ItemImage";
 
 // Discord's own dark theme, so the preview looks like the post it stands for.
@@ -27,7 +27,7 @@ export function DiscordMessagePane({ msg }: { msg: RequestMessage }) {
       <Group gap={6}>
         <Text fw={600} fz="sm" c={D.name}>Castle</Text>
         <Text fz={10} fw={600} px={4} style={{ background: "#5865f2", color: "white", borderRadius: 3 }}>APP</Text>
-        <Text fz="xs" c={D.muted}>#bank-requests</Text>
+        <Text fz="xs" c={D.muted}>{channelName(msg.channel)}</Text>
       </Group>
       {msg.embeds.map((e, i) => {
         const it = e.item != null ? ITEMS[e.item] : undefined;

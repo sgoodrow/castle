@@ -5,6 +5,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
 import { log } from "../shared/logger";
+import { SheetAlert } from "./sheet-alert";
 
 const SHEET =
   "https://docs.google.com/spreadsheets/d/14XhfTVWPmy3GxjG4OQQH241yqvyuZh-ednaqmFRzq28/export?format=csv&gid=";
@@ -92,12 +93,21 @@ export function classCosts(rows: string[][]): [name: string, cost: string][] {
     .filter(([n]) => n);
 }
 
+// Spells the sheet names differently from the item database, by spellKey of the sheet's name. Add
+// one only once the item database has the spell under the other name.
+export const SPELL_ITEMS = new Map<string, string>([
+  [spellKey("Muzzle of Mardu"), "Spell: Summon: Muzzle of Mardu"],
+]);
+
 export class SpellSheet {
   private prices = new Map<string, SheetPrice>();
   private file: string;
   private problems = ""; // logged once, not every refresh
 
-  constructor(dir: string) {
+  constructor(
+    dir: string,
+    private alert: SheetAlert
+  ) {
     mkdirSync(dir, { recursive: true });
     this.file = path.join(dir, "spell-sheet.json");
     if (existsSync(this.file)) {
@@ -131,6 +141,7 @@ export class SpellSheet {
       );
     } catch (e) {
       log(`bank web: spell sheet: ${e}`);
+      await this.alert.unreadable();
       return;
     }
     const [forbidden = [], ...classes] = tabs;
@@ -140,19 +151,22 @@ export class SpellSheet {
     try {
       for (const tab of classes)
         for (const [name, cost] of classCosts(tab)) {
+          const item = SPELL_ITEMS.get(spellKey(name)) ?? name;
           const price = parseCost(cost);
-          if (price) prices.set(spellKey(name), price);
+          if (price) prices.set(spellKey(item), price);
           else unreadable.push(`${name} "${cost}"`);
-          if (!known.has(spellKey(name))) unknown.add(name);
+          if (!known.has(spellKey(item))) unknown.add(name);
         }
     } catch (e) {
       log(`bank web: spell sheet: ${e}`);
+      await this.alert.unreadable();
       return;
     }
     // The forbidden list wins over whatever a class tab says.
     for (const name of forbiddenNames(forbidden)) {
-      prices.set(spellKey(name), { kind: "auction" });
-      if (!known.has(spellKey(name))) unknown.add(name);
+      const item = SPELL_ITEMS.get(spellKey(name)) ?? name;
+      prices.set(spellKey(item), { kind: "auction" });
+      if (!known.has(spellKey(item))) unknown.add(name);
     }
     const problems = [
       ...(unknown.size
@@ -167,5 +181,6 @@ export class SpellSheet {
     this.problems = problems;
     this.prices = prices;
     writeFileSync(this.file, JSON.stringify([...prices]));
+    await this.alert.report(problems);
   }
 }
