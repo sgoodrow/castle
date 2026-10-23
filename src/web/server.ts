@@ -98,14 +98,7 @@ const api = new BankApi(
 // Posting needs the bot's token and the channel; without them the page is told so. Bank requests
 // post to their channel, and made-to-order jewelry to the jewelers' channel.
 const posterFor = (channelId: string | undefined): Poster | null =>
-  token && channelId
-    ? {
-        token,
-        channelId,
-        baseUrl: bankWebUrl,
-        icon: (id) => wiki.get(id)?.icon,
-      }
-    : null;
+  token && channelId ? { token, channelId } : null;
 const poster = posterFor(bankRequestsChannelId);
 const jewelryPoster = posterFor(jewelryChannelId);
 if (token && bankRequestsChannelId && !jewelryChannelId)

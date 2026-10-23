@@ -1,26 +1,28 @@
 import { Group, Stack, Text } from "@mantine/core";
 import { Fragment } from "react";
-import { ITEMS, ME } from "../../data";
-import { channelName, type RequestMessage } from "../../request";
-import { ItemImage } from "../ItemImage";
+import { ME } from "../../data";
+import { BLANK, channelName, type RequestMessage } from "../../request";
 
 // Discord's own dark theme, so the preview looks like the post it stands for.
 const D = { bg: "#313338", embed: "#2b2d31", text: "#dbdee1", muted: "#949ba4", name: "#f2f3f5", link: "#00a8fc" };
 const hex = (c: number) => `#${c.toString(16).padStart(6, "0")}`;
 
-// The little markdown the bot uses: **bold**, `-# ` subtext and line breaks.
+// The little markdown the bot uses: [links](address), **bold**, `-# ` subtext and line breaks.
+const LINK = /(\[[^\]]+\]\(https?:\/\/[^)\s]+\))/;
 const bold = (s: string) => s.split(/\*\*(.+?)\*\*/).map((part, j) => (j % 2 ? <b key={j} style={{ color: D.name }}>{part}</b> : part));
+const inline = (s: string) => s.split(LINK).map((part, j) => {
+  const link = part.match(/^\[([^\]]+)\]\((.+)\)$/);
+  return link ? <a key={j} href={link[2]} target="_blank" rel="noreferrer" style={{ color: D.link }}>{link[1]}</a> : bold(part);
+});
 const md = (s: string) => s.split("\n").map((line, i) => (
   <Fragment key={i}>
     {i > 0 && <br />}
-    {line.startsWith("-# ") ? <span style={{ color: D.muted, fontSize: "0.85em" }}>{bold(line.slice(3))}</span> : bold(line)}
+    {line.startsWith("-# ") ? <span style={{ color: D.muted, fontSize: "0.85em" }}>{inline(line.slice(3))}</span> : inline(line)}
   </Fragment>
 ));
 
-// The site titles the request with whoever sent it, linked to their Discord profile.
-const requestTitle = () => `@${ME} has placed a bank request`;
-
-// A look at the #bank-requests post before it's sent.
+// A look at the #bank-requests post before it's sent. The first embed opens with a line naming the
+// member, as the bot posts it, with their name linked to their Discord profile.
 export function DiscordMessagePane({ msg }: { msg: RequestMessage }) {
   return (
     <Stack gap={6} p="sm" style={{ background: D.bg, borderRadius: 8, color: D.text, fontSize: 14 }}>
@@ -29,20 +31,18 @@ export function DiscordMessagePane({ msg }: { msg: RequestMessage }) {
         <Text fz={10} fw={600} px={4} style={{ background: "#5865f2", color: "white", borderRadius: 3 }}>APP</Text>
         <Text fz="xs" c={D.muted}>{channelName(msg.channel)}</Text>
       </Group>
-      {msg.embeds.map((e, i) => {
-        const it = e.item != null ? ITEMS[e.item] : undefined;
-        return (
-          <Group key={i} align="flex-start" wrap="nowrap" gap="sm" p="xs" pl="sm"
-            style={{ background: D.embed, borderLeft: `4px solid ${hex(e.color)}`, borderRadius: 4 }}>
-            <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>
-              <Text fw={600} fz="sm" c={i === 0 ? D.link : D.name}>{i === 0 ? requestTitle() : e.title}</Text>
-              <Text fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(e.description)}</Text>
-              {e.footer && <Text fz={11} c={D.muted}>{e.footer}</Text>}
+      {msg.embeds.map((e, i) => (
+        <Stack key={i} gap={4} p="xs" pl="sm" style={{ background: D.embed, borderLeft: `4px solid ${hex(e.color)}`, borderRadius: 4 }}>
+          {i === 0 && <Text fz="xs" c={D.text}><span style={{ color: D.link }}>@{ME}</span> has placed a bank request.</Text>}
+          {e.description && <Text fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(e.description)}</Text>}
+          {e.fields?.map((f, j) => (
+            <Stack key={j} gap={0}>
+              {f.name !== BLANK && <Text fw={600} fz="sm" c={D.name}>{f.name}</Text>}
+              <Text fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(f.value)}</Text>
             </Stack>
-            {it && <ItemImage it={it} size={32} />}
-          </Group>
-        );
-      })}
+          ))}
+        </Stack>
+      ))}
     </Stack>
   );
 }

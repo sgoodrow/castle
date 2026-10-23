@@ -135,14 +135,22 @@ const json = (body: unknown) => Response.json(body);
 interface Post {
   allowed_mentions: unknown;
   embeds: {
-    title: string;
+    title?: string;
     description: string;
     color: number;
-    url?: string;
+    fields?: { name: string; value: string }[];
     footer?: { text: string };
-    thumbnail?: { url: string };
   }[];
 }
+// What a post's embeds read as, one row each: newlines shown as " / ", and a field's values in order.
+const shape = (e: Post["embeds"][number]) => ({
+  title: e.title ?? "",
+  description: e.description.replace(/\n+/g, " / "),
+  fields: (e.fields ?? [])
+    .map((f) => f.value.replace(/\n+/g, " / "))
+    .join(" ; "),
+  footer: e.footer?.text ?? "",
+});
 const ROUTES: Route[] = [
   [
     "POST",
@@ -1101,15 +1109,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       const [post] = world.posts;
       expect(post.auth).toBe("Bot bot-token");
       expect(post.body.allowed_mentions).toEqual({ parse: [] });
-      expect(
-        post.body.embeds.map((e) => ({
-          title: e.title,
-          url: e.url ?? "",
-          description: e.description,
-          footer: e.footer?.text ?? "",
-          thumbnail: e.thumbnail?.url ?? "",
-        }))
-      ).toEqual(rows);
+      expect(post.body.embeds.map(shape)).toEqual(rows);
     }
   );
   step(
@@ -1119,15 +1119,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       expect(world.jewelryPosts).toHaveLength(1);
       const [post] = world.jewelryPosts;
       expect(post.auth).toBe("Bot bot-token");
-      expect(
-        post.body.embeds.map((e) => ({
-          title: e.title,
-          url: e.url ?? "",
-          description: e.description,
-          footer: e.footer?.text ?? "",
-          thumbnail: e.thumbnail?.url ?? "",
-        }))
-      ).toEqual(rows);
+      expect(post.body.embeds.map(shape)).toEqual(rows);
     }
   );
   step(/^the bot has posted (\d+) bank requests?$/, (n: string) =>

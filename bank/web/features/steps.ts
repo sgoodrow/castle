@@ -9,7 +9,7 @@ import { bankPage } from "../src/app";
 import { ALL_CLASSES, CLASS_BIT, CLASSES, ITEM_LIST, bankRequest, maskText, prettyLoc, type EqClassLevels, type Payload } from "../src/data";
 import { server } from "./support/setup";
 
-interface World { payload: Payload; status: number; user: UserEvent; reports: string[]; posts: { embeds: { title: string; description: string }[] }[]; postStatus: number; jewelryStatus: number }
+interface World { payload: Payload; status: number; user: UserEvent; reports: string[]; posts: { embeds: { description: string; fields?: { name: string; value: string }[] }[] }[]; postStatus: number; jewelryStatus: number }
 let world: World;
 
 // A fresh page, bank and browser for every scenario.
@@ -221,6 +221,9 @@ const confirm = () => screen.findByRole("dialog", { name: "Post these?" });
 step(/^the post reads "(.*)"$/, async (_, text) => {
   expect(norm((await confirm()).textContent)).toContain(text);
 });
+step(/^the post links "(.*)" to "(.*)"$/, async (_, name, href) => {
+  expect(within(await confirm()).getByRole("link", { name }).getAttribute("href")).toBe(href);
+});
 step(/^the post doesn't read "(.*)"$/, async (_, text) => {
   expect(norm((await confirm()).textContent)).not.toContain(text);
 });
@@ -241,7 +244,9 @@ step(/^the site accepts posts to #jewelry-requests again$/, () => { world.jewelr
 step(/^my tab doesn't list (".*)$/, async (_, lines) => { for (const l of quoted(lines)) expect(within(await tab()).queryByText(reading(l))).toBeNull(); });
 step(/^#bank-requests gets my request for (".*)$/, async (_, names) => {
   await waitFor(() => expect(world.posts).toHaveLength(1));
-  expect(world.posts[0]?.embeds.slice(1).map(e => e.title)).toEqual(quoted(names));
+  // Each card's first line is its item's name, linked to the wiki.
+  const cardNames = world.posts[0]?.embeds.slice(1).flatMap(e => (e.fields ?? []).map(f => f.value.split("\n")[0]!.replace(/^\d+ × /, "").replace(/^\[(.+)\]\(.+\)$/, "$1")));
+  expect(cardNames).toEqual(quoted(names));
 });
 step(/^nothing is posted$/, () => expect(world.posts).toEqual([]));
 step(/^I'm told "(.*)"$/, async (_, text) => { await screen.findByText(text); });

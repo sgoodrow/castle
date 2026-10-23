@@ -4,9 +4,10 @@ import { tabTotal, totalText } from "./tab";
 import { loginRoute } from "./route";
 
 // One #bank-requests post for the whole tab, in the shape Discord's API takes, so the page can
-// preview exactly what the bot will send.
-// `item` is the item whose icon goes in the corner (the bot links its public /icons/ image).
-export interface Embed { title: string; description: string; color: number; item?: number; footer?: string }
+// preview exactly what the bot will send. The summary is one embed; the items' cards are the fields
+// of a second, so a full tab stays inside Discord's limits.
+export interface Field { name: string; value: string }
+export interface Embed { description: string; color: number; fields?: Field[] }
 // Where the post goes: the bank requests channel, or the jewelry requests channel for made-to-order jewelry.
 // `items` are the tab items on the post, so a post that goes through can take them off the tab.
 export interface RequestMessage { embeds: Embed[]; channel: "bank" | "jewelry"; items: number[] }
@@ -14,6 +15,9 @@ export const channelName = (channel: RequestMessage["channel"]) => channel === "
 
 const BLURPLE = 0x5865f2;
 const GREY = 0x4e5058;
+// Discord's fields need a name, and a field name can't hold a link. A blank name keeps the card's
+// link at the top of its value.
+export const BLANK = "\u200b";
 
 // Where a banker finds it: up to six spots, then how many more as Discord's dim subtext (`-# `).
 // The login route's characters come first, then the rest, each by character, then spot, so one
@@ -46,20 +50,23 @@ export function requestMessages(tab: Tab, cls: ClassId | null): RequestMessage[]
   return posts.filter((m): m is RequestMessage => m !== null);
 }
 
+// An item's name, linked to its P99 wiki page. The page's address can hold brackets, which would end
+// the link early, so they're written as their escapes.
+const itemName = (it: Item) => it.wiki ? `[${it.name}](${it.wiki.replace(/\(/g, "%28").replace(/\)/g, "%29")})` : it.name;
+
 function requestMessage(lines: Line[], total: string, channel: RequestMessage["channel"]): RequestMessage {
   // Cards follow the route: the items on its first character, then the next. Multiquest items,
   // which aren't on it, come last.
   const { logins, lines: cards } = loginRoute(lines);
   // Jewelry is made to order, so there's no login to name for it.
   const shownLogins = channel === "bank" ? logins : [];
-  // The site swaps this title for one naming the member, linked to their Discord profile.
+  // The site opens this with a line naming the member, linked to their Discord profile.
   const request: Embed = {
-    title: "Bank request",
     description: [...lines.map(l => `• ${l.qty > 1 ? `${l.qty} × ` : ""}${l.it.name} (${priceText(l.req.price, l.qty)})`), "", `**Total: ${total}**`, ...(shownLogins.length ? [`-# ${shownLogins.length === 1 ? "1 login" : `${shownLogins.length} logins`}: ${shownLogins.join(", ")}`] : [])].join("\n"),
     color: BLURPLE,
   };
-  // One embed per item. The tab holds at most MAX_TAB_ITEMS, so this fits Discord's ten.
-  const embeds: Embed[] = [request, ...cards.map(l => ({ title: l.it.name, description: spots(l.it, l.from), color: GREY, item: l.it.id }))];
-  return { embeds, channel, items: lines.map(l => l.it.id) };
+  // One field per item, in the order of the logins.
+  const fields = cards.map(l => ({ name: BLANK, value: `${l.qty > 1 ? `${l.qty} × ` : ""}${itemName(l.it)}\n${spots(l.it, l.from)}` }));
+  return { embeds: [request, { description: "", color: GREY, fields }], channel, items: lines.map(l => l.it.id) };
 }
 type Line = { it: Item; qty: number; req: ReturnType<typeof bankRequest>; auction: boolean };

@@ -1,6 +1,6 @@
 Feature: Posting a bank request
   Members send their tab to #bank-requests from the bank page. The page builds the post; the site
-  checks it fits in a Discord message, titles it with the member's name linked to their Discord
+  checks it fits in a Discord message, opens it with the member's name linked to their Discord
   profile, and posts it as the bot without pinging anyone. No one can flood the channel.
 
   Background:
@@ -15,30 +15,32 @@ Feature: Posting a bank request
     When Alice posts the bank request:
       """
       {"embeds": [
-        {"title": "Bank request", "description": "• Cloak of Flames (800pp)", "color": 5793266, "footer": "Thanks"},
-        {"title": "Cloak of Flames", "description": "• mulea (inventory 1)", "color": 0, "item": 11621}
+        {"description": "• Cloak of Flames (800pp)", "color": 5793266, "footer": "Thanks"},
+        {"description": "", "color": 0, "fields": [
+          {"name": "Cloak of Flames", "value": "[Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames)\n• mulea (inventory 1)"}
+        ]}
       ]}
       """
     Then the answer is 204
     And the bot posts in #bank-requests:
-      | title                               | url                               | description               | footer | thumbnail                             |
-      | @Alice has placed a bank request    | https://discord.com/users/id-Alice | • Cloak of Flames (800pp) | Thanks |                                       |
-      | Cloak of Flames                     |                                   | • mulea (inventory 1)     |        | https://bank.example.com/icons/77.png |
+      | title | description                                                                          | fields                                                                                    | footer |
+      |       | [@Alice](https://discord.com/users/id-Alice) has placed a bank request. / • Cloak of Flames (800pp) |                                                                                           | Thanks |
+      |       |                                                                                      | [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) / • mulea (inventory 1)   |        |
     And the log says "bank web: Alice (id-Alice) posted a bank request"
 
   Scenario: Made-to-order jewelry is posted to the jewelry requests channel
     When Alice posts the bank request:
       """
       {"channel": "jewelry", "embeds": [
-        {"title": "Bank request", "description": "• Golden Cat Eye Bracelet (13pp)", "color": 5793266},
-        {"title": "Golden Cat Eye Bracelet", "description": "Made to order.", "color": 0, "item": 14618}
+        {"description": "• Golden Cat Eye Bracelet (13pp)", "color": 5793266},
+        {"description": "", "color": 0, "fields": [{"name": "Golden Cat Eye Bracelet", "value": "Made to order."}]}
       ]}
       """
     Then the answer is 204
     And the bot posts in #jewelry-requests:
-      | title                            | url                               | description                      | footer | thumbnail                             |
-      | @Alice has placed a bank request | https://discord.com/users/id-Alice | • Golden Cat Eye Bracelet (13pp) |        |                                       |
-      | Golden Cat Eye Bracelet          |                                   | Made to order.                   |        |                                       |
+      | title | description                                                                                       | fields          | footer |
+      |       | [@Alice](https://discord.com/users/id-Alice) has placed a bank request. / • Golden Cat Eye Bracelet (13pp) |                 |        |
+      |       |                                                                                                   | Made to order.  |        |
 
   Scenario: The bank tells the page who's signed in, for its preview
     When Alice asks for the bank
@@ -102,8 +104,10 @@ Feature: Posting a bank request
       | {"title": "T", "description": "", "color": 16777216}               |
       | {"title": "T", "description": "", "color": -1}                     |
       | {"title": "T", "description": "", "color": 0.5}                    |
-      | {"title": "T", "description": "", "color": 0, "item": 0}           |
-      | {"title": "T", "description": "", "color": 0, "footer": 1}         |
+      | {"description": "", "color": 0, "fields": {}}                      |
+      | {"description": "", "color": 0, "fields": [{"name": "", "value": "v"}]} |
+      | {"description": "", "color": 0, "fields": [{"name": "n", "value": ""}]} |
+      | {"description": "", "color": 0, "footer": 1}                       |
 
   Scenario: A post too large to read is refused
     When Alice posts a bank request with a 70000-character description
