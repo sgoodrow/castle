@@ -89,7 +89,8 @@ for row in d["rows"]:
     if r["id"] in GAME_NAME:
         out["name"] = GAME_NAME[r["id"]]
     # Quarm drops the apostrophe from the Wolf's Eye family; the game and the bankers' sheets keep it.
-    out["name"] = out["name"].replace("Wolfs Eye", "Wolf's Eye")
+    if "name" in out:
+        out["name"] = re.sub(r"\bWolfs Eye\b", "Wolf's Eye", out["name"])
     items[r["id"]] = out
 # A GAME_NAME id that a re-pulled item list no longer has would otherwise be a silent no-op.
 assert all(i in items for i in GAME_NAME), "GAME_NAME id missing from the item list"
