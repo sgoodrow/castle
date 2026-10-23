@@ -59,7 +59,7 @@ const requestOf = (name: string, channel = "bank-requests") => {
     (m) =>
       m.author.id === BOT_ID &&
       (m.content.includes(`<@${id}>`) ||
-        m.embeds.some((e) => requesterId(e) === id))
+        (m.embeds[0] && requesterId(m.embeds[0]) === id))
   );
   if (!found) throw new Error(`${name} has no request in #${channel}`);
   return found;
@@ -487,7 +487,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       const theirs = (world.channels["bank-requests"] ?? []).filter(
         (m) =>
           m.content.includes(`<@${id}>`) ||
-          m.embeds.some((e) => requesterId(e) === id)
+          (m.embeds[0] && requesterId(m.embeds[0]) === id)
       );
       expect(theirs.length).toBeGreaterThan(0);
       expect(theirs.map((m) => m.gone)).toEqual(

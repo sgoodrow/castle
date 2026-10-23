@@ -9,7 +9,7 @@ const OPENING = /^<@(\d+)> has placed a bank request\./;
 
 // Brackets would end the link's text early, and a backslash would escape its closing bracket.
 export const requesterLine = (id: string, name: string) =>
-  `[@${name.replace(/[[\]\\]/g, "")}](https://discord.com/users/${id}) has placed a bank request.`;
+  `[@${name.replace(/[[\]\\\r\n]/g, "")}](https://discord.com/users/${id}) has placed a bank request.`;
 
 // The request itself, without the line that names its member.
 export const requestBody = (description: string) =>

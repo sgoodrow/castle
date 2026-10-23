@@ -143,6 +143,7 @@ Feature: Posting a bank request
       | null                                                               |
       | {"description": 1, "color": 0}                                     |
       | {"title": 1, "description": "", "color": 0}                        |
+      | {"description": "", "color": 0, "fields": [{"name": "  ", "value": "v"}]} |
       | {"description": "", "color": 16777216}                             |
       | {"description": "", "color": -1}                                   |
       | {"description": "", "color": 0.5}                                  |

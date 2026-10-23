@@ -33,8 +33,9 @@ export interface PostEmbed {
 const isInt = (v: unknown): v is number => Number.isInteger(v);
 const isText = (v: unknown, max: number): v is string =>
   typeof v === "string" && v.length <= max;
+// Discord refuses a field that is only whitespace, so it's refused here too.
 const isFilled = (v: unknown, max: number): v is string =>
-  isText(v, max) && v.length > 0;
+  isText(v, max) && v.trim().length > 0;
 
 // A field's name and value, or null if Discord wouldn't take it.
 const readField = (f: unknown): PostField | null => {
