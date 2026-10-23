@@ -52,12 +52,10 @@ export function readPost(body: unknown): PostEmbed[] | null {
   const out: PostEmbed[] = [];
   let total = 0;
   for (const e of embeds as unknown[]) {
-    const { title, description, color, fields, footer } = (e ?? {}) as Record<
+    const { description, color, fields, footer } = (e ?? {}) as Record<
       string,
       unknown
     >;
-    // The page sends no titles. The server heads the first embed with the line naming the member.
-    if (title !== undefined) return null;
     // The first embed also carries that line, so it has less room left.
     const limit = out.length ? MAX_DESCRIPTION : MAX_DESCRIPTION - REQUESTER;
     if (!isText(description, limit)) return null;
