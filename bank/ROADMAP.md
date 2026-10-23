@@ -44,6 +44,7 @@ UX (agreed):
 
 **Requests**
 - **Decided:** a request holds up to 9 different items, with any quantity of each. The post is two embeds: a summary, then one embed whose fields are the item cards, each card's name linked to its wiki page. Fields keep the post within Discord's limits however many items a request holds. A tab saved before the limit keeps its first 9 items.
+- **Decided:** item icons are dropped from the post, since Discord fields can't show them. Bankers look items up on the wiki link instead.
 - **Decided:** each item card lists its spots by character, then by spot (pack 2 before pack 10), so a banker logs in to each character once per card.
 - **Decided:** the post plans the fewest bank characters that fill every line, including a line that needs two characters for its quantity, and names them under the total ("2 logins: Mulea, Muleb"). The cards follow that plan: the planned characters' spots come first, and the cards are ordered by them, so a banker logs in to each character once for the whole request. Multiquest holders aren't logins and their cards come last. DKP auction lines aren't logins either, though they keep a card. The search stops after a fixed number of tries, so the route is the fewest only when the search finishes within that budget; in practice requests are small enough that it always does.
 - **Decided:** a card still lists every spot, the planned characters' first, so a banker has somewhere else to look when an upload is out of date.

@@ -52,13 +52,21 @@ export function readPost(body: unknown): PostEmbed[] | null {
   const out: PostEmbed[] = [];
   let total = 0;
   for (const e of embeds as unknown[]) {
-    const { description, color, fields, footer } = (e ?? {}) as Record<
-      string,
-      unknown
-    >;
+    const {
+      title,
+      description: body,
+      color,
+      fields,
+      footer,
+    } = (e ?? {}) as Record<string, unknown>;
+    if (!isText(body, MAX_DESCRIPTION)) return null;
+    if (title !== undefined && !isText(title, MAX_DESCRIPTION)) return null;
+    // A page from before the change titles each item card with its item's name, so a card keeps
+    // the name. The first embed's title is the one the requester line replaces, so it's dropped.
+    const description = out.length && title ? `${title}\n${body}` : body;
     // The first embed also carries that line, so it has less room left.
     const limit = out.length ? MAX_DESCRIPTION : MAX_DESCRIPTION - REQUESTER;
-    if (!isText(description, limit)) return null;
+    if (description.length > limit) return null;
     if (!isInt(color) || color < 0 || color > 0xffffff) return null;
     if (footer !== undefined && !isText(footer, MAX_FOOTER)) return null;
     if (fields !== undefined && !Array.isArray(fields)) return null;
@@ -105,15 +113,18 @@ export async function postRequest(
     signal: AbortSignal.timeout(10000),
     body: JSON.stringify({
       allowed_mentions: { parse: [] },
-      embeds: embeds.map((e, i) => ({
-        description:
+      embeds: embeds.map((e, i) => {
+        const description =
           i === 0
             ? `${requesterLine(me.id, me.name)}\n\n${e.description}`
-            : e.description,
-        color: e.color,
-        ...(e.fields ? { fields: e.fields } : {}),
-        ...(e.footer ? { footer: { text: e.footer } } : {}),
-      })),
+            : e.description;
+        return {
+          ...(description ? { description } : {}),
+          color: e.color,
+          ...(e.fields ? { fields: e.fields } : {}),
+          ...(e.footer ? { footer: { text: e.footer } } : {}),
+        };
+      }),
     }),
   });
   if (!res.ok)

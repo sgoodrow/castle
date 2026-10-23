@@ -136,7 +136,7 @@ interface Post {
   allowed_mentions: unknown;
   embeds: {
     title?: string;
-    description: string;
+    description?: string;
     color: number;
     fields?: { name: string; value: string }[];
     footer?: { text: string };
@@ -145,7 +145,7 @@ interface Post {
 // What a post's embeds read as, one row each: newlines shown as " / ", and a field's values in order.
 const shape = (e: Post["embeds"][number]) => ({
   title: e.title ?? "",
-  description: e.description.replace(/\n+/g, " / "),
+  description: (e.description ?? "").replace(/\n+/g, " / "),
   fields: (e.fields ?? [])
     .map((f) => f.value.replace(/\n+/g, " / "))
     .join(" ; "),

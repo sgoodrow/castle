@@ -113,15 +113,19 @@ Feature: Posting a bank request
     When Alice posts a bank request with a field value of 1025 characters
     Then the answer is 400 "Bad request"
 
-  Scenario: A title from a page loaded before the change is ignored, so the post still goes
+  Scenario: A page from before the change still posts, with its items named
     When Alice posts the bank request:
       """
-      {"embeds": [{"title": "Bank request", "description": "• Pearl (1)", "color": 0}]}
+      {"embeds": [
+        {"title": "Bank request", "description": "• Pearl (1)", "color": 0},
+        {"title": "Pearl", "description": "• mulea (inventory 1)", "color": 0}
+      ]}
       """
     Then the answer is 204
     And the bot posts in #bank-requests:
-      | title | description                                                              | fields | footer |
+      | title | description                                                                           | fields | footer |
       |       | [@Alice](https://discord.com/users/id-Alice) has placed a bank request. / • Pearl (1) |        |        |
+      |       | Pearl / • mulea (inventory 1)                                                          |        |        |
 
   Scenario: A post longer than Discord allows in all is refused
     When Alice posts a bank request of 3 embeds with 2000-character descriptions
@@ -138,6 +142,7 @@ Feature: Posting a bank request
       | embed                                                              |
       | null                                                               |
       | {"description": 1, "color": 0}                                     |
+      | {"title": 1, "description": "", "color": 0}                        |
       | {"description": "", "color": 16777216}                             |
       | {"description": "", "color": -1}                                   |
       | {"description": "", "color": 0.5}                                  |
