@@ -30,6 +30,8 @@ KEEP = {
     "proceffect": "proc", "proclevel": "proclvl", "worneffect": "worn", "worntype": "worntype",
     "focuseffect": "focus", "scrolleffect": "scroll", "bardtype": "bardtype", "bardvalue": "bardval",
 }
+# Quarm's name for 16337 is Al'Kabor; the game's uploads and the bankers' sheets say Ap'Sagor.
+GAME_NAME = {16337: "Spell: Wrath of Ap'Sagor"}
 # A value equal to the default carries no information, so it is dropped.
 DEFAULT = {"click": -1, "proc": -1, "worn": -1, "focus": -1, "scroll": -1, "charges": 0}
 
@@ -64,6 +66,7 @@ items = {}
 corrected = 0
 for row in d["rows"]:
     r = dict(zip(cols, row))
+    r["Name"] = GAME_NAME.get(r["id"], r["Name"])
     fix = p99.get(r["id"])
     if fix and same_name(fix["Name"], r["Name"]):
         corrected += 1
