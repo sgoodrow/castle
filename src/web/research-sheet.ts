@@ -22,6 +22,13 @@ export const RESEARCH_TABS = [
 export const isResearchMule = (char: string) =>
   /^cg(enc|mage|necro|wiz)$/i.test(char);
 
+// The sheet lists the Wrath scroll by its spell, "Wrath of Al'Kabor", but the game's scroll is named
+// "Spell: Wrath of Ap'Sagor". Where the sheet's name is one of these, the game's name is listed too,
+// so that scroll is research as well. "Spell: Wrath of Al'Kabor" (15731) stays listed as it was.
+const GAME_ITEM_NAMES = new Map([
+  [researchKey("Spell: Wrath of Al'Kabor"), "Spell: Wrath of Ap'Sagor"],
+]);
+
 // The sheet's names and the game's differ a little: "Salil's Writ Pg. 60 (Left)" is "Salil's Writ
 // Pg. 60", "Velishoul's Tome Pg. 16 (Faded)" is "A Faded Velishouls Tome Page", "Velishoul's Tome
 // Pg. 68" is "Velishoul's Tome Pg.68", and "Ap'Sagor" is "Ap`Sagor". So only letters and digits count.
@@ -91,7 +98,10 @@ export class ResearchSheet {
           return researchNames(parseCsv(await res.text()), components);
         })
       );
-      names = tabs.flat();
+      names = tabs.flat().flatMap((n) => {
+        const game = GAME_ITEM_NAMES.get(researchKey(n));
+        return game ? [n, game] : [n];
+      });
     } catch (e) {
       log(`bank web: research sheet: ${e}`);
       await this.alert.unreadable();
