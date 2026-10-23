@@ -50,6 +50,9 @@ export function requestMessages(tab: Tab, cls: ClassId | null): RequestMessage[]
   return posts.filter((m): m is RequestMessage => m !== null);
 }
 
+// A line's quantity, before its item, when there is more than one.
+const quantity = (qty: number) => (qty > 1 ? `${qty} × ` : "");
+
 // An item's name, linked to its P99 wiki page. The page's address can hold parentheses, which would
 // end the link early, so they're written as their escapes.
 const itemName = (it: Item) => it.wiki ? `[${it.name}](${it.wiki.replace(/\(/g, "%28").replace(/\)/g, "%29")})` : it.name;
@@ -62,11 +65,11 @@ function requestMessage(lines: Line[], total: string, channel: RequestMessage["c
   const shownLogins = channel === "bank" ? logins : [];
   // The site opens this with a line naming the member, linked to their Discord profile.
   const request: Embed = {
-    description: [...lines.map(l => `• ${l.qty > 1 ? `${l.qty} × ` : ""}${l.it.name} (${priceText(l.req.price, l.qty)})`), "", `**Total: ${total}**`, ...(shownLogins.length ? [`-# ${shownLogins.length === 1 ? "1 login" : `${shownLogins.length} logins`}: ${shownLogins.join(", ")}`] : [])].join("\n"),
+    description: [...lines.map(l => `• ${quantity(l.qty)}${l.it.name} (${priceText(l.req.price, l.qty)})`), "", `**Total: ${total}**`, ...(shownLogins.length ? [`-# ${shownLogins.length === 1 ? "1 login" : `${shownLogins.length} logins`}: ${shownLogins.join(", ")}`] : [])].join("\n"),
     color: BLURPLE,
   };
   // One field per item, in the order of the logins.
-  const fields = cards.map(l => ({ name: BLANK, value: `${l.qty > 1 ? `${l.qty} × ` : ""}${itemName(l.it)}\n${spots(l.it, l.from)}` }));
+  const fields = cards.map(l => ({ name: BLANK, value: `${quantity(l.qty)}${itemName(l.it)}\n${spots(l.it, l.from)}` }));
   return { embeds: [request, { description: "", color: GREY, fields }], channel, items: lines.map(l => l.it.id) };
 }
 type Line = { it: Item; qty: number; req: ReturnType<typeof bankRequest>; auction: boolean };

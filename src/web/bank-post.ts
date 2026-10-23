@@ -65,17 +65,21 @@ export function readPost(body: unknown): PostEmbed[] | null {
     if (footer !== undefined && !isText(footer, MAX_FOOTER)) return null;
     if (fields !== undefined && !Array.isArray(fields)) return null;
     if (fields && fields.length > MAX_FIELDS) return null;
-    const read = (fields ?? []).map(readField);
-    if (read.some((f) => f === null)) return null;
+    const read: PostField[] = [];
+    for (const f of fields ?? []) {
+      const field = readField(f);
+      if (!field) return null;
+      read.push(field);
+    }
     const fieldText = read.reduce(
-      (n, f) => n + f!.name.length + f!.value.length,
+      (n, f) => n + f.name.length + f.value.length,
       0
     );
     total += description.length + (footer?.length ?? 0) + fieldText;
     out.push({
       description,
       color,
-      ...(fields?.length ? { fields: read as PostField[] } : {}),
+      ...(read.length ? { fields: read } : {}),
       ...(footer ? { footer } : {}),
     });
   }

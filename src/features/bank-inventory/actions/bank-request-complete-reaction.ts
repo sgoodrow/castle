@@ -31,8 +31,8 @@ export const tryBankRequestComplete = (
 ) =>
   reactionActionExecutor(new BankRequestFinishedReactionAction(reaction, user));
 
-// A request is either posted from the bank page (embeds only, the first titled with its member
-// and linking to them) or by /bank request (content that @mentions its member).
+// A request is either posted from the bank page (embeds only, the first opening with a line naming
+// its member) or by /bank request (content that @mentions its member).
 type BankRequest =
   | { kind: "site"; requesterId: string; embed: Embed }
   | { kind: "command"; message: Message | PartialMessage };
@@ -50,8 +50,8 @@ const transactionMessage = (
   banker: User | PartialUser
 ): MessageCreateOptions => {
   if (request.kind === "site") {
-    // Like the request itself, the copy never pings. Its title and lines stay in an embed, which
-    // holds twice what a message's content can.
+    // Like the request itself, the copy never pings. Its lines stay in an embed, which holds twice
+    // what a message's content can. Requests from before the title change keep their title.
     const { title, url, description } = request.embed;
     return {
       content: `✅ by ${banker}`,
