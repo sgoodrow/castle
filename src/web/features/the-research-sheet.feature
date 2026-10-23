@@ -8,16 +8,16 @@ Feature: The research sheet
   Background:
     Given the site is in dev mode without sign-in
     And the bankers' uploads hold:
-      | banker     | spot     | item                   | count |
-      | cgnecro    | General1 | Words of Odus          | 7     |
-      | cgstorageb | General1 | Words of Odus          | 2     |
-      | cgnecro    | General2 | Words of Haunting      | 1     |
-      | cgwiz      | General1 | Rune of Ap`Sagor       | 1     |
-      | cgenc      | General1 | Velishoul's Tome Pg.68 | 1     |
-      | cgmage     | General1 | Spell: Burnout IV      | 1     |
-      | cgwiz      | General2 | Spell: Wrath of Ap'Sagor | 1   |
-      | cgnecro    | Chest    | Gnome Skin Tunic       | 1     |
-      | mulea      | General1 | Dagger                 | 1     |
+      | banker     | spot     | item                     | count |
+      | cgnecro    | General1 | Words of Odus            | 7     |
+      | cgstorageb | General1 | Words of Odus            | 2     |
+      | cgnecro    | General2 | Words of Haunting        | 1     |
+      | cgwiz      | General1 | Rune of Ap`Sagor         | 1     |
+      | cgenc      | General1 | Velishoul's Tome Pg.68   | 1     |
+      | cgmage     | General1 | Spell: Burnout IV        | 1     |
+      | cgwiz      | General2 | Spell: Wrath of Ap'Sagor | 1     |
+      | cgnecro    | Chest    | Gnome Skin Tunic         | 1     |
+      | mulea      | General1 | Dagger                   | 1     |
 
   Scenario: Listed items the research mules hold are given away
     Given the research sheet's Necromancer tab is:

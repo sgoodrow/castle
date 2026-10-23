@@ -23,10 +23,10 @@ export const isResearchMule = (char: string) =>
   /^cg(enc|mage|necro|wiz)$/i.test(char);
 
 // The sheet lists the Wrath scroll by its spell, "Wrath of Al'Kabor", but the game's scroll is named
-// "Spell: Wrath of Ap'Sagor". Each sheet name is listed under its game name too, so the scroll is
-// research under either.
+// "Spell: Wrath of Ap'Sagor". Where the sheet's name is one of these, the game's name is listed too,
+// so that scroll is research as well. "Spell: Wrath of Al'Kabor" (15731) stays listed as it was.
 const GAME_ITEM_NAMES = new Map([
-  ["Spell: Wrath of Al'Kabor", "Spell: Wrath of Ap'Sagor"],
+  [researchKey("Spell: Wrath of Al'Kabor"), "Spell: Wrath of Ap'Sagor"],
 ]);
 
 // The sheet's names and the game's differ a little: "Salil's Writ Pg. 60 (Left)" is "Salil's Writ
@@ -99,7 +99,7 @@ export class ResearchSheet {
         })
       );
       names = tabs.flat().flatMap((n) => {
-        const game = GAME_ITEM_NAMES.get(n);
+        const game = GAME_ITEM_NAMES.get(researchKey(n));
         return game ? [n, game] : [n];
       });
     } catch (e) {
