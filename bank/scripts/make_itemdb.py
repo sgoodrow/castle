@@ -70,7 +70,6 @@ items = {}
 corrected = 0
 for row in d["rows"]:
     r = dict(zip(cols, row))
-    r["Name"] = GAME_NAME.get(r["id"], r["Name"])
     fix = p99.get(r["id"])
     if fix and same_name(fix["Name"], r["Name"]):
         corrected += 1
@@ -78,6 +77,8 @@ for row in d["rows"]:
         # IdleQuest numbers some focus spells past the end of Quarm's spell table.
         if r["focuseffect"] not in spells:
             r["focuseffect"] = -1
+    # Set after the IdleQuest match above, which compares names with Quarm's spelling.
+    r["Name"] = GAME_NAME.get(r["id"], r["Name"])
     out = {}
     for src, dst in KEEP.items():
         v = r.get(src)
