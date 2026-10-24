@@ -2,6 +2,8 @@
 
 import { reportError } from "./errors";
 export { prettyLoc } from "../../../src/shared/bank-location";
+import { goesToAuction } from "../../../src/shared/bank-auction";
+import { MAX_PLAN_LINES } from "../../../src/shared/bank-plan-id";
 
 export interface RawItem {
   name: string;
@@ -339,29 +341,28 @@ const pp = (pp: number, dkp = false, fromMarket = false): Price => ({ kind: "pp"
 const AUCTION_COST = "A banker starts an auction at 1 DKP.";
 
 // The jewelers' sheet prices what they make. Otherwise a price a banker set with the bot beats
-// research, the spell sheet and the Plane of Sky rules, which beat the rules and the market.
+// research, the spell sheet and the Plane of Sky rules, which beat the rules and the market. Whether
+// it goes to DKP auction is decided by the same rule the site uses when it posts a request.
 export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest {
   if (it.jewelry) return jewelryRequest(it, it.jewelry, qty);
   const req = it.research ? researchRequest(it, cls, qty) : it.sky ? skyRequest(it, it.sky, qty) : ruleRequest(it, cls, qty);
+  if (auctionOnly(it))
+    return { ...req, price: { kind: "auction" }, cost: it.price ? `Set by a banker: ${it.price}.` : AUCTION_COST };
   if (it.price) {
     const n = it.price.match(/\d+/);
-    const price: Price = /auction/i.test(it.price) ? { kind: "auction" } : n ? pp(+n[0], /dkp/i.test(it.price)) : { kind: "ask" };
+    const price: Price = n ? pp(+n[0], /dkp/i.test(it.price)) : { kind: "ask" };
     return { ...req, price, cost: `Set by a banker: ${it.price}.` };
   }
   if (it.research) return req;
-  if (it.sheet?.kind === "auction") return { text: req.text, price: { kind: "auction" }, cost: AUCTION_COST };
   if (it.sheet?.kind === "pp")
     return { text: req.text, price: pp(it.sheet.pp, it.sheet.dkp != null), cost: `From the spell sheet.${it.sheet.dkp != null ? ` Or pay ${it.sheet.dkp} DKP.` : ""}` };
   return req;
 }
-// Whether a spell only goes to DKP auction. That doesn't depend on the member's class.
-export const auctionOnly = (it: Item) => {
-  return bankRequest(it, null).price.kind === "auction";
-};
+// Whether an item only goes to DKP auction. That doesn't depend on the member's class.
+export const auctionOnly = (it: Item) => goesToAuction(it, it.holders.some(h => !h.mq));
 // The most a member can put on their tab: what the bank holds, or one auction at a time.
-// Different items one request can hold: Discord posts ten embeds a message, one for the summary
-// and one per item.
-export const MAX_TAB_ITEMS = 9;
+// Different items one request can hold: as many as the post's "DM me the plan" button carries.
+export const MAX_TAB_ITEMS = MAX_PLAN_LINES;
 // Jewelry is made to order, so a member can ask for more than the bank holds.
 export const JEWELRY_TAB_LIMIT = 10;
 export const tabLimit = (it: Item) =>
@@ -395,7 +396,7 @@ const skyWhat = (sky: SkyPart) => sky.islands.length
   ? `Island${sky.islands.length > 1 ? "s" : ""} ${andList(sky.islands)} quest item${sky.note ? ` (${sky.note})` : ""}`
   : "Plane of Sky item";
 // Efreeti weapons and shields (from Noble Dojorn and the Overseer of Air) and items the Sky sheet
-// marks "dkp bid" go to DKP auction. Every other Sky item is 250pp, once the member has won the DKP
+// marks "dkp bid" go to DKP auction (the shared auction rule decides). Every other Sky item is 250pp, once the member has won the DKP
 // items its quest needs; a banker checks that. An item only held for multiquesting is requested
 // too, and a banker tells the member how to set it up.
 function skyRequest(it: HeldItem, sky: SkyPart, qty: number): BankRequest {
@@ -407,8 +408,6 @@ function skyRequest(it: HeldItem, sky: SkyPart, qty: number): BankRequest {
   }
   const holder = from.holders.find(h => isSkyMule(h.char)) ?? from.holders[0];
   const text = `Sky: ${it.name} (${holder.char}, ${holder.count})${qty > 1 ? ` x${qty}` : ""}`;
-  if (/dkp/i.test(sky.note) || (!sky.islands.length && /^Efreeti /.test(it.name)))
-    return { text, price: { kind: "auction" }, cost: AUCTION_COST, pickup: SKY_PICKUP };
   return { text, price: pp(250), cost: `${what}: 250pp, once you've won the DKP items its quest needs. Pick up at ${SKY_PICKUP}.`, pickup: SKY_PICKUP };
 }
 function ruleRequest(it: HeldItem, cls: ClassId | null, qty: number): BankRequest {

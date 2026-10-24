@@ -51,9 +51,9 @@ const transactionMessage = (
   banker: User | PartialUser
 ): MessageCreateOptions => {
   if (request.kind === "site") {
-    // Like the request itself, the copy never pings. Its title and lines stay in an embed, which
-    // holds twice what a message's content can.
-    const { title, url, description } = request.embed;
+    // Like the request itself, the copy never pings. Its title, items and total stay in an embed,
+    // which holds twice what a message's content can.
+    const { title, url, description, fields } = request.embed;
     return {
       content: `✅ by ${banker}`,
       embeds: [
@@ -61,6 +61,7 @@ const transactionMessage = (
           ...(title ? { title } : {}),
           ...(url ? { url } : {}),
           ...(description ? { description } : {}),
+          ...(fields.length ? { fields } : {}),
         },
       ],
       allowedMentions: { parse: [] },

@@ -9,7 +9,7 @@ import { bankPage } from "../src/app";
 import { ALL_CLASSES, CLASS_BIT, CLASSES, ITEM_LIST, bankRequest, maskText, prettyLoc, type EqClassLevels, type Payload } from "../src/data";
 import { server } from "./support/setup";
 
-interface World { payload: Payload; status: number; user: UserEvent; reports: string[]; posts: { embeds: { title: string; description: string }[] }[]; postStatus: number; jewelryStatus: number }
+interface World { payload: Payload; status: number; user: UserEvent; reports: string[]; posts: { embeds: { description: string }[]; lines: { id: number; qty: number }[] }[]; postStatus: number; jewelryStatus: number }
 let world: World;
 
 // A fresh page, bank and browser for every scenario.
@@ -241,7 +241,7 @@ step(/^the site accepts posts to #jewelry-requests again$/, () => { world.jewelr
 step(/^my tab doesn't list (".*)$/, async (_, lines) => { for (const l of quoted(lines)) expect(within(await tab()).queryByText(reading(l))).toBeNull(); });
 step(/^#bank-requests gets my request for (".*)$/, async (_, names) => {
   await waitFor(() => expect(world.posts).toHaveLength(1));
-  expect(world.posts[0]?.embeds.slice(1).map(e => e.title)).toEqual(quoted(names));
+  expect(world.posts[0]?.lines.map(l => ITEM_LIST.find(it => it.id === l.id)?.name)).toEqual(quoted(names));
 });
 step(/^nothing is posted$/, () => expect(world.posts).toEqual([]));
 step(/^I'm told "(.*)"$/, async (_, text) => { await screen.findByText(text); });

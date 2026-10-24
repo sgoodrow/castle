@@ -29,6 +29,25 @@ Feature: Expiring old bank requests
       """
     And the log says "bank requests: removed 1 request(s) over 30 days old"
 
+  Scenario: The DM quotes each item of a request from the bank page, then its total
+    Given Bob placed a bank request on the bank page 30 days ago totalling "850pp" for:
+      """
+      [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)
+      2 × [Pearl](https://wiki.project1999.com/Pearl) (50pp)
+      """
+    When the bot clears out old bank requests
+    Then Bob's request is no longer in #bank-requests
+    And Bob is sent a DM:
+      """
+      Your <Castle> bank request has been dismissed, as it was open for 30 days.
+
+      **Sorry we missed you!** Please post your bank request again the next time you are available to have it fulfilled.
+
+      > [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)
+      > 2 × [Pearl](https://wiki.project1999.com/Pearl) (50pp)
+      > **Total: 850pp**
+      """
+
   Scenario: A jewelry request is removed at 30 days, the same as a bank request
     Given Alice placed a jewelry request in #jewelry-requests 29 days ago:
       """

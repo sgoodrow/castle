@@ -1,7 +1,9 @@
 Feature: Posting a bank request
-  Members send their tab to #bank-requests from the bank page. The page builds the post; the site
-  checks it fits in a Discord message, titles it with the member's name linked to their Discord
-  profile, and posts it as the bot without pinging anyone. No one can flood the channel.
+  Members send their tab from the bank page: bank items to #bank-requests, and made-to-order jewelry
+  to #jewelry-requests. The site checks the post fits in a Discord message, titles it with the
+  member's name linked to their Discord profile, and posts it as the bot without pinging anyone. A
+  bank post gets a "DM me the plan" button for bankers, and the site, not the page, decides how each of
+  its lines is filled.
 
   Background:
     Given the bank site is set up for Discord sign-in
@@ -11,7 +13,63 @@ Feature: Posting a bank request
     And Alice is a Castle member with the bank role
     And Alice has signed in with Discord
 
-  Scenario: The request is posted as the bot, naming who sent it
+  Scenario: A bank request is posted as one entry, titled with the member's name
+    When Alice posts the bank request:
+      """
+      {"channel": "bank",
+       "embeds": [{"description": "**Total: 1,600pp**", "color": 5793266, "fields": [
+         {"name": "\u200b", "value": "[Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)"},
+         {"name": "\u200b", "value": "[Spell: Bedlam](https://wiki.project1999.com/Spell:_Bedlam) (800pp) · MQ: Ringolo"}
+       ]}],
+       "lines": [{"id": 11621, "qty": 1}, {"id": 19400, "qty": 1}]}
+      """
+    Then the answer is 204
+    And the bot posts in #bank-requests:
+      | title                            | url                                | description        | items                                                                                                                                      |
+      | @Alice has placed a bank request | https://discord.com/users/id-Alice | **Total: 1,600pp** | [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)\n[Spell: Bedlam](https://wiki.project1999.com/Spell:_Bedlam) (800pp) · MQ: Ringolo |
+    And the log says "bank web: Alice (id-Alice) posted a bank request"
+
+  Scenario: A bank request gets the "DM me the plan" button for its items
+    When Alice posts a bank request for:
+      | item            | quantity |
+      | Cloak of Flames | 1        |
+      | Pearl           | 3        |
+    Then the post has the "DM me the plan" button for:
+      | item            | quantity | from     |
+      | Cloak of Flames | 1        | the bank |
+      | Pearl           | 3        | the bank |
+
+  Scenario: A line a banker priced as a DKP auction is marked an auction on the button, whatever the page says
+    Given the bankers' uploads hold:
+      | banker | spot     | item          | count | price       |
+      | mulea  | General1 | Spell: Bedlam | 1     | DKP auction |
+    When Alice posts a bank request for:
+      | item          | quantity |
+      | Spell: Bedlam | 1        |
+    Then the post has the "DM me the plan" button for:
+      | item          | quantity | from        |
+      | Spell: Bedlam | 1        | DKP auction |
+
+  Scenario: A line only a multiquest holder has is marked a multiquest on the button
+    Given the Sky sheet's Multiquest tab is:
+      """
+      ,ITEM,CLASS,,
+      phrixios,Wind Tablet,Wizard,,
+      """
+    And the site reads the Sky sheet
+    When Alice posts a bank request for:
+      | item        | quantity |
+      | Wind Tablet | 1        |
+    Then the post has the "DM me the plan" button for:
+      | item        | quantity | from       |
+      | Wind Tablet | 1        | multiquest |
+
+  Scenario: A request with an item the bank's item database doesn't know is posted without the button
+    When Alice posts a bank request for item 999999
+    Then the answer is 204
+    And the post has no button
+
+  Scenario: A post from a page opened before the button is posted without it
     When Alice posts the bank request:
       """
       {"embeds": [
@@ -21,24 +79,23 @@ Feature: Posting a bank request
       """
     Then the answer is 204
     And the bot posts in #bank-requests:
-      | title                               | url                               | description               | footer | thumbnail                             |
-      | @Alice has placed a bank request    | https://discord.com/users/id-Alice | • Cloak of Flames (800pp) | Thanks |                                       |
-      | Cloak of Flames                     |                                   | • mulea (inventory 1)     |        | https://bank.example.com/icons/77.png |
-    And the log says "bank web: Alice (id-Alice) posted a bank request"
+      | title                            | url                                | description               | footer | thumbnail                             |
+      | @Alice has placed a bank request | https://discord.com/users/id-Alice | • Cloak of Flames (800pp) | Thanks |                                       |
+      | Cloak of Flames                  |                                    | • mulea (inventory 1)     |        | https://bank.example.com/icons/77.png |
+    And the post has no button
 
-  Scenario: Made-to-order jewelry is posted to the jewelry requests channel
+  Scenario: Made-to-order jewelry is posted to the jewelry requests channel, without the button
     When Alice posts the bank request:
       """
-      {"channel": "jewelry", "embeds": [
-        {"title": "Bank request", "description": "• Golden Cat Eye Bracelet (13pp)", "color": 5793266},
-        {"title": "Golden Cat Eye Bracelet", "description": "Made to order.", "color": 0, "item": 14618}
-      ]}
+      {"channel": "jewelry",
+       "embeds": [{"description": "• [Golden Cat Eye Bracelet](https://wiki.project1999.com/Golden_Cat_Eye_Bracelet) (13pp)\n-# Cgjewelry (bank 1)\n\n**Total: 13pp**", "color": 5793266}],
+       "lines": [{"id": 14618, "qty": 1}]}
       """
     Then the answer is 204
     And the bot posts in #jewelry-requests:
-      | title                            | url                               | description                      | footer | thumbnail                             |
-      | @Alice has placed a bank request | https://discord.com/users/id-Alice | • Golden Cat Eye Bracelet (13pp) |        |                                       |
-      | Golden Cat Eye Bracelet          |                                   | Made to order.                   |        |                                       |
+      | title                            | url                                | description                                                                                                                       |
+      | @Alice has placed a bank request | https://discord.com/users/id-Alice | • [Golden Cat Eye Bracelet](https://wiki.project1999.com/Golden_Cat_Eye_Bracelet) (13pp)\n-# Cgjewelry (bank 1)\n\n**Total: 13pp** |
+    And the post has no button
 
   Scenario: The page shows who's signed in, for its preview
     When Alice asks for the bank
@@ -83,6 +140,15 @@ Feature: Posting a bank request
     When Alice posts a bank request with a 4097-character description
     Then the answer is 400 "Bad request"
 
+  Scenario: A post with more items than Discord's 25 is refused
+    When Alice posts a bank request of 26 items
+    Then the answer is 400 "Bad request"
+    And the bot posts nothing
+
+  Scenario: An item line too long for Discord is refused
+    When Alice posts a bank request with a 1025-character item
+    Then the answer is 400 "Bad request"
+
   Scenario: A post too long for Discord overall is refused
     When Alice posts a bank request of 3 embeds with 2000-character descriptions
     Then the answer is 400 "Bad request"
@@ -95,15 +161,22 @@ Feature: Posting a bank request
     Then the answer is 400 "Bad request"
 
     Examples:
-      | embed                                                              |
-      | null                                                               |
-      | {"title": "", "description": "", "color": 0}                       |
-      | {"title": "T", "description": 1, "color": 0}                       |
-      | {"title": "T", "description": "", "color": 16777216}               |
-      | {"title": "T", "description": "", "color": -1}                     |
-      | {"title": "T", "description": "", "color": 0.5}                    |
-      | {"title": "T", "description": "", "color": 0, "item": 0}           |
-      | {"title": "T", "description": "", "color": 0, "footer": 1}         |
+      | embed                                                                     |
+      | null                                                                      |
+      | {"title": "", "description": "", "color": 0}                              |
+      | {"description": "", "color": 0, "fields": []}                             |
+      | {"description": "x", "color": 0, "fields": {}}                            |
+      | {"description": "x", "color": 0, "fields": [null]}                        |
+      | {"description": "x", "color": 0, "fields": [{"name": " ", "value": "x"}]} |
+      | {"description": "x", "color": 0, "fields": [{"name": "x", "value": ""}]}  |
+      | {"title": "T", "description": 1, "color": 0}                              |
+      | {"title": 1, "description": "x", "color": 0}                              |
+      | {"description": " ", "color": 0, "fields": [{"name": "x", "value": "x"}]} |
+      | {"title": "T", "description": "x", "color": 16777216}                     |
+      | {"title": "T", "description": "x", "color": -1}                           |
+      | {"title": "T", "description": "x", "color": 0.5}                          |
+      | {"title": "T", "description": "x", "color": 0, "item": 0}                 |
+      | {"title": "T", "description": "x", "color": 0, "footer": 1}               |
 
   Scenario: A post too large to read is refused
     When Alice posts a bank request with a 70000-character description

@@ -23,6 +23,17 @@ Feature: Filling a bank request
       | ✅ by <@Dana> | @Alice has placed a bank request | https://discord.com/users/Alice | • Cloak of Flames (800p) | no    |
     And Alice's request is no longer in #bank-requests
 
+  Scenario: A banker fills a request from the bank page with its items listed one per line
+    Given Alice placed a bank request on the bank page totalling "850pp" for:
+      """
+      [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)
+      2 × [Pearl](https://wiki.project1999.com/Pearl) (50pp)
+      """
+    When Dana reacts ✅ to Alice's request
+    Then the bot posts in #bank-transactions:
+      | content       | title                            | description        | items                                                                                                                       | pings |
+      | ✅ by <@Dana> | @Alice has placed a bank request | **Total: 850pp** | [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)\n2 × [Pearl](https://wiki.project1999.com/Pearl) (50pp) | no    |
+
   Scenario: A banker fills a request posted before titles named members
     Given Alice placed a bank request on the bank page before titles named members:
       """

@@ -15,6 +15,7 @@ export interface PlanLine {
 const MARK: Record<Via, string> = { bank: "", auction: "!", multiquest: "~" };
 
 export const PLAN_BUTTON = "bank-plan";
+export const PLAN_LABEL = "DM me the plan";
 
 // A request holds up to nine different items (the bank page's tab limit).
 export const MAX_PLAN_LINES = 9;

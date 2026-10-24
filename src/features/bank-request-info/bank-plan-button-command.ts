@@ -55,8 +55,14 @@ const itemNames = async (ids: number[]) => {
     select: { id: true, name: true },
   });
   const names = new Map(items.map((it) => [it.id, it.name]));
-  return (id: number) =>
-    names.get(id) ?? itemFacts().get(id)?.name ?? `Item ${id}`;
+  // The site only writes ids the item database knows, so a miss means the database lost one
+  // since the post went up.
+  return (id: number) => {
+    const name = names.get(id) ?? itemFacts().get(id)?.name;
+    if (name) return name;
+    console.error(`bank plan: no item ${id}`);
+    return `Item ${id}`;
+  };
 };
 
 // A bank post's "DM me the plan" button. A banker who presses it is sent the plan by DM, from the

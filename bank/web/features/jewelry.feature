@@ -43,13 +43,15 @@ Feature: Jewelry
     And I add 1 "Golden Cat Eye Bracelet" to my tab
     Then I am told "Up to 10 Golden Cat Eye Bracelet per request"
 
-  Scenario: The post for jewelry the bank holds none of says it's made to order
+  Scenario: The post for jewelry the bank holds none of names no bank tab
     Given the jewelers also make jewelry to order
     And I have opened the bank page
     When I add 1 "Black Sapphire Velium Necklace" to my tab
     And I open my tab
     And I send my tab to Discord
-    Then the post reads "Made to order."
+    Then the post reads "Black Sapphire Velium Necklace"
+    And the post doesn't read "Made to order"
+    And the post doesn't read "pack"
 
   Scenario: A post the site refuses keeps its items on my tab, and the one that went through comes off
     Given the jewelers also make jewelry to order

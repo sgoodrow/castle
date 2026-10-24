@@ -215,7 +215,7 @@ async function bankRequest(
   if (!postAllowed(me.id)) return send(req, res, 429, "text/plain", "Too many");
   const raw = await body(req, 65536);
   if (raw == null) return send(req, res, 413, "text/plain", "Too large");
-  let parsed: { channel?: string; embeds?: unknown } | null;
+  let parsed: { channel?: string; embeds?: unknown; lines?: unknown } | null;
   let post;
   try {
     parsed = JSON.parse(raw);
@@ -243,7 +243,10 @@ async function bankRequest(
         ? "Posting jewelry isn't set up"
         : "Posting isn't set up"
     );
-  if (!(await postRequest(to, me, post)))
+  // Jewelry is made to order, so its post has no plan to send.
+  const plan =
+    channel === "jewelry" ? null : await api.planButton(parsed?.lines);
+  if (!(await postRequest(to, me, post, plan)))
     return send(req, res, 502, "text/plain", "Discord didn't take it");
   log(`bank web: ${me.name} (${me.id}) posted a bank request`);
   send(req, res, 204, "text/plain", "");

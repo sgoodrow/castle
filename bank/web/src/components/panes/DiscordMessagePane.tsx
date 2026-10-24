@@ -1,27 +1,34 @@
 import { Group, Stack, Text } from "@mantine/core";
 import { Fragment } from "react";
-import { ITEMS, ME } from "../../data";
+import { ME } from "../../data";
 import { channelName, type RequestMessage } from "../../request";
-import { ItemImage } from "../ItemImage";
+import { requestTitle } from "../../../../../src/shared/bank-request-author";
 
 // Discord's own dark theme, so the preview looks like the post it stands for.
 const D = { bg: "#313338", embed: "#2b2d31", text: "#dbdee1", muted: "#949ba4", name: "#f2f3f5", link: "#00a8fc" };
 const hex = (c: number) => `#${c.toString(16).padStart(6, "0")}`;
 
-// The little markdown the bot uses: **bold**, `-# ` subtext and line breaks.
-const bold = (s: string) => s.split(/\*\*(.+?)\*\*/).map((part, j) => (j % 2 ? <b key={j} style={{ color: D.name }}>{part}</b> : part));
+// The little markdown the bot uses: [links](address), **bold**, `-# ` subtext and line breaks. A
+// backslash escapes a markdown character in an item's name, and Discord shows it without the backslash.
+const unescape = (s: string) => s.replace(/\\([\\`*_~|[\]])/g, "$1");
+const LINK = /(\[(?:\\.|[^\]\\])+\]\(https?:\/\/[^)\s]+\))/;
+const bold = (s: string) => s.split(/\*\*(.+?)\*\*/).map((part, j) => (j % 2 ? <b key={j} style={{ color: D.name }}>{part}</b> : unescape(part)));
+// Only the pieces the link pattern captured are links; the text between them is never read as one.
+const inline = (s: string) => s.split(LINK).map((part, j) => {
+  const link = j % 2 ? part.match(/^\[(.+)\]\((.+)\)$/) : null;
+  return link ? <a key={j} href={link[2]} target="_blank" rel="noreferrer" style={{ color: D.link }}>{unescape(link[1] ?? "")}</a> : <Fragment key={j}>{bold(part)}</Fragment>;
+});
 const md = (s: string) => s.split("\n").map((line, i) => (
   <Fragment key={i}>
     {i > 0 && <br />}
-    {line.startsWith("-# ") ? <span style={{ color: D.muted, fontSize: "0.85em" }}>{bold(line.slice(3))}</span> : bold(line)}
+    {line.startsWith("-# ") ? <span style={{ color: D.muted, fontSize: "0.85em" }}>{inline(line.slice(3))}</span> : inline(line)}
   </Fragment>
 ));
 
-// The site titles the request with whoever sent it, linked to their Discord profile.
-const requestTitle = () => `@${ME} has placed a bank request`;
-
-// A look at the #bank-requests post before it's sent.
+// A look at the post before it's sent, as the bot will post it: titled with the member's name,
+// linked to their Discord profile. The post's "DM me the plan" button is for bankers, so it isn't shown.
 export function DiscordMessagePane({ msg }: { msg: RequestMessage }) {
+  const [e] = msg.embeds;
   return (
     <Stack gap={6} p="sm" style={{ background: D.bg, borderRadius: 8, color: D.text, fontSize: 14 }}>
       <Group gap={6}>
@@ -29,20 +36,13 @@ export function DiscordMessagePane({ msg }: { msg: RequestMessage }) {
         <Text fz={10} fw={600} px={4} style={{ background: "#5865f2", color: "white", borderRadius: 3 }}>APP</Text>
         <Text fz="xs" c={D.muted}>{channelName(msg.channel)}</Text>
       </Group>
-      {msg.embeds.map((e, i) => {
-        const it = e.item != null ? ITEMS[e.item] : undefined;
-        return (
-          <Group key={i} align="flex-start" wrap="nowrap" gap="sm" p="xs" pl="sm"
-            style={{ background: D.embed, borderLeft: `4px solid ${hex(e.color)}`, borderRadius: 4 }}>
-            <Stack gap={4} style={{ minWidth: 0, flex: 1 }}>
-              <Text fw={600} fz="sm" c={i === 0 ? D.link : D.name}>{i === 0 ? requestTitle() : e.title}</Text>
-              <Text fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(e.description)}</Text>
-              {e.footer && <Text fz={11} c={D.muted}>{e.footer}</Text>}
-            </Stack>
-            {it && <ItemImage it={it} size={32} />}
-          </Group>
-        );
-      })}
+      <Stack gap={4} p="xs" pl="sm" style={{ background: D.embed, borderLeft: `4px solid ${hex(e.color)}`, borderRadius: 4 }}>
+        <Text fw={600} fz="sm" c={D.link}>{requestTitle(ME)}</Text>
+        <Text fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(e.description)}</Text>
+        {e.fields?.map((f, j) => (
+          <Text key={j} fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(f.value)}</Text>
+        ))}
+      </Stack>
     </Stack>
   );
 }

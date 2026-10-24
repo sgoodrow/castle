@@ -19,6 +19,7 @@ import { CLASS_TABS, FORBIDDEN_TAB } from "../spell-sheet";
 import { MQ_TAB, SKY_SHEET, SKY_TAB } from "../sky-sheet";
 import { RESEARCH_SHEET, RESEARCH_TABS, researchKey } from "../research-sheet";
 import { JEWELRY_SHEET } from "../jewelry-sheet";
+import { readPlanId, type Via } from "../../shared/bank-plan-id";
 import type { DefineStep } from "../../testing/gherkin";
 
 type Slot = {
@@ -136,12 +137,16 @@ const json = (body: unknown) => Response.json(body);
 interface Post {
   allowed_mentions: unknown;
   embeds: {
-    title: string;
-    description: string;
+    title?: string;
+    description?: string;
     color: number;
     url?: string;
+    fields?: { name: string; value: string }[];
     footer?: { text: string };
     thumbnail?: { url: string };
+  }[];
+  components?: {
+    components: { label: string; custom_id: string }[];
   }[];
 }
 const ROUTES: Route[] = [
@@ -1076,6 +1081,54 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         body: embeds(+n, "x".repeat(+len)),
       })
   );
+  // A bank post as the page sends it: one embed, a field per item, and the items' ids for its button.
+  const bankPost = (fields: string[], lines: { id: number; qty: number }[]) =>
+    JSON.stringify({
+      channel: "bank",
+      embeds: [
+        {
+          description: "**Total: 800pp**",
+          color: 0,
+          fields: fields.map((value) => ({ name: "\u200b", value })),
+        },
+      ],
+      lines,
+    });
+  step(
+    /^(\w+) posts a bank request for:$/,
+    (who: string, rows: Record<string, string>[]) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: bankPost(
+          rows.map((r) => `${r.item} (800pp)`),
+          rows.map((r) => ({ id: itemId(r.item), qty: +r.quantity }))
+        ),
+      })
+  );
+  step(
+    /^(\w+) posts a bank request for item (\d+)$/,
+    (who: string, id: string) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: bankPost(["Mystery (800pp)"], [{ id: +id, qty: 1 }]),
+      })
+  );
+  step(
+    /^(\w+) posts a bank request of (\d+) items$/,
+    (who: string, n: string) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: bankPost(Array(+n).fill("Pearl (1pp)"), []),
+      })
+  );
+  step(
+    /^(\w+) posts a bank request with a (\d+)-character item$/,
+    (who: string, n: string) =>
+      request(who, "/api/bank-request", {
+        method: "POST",
+        body: bankPost(["x".repeat(+n)], []),
+      })
+  );
   step(/^(\w+) posts a bank request that isn't JSON$/, (who: string) =>
     request(who, "/api/bank-request", { method: "POST", body: "not json" })
   );
@@ -1100,6 +1153,21 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         body: embeds(1),
       });
   });
+  // A post's embeds, by the columns a scenario's table lists. Items are a post's fields, one per line.
+  const embedsShown = (post: Post, rows: Record<string, string>[]) => {
+    const columns = Object.keys(rows[0] ?? {});
+    return post.embeds.map((e) => {
+      const cells: Record<string, string> = {
+        title: e.title ?? "",
+        url: e.url ?? "",
+        description: e.description ?? "",
+        items: (e.fields ?? []).map((f) => f.value).join("\n"),
+        footer: e.footer?.text ?? "",
+        thumbnail: e.thumbnail?.url ?? "",
+      };
+      return Object.fromEntries(columns.map((c) => [c, cells[c]]));
+    });
+  };
   step(
     /^the bot posts in #bank-requests:$/,
     (rows: Record<string, string>[]) => {
@@ -1107,15 +1175,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       const [post] = world.posts;
       expect(post.auth).toBe("Bot bot-token");
       expect(post.body.allowed_mentions).toEqual({ parse: [] });
-      expect(
-        post.body.embeds.map((e) => ({
-          title: e.title,
-          url: e.url ?? "",
-          description: e.description,
-          footer: e.footer?.text ?? "",
-          thumbnail: e.thumbnail?.url ?? "",
-        }))
-      ).toEqual(rows);
+      expect(embedsShown(post.body, rows)).toEqual(rows);
     }
   );
   step(
@@ -1125,17 +1185,39 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       expect(world.jewelryPosts).toHaveLength(1);
       const [post] = world.jewelryPosts;
       expect(post.auth).toBe("Bot bot-token");
+      expect(post.body.allowed_mentions).toEqual({ parse: [] });
+      expect(embedsShown(post.body, rows)).toEqual(rows);
+    }
+  );
+  // The button a banker presses for the plan, and the request it carries for the bot to plan.
+  const FROM: Record<Via, string> = {
+    bank: "the bank",
+    auction: "DKP auction",
+    multiquest: "multiquest",
+  };
+  const buttons = (post: Post) =>
+    (post.components ?? []).flatMap((row) => row.components);
+  step(
+    /^the post has the "DM me the plan" button for:$/,
+    (rows: Record<string, string>[]) => {
+      const [post] = [...world.posts, ...world.jewelryPosts];
+      const [button, ...more] = buttons(post.body);
+      expect(more).toEqual([]);
+      expect(button?.label).toBe("DM me the plan");
       expect(
-        post.body.embeds.map((e) => ({
-          title: e.title,
-          url: e.url ?? "",
-          description: e.description,
-          footer: e.footer?.text ?? "",
-          thumbnail: e.thumbnail?.url ?? "",
+        readPlanId(button?.custom_id ?? "")?.map((l) => ({
+          item: ITEMDB[l.id]?.name ?? String(l.id),
+          quantity: String(l.qty),
+          from: FROM[l.via],
         }))
       ).toEqual(rows);
     }
   );
+  step(/^the post has no button$/, () => {
+    const [post] = [...world.posts, ...world.jewelryPosts];
+    expect(post).toBeDefined();
+    expect(buttons(post.body)).toEqual([]);
+  });
   step(/^the bot has posted (\d+) bank requests?$/, (n: string) =>
     expect(world.posts).toHaveLength(+n)
   );
