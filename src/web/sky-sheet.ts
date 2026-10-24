@@ -83,8 +83,12 @@ export type MqHolding = [holder: string, id: number, count: number];
 // Item names the database has more than one item for, by lowercase name, and the id the sheet means
 // by each. Add one only once a banker confirms which item it is. Leather Cord is 3656, which Scott
 // chose from the wiki page: the Plane of Sky drop, 1.0 weight, small, no class. No banker has
-// confirmed it yet.
-export const SKY_ITEM_IDS = new Map<string, number>([["leather cord", 3656]]);
+// confirmed it yet. Large Sky Sapphire is 20778, the 15-weight one for the Enchanter quest, which a
+// banker (Scott) confirmed on Oct 24.
+export const SKY_ITEM_IDS = new Map<string, number>([
+  ["leather cord", 3656],
+  ["large sky sapphire", 20778],
+]);
 
 export class SkySheet {
   private parts = new Map<string, SkyPart>();

@@ -79,7 +79,8 @@ Feature: The Sky sheet
     Then the wiki has been asked for "/Cloak_of_Flames", "/Efreeti_Statuette", "/Efreeti_War_Axe", "/Emerald_Spiroc_Feather", "/Ethereal_Amethyst", "/Mottled_Spiroc_Feather", "/Griffon_Eye"
 
   Scenario: Multiquest rows the bank can't place are logged
-    Given the Sky sheet's Multiquest tab is:
+    Given the Sky name "Large Sky Sapphire" has no explicit item
+    And the Sky sheet's Multiquest tab is:
       """
       ,ITEM,CLASS,,
       Rabbie,Blood Sky Sapphire,Druid,,
@@ -93,8 +94,20 @@ Feature: The Sky sheet
     And the log says "bank web: sky sheet: multiquest: no such item Blood Sky Sapphire; multiquest: more than one item called Large Sky Sapphire; multiquest: no holder for Griffon Eye"
 
   Scenario: A name that means one item on the sheet is matched to that item
-    Given the Sky name "Large Sky Sapphire" means item 20778
+    Given the Sky name "Large Sky Sapphire" means item 20752
     And the Sky sheet's Multiquest tab is:
+      """
+      ,ITEM,CLASS,,
+      Kelra,Large Sky Sapphire,Cleric,,
+      """
+    When the site reads the Sky sheet
+    And Someone asks for the bank
+    Then the bank holds for multiquesting:
+      | holder | item               | id    | count |
+      | Kelra  | Large Sky Sapphire | 20752 | 1     |
+
+  Scenario: The Large Sky Sapphire the Enchanter quest holds is item 20778
+    Given the Sky sheet's Multiquest tab is:
       """
       ,ITEM,CLASS,,
       Kelra,Large Sky Sapphire,Cleric,,
