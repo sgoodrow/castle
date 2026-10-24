@@ -58,7 +58,7 @@ Feature: Posting a bank request
     When Alice posts a bank request that isn't JSON
     Then the answer is 400 "Bad request"
 
-  Scenario: A post with nothing in it is refused
+  Scenario: A post with no content is refused
     When Alice posts a bank request of 0 embeds
     Then the answer is 400 "Bad request"
 
@@ -74,12 +74,12 @@ Feature: Posting a bank request
     Then the answer is 400 "Bad request"
     And the bot posts nothing
 
-  Scenario: A post with more parts than Discord allows is refused
+  Scenario: A post with too many entries for Discord is refused
     When Alice posts a bank request of 11 embeds
     Then the answer is 400 "Bad request"
     And the bot posts nothing
 
-  Scenario: A part too long for Discord is refused
+  Scenario: An entry too long for Discord is refused
     When Alice posts a bank request with a 4097-character description
     Then the answer is 400 "Bad request"
 
@@ -87,7 +87,7 @@ Feature: Posting a bank request
     When Alice posts a bank request of 3 embeds with 2000-character descriptions
     Then the answer is 400 "Bad request"
 
-  Scenario Outline: Each part of a post must be one Discord would accept
+  Scenario Outline: Each entry in a post must be one Discord would accept
     When Alice posts the bank request:
       """
       {"embeds": [<embed>]}

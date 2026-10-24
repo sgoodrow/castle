@@ -41,7 +41,7 @@ Feature: Reporting page errors
     And the log says "error (page, from an unknown commit, not filed): unknown"
     And no issue is filed
 
-  Scenario: A report with unexpected fields is still filed
+  Scenario: A report with a message or stack of the wrong type is still filed
     When Alice reports a page error:
       """
       {"message": 42, "stack": ["no"], "rev": "abc123"}
