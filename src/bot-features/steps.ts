@@ -15,7 +15,7 @@ import {
   type Row,
 } from "./world";
 import { commandOpening } from "../features/bank-request-info/bank-request";
-import { planId } from "../shared/bank-plan-id";
+import { planId, type Via } from "../shared/bank-plan-id";
 import itemdb from "../../bank/data/itemdb.json";
 
 const MINUTE = 60 * 1000;
@@ -70,6 +70,18 @@ const itemId = (name: string) => {
   if (ids.length !== 1 || ids[0] === undefined)
     throw new Error(`"${name}" is ${ids.length} items in the item database`);
   return ids[0];
+};
+
+// How a request's line is filled, as a scenario says it.
+const VIA = new Map<string, Via>([
+  ["the bank", "bank"],
+  ["DKP auction", "auction"],
+  ["multiquest", "multiquest"],
+]);
+const via = (from: string) => {
+  const v = VIA.get(from);
+  if (!v) throw new Error(`"${from}" isn't a way to fill a line`);
+  return v;
 };
 
 // A spot as a banker reads it, "pack 2, slot 5", as the mules' uploads write it, "General2-Slot5".
@@ -687,7 +699,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         table.map((l) => ({
           id: itemId(l.item ?? ""),
           qty: Number(l.quantity),
-          auction: l["DKP auction"] === "yes",
+          via: via(l.from ?? "the bank"),
         }))
       );
       if (!customId) throw new Error("the request's lines don't fit a button");

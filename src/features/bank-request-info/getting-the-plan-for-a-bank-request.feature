@@ -78,8 +78,8 @@ Feature: Getting the plan for a bank request
       | character | where          | item          | count |
       | Mulea     | pack 1, slot 1 | Spell: Bedlam | 1     |
     And Alice's bank request has the "DM me the plan" button for:
-      | item          | quantity | DKP auction |
-      | Spell: Bedlam | 1        | yes         |
+      | item          | quantity | from        |
+      | Spell: Bedlam | 1        | DKP auction |
     When Dana presses "DM me the plan" on Alice's request
     Then Dana is sent a DM:
       """
@@ -87,6 +87,19 @@ Feature: Getting the plan for a bank request
 
       **DKP auction, no login**
       • Spell: Bedlam
+      """
+
+  Scenario: A multiquest line is listed on its own, with no login
+    Given Alice's bank request has the "DM me the plan" button for:
+      | item             | quantity | from       |
+      | Crushed Topaz    | 1        | multiquest |
+    When Dana presses "DM me the plan" on Alice's request
+    Then Dana is sent a DM:
+      """
+      **Bank request plan**
+
+      **Multiquest, no login**
+      • Crushed Topaz
       """
 
   Scenario: The plan says when the bank doesn't have enough
@@ -211,4 +224,4 @@ Feature: Getting the plan for a bank request
       | Pearl | 1        |
     And Discord can't deliver DMs
     When Dana presses "DM me the plan" on Alice's request
-    Then Dana is told "Error: Discord didn't deliver it"
+    Then Dana is told "Discord didn't take the plan. Press the button again in a minute."

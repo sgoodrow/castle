@@ -154,7 +154,7 @@ export const post = (
   return message;
 };
 
-export const memberById = (id: string) =>
+const memberById = (id: string) =>
   Object.values(world.members).find((m) => m.id === id);
 
 const textChannel = (channel: string) => ({

@@ -2,13 +2,17 @@
 // it from the live bank when a banker presses it. The site writes the id from the lines it checked,
 // never from what the page sent, and a button id can't be changed once it's posted.
 
-// One line of the request: the item, how many the member asked for, and whether it goes to DKP
-// auction, which needs no login.
+// How a line is filled: from the bank, by a DKP auction a banker starts, or by a multiquest the
+// member sets up with the item's holder. Only the bank's lines need a login.
+export type Via = "bank" | "auction" | "multiquest";
+// One line of the request: the item, how many the member asked for, and how it's filled.
 export interface PlanLine {
   id: number;
   qty: number;
-  auction: boolean;
+  via: Via;
 }
+// How each way is written after a line's quantity.
+const MARK: Record<Via, string> = { bank: "", auction: "!", multiquest: "~" };
 
 export const PLAN_BUTTON = "bank-plan";
 
@@ -20,7 +24,7 @@ export const MAX_PLAN_LINES = 9;
 export const MAX_PLAN_NUMBER = 36 ** 3 - 1;
 
 const line = (l: PlanLine) =>
-  `${l.id.toString(36)}.${l.qty.toString(36)}${l.auction ? "!" : ""}`;
+  `${l.id.toString(36)}.${l.qty.toString(36)}${MARK[l.via]}`;
 
 // Each item once, as on the tab, so no stock is planned for two lines.
 const distinct = (lines: PlanLine[]) =>
@@ -39,7 +43,8 @@ export function planId(lines: PlanLine[]): string | null {
     : null;
 }
 
-const LINE = /^([0-9a-z]{1,3})\.([0-9a-z]{1,3})(!?)$/;
+const LINE = /^([0-9a-z]{1,3})\.([0-9a-z]{1,3})([!~]?)$/;
+const VIA: Record<string, Via> = { "": "bank", "!": "auction", "~": "multiquest" };
 
 // The lines a button's id carries, or null if it isn't a plan button's id.
 export function readPlanId(id: string): PlanLine[] | null {
@@ -48,12 +53,9 @@ export function readPlanId(id: string): PlanLine[] | null {
   const lines: PlanLine[] = [];
   for (const part of body.split(",")) {
     const m = part.match(LINE);
-    if (!m?.[1] || !m[2]) return null;
-    const l = {
-      id: parseInt(m[1], 36),
-      qty: parseInt(m[2], 36),
-      auction: !!m[3],
-    };
+    const via = VIA[m?.[3] ?? ""];
+    if (!m?.[1] || !m[2] || !via) return null;
+    const l = { id: parseInt(m[1], 36), qty: parseInt(m[2], 36), via };
     if (!l.id || !l.qty) return null;
     lines.push(l);
   }

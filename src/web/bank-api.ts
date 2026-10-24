@@ -95,12 +95,12 @@ export class BankApi {
   async refreshWiki() {
     const seen = new Map<number, { id: number; name: string; icon?: number }>();
     for (const s of await this.filledSlots()) {
-      const db = this.itemdb[s.itemId!];
-      if (s.item && s.item.name !== "Empty" && !db?.nodrop)
-        seen.set(s.itemId!, {
-          id: s.itemId!,
-          name: wikiTitle(s.item.name),
-          icon: db?.icon,
+      const stock = stockIn(s, (id) => !!this.itemdb[id]?.nodrop);
+      if (stock)
+        seen.set(stock.id, {
+          id: stock.id,
+          name: wikiTitle(stock.item.name),
+          icon: this.itemdb[stock.id]?.icon,
         });
     }
     for (const id of [

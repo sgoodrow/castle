@@ -14,6 +14,7 @@ export interface Take {
 export interface Plan {
   logins: { char: string; takes: Take[] }[];
   auctions: string[];
+  multiquests: string[];
   short: { name: string; has: number; needs: number }[];
 }
 
@@ -26,10 +27,12 @@ export function bankPlan(
   stock: Stock[],
   name: (id: number) => string
 ): Plan {
-  // A DKP auction is started by a banker; its item isn't taken from the bank for the request.
-  const auctions = request.filter((l) => l.auction).map((l) => name(l.id));
+  // A banker starts a DKP auction, and a member sets up a multiquest with the item's holder, so
+  // neither is taken from the bank.
+  const named = (via: PlanLine["via"]) =>
+    request.filter((l) => l.via === via).map((l) => name(l.id));
   const lines = request
-    .filter((l) => !l.auction)
+    .filter((l) => l.via === "bank")
     .map((l) => {
       const slots = stock.filter((s) => s.id === l.id).sort(byLoc);
       const held = new Map<string, number>();
@@ -52,15 +55,19 @@ export function bankPlan(
       }
     if (left) short.push({ name: name(l.id), has: l.qty - left, needs: l.qty });
   }
+  // Each character something is taken from, in route order, with what's taken there.
+  const chars = [...new Set(taken.map((t) => t.char))].sort(
+    (a, b) => route.logins.indexOf(a) - route.logins.indexOf(b)
+  );
   return {
-    // A character the route reaches with nothing left to take is skipped.
-    logins: route.logins.flatMap((char) => {
-      const takes = taken
+    logins: chars.map((char) => ({
+      char,
+      takes: taken
         .filter((t) => t.char === char)
-        .map(({ name, count, loc }) => ({ name, count, loc }));
-      return takes.length ? [{ char, takes }] : [];
-    }),
-    auctions,
+        .map(({ name, count, loc }) => ({ name, count, loc })),
+    })),
+    auctions: named("auction"),
+    multiquests: named("multiquest"),
     short,
   };
 }
@@ -85,6 +92,14 @@ const sections = (plan: Plan) => [
         {
           heading: "**DKP auction, no login**",
           lines: plan.auctions.map((n) => `• ${shown(n)}`),
+        },
+      ]
+    : []),
+  ...(plan.multiquests.length
+    ? [
+        {
+          heading: "**Multiquest, no login**",
+          lines: plan.multiquests.map((n) => `• ${shown(n)}`),
         },
       ]
     : []),

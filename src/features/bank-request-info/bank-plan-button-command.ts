@@ -72,14 +72,14 @@ class BankPlanButtonCommand extends ButtonCommand {
     try {
       for (const m of messages) await interaction.user.send(m);
     } catch (err) {
-      // Anything but closed DMs is the bot's failure, and is answered as one.
-      if (
-        (err as { code?: unknown }).code !==
-        RESTJSONErrorCodes.CannotSendMessagesToThisUser
-      )
-        throw err;
+      const closed =
+        (err as { code?: unknown }).code ===
+        RESTJSONErrorCodes.CannotSendMessagesToThisUser;
+      if (!closed) console.error(`bank plan: a DM failed: ${err}`);
       await interaction.editReply(
-        "I couldn't DM you the plan. Allow DMs from this server's members, then press the button again."
+        closed
+          ? "I couldn't DM you the plan. Allow DMs from this server's members, then press the button again."
+          : "Discord didn't take the plan. Press the button again in a minute."
       );
       return;
     }
