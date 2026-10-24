@@ -299,6 +299,23 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(/^(\w+) typed in #(\S+):$/, (name: string, channel: string, text: string) => {
     post(channel, member(name).id, { content: named(text) });
   });
+  // A member's own message that also carries a bank page's embed, which only the bot's posts should count as.
+  step(
+    /^(\w+) typed in #(\S+) with a bank page embed:$/,
+    (name: string, channel: string, text: string) => {
+      const { id } = member(name);
+      post(channel, id, {
+        content: named(text),
+        embeds: [
+          {
+            title: `@${name} has placed a bank request`,
+            url: `https://discord.com/users/${id}`,
+            description: "• Pearl (free)",
+          },
+        ],
+      });
+    }
+  );
   step(
     /^(\w+) reacts (✅|❌) to (\w+)'s typed message in #(\S+)$/,
     async (by: string, emoji: string, whose: string, channel: string) => {

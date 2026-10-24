@@ -121,7 +121,7 @@ Feature: Filling a bank request
     Then nothing is posted in #bank-transactions
 
   Scenario: A banker fills a request a member typed in #bank-requests
-    And Alice typed in #bank-requests:
+    Given Alice typed in #bank-requests:
       """
       ✍️ <@Alice> requests: 2 rings
       """
@@ -130,6 +130,26 @@ Feature: Filling a bank request
       | content                                                | pings |
       | <@Alice>: ✍️ <@Alice> requests: 2 rings -- ✅ by <@Dana> | no    |
     And Alice's typed message is no longer in #bank-requests
+
+  Scenario: A banker fills a typed request that carries a bank page embed as its own copy
+    Given Alice typed in #bank-requests with a bank page embed:
+      """
+      ✍️ <@Alice> requests: Pearl
+      """
+    When Dana reacts ✅ to Alice's typed message in #bank-requests
+    Then the bot posts in #bank-transactions:
+      | content                                          | pings |
+      | <@Alice>: ✍️ <@Alice> requests: Pearl -- ✅ by <@Dana> | no    |
+    And Alice's typed message is no longer in #bank-requests
+
+  Scenario: A banker cancels a request a member typed in #bank-requests
+    Given Alice typed in #bank-requests:
+      """
+      ✍️ <@Alice> requests: 2 rings
+      """
+    When Dana reacts ❌ to Alice's typed message in #bank-requests
+    Then Alice's typed message is no longer in #bank-requests
+    And nothing is posted in #bank-transactions
 
   Scenario: A member cancels their own request typed in #bank-requests
     Given Alice typed in #bank-requests:
