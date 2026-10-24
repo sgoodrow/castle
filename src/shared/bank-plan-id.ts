@@ -1,0 +1,53 @@
+// A bank post's "DM me the plan" button carries the request's lines in its id, so the bot can plan
+// it from the live bank when a banker presses it. The site writes the id from the lines it checked,
+// never from what the page sent, and a button id can't be changed once it's posted.
+
+// One line of the request: the item, how many the member asked for, and whether it goes to DKP
+// auction, which needs no login.
+export interface PlanLine {
+  id: number;
+  qty: number;
+  auction: boolean;
+}
+
+export const PLAN_BUTTON = "bank-plan";
+
+// Discord's limit on a button's id.
+const MAX_ID = 100;
+// Ids and quantities are written in base 36, in at most three digits, so a request of nine lines
+// always fits. Every item id the bank has is below this.
+export const MAX_PLAN_NUMBER = 36 ** 3 - 1;
+
+const line = (l: PlanLine) =>
+  `${l.id.toString(36)}.${l.qty.toString(36)}${l.auction ? "!" : ""}`;
+
+// The button's id for these lines, or null when they can't be written in one.
+export function planId(lines: PlanLine[]): string | null {
+  const fits = (n: number) =>
+    Number.isInteger(n) && n > 0 && n <= MAX_PLAN_NUMBER;
+  if (!lines.length || !lines.every((l) => fits(l.id) && fits(l.qty)))
+    return null;
+  const id = `${PLAN_BUTTON}:${lines.map(line).join(",")}`;
+  return id.length <= MAX_ID ? id : null;
+}
+
+const LINE = /^([0-9a-z]{1,3})\.([0-9a-z]{1,3})(!?)$/;
+
+// The lines a button's id carries, or null if it isn't a plan button's id.
+export function readPlanId(id: string): PlanLine[] | null {
+  const [button, body, ...rest] = id.split(":");
+  if (button !== PLAN_BUTTON || body === undefined || rest.length) return null;
+  const lines: PlanLine[] = [];
+  for (const part of body.split(",")) {
+    const m = part.match(LINE);
+    if (!m?.[1] || !m[2]) return null;
+    const l = {
+      id: parseInt(m[1], 36),
+      qty: parseInt(m[2], 36),
+      auction: !!m[3],
+    };
+    if (!l.id || !l.qty) return null;
+    lines.push(l);
+  }
+  return lines;
+}

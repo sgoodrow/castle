@@ -7,6 +7,8 @@ import type { DefineStep } from "../testing/gherkin";
 import type { PrismaPublicAccounts } from "../services/bot/bot-prisma";
 import { BOT_ID, newId, post, world, type Message, type Row } from "./world";
 import { commandOpening } from "../features/bank-request-info/bank-request";
+import { planId } from "../shared/bank-plan-id";
+import itemdb from "../../bank/data/itemdb.json";
 
 const MINUTE = 60 * 1000;
 const PUBLIC_SHEET = "public-sheet";
@@ -50,6 +52,62 @@ const member = (name: string) => {
   return found;
 };
 const daysAgo = (days?: string) => Number(days ?? 0) * DAYS;
+
+// The item a scenario names, from the item database the bank page reads. A name more than one
+// item shares would make the scenario ambiguous, so it isn't allowed.
+const itemId = (name: string) => {
+  const ids = Object.entries(itemdb as Record<string, { name: string }>)
+    .filter(([, it]) => it.name === name)
+    .map(([id]) => Number(id));
+  if (ids.length !== 1 || ids[0] === undefined)
+    throw new Error(`"${name}" is ${ids.length} items in the item database`);
+  return ids[0];
+};
+
+// A spot as a banker reads it, "pack 2, slot 5", as the mules' uploads write it, "General2-Slot5".
+const SPOTS: [RegExp, string][] = [
+  [/^pack (\d+), slot (\d+)$/, "General$1-Slot$2"],
+  [/^inventory (\d+)$/, "General$1"],
+  [/^bank bag (\d+), slot (\d+)$/, "Bank$1-Slot$2"],
+  [/^bank (\d+)$/, "Bank$1"],
+];
+const uploadedSpot = (where: string) => {
+  const found = SPOTS.find(([re]) => re.test(where));
+  if (!found)
+    throw new Error(`"${where}" isn't a spot in a character's inventory`);
+  return where.replace(found[0], found[1]);
+};
+
+// Slots as a mule's inventory upload stores them: characters by their lowercase name, and a slot
+// with no count left without one.
+const holdInBank = async (
+  slots: { character: string; where: string; item: string; count: string }[]
+) => {
+  for (const s of slots) {
+    const name = s.character.toLowerCase();
+    const id = itemId(s.item);
+    await prismaClient.char.upsert({
+      where: { name },
+      create: { name, charType: "bank" },
+      update: {},
+    });
+    await prismaClient.item.upsert({
+      where: { id },
+      create: { id, name: s.item },
+      update: {},
+    });
+    const slot = uploadedSpot(s.where);
+    await prismaClient.slot.create({
+      data: {
+        charName: name,
+        slot,
+        charSlot: name + slot,
+        itemId: id,
+        count: s.count === "" ? null : Number(s.count),
+      },
+    });
+  }
+};
 
 // The latest of a member's bank requests in a channel, whichever way it was posted.
 const requestOf = (name: string, channel = "bank-requests") => {
@@ -296,9 +354,12 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     }
   );
   // A member's own message, which reads like a request but isn't the bot's.
-  step(/^(\w+) typed in #(\S+):$/, (name: string, channel: string, text: string) => {
-    post(channel, member(name).id, { content: named(text) });
-  });
+  step(
+    /^(\w+) typed in #(\S+):$/,
+    (name: string, channel: string, text: string) => {
+      post(channel, member(name).id, { content: named(text) });
+    }
+  );
   // A member's own message that also carries a bank page's embed, which only the bot's posts should count as.
   step(
     /^(\w+) typed in #(\S+) with a bank page embed:$/,
@@ -330,7 +391,8 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       const message = (world.channels[channel] ?? []).findLast(
         (m) => m.author.id === member(whose).id
       );
-      if (!message) throw new Error(`${whose} has typed no message in #${channel}`);
+      if (!message)
+        throw new Error(`${whose} has typed no message in #${channel}`);
       const user = { id: member(by).id, toString: () => `<@${member(by).id}>` };
       await tryBankRequestComplete(
         { partial: false, emoji: { name: emoji }, message } as never,
@@ -582,6 +644,158 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     }
   );
   step(/^no one is sent a DM$/, () => expect(world.dms).toEqual([]));
+
+  // ---------- a bank request's plan ----------
+  step(
+    /^the bank (?:now )?holds:$/,
+    async (
+      table: { character: string; where: string; item: string; count: string }[]
+    ) => {
+      // "now" replaces what the bank held, as a new upload does.
+      await prismaClient.slot.deleteMany();
+      await holdInBank(table);
+    }
+  );
+  step(
+    /^the bank holds 1 (.+) in each of (\d+) bank bag slots on (\w+)$/,
+    async (item: string, n: string, character: string) =>
+      holdInBank(
+        Array.from({ length: Number(n) }, (_, i) => ({
+          character,
+          where: `bank bag ${Math.floor(i / 10) + 1}, slot ${(i % 10) + 1}`,
+          item,
+          count: "1",
+        }))
+      )
+  );
+  step(
+    /^(\w+)'s bank request has the "DM me the plan" button for:$/,
+    (name: string, table: Record<string, string>[]) => {
+      const { id } = member(name);
+      const customId = planId(
+        table.map((l) => ({
+          id: itemId(l.item ?? ""),
+          qty: Number(l.quantity),
+          auction: l["DKP auction"] === "yes",
+        }))
+      );
+      if (!customId) throw new Error("the request's lines don't fit a button");
+      post("bank-requests", BOT_ID, {
+        embeds: [
+          {
+            title: `@${name} has placed a bank request`,
+            url: `https://discord.com/users/${id}`,
+            description: "**Total: 800pp**",
+          },
+        ],
+        buttons: [{ label: "DM me the plan", customId }],
+      });
+    }
+  );
+  step(
+    /^(\w+) presses "(.+)" on (\w+)'s request$/,
+    async (by: string, label: string, whose: string) => {
+      const { interactionCreateListener } =
+        await import("../listeners/interaction-create-listener");
+      const button = requestOf(whose).buttons.find((b) => b.label === label);
+      if (!button)
+        throw new Error(`${whose}'s request has no "${label}" button`);
+      const presser = member(by);
+      const state = { deferred: false, replied: false };
+      const tell = async (reply: string | { content?: string }) => {
+        const text = typeof reply === "string" ? reply : (reply.content ?? "");
+        world.told.push({ to: by, text });
+      };
+      // A button press as discord.js gives it, answered only to the member who pressed it.
+      const interaction = {
+        isAutocomplete: () => false,
+        isButton: () => true,
+        isChatInputCommand: () => false,
+        customId: button.customId,
+        createdTimestamp: Date.now(),
+        get deferred() {
+          return state.deferred;
+        },
+        get replied() {
+          return state.replied;
+        },
+        member: {
+          roles: {
+            cache: {
+              get: (role: string) =>
+                presser.roles.includes(role) ? { id: role } : undefined,
+              has: (role: string) => presser.roles.includes(role),
+            },
+          },
+        },
+        user: {
+          id: presser.id,
+          send: async (text: string) => {
+            if (!presser.takesDms)
+              throw new Error("Cannot send messages to this user");
+            world.dms.push({ to: by, text });
+          },
+        },
+        deferReply: async () => {
+          state.deferred = true;
+        },
+        editReply: tell,
+        reply: async (reply: string | { content?: string }) => {
+          state.replied = true;
+          await tell(reply);
+        },
+      };
+      const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+      try {
+        await interactionCreateListener(interaction as never);
+      } finally {
+        errors.mockRestore();
+      }
+    }
+  );
+  step(/^(\w+) is told "(.*)"$/, (name: string, text: string) =>
+    expect(world.told.filter((t) => t.to === name).map((t) => t.text)).toEqual([
+      text,
+    ])
+  );
+  step(/^nothing new is posted in #bank-requests$/, () =>
+    expect(
+      (world.channels["bank-requests"] ?? []).filter(
+        (m) => !m.embeds[0]?.url?.startsWith("https://discord.com/users/")
+      )
+    ).toEqual([])
+  );
+  step(
+    /^(\w+) is sent (\d+) DMs of at most ([\d,]+) characters$/,
+    (name: string, n: string, max: string) => {
+      const dms = world.dms.filter((d) => d.to === name);
+      expect(dms).toHaveLength(Number(n));
+      for (const dm of dms)
+        expect(dm.text.length).toBeLessThanOrEqual(
+          Number(max.replace(",", ""))
+        );
+    }
+  );
+  step(
+    /^(\w+)'s second DM opens with "(.*)"$/,
+    (name: string, opening: string) =>
+      expect(
+        world.dms.filter((d) => d.to === name)[1]?.text.split("\n")[0]
+      ).toBe(opening)
+  );
+  step(
+    /^(\w+)'s DMs list (\d+) (.+)s$/,
+    (name: string, n: string, item: string) => {
+      const lines = world.dms
+        .filter((d) => d.to === name)
+        .flatMap((d) => d.text.split("\n"))
+        .flatMap((l) => {
+          const m = l.match(/^• (?:(\d+) × )?(.+) in /);
+          return m?.[2] === item ? [Number(m[1] ?? 1)] : [];
+        });
+      expect(lines.reduce((a, b) => a + b, 0)).toBe(Number(n));
+    }
+  );
 
   // ---------- the bot ----------
   step(/^the bot starts$/, async () => {

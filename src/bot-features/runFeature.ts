@@ -1,7 +1,8 @@
 // Runs one .feature here: each step is matched against the step library in steps.ts. Each feature has
 // its own <name>.test.ts that calls this, so vitest runs the features side by side in their own
 // processes, each on its own real Postgres database (database.ts). Only what's outside the bot is
-// stood in for: Discord (the bot's src/index.ts, which would log in), Google Sheets and dotenv, so a
+// stood in for: Discord (the bot's src/index.ts, which would log in), Google Sheets, Redis (which
+// the bot's commands connect to as they load, though no feature here uses it) and dotenv, so a
 // developer's .env never leaks into a run.
 import path from "path";
 import { describeFeature, library } from "../testing/gherkin";
@@ -17,6 +18,17 @@ const { drop } = await vi.hoisted(async () => {
 
 vi.mock("..", async () => (await import("./world")).discord());
 vi.mock("google-spreadsheet", async () => (await import("./world")).sheets());
+vi.mock("redis", () => {
+  const client = (): unknown => ({
+    connect: async () => undefined,
+    on: () => undefined,
+    duplicate: client,
+  });
+  return {
+    createClient: client,
+    SocketClosedUnexpectedlyError: class extends Error {},
+  };
+});
 vi.mock("dotenv", () => {
   const config = vi.fn();
   return { default: { config }, config };

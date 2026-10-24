@@ -35,6 +35,7 @@ export interface Message {
   createdTimestamp: number;
   content: string;
   embeds: { title?: string; url?: string; description?: string }[];
+  buttons: { label: string; customId: string }[];
   author: { id: string; bot: boolean; toString: () => string };
   mentions: { users: Map<string, unknown> };
   delete: () => Promise<void>;
@@ -47,6 +48,7 @@ type Post =
   | {
       content?: string;
       embeds?: Message["embeds"];
+      buttons?: Message["buttons"];
       attachments?: string[];
       allowedMentions?: { parse?: string[] };
     };
@@ -65,6 +67,7 @@ interface World {
   channels: Record<string, Message[]>;
   members: Record<string, Member>; // by name
   dms: { to: string; text: string }[]; // what the bot sent members, by their name
+  told: { to: string; text: string }[]; // what the bot answered a member's button press, only to them
   discordDown: boolean;
   logs: string[];
   restore: (() => unknown)[]; // undone after the scenario, last first
@@ -77,6 +80,7 @@ export async function reset() {
     channels: {},
     members: {},
     dms: [],
+    told: [],
     discordDown: false,
     logs: [],
     restore: [],
@@ -110,6 +114,7 @@ export const post = (
   {
     content = "",
     embeds = [],
+    buttons = [],
     attachments = [],
     allowedMentions,
   }: Exclude<Post, string>,
@@ -121,6 +126,7 @@ export const post = (
     createdTimestamp: Date.now() - ageMs,
     content,
     embeds,
+    buttons,
     attachments: new Map(attachments.map((url, i) => [String(i), { url }])),
     author: {
       id: authorId,
@@ -140,7 +146,7 @@ export const post = (
   return message;
 };
 
-const memberById = (id: string) =>
+export const memberById = (id: string) =>
   Object.values(world.members).find((m) => m.id === id);
 
 const textChannel = (channel: string) => ({
