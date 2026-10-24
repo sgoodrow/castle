@@ -7,13 +7,15 @@ import { channelName, type RequestMessage } from "../../request";
 const D = { bg: "#313338", embed: "#2b2d31", text: "#dbdee1", muted: "#949ba4", name: "#f2f3f5", link: "#00a8fc" };
 const hex = (c: number) => `#${c.toString(16).padStart(6, "0")}`;
 
-// The little markdown the bot uses: [links](address), **bold**, `-# ` subtext and line breaks.
+// The little markdown the bot uses: [links](address), **bold**, `-# ` subtext and line breaks. A backslash
+// escapes a markdown character in an item's name, and Discord shows that character without the backslash.
+const unescape = (s: string) => s.replace(/\\([\\`*_~|[\]])/g, "$1");
 const LINK = /(\[[^\]]+\]\(https?:\/\/[^)\s]+\))/;
 const bold = (s: string) => s.split(/\*\*(.+?)\*\*/).map((part, j) => (j % 2 ? <b key={j} style={{ color: D.name }}>{part}</b> : part));
 // Only the pieces the link pattern captured are links; the text between them is never read as one.
 const inline = (s: string) => s.split(LINK).map((part, j) => {
   const link = j % 2 ? part.match(/^\[([^\]]+)\]\((.+)\)$/) : null;
-  return link ? <a key={j} href={link[2]} target="_blank" rel="noreferrer" style={{ color: D.link }}>{link[1]}</a> : bold(part);
+  return link ? <a key={j} href={link[2]} target="_blank" rel="noreferrer" style={{ color: D.link }}>{unescape(link[1] ?? "")}</a> : bold(unescape(part));
 });
 const md = (s: string) => s.split("\n").map((line, i) => (
   <Fragment key={i}>

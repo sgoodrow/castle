@@ -16,15 +16,15 @@ import { PLAN_ID, readPlanId, type PlanLine } from "../../shared/bank-plan-id";
 import { bankData } from "../bank-inventory/bank-data";
 import { planText, splitPlan, type PlanItem } from "./bank-plan";
 
-// The item database the bank page reads, for who may hold each item.
-let itemdb: Record<string, HoldingRules & { name: string }> | null = null;
-const itemsDatabase = () =>
-  (itemdb ??= JSON.parse(
+// The item database the bank page reads, for who may hold each item. Read per press, so it isn't kept
+// in memory between plans.
+const itemsDatabase = (): Record<string, HoldingRules & { name: string }> =>
+  JSON.parse(
     fs.readFileSync(
       path.resolve(__dirname, "../../../bank/data/itemdb.json"),
       "utf-8"
     )
-  ));
+  );
 
 // Each line with the bank's stock of its item, as the page lists it: NO DROP items are never fetched, and a
 // bag is only fetched from a Sky mule (the page's Sky flag isn't in the item database, so a bag the Sky sheet

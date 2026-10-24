@@ -46,7 +46,9 @@ export function planText(items: PlanItem[]): string {
     );
   });
   const out = ["**Bank request plan**"];
-  for (const login of route.logins) {
+  // Logins in the order the route reaches them: by the first stop that takes from each.
+  const logins = [...new Set(route.lines.flatMap(l => l.from))];
+  for (const login of logins) {
     out.push(`**Log in to ${login}**`);
     for (const t of takes.filter((t) => t.login === login))
       out.push(
