@@ -30,7 +30,7 @@ KEEP = {
     "proceffect": "proc", "proclevel": "proclvl", "worneffect": "worn", "worntype": "worntype",
     "focuseffect": "focus", "scrolleffect": "scroll", "bardtype": "bardtype", "bardvalue": "bardval",
 }
-# Quarm's list spells this item differently from the game's uploads and the bankers' sheets; the game's spelling wins.
+# Quarm's list spells these items differently from the game's uploads and the bankers' sheets; the game's spelling wins.
 GAME_NAME = {
     16337: "Spell: Wrath of Ap'Sagor",
     20741: "Augmentor's Gem",
