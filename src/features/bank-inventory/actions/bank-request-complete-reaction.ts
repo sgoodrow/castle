@@ -24,7 +24,7 @@ import {
 } from "../../../shared/action/reaction-action";
 import { requesterId } from "../../../shared/bank-request-author";
 import { readBankRequest } from "../../bank-request-info/bank-request";
-import { client, getMember, getTextChannel } from "../../..";
+import { getMember, getTextChannel } from "../../..";
 
 export const tryBankRequestComplete = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -38,14 +38,12 @@ type BankRequest =
   | { kind: "site"; requesterId: string; embeds: Embed[] }
   | { kind: "command"; message: Message | PartialMessage };
 
-const parseBankRequest = (
-  message: Message | PartialMessage,
-  embeds: Embed[]
-): BankRequest => {
-  const embed = embeds[0];
+const parseBankRequest = (message: Message | PartialMessage): BankRequest => {
+  const embed = message.embeds[0];
   const id = embed && requesterId(embed);
-  return embed && id
-    ? { kind: "site", requesterId: id, embeds }
+  // Only the bot's posts come from the bank page; a member's typed message can carry an embed too.
+  return embed && id && message.author?.bot
+    ? { kind: "site", requesterId: id, embeds: message.embeds }
     : { kind: "command", message };
 };
 
@@ -74,7 +72,9 @@ const transactionMessage = (
     };
   }
   const { message } = request;
-  const content = `${message.content} -- ✅ by ${banker}`;
+  // Attachments can't be copied, so their links go into the text.
+  const links = [...message.attachments.values()].map((a) => a.url);
+  const content = `${[message.content, ...links].filter(Boolean).join("\n")} -- ✅ by ${banker}`;
   if (message.author?.bot) return { content };
   // What a member typed can mention anyone, so its copy never pings.
   return {
@@ -98,23 +98,18 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     if (channelId !== bankRequestsChannelId && channelId !== jewelryChannelId) {
       return;
     }
-    // A bank request is only one the bot posted, so a member's message that reads like one is ignored.
-    // Jewelry requests are typed by members, which is how the jewelers take them.
-    if (
-      channelId === bankRequestsChannelId &&
-      this.message.author?.id !== client.user?.id
-    )
-      return;
-    // Only the bot's own posts carry a request's embeds. A member's link can unfurl into an embed that
-    // reads like one, so a member's message is only ever a typed request.
-    const embeds =
-      this.message.author?.id === client.user?.id ? this.message.embeds : [];
     const requested = readBankRequest({
       content: this.message.content as string,
-      embeds,
+      embeds: this.message.embeds,
     });
-    if (!requested) return;
-    const request = parseBankRequest(this.message, embeds);
+    // Jewelry requests must be in the request format. In #bank-requests a member's message counts in
+    // any format, and the bot's own posts count only when they are requests.
+    if (
+      !requested &&
+      (channelId === jewelryChannelId || this.message.author?.bot)
+    )
+      return;
+    const request = parseBankRequest(this.message);
 
     // mark finished
     if (this.reaction.emoji.name === "✅") {
@@ -132,9 +127,9 @@ class BankRequestFinishedReactionAction extends ReactionAction {
 
     // cancel
     if (this.reaction.emoji.name === "❌") {
-      // A member's own typed request is theirs, whoever it names; the bot's names its requester.
+      // A member's own message is theirs, whoever it names; the bot's names its requester.
       const requester = this.message.author?.bot
-        ? requested.requesterId
+        ? requested?.requesterId
         : this.message.author?.id;
       if (
         requester !== this.user.id &&

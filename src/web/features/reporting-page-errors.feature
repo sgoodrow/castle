@@ -8,7 +8,7 @@ Feature: Reporting page errors
     And Alice is a Castle member with the bank role
     And Alice has signed in with Discord
 
-  Scenario: An error from the current page points at the source
+  Scenario: An error from the current page is filed with its source
     When Alice reports a page error:
       """
       {"message": "boom", "stack": "at bankPage (https://bank.example.com/?q=dragon:2:35)", "componentStack": "\n    in App", "rev": "abc123"}
@@ -21,7 +21,7 @@ Feature: Reporting page errors
     And the issue "[page] boom" says "**Commit:** abc123"
     And the issue "[page] boom" doesn't say "dragon"
 
-  Scenario: An error from a page loaded before the last deploy is logged, not filed
+  Scenario: An error from a page opened before the last update is logged, not filed
     Its code may have a bug that's since been fixed, and the fix's issue closed.
     When Alice reports a page error:
       """
@@ -32,7 +32,7 @@ Feature: Reporting page errors
     And the log says "at bankPage (page:2:35)"
     And no issue is filed
 
-  Scenario: An error from a page that doesn't say its commit is logged, not filed
+  Scenario: An error from a page with no version tag is logged, not filed
     When Alice reports a page error:
       """
       {"message": "unknown"}
@@ -41,7 +41,7 @@ Feature: Reporting page errors
     And the log says "error (page, from an unknown commit, not filed): unknown"
     And no issue is filed
 
-  Scenario: A report with odd fields is still filed
+  Scenario: A report with a message or stack of the wrong type is still filed
     When Alice reports a page error:
       """
       {"message": 42, "stack": ["no"], "rev": "abc123"}
@@ -54,7 +54,7 @@ Feature: Reporting page errors
     Then the answer is 204
     And the issue filed quotes a message of 500 "x"s
 
-  Scenario: A report that isn't JSON is refused
+  Scenario: A malformed report is refused
     When Alice reports a page error that isn't JSON
     Then the answer is 400 "Bad report"
     And no issue is filed

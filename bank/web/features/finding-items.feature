@@ -1,7 +1,7 @@
 Feature: Finding items
   A member looks through the bank by name, stats, slot and kind of item.
 
-  Scenario: Everything in the bank is listed by name
+  Scenario: Every item in the bank is listed, in name order
     Given the bank holds the usual stock
     When I open the bank page
     Then the bank lists 8 items

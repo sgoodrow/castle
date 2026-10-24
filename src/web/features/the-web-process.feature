@@ -1,4 +1,4 @@
-Feature: The web process
+Feature: The bank site starting up and failing
   Run on its own, the web process listens, keeps the wiki cache and the spell sheet current in the
   background, and files whatever would otherwise crash it.
 
@@ -6,7 +6,7 @@ Feature: The web process
     Given the bank site is set up for Discord sign-in
     And the site is told to listen on a free port
 
-  Scenario: Loading the code doesn't start the site
+  Scenario: Loading the site's code doesn't start it serving pages
     When the web process's code is loaded
     Then nothing listens on that port
 
@@ -50,7 +50,7 @@ Feature: The web process
       | is down with            |
       | throws the bare value   |
 
-  Scenario Outline: A promise nothing catches is filed
+  Scenario Outline: An unhandled failure is filed
     Given the web process has started
     When a promise fails with <what> "lost promise" and nothing catches it
     Then an issue is filed titled "[web] lost promise"
@@ -61,7 +61,7 @@ Feature: The web process
       | an error       |
       | the bare value |
 
-  Scenario: An uncaught error is filed, then the process exits
+  Scenario: A crash is filed, then the site stops
     Given the web process has started
     When the web process hits an uncaught error "crash"
     Then an issue is filed titled "[web] crash"

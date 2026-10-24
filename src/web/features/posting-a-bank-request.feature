@@ -74,7 +74,7 @@ Feature: Posting a bank request
     Then the answer is 204
     And the jewelry post has no button
 
-  Scenario: The bank tells the page who's signed in, for its preview
+  Scenario: The page shows who's signed in, for its preview
     When Alice asks for the bank
     Then the bank says Alice is signed in as "Alice"
 
@@ -83,20 +83,20 @@ Feature: Posting a bank request
     Then the answer is 401 "Sign in"
     And the bot posts nothing
 
-  Scenario: A site without the bot's token can't post
+  Scenario: Posting says it isn't set up when the site can't post
     Given the site restarts without the bot's token
     When Alice posts a bank request of 1 embed
     Then the answer is 503 "Posting isn't set up"
 
-  Scenario: A post that isn't JSON is refused
+  Scenario: A malformed post is refused
     When Alice posts a bank request that isn't JSON
     Then the answer is 400 "Bad request"
 
-  Scenario: A post with no embeds is refused
+  Scenario: A post with no entries is refused
     When Alice posts a bank request of 0 embeds
     Then the answer is 400 "Bad request"
 
-  Scenario: A jewelry post to a site with no jewelry channel says so
+  Scenario: A jewelry post says so when the site has no jewelry channel
     Given posting bank requests is set up
     And the site restarts without the jewelry channel
     When Alice posts a bank request to #jewelry
@@ -108,12 +108,12 @@ Feature: Posting a bank request
     Then the answer is 400 "Bad request"
     And the bot posts nothing
 
-  Scenario: A post of more embeds than Discord allows is refused
+  Scenario: A post with too many entries for Discord is refused
     When Alice posts a bank request of 11 embeds
     Then the answer is 400 "Bad request"
     And the bot posts nothing
 
-  Scenario: An embed too long for Discord is refused
+  Scenario: An entry too long for Discord is refused
     When Alice posts a bank request with a 4097-character description
     Then the answer is 400 "Bad request"
 
@@ -159,11 +159,11 @@ Feature: Posting a bank request
       |       | [@Alice](https://discord.com/users/id-Alice) has placed a bank request. / • Pearl (1) |        |        |
       |       | Pearl / • mulea (inventory 1)                                                          |        |        |
 
-  Scenario: A post longer than Discord allows in all is refused
+  Scenario: A post too long for Discord overall is refused
     When Alice posts a bank request of 3 embeds with 2000-character descriptions
     Then the answer is 400 "Bad request"
 
-  Scenario Outline: Each embed must be one Discord would take
+  Scenario Outline: Each entry in a post must be one Discord would accept
     When Alice posts the bank request:
       """
       {"embeds": [<embed>]}

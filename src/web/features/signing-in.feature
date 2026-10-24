@@ -44,7 +44,7 @@ Feature: Signing in
     Then the answer is 403 saying "This Discord account isn't in the Castle server."
     And the answer offers to sign in again
 
-  Scenario: Discord refusing the sign-in is a try-again
+  Scenario: Discord refusing the sign-in asks the member to try again, and the bank stays closed
     Given Bob is a Castle member with the bank role
     And Discord refuses the sign-in
     When Bob signs in with Discord
@@ -53,7 +53,7 @@ Feature: Signing in
     When Bob asks for the bank
     Then the answer is 401
 
-  Scenario: A stale sign-in link is refused
+  Scenario: An old sign-in link is refused
     Given Bob is a Castle member with the bank role
     When Bob comes back from Discord with a stale sign-in link
     Then the answer is 400 saying "That sign-in link was stale. Try again."

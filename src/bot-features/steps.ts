@@ -308,6 +308,29 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(/^(\w+) typed in #(\S+):$/, (name: string, channel: string, text: string) => {
     post(channel, member(name).id, { content: named(text) });
   });
+  // A member's own message that also carries a bank page's embed, which only the bot's posts should count as.
+  step(
+    /^(\w+) typed in #(\S+) with a bank page embed:$/,
+    (name: string, channel: string, text: string) => {
+      const { id } = member(name);
+      post(channel, id, {
+        content: named(text),
+        embeds: [
+          {
+            title: `@${name} has placed a bank request`,
+            url: `https://discord.com/users/${id}`,
+            description: "• Pearl (free)",
+          },
+        ],
+      });
+    }
+  );
+  step(
+    /^(\w+) typed in #(\S+) with an attachment "(.*)"$/,
+    (name: string, channel: string, url: string) => {
+      post(channel, member(name).id, { attachments: [url] });
+    }
+  );
   step(
     /^(\w+) reacts (✅|❌) to (\w+)'s typed message in #(\S+)$/,
     async (by: string, emoji: string, whose: string, channel: string) => {
@@ -329,13 +352,15 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       expect(errors.map((m) => m.content)).toEqual([]);
     }
   );
-  step(/^(\w+)'s typed message is still in #(\S+)$/, (name: string, channel: string) => {
-    expect(
-      (world.channels[channel] ?? []).filter(
+  step(
+    /^(\w+)'s typed message is (still|no longer) in #(\S+)$/,
+    (name: string, still: string, channel: string) => {
+      const remaining = (world.channels[channel] ?? []).filter(
         (m) => m.author.id === member(name).id && !m.gone
-      )
-    ).toHaveLength(1);
-  });
+      );
+      expect(remaining).toHaveLength(still === "still" ? 1 : 0);
+    }
+  );
   // A request that @mentions someone besides its member, as /bank request can.
   step(
     /^(\w+) placed a jewelry request in #(\S+) mentioning (\w+):$/,
@@ -349,6 +374,16 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     post("jewelry-requests", BOT_ID, {
       embeds: [
         { title: "Jewelry requests", description: "How to ask for jewelry" },
+      ],
+    });
+  });
+  step(/^the bot's instructions are in #bank-requests$/, () => {
+    post("bank-requests", BOT_ID, {
+      embeds: [
+        {
+          title: "Castle Bank Inventory",
+          description: "How to ask for a bank request",
+        },
       ],
     });
   });

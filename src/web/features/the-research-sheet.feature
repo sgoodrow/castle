@@ -8,15 +8,16 @@ Feature: The research sheet
   Background:
     Given the site is in dev mode without sign-in
     And the bankers' uploads hold:
-      | banker     | spot     | item                   | count |
-      | cgnecro    | General1 | Words of Odus          | 7     |
-      | cgstorageb | General1 | Words of Odus          | 2     |
-      | cgnecro    | General2 | Words of Haunting      | 1     |
-      | cgwiz      | General1 | Rune of Ap`Sagor       | 1     |
-      | cgenc      | General1 | Velishoul's Tome Pg.68 | 1     |
-      | cgmage     | General1 | Spell: Burnout IV      | 1     |
-      | cgnecro    | Chest    | Gnome Skin Tunic       | 1     |
-      | mulea      | General1 | Dagger                 | 1     |
+      | banker     | spot     | item                     | count |
+      | cgnecro    | General1 | Words of Odus            | 7     |
+      | cgstorageb | General1 | Words of Odus            | 2     |
+      | cgnecro    | General2 | Words of Haunting        | 1     |
+      | cgwiz      | General1 | Rune of Ap`Sagor         | 1     |
+      | cgenc      | General1 | Velishoul's Tome Pg.68   | 1     |
+      | cgmage     | General1 | Spell: Burnout IV        | 1     |
+      | cgwiz      | General2 | Spell: Wrath of Ap'Sagor | 1     |
+      | cgnecro    | Chest    | Gnome Skin Tunic         | 1     |
+      | mulea      | General1 | Dagger                   | 1     |
 
   Scenario: Listed items the research mules hold are given away
     Given the research sheet's Necromancer tab is:
@@ -50,6 +51,16 @@ Feature: The research sheet
     And Someone asks for the bank
     Then the bank gives away "Rune of Ap`Sagor", "Velishoul's Tome Pg.68"
 
+  Scenario: A scroll the sheet names by its spell is given away under the game's name
+    Given the research sheet's Wizard tab is:
+      """
+      Spell,Name of Rune
+      Wrath of Al'Kabor,
+      """
+    When the site reads the research sheet
+    And Someone asks for the bank
+    Then the bank gives away "Spell: Wrath of Ap'Sagor"
+
   Scenario: Names that are no item are logged
     Given the research sheet's Necromancer tab is:
       """
@@ -68,7 +79,7 @@ Feature: The research sheet
     Then the bank gives away "Words of Odus"
     And the log says "bank web: research sheet: Error: tab 1540745837: HTTP 500"
 
-  Scenario: A tab without its columns keeps the old copy
+  Scenario: A tab missing its columns keeps the old copy
     Given a saved copy of the research sheet lists "Words of Odus"
     And the research sheet's Wizard tab is:
       """
