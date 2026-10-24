@@ -243,7 +243,8 @@ async function bankRequest(
         : "Posting isn't set up"
     );
   // Jewelry has no plan yet, so only a bank post gets the button.
-  const plan = channel === "jewelry" ? null : readPlan(parsed);
+  const plan =
+    channel === "jewelry" ? null : readPlan(parsed, (id) => api.knowsItem(id));
   if (!(await postRequest(to, me, post, plan)))
     return send(req, res, 502, "text/plain", "Discord didn't take it");
   log(`bank web: ${me.name} (${me.id}) posted a bank request`);

@@ -77,6 +77,11 @@ export class BankApi {
     );
   }
 
+  // Whether the item database knows an item, so a plan can only name items the bank lists.
+  knowsItem(id: number) {
+    return !!this.itemdb[id];
+  }
+
   private filledSlots() {
     return this.prisma.slot.findMany({
       where: { itemId: { gt: 0 } },

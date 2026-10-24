@@ -1,7 +1,7 @@
 // The bank, as the bot's web server sends it from /api/bank, plus the EverQuest rules needed to read it.
 
 import { reportError } from "./errors";
-import { isBag } from "../../../src/shared/bank-holders";
+import { isBag, isSkyMule } from "../../../src/shared/bank-holders";
 export { prettyLoc } from "../../../src/shared/bank-holders";
 
 export interface RawItem {
@@ -371,7 +371,7 @@ function jewelryRequest(it: Item, recipe: Recipe, qty: number): BankRequest {
   return { text: `Jewelry: ${it.name}, ${qty} (${priceText(price, qty)})`, price, cost: "Made to order by the guild's jewelers." };
 }
 // The Sky mules: cgskya … cgskyhh and gmskyone … gmskyseven.
-export const isSkyMule = (char: string) => /sky/i.test(char);
+export { isSkyMule } from "../../../src/shared/bank-holders";
 const SKY_PICKUP = "the East Freeport docks";
 // Research spells and components are free, from North Freeport Bank. A scroll's line names the
 // member's class if it can scribe it, like a dropped spell's.

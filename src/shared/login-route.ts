@@ -8,9 +8,9 @@ export interface Holder {
   count: number;
   mq: boolean;
 }
-// The item part of a line: jewelry is found in the bank's tabs, never on a multiquest holder.
+// The item part of a line: only its holders in the bank count, since a multiquest holder isn't a login.
 export interface Need {
-  it: { jewelry?: unknown; holders: Holder[] };
+  it: { holders: Holder[] };
   qty: number;
   auction: boolean;
 }

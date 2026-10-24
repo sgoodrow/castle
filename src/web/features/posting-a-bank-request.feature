@@ -66,6 +66,14 @@ Feature: Posting a bank request
     Then the answer is 204
     And the bot's post has no button
 
+  Scenario: A plan for an item the bank database doesn't know has no button
+    When Alice posts the bank request:
+      """
+      {"items": [999999999], "plan": "bank-plan:999999999x1", "embeds": [{"description": "• Nothing (1pp)", "color": 5793266}]}
+      """
+    Then the answer is 204
+    And the bot's post has no button
+
   Scenario: Jewelry posts have no plan button yet
     When Alice posts the bank request:
       """
