@@ -50,7 +50,9 @@ async function planItems(lines: PlanLine[]): Promise<PlanItem[]> {
         count: s.count || 1,
         mq: false,
       }));
-    return { ...line, name: raw.name, holders };
+    // The bank's own spelling of the name, as the page and the post show it, when the bank holds the item.
+    const name = slots.find((s) => s.itemId === line.id)?.item?.name ?? raw.name;
+    return { ...line, name, holders };
   });
 }
 

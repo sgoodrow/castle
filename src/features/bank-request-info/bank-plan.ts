@@ -46,11 +46,20 @@ export function planText(items: PlanItem[]): string {
     );
   });
   const out = ["**Bank request plan**"];
+  const order = new Map(route.lines.map((l, i) => [l.item, i]));
   // Logins in the order the route reaches them: by the first stop that takes from each.
   const logins = [...new Set(route.lines.flatMap(l => l.from))];
   for (const login of logins) {
     out.push(`**Log in to ${login}**`);
-    for (const t of takes.filter((t) => t.login === login))
+    // Within a login, its items go in the route's order, and each item's spots by spot (pack 2 before pack 10).
+    const spots = takes
+      .filter((t) => t.login === login)
+      .sort(
+        (a, b) =>
+          (order.get(a.item) ?? 0) - (order.get(b.item) ?? 0) ||
+          a.loc.localeCompare(b.loc, undefined, { numeric: true })
+      );
+    for (const t of spots)
       out.push(
         `• ${t.count > 1 ? `${t.count} × ` : ""}${t.item.name} (${prettyLoc(t.loc)})`
       );

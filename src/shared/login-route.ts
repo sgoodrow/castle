@@ -1,5 +1,5 @@
-// The fewest characters a banker logs in to for a whole request, shared by the bank web app and the
-// bot, so the banker's DM and anything else that plans a route use one version.
+// The fewest characters a banker logs in to for a whole request. The bot's banker DM plans with it, so the
+// route has one version. The bank page doesn't plan logins now, since the post no longer shows them.
 
 // mq: held for multiquesting, by a character the bankers don't log in to, rather than in the bank.
 export interface Holder {
