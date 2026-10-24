@@ -23,7 +23,7 @@ import {
 } from "../../../shared/action/reaction-action";
 import { requesterId } from "../../../shared/bank-request-author";
 import { readBankRequest } from "../../bank-request-info/bank-request";
-import { client, getMember, getTextChannel } from "../../..";
+import { getMember, getTextChannel } from "../../..";
 
 export const tryBankRequestComplete = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -90,13 +90,6 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     if (channelId !== bankRequestsChannelId && channelId !== jewelryChannelId) {
       return;
     }
-    // A bank request is only one the bot posted, so a member's message that reads like one is ignored.
-    // Jewelry requests are typed by members, which is how the jewelers take them.
-    if (
-      channelId === bankRequestsChannelId &&
-      this.message.author?.id !== client.user?.id
-    )
-      return;
     const requested = readBankRequest({
       content: this.message.content as string,
       embeds: this.message.embeds,

@@ -119,14 +119,35 @@ Feature: Filling a bank request
     When Frances reacts ✅ to Alice's typed message in #bank-requests
     Then nothing is posted in #bank-transactions
 
-  Scenario: A banker can't fill a request a member typed in #bank-requests either
+  Scenario: A banker fills a request a member typed in #bank-requests
     Given Dana is a Castle banker
     And Alice typed in #bank-requests:
       """
       ✍️ <@Alice> requests: 2 rings
       """
     When Dana reacts ✅ to Alice's typed message in #bank-requests
-    Then nothing is posted in #bank-transactions
+    Then the bot posts in #bank-transactions:
+      | content                                                | pings |
+      | <@Alice>: ✍️ <@Alice> requests: 2 rings -- ✅ by <@Dana> | no    |
+    And Alice's typed message is no longer in #bank-requests
+
+  Scenario: A member cancels their own request typed in #bank-requests
+    Given Alice typed in #bank-requests:
+      """
+      ✍️ <@Alice> requests: 2 rings
+      """
+    When Alice reacts ❌ to Alice's typed message in #bank-requests
+    Then Alice's typed message is no longer in #bank-requests
+    And nothing is posted in #bank-transactions
+
+  Scenario: A member can't cancel a request someone else typed that names them in #bank-requests
+    Given Mallory is a Castle member
+    And Mallory typed in #bank-requests:
+      """
+      ✍️ <@Carol> requests: 2 rings
+      """
+    When Carol reacts ❌ to Mallory's typed message in #bank-requests
+    Then Mallory's typed message is still in #bank-requests
 
   Scenario: A member can't cancel a request someone else typed that names them
     Given Mallory is a Castle member
