@@ -7,7 +7,7 @@ Feature: Sorting the list
     Then "Item" is sorted ascending
     And "Guild price" is sorted none
 
-  Scenario: Sorting by price puts the cheapest first, with unknown prices as 0 and ties by name
+  Scenario: Sorting by price puts the cheapest first, items with no known price first, ties by name
     Given the bank holds the usual stock
     And I have opened the bank page
     And I play a Necromancer

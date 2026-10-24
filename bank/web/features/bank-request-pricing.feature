@@ -62,7 +62,7 @@ Feature: Bank request pricing
       | 3     | Pearl           | anyone        | Raid Reagents: Pearl, 3                             |
       | 1     | Scaled Tunic    | anyone        | Misc item: Scaled Tunic (Muleb)                     |
 
-  Scenario: Double-clicking an item puts it on my tab
+  Scenario: Adding an item puts it on my tab
     Given the bank holds the usual stock
     And I have opened the bank page
     When I add "Cloak of Flames" to my tab
