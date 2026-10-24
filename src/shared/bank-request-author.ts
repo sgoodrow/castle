@@ -7,10 +7,12 @@ const GREETING =
 // Requests posted before the title change opened their description with a mention instead.
 const OPENING = /^<@(\d+)> has placed a bank request\./;
 
-// Brackets would end the link's text early, and a backslash would escape its closing bracket. Other markdown
-// characters would format the name, so they're dropped too.
+// The name as the requester line shows it. Brackets would end the link's text early, and a backslash would
+// escape its closing bracket. Other markdown characters would format the name, so they're dropped too.
+export const displayName = (name: string) => name.replace(/[[\]\\\r\n*_~|`<>]/g, "");
+
 export const requesterLine = (id: string, name: string) =>
-  `[@${name.replace(/[[\]\\\r\n*_~|`<>]/g, "")}](https://discord.com/users/${id}) has placed a bank request.`;
+  `[@${displayName(name)}](https://discord.com/users/${id}) has placed a bank request.`;
 
 // The request itself, without the line that names its member.
 export const requestBody = (description: string) =>

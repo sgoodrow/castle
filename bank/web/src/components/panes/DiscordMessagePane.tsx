@@ -2,6 +2,7 @@ import { Group, Stack, Text } from "@mantine/core";
 import { Fragment } from "react";
 import { ME } from "../../data";
 import { channelName, type RequestMessage } from "../../request";
+import { displayName } from "../../../../../src/shared/bank-request-author";
 
 // Discord's own dark theme, so the preview looks like the post it stands for.
 const D = { bg: "#313338", embed: "#2b2d31", text: "#dbdee1", muted: "#949ba4", name: "#f2f3f5", link: "#00a8fc" };
@@ -36,7 +37,7 @@ export function DiscordMessagePane({ msg }: { msg: RequestMessage }) {
       </Group>
       {msg.embeds.map((e, i) => (
         <Stack key={i} gap={4} p="xs" pl="sm" style={{ background: D.embed, borderLeft: `4px solid ${hex(e.color)}`, borderRadius: 4 }}>
-          {i === 0 && <Text fz="xs" c={D.text}><span style={{ color: D.link }}>@{ME}</span> has placed a bank request.</Text>}
+          {i === 0 && <Text fz="xs" c={D.text}><span style={{ color: D.link }}>@{displayName(ME)}</span> has placed a bank request.</Text>}
           {e.description && <Text fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(e.description)}</Text>}
           {e.fields?.map((f, j) => (
             <Stack key={j} gap={0}>
