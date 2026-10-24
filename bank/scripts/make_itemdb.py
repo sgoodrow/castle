@@ -31,7 +31,13 @@ KEEP = {
     "focuseffect": "focus", "scrolleffect": "scroll", "bardtype": "bardtype", "bardvalue": "bardval",
 }
 # Quarm's list spells this item differently from the game's uploads and the bankers' sheets; the game's spelling wins.
-GAME_NAME = {16337: "Spell: Wrath of Ap'Sagor", 20741: "Augmentor's Gem"}
+GAME_NAME = {
+    16337: "Spell: Wrath of Ap'Sagor",
+    20741: "Augmentor's Gem",
+    20734: "Wilder's Girdle",
+    20781: "Griffon's Beak",
+    20747: "Mithril Air Ring",
+}
 # A value equal to the default carries no information, so it is dropped.
 DEFAULT = {"click": -1, "proc": -1, "worn": -1, "focus": -1, "scroll": -1, "charges": 0}
 
