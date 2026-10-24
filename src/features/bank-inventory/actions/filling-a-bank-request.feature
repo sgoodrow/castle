@@ -131,7 +131,7 @@ Feature: Filling a bank request
       | <@Alice>: ✍️ <@Alice> requests: 2 rings -- ✅ by <@Dana> | no    |
     And Alice's typed message is no longer in #bank-requests
 
-  Scenario: A banker fills a typed request that carries a bank page embed as its own copy
+  Scenario: A typed request is copied as typed even when it carries a bank page embed
     Given Alice typed in #bank-requests with a bank page embed:
       """
       ✍️ <@Alice> requests: Pearl
