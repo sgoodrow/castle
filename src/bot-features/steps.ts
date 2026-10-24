@@ -317,6 +317,12 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     }
   );
   step(
+    /^(\w+) typed in #(\S+) with an attachment "(.*)"$/,
+    (name: string, channel: string, url: string) => {
+      post(channel, member(name).id, { attachments: [url] });
+    }
+  );
+  step(
     /^(\w+) reacts (✅|❌) to (\w+)'s typed message in #(\S+)$/,
     async (by: string, emoji: string, whose: string, channel: string) => {
       const { tryBankRequestComplete } =

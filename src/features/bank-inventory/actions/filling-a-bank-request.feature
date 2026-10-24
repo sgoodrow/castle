@@ -172,6 +172,14 @@ Feature: Filling a bank request
       | <@Alice>: need some rings soon -- ✅ by <@Dana> | no    |
     And Alice's typed message is no longer in #bank-requests
 
+  Scenario: A banker's ✅ keeps a member's attachment as a link in the transaction log
+    Given Alice typed in #bank-requests with an attachment "https://cdn.example/ring.png"
+    When Dana reacts ✅ to Alice's typed message in #bank-requests
+    Then the bot posts in #bank-transactions:
+      | content                                                        | pings |
+      | <@Alice>: https://cdn.example/ring.png -- ✅ by <@Dana>        | no    |
+    And Alice's typed message is no longer in #bank-requests
+
   Scenario: A banker cancels a message in #bank-requests that isn't in the request format
     Given Alice typed in #bank-requests:
       """

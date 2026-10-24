@@ -67,7 +67,9 @@ const transactionMessage = (
     };
   }
   const { message } = request;
-  const content = `${message.content} -- ✅ by ${banker}`;
+  // Attachments can't be copied, so their links go into the text.
+  const links = [...message.attachments.values()].map((a) => a.url);
+  const content = `${[message.content, ...links].filter(Boolean).join("\n")} -- ✅ by ${banker}`;
   if (message.author?.bot) return { content };
   // What a member typed can mention anyone, so its copy never pings.
   return {
