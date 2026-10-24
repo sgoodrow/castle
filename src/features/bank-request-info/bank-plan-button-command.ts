@@ -27,8 +27,9 @@ const itemsDatabase = () =>
   ));
 
 // Each line with the bank's stock of its item, as the page lists it: NO DROP items are never fetched, and a
-// bag is only fetched from a Sky mule (the page's Sky flag isn't in the item database). The Empty slot is
-// left out, and a slot with no count counts as one, as on the page.
+// bag is only fetched from a Sky mule (the page's Sky flag isn't in the item database, so a bag the Sky sheet
+// lists but another mule holds isn't planned). The Empty slot is left out, and a slot with no count, or a
+// count of zero, counts as one, as on the page.
 async function planItems(lines: PlanLine[]): Promise<PlanItem[]> {
   const db = itemsDatabase();
   const slots = await bankData.holdingsOf(lines.map((l) => l.id));
@@ -40,14 +41,13 @@ async function planItems(lines: PlanLine[]): Promise<PlanItem[]> {
         (s) =>
           s.itemId === line.id &&
           s.item?.name !== "Empty" &&
-          (s.count ?? 1) > 0 &&
           !raw.nodrop &&
           (!isBag(raw) || isSkyMule(s.charName ?? ""))
       )
       .map((s) => ({
         char: titleCase(s.charName ?? ""),
         loc: s.slot,
-        count: s.count ?? 1,
+        count: s.count || 1,
         mq: false,
       }));
     return { ...line, name: raw.name, holders };

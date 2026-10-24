@@ -38,11 +38,14 @@ type BankRequest =
   | { kind: "site"; requesterId: string; embeds: Embed[] }
   | { kind: "command"; message: Message | PartialMessage };
 
-const parseBankRequest = (message: Message | PartialMessage): BankRequest => {
-  const embed = message.embeds[0];
+const parseBankRequest = (
+  message: Message | PartialMessage,
+  embeds: Embed[]
+): BankRequest => {
+  const embed = embeds[0];
   const id = embed && requesterId(embed);
   return embed && id
-    ? { kind: "site", requesterId: id, embeds: message.embeds }
+    ? { kind: "site", requesterId: id, embeds }
     : { kind: "command", message };
 };
 
@@ -102,12 +105,16 @@ class BankRequestFinishedReactionAction extends ReactionAction {
       this.message.author?.id !== client.user?.id
     )
       return;
+    // Only the bot's own posts carry a request's embeds. A member's link can unfurl into an embed that
+    // reads like one, so a member's message is only ever a typed request.
+    const embeds =
+      this.message.author?.id === client.user?.id ? this.message.embeds : [];
     const requested = readBankRequest({
       content: this.message.content as string,
-      embeds: this.message.embeds,
+      embeds,
     });
     if (!requested) return;
-    const request = parseBankRequest(this.message);
+    const request = parseBankRequest(this.message, embeds);
 
     // mark finished
     if (this.reaction.emoji.name === "✅") {
