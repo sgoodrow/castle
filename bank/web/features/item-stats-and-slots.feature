@@ -1,7 +1,7 @@
 Feature: Item stats and slots
   A member sees what an item does, where it's worn, who holds it and what it sells for on Green.
 
-  Scenario Outline: Each row shows the item's key facts
+  Scenario Outline: Each row shows the item's stats
     Given the bank holds the usual stock
     When I open the bank page
     Then the row for "<item>" shows <stats>

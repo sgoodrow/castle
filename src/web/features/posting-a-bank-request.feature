@@ -58,7 +58,7 @@ Feature: Posting a bank request
     When Alice posts a bank request that isn't JSON
     Then the answer is 400 "Bad request"
 
-  Scenario: A post with no content is refused
+  Scenario: A post with no entries is refused
     When Alice posts a bank request of 0 embeds
     Then the answer is 400 "Bad request"
 

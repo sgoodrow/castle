@@ -6,7 +6,7 @@ Feature: The bank's data
   Background:
     Given the site is in dev mode without sign-in
 
-  Scenario: Items use the spelling from the game's export, with the item database's stats
+  Scenario: Items are listed under the spelling the mules upload, with the item database's stats
     Given the bankers' uploads hold:
       | banker | spot     | item            | count |
       | mulea  | General1 | Cloak of flames | 1     |
