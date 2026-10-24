@@ -11,6 +11,7 @@ import { SpellSheet, spellKey } from "./spell-sheet";
 import { SKY_ITEM_IDS, SkySheet, isSkyMule, type Lookup } from "./sky-sheet";
 import { ResearchSheet, isResearchMule, researchKey } from "./research-sheet";
 import { JewelrySheet } from "./jewelry-sheet";
+import { stockIn } from "../shared/bank-stock";
 
 type DbItem = {
   name: string;
@@ -54,7 +55,6 @@ const JEWELRY_STATS = [
   "dr",
   "pr",
 ];
-const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export class BankApi {
   private prisma = new PrismaClient();
@@ -95,12 +95,12 @@ export class BankApi {
   async refreshWiki() {
     const seen = new Map<number, { id: number; name: string; icon?: number }>();
     for (const s of await this.filledSlots()) {
-      const db = this.itemdb[s.itemId!];
-      if (s.item && s.item.name !== "Empty" && !db?.nodrop)
-        seen.set(s.itemId!, {
-          id: s.itemId!,
-          name: wikiTitle(s.item.name),
-          icon: db?.icon,
+      const stock = stockIn(s, (id) => !!this.itemdb[id]?.nodrop);
+      if (stock)
+        seen.set(stock.id, {
+          id: stock.id,
+          name: wikiTitle(stock.item.name),
+          icon: this.itemdb[stock.id]?.icon,
         });
     }
     for (const id of [
@@ -180,15 +180,15 @@ export class BankApi {
     const offSky = new Set<number>(); // items some non-Sky mule holds
     const onResearch = new Set<number>(); // items some research mule holds
     for (const s of await this.filledSlots()) {
-      const id = s.itemId!;
-      const db = this.itemdb[id];
-      if (!s.item || s.item.name === "Empty" || db?.nodrop) continue; // NO DROP never leaves the bank
+      const stock = stockIn(s, (id) => !!this.itemdb[id]?.nodrop);
+      if (!stock) continue;
+      const { id, item } = stock;
       latest = Math.max(latest, +s.updatedAt);
-      rows.push([titleCase(s.charName), s.slot, id, s.count || 1]);
+      rows.push([stock.char, stock.loc, id, stock.count]);
       if (!isSkyMule(s.charName)) offSky.add(id);
       if (isResearchMule(s.charName)) onResearch.add(id);
       if (!items[id])
-        items[id] = this.describe(id, s.item.name, s.item.price, spells);
+        items[id] = this.describe(id, item.name, item.price, spells);
     }
     // Items held for multiquesting are NO DROP, so they're never in the uploads above. Whoever
     // holds them, they're Sky items.

@@ -11,6 +11,7 @@ import { applicationCommandButton } from "../features/applications/update-applic
 import { auctionCommand } from "../features/auctions/command";
 import { bankCleanupButtonCommand } from "../features/bank-request-info/bank-cleanup-button-command";
 import { bankingButtonCommand } from "../features/bank-request-info/banking-button-command";
+import { bankPlanButtonCommand } from "../features/bank-request-info/bank-plan-button-command";
 import {
   addAltInviteButtonCommand,
   addPlayerInviteButtonCommand,
@@ -95,7 +96,10 @@ const slashCommands = [
   unskipCommand,
 ];
 
+// A button is found by the first id its own id contains. The plan button comes first, since the request
+// it carries could spell out another button's id.
 const buttonCommands = [
+  bankPlanButtonCommand,
   bankingButtonCommand,
   bankCleanupButtonCommand,
   jewelryCleanupButtonCommand,

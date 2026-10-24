@@ -10,7 +10,7 @@
 
 ## The bot (`src/`)
 
-- Its tests are Gherkin features too (vitest). A feature sits beside the code it describes, as `<name>.feature` with a `<name>.test.ts` beside it that calls `runFeature(__dirname, "./<name>.feature")`. Features that don't belong to one area, such as the bot's sheet loading, live in `src/bot-features`. They run the bot's code on real Postgres: each feature file gets its own database with every migration applied, on the server at `TEST_DATABASE_URL` (default `postgresql://postgres@localhost:5433/postgres`). Only Discord and Google Sheets are stand-ins.
+- Its tests are Gherkin features too (vitest). A feature sits beside the code it describes, as `<name>.feature` with a `<name>.test.ts` beside it that calls `runFeature(__dirname, "./<name>.feature")`. Features that don't belong to one area, such as the bot's sheet loading, live in `src/bot-features`. They run the bot's code on real Postgres: each feature file gets its own database with every migration applied, on the server at `TEST_DATABASE_URL` (default `postgresql://postgres@localhost:5433/postgres`). Only Discord, Google Sheets and Redis are stand-ins.
 - Port a test there only when it states what members, officers or the sheets' editors see. Unit tests of parsers and helpers stay beside their code.
 
 ## Checks before a PR
