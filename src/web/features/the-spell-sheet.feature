@@ -216,6 +216,21 @@ Feature: The spell sheet
       | field | value                                    |
       | sheet | {"kind": "pp", "pp": 50, "dkp": null}    |
 
+  Scenario: A spell the sheet calls Improved Invis to Undead is the game's Improved Invis vs Undead
+    Given the bankers' uploads hold:
+      | banker | spot     | item                            | count |
+      | mulea  | General5 | Spell: Improved Invis vs Undead | 1     |
+    And the spell sheet's "Cleric Spells" tab is:
+      """
+      Level,Name,# In Bank,Banker*,,Cost
+      39,Improved Invis to Undead,0,,,20pp
+      """
+    When the site reads the spell sheet
+    And Someone asks for the bank
+    Then the bank describes "Spell: Improved Invis vs Undead" with:
+      | field | value                                 |
+      | sheet | {"kind": "pp", "pp": 20, "dkp": null} |
+
   Scenario: A spell the sheet names differently is forbidden under its alias too
     Given the bankers' uploads hold:
       | banker | spot     | item                           | count |
