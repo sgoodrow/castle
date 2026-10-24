@@ -317,6 +317,12 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     }
   );
   step(
+    /^(\w+) typed in #(\S+) with an attachment "(.*)"$/,
+    (name: string, channel: string, url: string) => {
+      post(channel, member(name).id, { attachments: [url] });
+    }
+  );
+  step(
     /^(\w+) reacts (✅|❌) to (\w+)'s typed message in #(\S+)$/,
     async (by: string, emoji: string, whose: string, channel: string) => {
       const { tryBankRequestComplete } =
@@ -359,6 +365,16 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     post("jewelry-requests", BOT_ID, {
       embeds: [
         { title: "Jewelry requests", description: "How to ask for jewelry" },
+      ],
+    });
+  });
+  step(/^the bot's instructions are in #bank-requests$/, () => {
+    post("bank-requests", BOT_ID, {
+      embeds: [
+        {
+          title: "Castle Bank Inventory",
+          description: "How to ask for a bank request",
+        },
       ],
     });
   });

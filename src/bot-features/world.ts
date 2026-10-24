@@ -47,6 +47,7 @@ type Post =
   | {
       content?: string;
       embeds?: Message["embeds"];
+      attachments?: string[];
       allowedMentions?: { parse?: string[] };
     };
 
@@ -106,7 +107,12 @@ const mentions = (text: string) =>
 export const post = (
   channel: string,
   authorId: string,
-  { content = "", embeds = [], allowedMentions }: Exclude<Post, string>,
+  {
+    content = "",
+    embeds = [],
+    attachments = [],
+    allowedMentions,
+  }: Exclude<Post, string>,
   ageMs = 0
 ) => {
   const message: Message = {
@@ -115,6 +121,7 @@ export const post = (
     createdTimestamp: Date.now() - ageMs,
     content,
     embeds,
+    attachments: new Map(attachments.map((url, i) => [String(i), { url }])),
     author: {
       id: authorId,
       bot: authorId === BOT_ID,

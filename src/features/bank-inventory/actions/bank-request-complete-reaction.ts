@@ -67,7 +67,9 @@ const transactionMessage = (
     };
   }
   const { message } = request;
-  const content = `${message.content} -- ✅ by ${banker}`;
+  // Attachments can't be copied, so their links go into the text.
+  const links = [...message.attachments.values()].map((a) => a.url);
+  const content = `${[message.content, ...links].filter(Boolean).join("\n")} -- ✅ by ${banker}`;
   if (message.author?.bot) return { content };
   // What a member typed can mention anyone, so its copy never pings.
   return {
@@ -95,7 +97,13 @@ class BankRequestFinishedReactionAction extends ReactionAction {
       content: this.message.content as string,
       embeds: this.message.embeds,
     });
-    if (!requested) return;
+    // Jewelry requests must be in the request format. In #bank-requests a member's message counts in
+    // any format, and the bot's own posts count only when they are requests.
+    if (
+      !requested &&
+      (channelId === jewelryChannelId || this.message.author?.bot)
+    )
+      return;
     const request = parseBankRequest(this.message);
 
     // mark finished
@@ -114,9 +122,9 @@ class BankRequestFinishedReactionAction extends ReactionAction {
 
     // cancel
     if (this.reaction.emoji.name === "❌") {
-      // A member's own typed request is theirs, whoever it names; the bot's names its requester.
+      // A member's own message is theirs, whoever it names; the bot's names its requester.
       const requester = this.message.author?.bot
-        ? requested.requesterId
+        ? requested?.requesterId
         : this.message.author?.id;
       if (
         requester !== this.user.id &&
