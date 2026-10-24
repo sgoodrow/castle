@@ -1161,6 +1161,26 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   );
   step(/^the bot posts nothing$/, () => expect(world.posts).toHaveLength(0));
   step(
+    /^the bot's post has a "DM me the plan" button for "(.*)"$/,
+    (customId: string) => {
+      expect(world.posts[0]?.body.components).toEqual([
+        {
+          type: 1,
+          components: [
+            { type: 2, style: 2, label: "DM me the plan", custom_id: customId },
+          ],
+        },
+      ]);
+    }
+  );
+  step(/^the bot's post has no button$/, () =>
+    expect(world.posts[0]?.body.components).toBeUndefined()
+  );
+  step(/^the jewelry post has no button$/, () =>
+    expect(world.jewelryPosts[0]?.body.components).toBeUndefined()
+  );
+
+  step(
     /^the bank says (\w+) is signed in as "(.*)"$/,
     (_: string, name: string) =>
       expect((JSON.parse(text()) as { me: unknown }).me).toEqual({ name })

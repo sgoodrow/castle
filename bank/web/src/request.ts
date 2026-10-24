@@ -1,5 +1,6 @@
 import { ITEMS, bankRequest, prettyLoc, priceText, requestedFrom, type ClassId, type Item } from "./data";
 import type { Tab } from "./state";
+import { MAX_PLAN_ID, planId } from "../../../src/shared/bank-plan-id";
 import { tabTotal, totalText } from "./tab";
 
 // One #bank-requests post for the whole tab, in the shape Discord's API takes, so the page can
@@ -9,7 +10,8 @@ export interface Field { name: string; value: string }
 export interface Embed { description: string; color: number; fields?: Field[] }
 // Where the post goes: the bank requests channel, or the jewelry requests channel for made-to-order jewelry.
 // `items` are the tab items on the post, so a post that goes through can take them off the tab.
-export interface RequestMessage { embeds: Embed[]; channel: "bank" | "jewelry"; items: number[] }
+// `plan` names the bank lines for the post's button, which DMs the banker the plan. The preview has no button.
+export interface RequestMessage { embeds: Embed[]; channel: "bank" | "jewelry"; items: number[]; plan?: string }
 export const channelName = (channel: RequestMessage["channel"]) => channel === "jewelry" ? "#jewelry-requests" : "#bank-requests";
 
 const BLURPLE = 0x5865f2;
@@ -82,6 +84,8 @@ function requestMessage(lines: Line[], total: string, channel: RequestMessage["c
     return { embeds: [{ description: [...rows, "", `**Total: ${total}**`].join("\n"), color: BLURPLE }], channel, items };
   }
   const fields = lines.map(l => ({ name: BLANK, value: [price(l), multiquest(l.it)].filter(Boolean).join(" · ") }));
-  return { embeds: [{ description: `**Total: ${total}**`, color: BLURPLE, fields }], channel, items };
+  // The button is left off when the lines' ids wouldn't fit Discord's limit on a button.
+  const plan = planId(lines.map(l => ({ id: l.it.id, qty: l.qty, auction: l.auction })));
+  return { embeds: [{ description: `**Total: ${total}**`, color: BLURPLE, fields }], channel, items, ...(plan.length <= MAX_PLAN_ID ? { plan } : {}) };
 }
 type Line = { it: Item; qty: number; req: ReturnType<typeof bankRequest>; auction: boolean };

@@ -42,6 +42,30 @@ Feature: Posting a bank request
       |       | [@Alice](https://discord.com/users/id-Alice) has placed a bank request. / • Golden Cat Eye Bracelet (13pp) |                 |        |
       |       |                                                                                                   | Made to order.  |        |
 
+  Scenario: The bank post has a button that DMs the banker the plan
+    When Alice posts the bank request:
+      """
+      {"plan": "bank-plan:1001x2", "embeds": [{"description": "• Cloak of Flames (800pp)", "color": 5793266}]}
+      """
+    Then the answer is 204
+    And the bot's post has a "DM me the plan" button for "bank-plan:1001x2"
+
+  Scenario: A plan the bot can't read leaves the post without a button
+    When Alice posts the bank request:
+      """
+      {"plan": "bank-plan:oops", "embeds": [{"description": "• Cloak of Flames (800pp)", "color": 5793266}]}
+      """
+    Then the answer is 204
+    And the bot's post has no button
+
+  Scenario: Jewelry posts have no plan button yet
+    When Alice posts the bank request:
+      """
+      {"channel": "jewelry", "plan": "bank-plan:1001x2", "embeds": [{"description": "• Golden Cat Eye Bracelet (13pp)", "color": 5793266}]}
+      """
+    Then the answer is 204
+    And the jewelry post has no button
+
   Scenario: The bank tells the page who's signed in, for its preview
     When Alice asks for the bank
     Then the bank says Alice is signed in as "Alice"

@@ -1,6 +1,8 @@
 // The bank, as the bot's web server sends it from /api/bank, plus the EverQuest rules needed to read it.
 
 import { reportError } from "./errors";
+import { isBag } from "../../../src/shared/bank-holders";
+export { prettyLoc } from "../../../src/shared/bank-holders";
 
 export interface RawItem {
   name: string;
@@ -169,8 +171,6 @@ export const STATS = [["str","STR"],["sta","STA"],["agi","AGI"],["dex","DEX"],["
 export const RESISTS = [["pr","POISON"],["mr","MAGIC"],["dr","DISEASE"],["fr","FIRE"],["cr","COLD"]] as const;
 
 // ---------- data shaping ----------
-// The bankers' own bags, which hold the stock and aren't for sale. A Plane of Sky bag is stock.
-const isBag = (it: RawItem) => it.cls === 1 || !!it.bagslots;
 
 function kindOf(it: RawItem): Kind {
   if (it.scroll || /^Spell: /.test(it.name)) return "spell";
@@ -304,14 +304,6 @@ export function statParts(it: Item): StatPart[] {
 export const spellOf = (id: number | undefined) => (id ? SPELLS[id] : undefined);
 export const statText = (it: Item) => statParts(it).map(p => `${p.label} ${p.value}`).join(" ");
 
-export function prettyLoc(loc: string) {
-  let m;
-  if ((m = loc.match(/^General(\d+)-Slot(\d+)$/))) return `pack ${m[1]}, slot ${m[2]}`;
-  if ((m = loc.match(/^General(\d+)$/))) return `inventory ${m[1]}`;
-  if ((m = loc.match(/^Bank(\d+)-Slot(\d+)$/))) return `bank bag ${m[1]}, slot ${m[2]}`;
-  if ((m = loc.match(/^Bank(\d+)$/))) return `bank ${m[1]}`;
-  return loc.toLowerCase(); // a worn slot: "primary", "ear"
-}
 
 // Who a request takes an item from: the bank, when it holds any, or else the characters holding it
 // for multiquesting.

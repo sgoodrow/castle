@@ -9,7 +9,13 @@ import { commit, describeError, reportError } from "../shared/error-reports";
 import { log } from "../shared/logger";
 import { Auth, Session } from "./auth";
 import { BankApi } from "./bank-api";
-import { postRequest, postToChannel, readPost, type Poster } from "./bank-post";
+import {
+  postRequest,
+  postToChannel,
+  readPlan,
+  readPost,
+  type Poster,
+} from "./bank-post";
 import { PageMap } from "./page-map";
 import { message, send } from "./respond";
 import { WikiCache } from "./wiki-cache";
@@ -236,7 +242,9 @@ async function bankRequest(
         ? "Posting jewelry isn't set up"
         : "Posting isn't set up"
     );
-  if (!(await postRequest(to, me, post)))
+  // Jewelry has no plan yet, so only a bank post gets the button.
+  const plan = channel === "jewelry" ? null : readPlan(parsed);
+  if (!(await postRequest(to, me, post, plan)))
     return send(req, res, 502, "text/plain", "Discord didn't take it");
   log(`bank web: ${me.name} (${me.id}) posted a bank request`);
   send(req, res, 204, "text/plain", "");

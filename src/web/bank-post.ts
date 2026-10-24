@@ -4,6 +4,7 @@
 // claim, as they are with /bank request, and a banker checks them before handing anything over.
 import { log } from "../shared/logger";
 import { requesterLine } from "../shared/bank-request-author";
+import { MAX_PLAN_ID, readPlanId } from "../shared/bank-plan-id";
 
 const DISCORD = "https://discord.com/api/v10";
 
@@ -93,17 +94,29 @@ export function readPost(body: unknown): PostEmbed[] | null {
   return total <= MAX_TOTAL ? out : null;
 }
 
+// The plan button's id, if the page sent a valid one. A post without one has no button.
+export function readPlan(body: unknown): string | null {
+  const plan = (body as { plan?: unknown } | null)?.plan;
+  return typeof plan === "string" &&
+    plan.length <= MAX_PLAN_ID &&
+    readPlanId(plan)
+    ? plan
+    : null;
+}
+
 export interface Poster {
   token: string;
   channelId: string;
 }
 
 // Posts it as the bot. False if Discord didn't take it. The first embed opens with a line naming
-// who sent it, with their name linked to their profile.
+// who sent it, with their name linked to their profile. With a plan, the post has a button that DMs the
+// banker who presses it the plan.
 export async function postRequest(
   p: Poster,
   me: { id: string; name: string },
-  embeds: PostEmbed[]
+  embeds: PostEmbed[],
+  plan: string | null
 ) {
   const res = await fetch(`${DISCORD}/channels/${p.channelId}/messages`, {
     method: "POST",
@@ -114,6 +127,23 @@ export async function postRequest(
     signal: AbortSignal.timeout(10000),
     body: JSON.stringify({
       allowed_mentions: { parse: [] },
+      ...(plan
+        ? {
+            components: [
+              {
+                type: 1,
+                components: [
+                  {
+                    type: 2,
+                    style: 2,
+                    label: "DM me the plan",
+                    custom_id: plan,
+                  },
+                ],
+              },
+            ],
+          }
+        : {}),
       embeds: embeds.map((e, i) => {
         const description =
           i === 0

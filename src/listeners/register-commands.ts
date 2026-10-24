@@ -10,6 +10,7 @@ import { clientId, guildId, token } from "../config";
 import { applicationCommandButton } from "../features/applications/update-applications";
 import { auctionCommand } from "../features/auctions/command";
 import { bankCleanupButtonCommand } from "../features/bank-request-info/bank-cleanup-button-command";
+import { bankPlanButtonCommand } from "../features/bank-request-info/bank-plan-button-command";
 import { bankingButtonCommand } from "../features/bank-request-info/banking-button-command";
 import {
   addAltInviteButtonCommand,
@@ -96,6 +97,7 @@ const slashCommands = [
 ];
 
 const buttonCommands = [
+  bankPlanButtonCommand,
   bankingButtonCommand,
   bankCleanupButtonCommand,
   jewelryCleanupButtonCommand,

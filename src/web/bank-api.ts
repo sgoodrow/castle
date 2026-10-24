@@ -6,6 +6,7 @@
 import { readFileSync } from "fs";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
+import { titleCase } from "../shared/bank-holders";
 import { WikiCache, wikiUrl } from "./wiki-cache";
 import { SpellSheet, spellKey } from "./spell-sheet";
 import { SKY_ITEM_IDS, SkySheet, isSkyMule, type Lookup } from "./sky-sheet";
@@ -54,7 +55,6 @@ const JEWELRY_STATS = [
   "dr",
   "pr",
 ];
-const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export class BankApi {
   private prisma = new PrismaClient();
