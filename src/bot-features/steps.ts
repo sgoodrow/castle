@@ -257,6 +257,23 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     }
   );
   step(
+    /^(\w+) placed a bank request on the bank page 40 days ago with a card for (.*):$/,
+    (name: string, item: string, lines: string) => {
+      const { id } = member(name);
+      post(
+        "bank-requests",
+        BOT_ID,
+        {
+          embeds: [
+            { description: `${requesterLine(id, name)}\n\n` },
+            { title: item, description: lines },
+          ],
+        },
+        daysAgo("40")
+      );
+    }
+  );
+  step(
     /^(\w+) placed a bank request on the bank page before titles named members:$/,
     (name: string, lines: string) => {
       const { id } = member(name);

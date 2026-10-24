@@ -63,6 +63,22 @@ Feature: Expiring old bank requests
       > ✍️ <@Bob> requests: Cloak of Flames x 1
       """
 
+  Scenario: A page request from before titles named members quotes its item card with the item's name
+    Given Bob placed a bank request on the bank page 40 days ago with a card for Cloak of Flames:
+      """
+      • mulea (inventory 1)
+      """
+    When the bot clears out old bank requests
+    Then Bob is sent a DM:
+      """
+      Your <Castle> bank request has been dismissed, as it was open for 30 days.
+
+      **Sorry we missed you!** Please post your bank request again the next time you are available to have it fulfilled.
+
+      > Cloak of Flames
+      > • mulea (inventory 1)
+      """
+
   Scenario: Players' own posts stay, however old
     Given Alice posted in #bank-requests 60 days ago: "Raid Reagents: Peridots, 40"
     And Alice copied a bank page request into #bank-requests 60 days ago

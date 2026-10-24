@@ -192,6 +192,7 @@ Feature: Posting a bank request
       | {"description": "", "color": 0, "fields": [{"name": "", "value": "v"}]} |
       | {"description": "", "color": 0, "fields": [{"name": "n", "value": ""}]} |
       | {"description": "", "color": 0, "footer": 1}                       |
+      | {"description": "", "color": 0}                                    |
 
   Scenario: A post too large to read is refused
     When Alice posts a bank request with a 70000-character description

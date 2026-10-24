@@ -4,45 +4,54 @@ import fs from "fs";
 import path from "path";
 import { ButtonInteraction, CacheType } from "discord.js";
 import { bankerRoleId } from "../../config";
-import {
-  isBag,
-  isSkyMule,
-  titleCase,
-  type HoldingRules,
-} from "../../shared/bank-holders";
+import { titleCase, type HoldingRules } from "../../shared/bank-holders";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { requireInteractionMemberRole } from "../../shared/command/util";
 import { PLAN_ID, readPlanId, type PlanLine } from "../../shared/bank-plan-id";
 import { bankData } from "../bank-inventory/bank-data";
 import { planText, splitPlan, type PlanItem } from "./bank-plan";
 
-// The item database the bank page reads, for who may hold each item. Read on each press and not kept, so
-// the parsed database isn't held in the bot's memory between plans.
-const itemsDatabase = (): Record<string, HoldingRules & { name: string }> =>
-  JSON.parse(
-    fs.readFileSync(
+type ItemRules = HoldingRules & { name: string };
+
+// The item database the bank page reads, for who may hold each item, kept to the fields the plan reads. It's
+// read on the first press and kept after that, so a press doesn't parse the whole database again.
+let rules: Promise<Record<string, ItemRules>> | undefined;
+const itemsDatabase = () => {
+  if (!rules) rules = readItemsDatabase();
+  return rules;
+};
+async function readItemsDatabase() {
+  const db = JSON.parse(
+    await fs.promises.readFile(
       path.resolve(__dirname, "../../../bank/data/itemdb.json"),
       "utf-8"
     )
+  ) as Record<string, ItemRules>;
+  return Object.fromEntries(
+    Object.entries(db).map(([id, raw]) => [
+      id,
+      {
+        name: raw.name,
+        nodrop: raw.nodrop,
+        cls: raw.cls,
+        bagslots: raw.bagslots,
+      },
+    ])
   );
+}
 
-// Each line with the bank's stock of its item, as the page lists it: NO DROP items are never fetched, and a
-// bag is only fetched from a Sky mule (the page's Sky flag isn't in the item database, so a bag the Sky sheet
-// lists but another mule holds isn't planned). The Empty slot is left out, and a slot with no count, or a
-// count of zero, counts as one, as on the page.
+// Each line with the bank's stock of its item, as the page lists it: NO DROP items are never fetched. A bag
+// on a post is a Plane of Sky bag, which the page lists from any holder, so it's fetched from any holder too.
+// The Empty slot is left out, and a slot with no count, or a count of zero, counts as one, as on the page.
 async function planItems(lines: PlanLine[]): Promise<PlanItem[]> {
-  const db = itemsDatabase();
+  const db = await itemsDatabase();
   const slots = await bankData.holdingsOf(lines.map((l) => l.id));
   return lines.map((line) => {
     const raw = db[String(line.id)];
     if (!raw) throw new Error(`Unknown item ${line.id} on the plan.`);
     const holders = slots
       .filter(
-        (s) =>
-          s.itemId === line.id &&
-          s.item?.name !== "Empty" &&
-          !raw.nodrop &&
-          (!isBag(raw) || isSkyMule(s.charName ?? ""))
+        (s) => s.itemId === line.id && s.item?.name !== "Empty" && !raw.nodrop
       )
       .map((s) => ({
         char: titleCase(s.charName ?? ""),
@@ -51,7 +60,8 @@ async function planItems(lines: PlanLine[]): Promise<PlanItem[]> {
         mq: false,
       }));
     // The bank's own spelling of the name, as the page and the post show it, when the bank holds the item.
-    const name = slots.find((s) => s.itemId === line.id)?.item?.name ?? raw.name;
+    const name =
+      slots.find((s) => s.itemId === line.id)?.item?.name ?? raw.name;
     return { ...line, name, holders };
   });
 }

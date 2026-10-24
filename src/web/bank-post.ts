@@ -79,6 +79,8 @@ export function readPost(body: unknown): PostEmbed[] | null {
       if (!field) return null;
       read.push(field);
     }
+    // Discord refuses an embed with nothing in it.
+    if (!description && !read.length) return null;
     const fieldText = read.reduce(
       (n, f) => n + f.name.length + f.value.length,
       0
