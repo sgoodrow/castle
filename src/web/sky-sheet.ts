@@ -16,7 +16,7 @@ export const SKY_TAB = "2041401641";
 export const MQ_TAB = "412443712"; // "Multiquest"
 
 // The Sky mules: cgskya … cgskyhh and gmskyone … gmskyseven.
-export const isSkyMule = (char: string) => /sky/i.test(char);
+export { isSkyMule } from "../shared/bank-holders";
 
 // The islands with quests, as the wiki numbers them.
 export type Island = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;

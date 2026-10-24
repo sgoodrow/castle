@@ -5,7 +5,8 @@ import path from "path";
 import { ButtonInteraction, CacheType } from "discord.js";
 import { bankerRoleId } from "../../config";
 import {
-  fetchable,
+  isBag,
+  isSkyMule,
   titleCase,
   type HoldingRules,
 } from "../../shared/bank-holders";
@@ -13,7 +14,7 @@ import { ButtonCommand } from "../../shared/command/button-command";
 import { requireInteractionMemberRole } from "../../shared/command/util";
 import { PLAN_ID, readPlanId, type PlanLine } from "../../shared/bank-plan-id";
 import { bankData } from "../bank-inventory/bank-data";
-import { planText, type PlanItem } from "./bank-plan";
+import { planText, splitPlan, type PlanItem } from "./bank-plan";
 
 // The item database the bank page reads, for who may hold each item.
 let itemdb: Record<string, HoldingRules & { name: string }> | null = null;
@@ -25,24 +26,30 @@ const itemsDatabase = () =>
     )
   ));
 
-// Each line with the bank's stock of its item. NO DROP items and bags, and the Empty slot, are never
-// fetched, as the page leaves them out.
+// Each line with the bank's stock of its item, as the page lists it: NO DROP items are never fetched, and a
+// bag is only fetched from a Sky mule (the page's Sky flag isn't in the item database). The Empty slot is
+// left out, and a slot with no count counts as one, as on the page.
 async function planItems(lines: PlanLine[]): Promise<PlanItem[]> {
   const db = itemsDatabase();
   const slots = await bankData.holdingsOf(lines.map((l) => l.id));
   return lines.map((line) => {
     const raw = db[String(line.id)];
     if (!raw) throw new Error(`Unknown item ${line.id} on the plan.`);
-    const holders = fetchable(raw)
-      ? slots
-          .filter((s) => s.itemId === line.id && s.item?.name !== "Empty")
-          .map((s) => ({
-            char: titleCase(s.charName ?? ""),
-            loc: s.slot,
-            count: s.count ?? 1,
-            mq: false,
-          }))
-      : [];
+    const holders = slots
+      .filter(
+        (s) =>
+          s.itemId === line.id &&
+          s.item?.name !== "Empty" &&
+          (s.count ?? 1) > 0 &&
+          !raw.nodrop &&
+          (!isBag(raw) || isSkyMule(s.charName ?? ""))
+      )
+      .map((s) => ({
+        char: titleCase(s.charName ?? ""),
+        loc: s.slot,
+        count: s.count ?? 1,
+        mq: false,
+      }));
     return { ...line, name: raw.name, holders };
   });
 }
@@ -55,8 +62,9 @@ class BankPlanButtonCommand extends ButtonCommand {
 
     const text = planText(await planItems(lines));
     try {
-      await interaction.user.send(text);
-    } catch {
+      for (const part of splitPlan(text)) await interaction.user.send(part);
+    } catch (error) {
+      console.error(`bank plan DM failed: ${error}`);
       throw new Error(
         "I couldn't DM you the plan. Check that DMs from this server are open, then press the button again."
       );

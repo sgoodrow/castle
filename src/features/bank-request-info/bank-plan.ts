@@ -70,3 +70,19 @@ export function planText(items: PlanItem[]): string {
     out.push(`**Not enough in the bank:** ${short.join(", ")}.`);
   return out.join("\n");
 }
+
+// Discord takes 2000 characters a message, so a long plan is sent in parts, split between its lines.
+export function splitPlan(text: string, max = 2000): string[] {
+  const parts: string[] = [];
+  let part = "";
+  for (const line of text.split("\n")) {
+    const next = part ? `${part}\n${line}` : line;
+    if (next.length > max && part) {
+      parts.push(part);
+      part = line;
+    } else {
+      part = next;
+    }
+  }
+  return [...parts, part];
+}

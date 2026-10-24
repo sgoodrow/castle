@@ -45,7 +45,7 @@ Feature: Posting a bank request
   Scenario: The bank post has a button that DMs the banker the plan
     When Alice posts the bank request:
       """
-      {"plan": "bank-plan:1001x2", "embeds": [{"description": "• Cloak of Flames (800pp)", "color": 5793266}]}
+      {"items": [1001], "plan": "bank-plan:1001x2", "embeds": [{"description": "• Cloak of Flames (800pp)", "color": 5793266}]}
       """
     Then the answer is 204
     And the bot's post has a "DM me the plan" button for "bank-plan:1001x2"
@@ -54,6 +54,14 @@ Feature: Posting a bank request
     When Alice posts the bank request:
       """
       {"plan": "bank-plan:oops", "embeds": [{"description": "• Cloak of Flames (800pp)", "color": 5793266}]}
+      """
+    Then the answer is 204
+    And the bot's post has no button
+
+  Scenario: A plan for items that aren't on the post leaves the post without a button
+    When Alice posts the bank request:
+      """
+      {"items": [2001], "plan": "bank-plan:1001x2", "embeds": [{"description": "• Cloak of Flames (800pp)", "color": 5793266}]}
       """
     Then the answer is 204
     And the bot's post has no button

@@ -31,6 +31,18 @@ Feature: Filling a bank request
       | content       | description                                            | pings |
       | ✅ by <@Dana> | <@Alice> has placed a bank request. / • Pearl (free) | no    |
 
+  Scenario: A banker fills a bank page request, and its items are kept
+    Given Alice placed a bank request on the bank page with its items in fields:
+      """
+      [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)
+      [Bone Chips](https://wiki.project1999.com/Bone_Chips) (4pp)
+      """
+    When Dana reacts ✅ to Alice's request
+    Then the bot posts in #bank-transactions:
+      | content       | description                                                   | fields                                                                                                                  | pings |
+      | ✅ by <@Dana> | [@Alice](https://discord.com/users/Alice) has placed a bank request. / **Total: 804pp** | [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp) / [Bone Chips](https://wiki.project1999.com/Bone_Chips) (4pp) | no    |
+    And Alice's request is no longer in #bank-requests
+
   Scenario: A banker fills a request from the bank page with nothing in it
     Given Alice placed a bank request on the bank page:
       """

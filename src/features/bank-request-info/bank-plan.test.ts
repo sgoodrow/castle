@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { planText, type PlanItem } from "./bank-plan";
+import { planText, splitPlan, type PlanItem } from "./bank-plan";
 
 const item = (
   over: Partial<PlanItem> & Pick<PlanItem, "id" | "name">
@@ -86,5 +86,19 @@ describe("the banker's plan", () => {
     expect(text).toBe(
       "**Bank request plan**\n**Not enough in the bank:** Spell: Lifetap (0 of 1)."
     );
+  });
+});
+
+describe("a long plan", () => {
+  it("is sent in parts between its lines, each within Discord's limit", () => {
+    const line = "x".repeat(600);
+    const parts = splitPlan([line, line, line, line].join("\n"));
+    expect(parts).toHaveLength(2);
+    expect(parts.every(p => p.length <= 2000)).toBe(true);
+    expect(parts.join("\n")).toBe([line, line, line, line].join("\n"));
+  });
+
+  it("is one part when it fits", () => {
+    expect(splitPlan("short")).toEqual(["short"]);
   });
 });

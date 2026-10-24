@@ -1,4 +1,4 @@
-import { ITEMS, bankRequest, prettyLoc, priceText, requestedFrom, type ClassId, type Item } from "./data";
+import { ITEMS, bankRequest, prettyLoc, priceText, type ClassId, type Item } from "./data";
 import type { Tab } from "./state";
 import { MAX_PLAN_ID, planId } from "../../../src/shared/bank-plan-id";
 import { tabTotal, totalText } from "./tab";
@@ -19,21 +19,15 @@ const BLURPLE = 0x5865f2;
 // link at the top of its value.
 export const BLANK = "\u200b";
 
-// Where a banker finds it: up to six spots, then how many more as Discord's dim subtext (`-# `).
-// The login route's characters come first, then the rest, each by character, then spot, so one
-// character's spots sit together and a banker logs in to each character once for the whole request.
-// Made-to-order jewelry is found in the bank's own tabs, and a multiquest holder isn't a spot to send to.
-// `inline` puts the spots on one line, as a bullet's subtext, and says nothing when no spot holds it.
-function spots(it: Item, from: string[], inline: boolean) {
-  const holders = it.jewelry ? it.holders.filter(h => !h.mq) : requestedFrom(it).holders;
-  if (!holders.length) return inline ? "" : "Made to order.";
-  const planned = (h: Item["holders"][number]) => from.includes(h.char);
-  const sorted = [...holders].sort((a, b) =>
-    +planned(b) - +planned(a) || a.char.localeCompare(b.char) || a.loc.localeCompare(b.loc, undefined, { numeric: true }));
-  const shown = sorted.slice(0, 6).map(h => `${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
-  const more = sorted.length - shown.length;
-  const rest = more > 0 ? [`…and ${more} more`] : [];
-  return inline ? [...shown, ...rest].join(", ") : [...shown.map(s => `• ${s}`), ...rest.map(r => `-# ${r}`)].join("\n");
+// Where a jewelry line is found: the bank's tabs that hold it, up to six, then how many more, on one line
+// of subtext. A multiquest holder isn't a spot to send a banker to, and no tab holding it says nothing.
+function spots(it: Item) {
+  const holders = it.holders
+    .filter(h => !h.mq)
+    .sort((a, b) => a.char.localeCompare(b.char) || a.loc.localeCompare(b.loc, undefined, { numeric: true }));
+  const shown = holders.slice(0, 6).map(h => `${h.char} (${prettyLoc(h.loc)})${h.count > 1 ? ` ×${h.count}` : ""}`);
+  const more = holders.length - shown.length;
+  return [...shown, ...(more > 0 ? [`…and ${more} more`] : [])].join(", ");
 }
 
 // A tab's bank items and its jewelry each post to their own channel, so a mixed tab gives two posts.
@@ -78,7 +72,7 @@ function requestMessage(lines: Line[], total: string, channel: RequestMessage["c
   const price = (l: Line) => `${quantity(l.qty)}${itemName(l.it)} (${priceText(l.req.price, l.qty)})`;
   if (channel === "jewelry") {
     const rows = lines.flatMap(l => {
-      const where = spots(l.it, [], true);
+      const where = spots(l.it);
       return [`• ${price(l)}`, ...(where ? [`-# ${where}`] : [])];
     });
     return { embeds: [{ description: [...rows, "", `**Total: ${total}**`].join("\n"), color: BLURPLE }], channel, items };

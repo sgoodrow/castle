@@ -9,15 +9,14 @@ export interface HoldingRules {
   sky?: unknown;
 }
 
-// A character's name, as the bank shows it.
-export const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
 // The bankers' own bags, which hold the stock and aren't for sale. A Plane of Sky bag is stock.
 export const isBag = (it: HoldingRules) => it.cls === 1 || !!it.bagslots;
 
-// A NO DROP item can't leave the bank, and a bag is only fetched for Plane of Sky.
-export const fetchable = (it: HoldingRules) =>
-  !it.nodrop && !(isBag(it) && !it.sky);
+// A Plane of Sky mule, which holds the Sky items and their bags.
+export const isSkyMule = (char: string) => /sky/i.test(char);
+
+// A character's name, as the bank shows it.
+export const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // A slot's location, as a banker reads it.
 export function prettyLoc(loc: string) {

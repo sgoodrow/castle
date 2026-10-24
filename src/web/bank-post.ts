@@ -94,12 +94,16 @@ export function readPost(body: unknown): PostEmbed[] | null {
   return total <= MAX_TOTAL ? out : null;
 }
 
-// The plan button's id, if the page sent a valid one. A post without one has no button.
+// The plan button's id, if the page sent a valid one for the post's own items, in order. A post without
+// one has no button.
 export function readPlan(body: unknown): string | null {
-  const plan = (body as { plan?: unknown } | null)?.plan;
-  return typeof plan === "string" &&
-    plan.length <= MAX_PLAN_ID &&
-    readPlanId(plan)
+  const { plan, items } = body as { plan?: unknown; items?: unknown };
+  if (typeof plan !== "string" || plan.length > MAX_PLAN_ID) return null;
+  const lines = readPlanId(plan);
+  return lines &&
+    Array.isArray(items) &&
+    lines.length === items.length &&
+    lines.every((l, i) => l.id === items[i])
     ? plan
     : null;
 }

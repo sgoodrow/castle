@@ -83,6 +83,8 @@ const shown = (m: Message, columns: string[]) => {
     url: embed?.url ?? "",
     // A post's lines read on one row, so a line break shows as " / ".
     description: (embed?.description ?? "").trim().replace(/\n+/g, " / "),
+    // A bank page's items are its fields' values, one each.
+    fields: (embed?.fields ?? []).map((f) => f.value).join(" / "),
     pings: m.pings ? "yes" : "no",
   };
   return Object.fromEntries(columns.map((c) => [c, cells[c]]));
@@ -236,6 +238,22 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         { embeds: [{ description: `${requesterLine(id, name)}\n\n${lines}` }] },
         daysAgo(days)
       );
+    }
+  );
+  step(
+    /^(\w+) placed a bank request on the bank page with its items in fields:$/,
+    (name: string, lines: string) => {
+      const { id } = member(name);
+      post("bank-requests", BOT_ID, {
+        embeds: [
+          {
+            description: `${requesterLine(id, name)}\n\n**Total: 804pp**`,
+            fields: lines
+              .split("\n")
+              .map((value) => ({ name: "\u200b", value })),
+          },
+        ],
+      });
     }
   );
   step(

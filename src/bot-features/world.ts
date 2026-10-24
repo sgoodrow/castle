@@ -114,7 +114,8 @@ export const post = (
     channel: { id: channel },
     createdTimestamp: Date.now() - ageMs,
     content,
-    embeds,
+    // A posted embed has its fields, as Discord gives them, even when it has none.
+    embeds: embeds.map((e) => ({ fields: [], ...e })),
     author: {
       id: authorId,
       bot: authorId === BOT_ID,

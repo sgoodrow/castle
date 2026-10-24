@@ -1,4 +1,5 @@
 import {
+  APIEmbed,
   Embed,
   Message,
   MessageCreateOptions,
@@ -34,34 +35,38 @@ export const tryBankRequestComplete = (
 // A request is either posted from the bank page (embeds only, the first opening with a line naming
 // its member) or by /bank request (content that @mentions its member).
 type BankRequest =
-  | { kind: "site"; requesterId: string; embed: Embed }
+  | { kind: "site"; requesterId: string; embeds: Embed[] }
   | { kind: "command"; message: Message | PartialMessage };
 
 const parseBankRequest = (message: Message | PartialMessage): BankRequest => {
   const embed = message.embeds[0];
   const id = embed && requesterId(embed);
   return embed && id
-    ? { kind: "site", requesterId: id, embed }
+    ? { kind: "site", requesterId: id, embeds: message.embeds }
     : { kind: "command", message };
 };
+
+// An embed as it was posted, its fields included, since a bank page request's items are its fields.
+const copyEmbed = (e: Embed): APIEmbed =>
+  Object.fromEntries(
+    Object.entries({
+      title: e.title,
+      url: e.url,
+      description: e.description,
+      color: e.color,
+      fields: e.fields.map((f) => ({ name: f.name, value: f.value, inline: f.inline })),
+    }).filter(([, v]) => v != null)
+  ) as APIEmbed;
 
 const transactionMessage = (
   request: BankRequest,
   banker: User | PartialUser
 ): MessageCreateOptions => {
   if (request.kind === "site") {
-    // Like the request itself, the copy never pings. Its lines stay in an embed, which holds twice
-    // what a message's content can. Requests from before the title change keep their title.
-    const { title, url, description } = request.embed;
+    // Like the request itself, the copy never pings. Every embed is copied whole, so the item fields come too.
     return {
       content: `✅ by ${banker}`,
-      embeds: [
-        {
-          ...(title ? { title } : {}),
-          ...(url ? { url } : {}),
-          ...(description ? { description } : {}),
-        },
-      ],
+      embeds: request.embeds.map(copyEmbed),
       allowedMentions: { parse: [] },
     };
   }

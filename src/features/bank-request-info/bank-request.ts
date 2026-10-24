@@ -9,12 +9,26 @@ const COMMAND = new RegExp(`^${commandOpening("<@(\\d+)>")}`);
 // Who asked and what for, if a post is a bank request from the page or /bank request.
 export const readBankRequest = (post: {
   content: string;
-  embeds: { url?: string | null; description?: string | null }[];
+  embeds: {
+    url?: string | null;
+    description?: string | null;
+    fields: { value: string }[];
+  }[];
 }) => {
   const embed = post.embeds[0];
   const site = embed && requesterId(embed);
+  // A page request's items are its embeds' fields, so the text quotes them after the total.
   if (site)
-    return { requesterId: site, text: requestBody(embed.description ?? "") };
+    return {
+      requesterId: site,
+      text: [
+        requestBody(embed.description ?? ""),
+        ...post.embeds.slice(1).map(e => e.description),
+        ...post.embeds.flatMap(e => e.fields.map(f => f.value)),
+      ]
+        .filter((t): t is string => !!t)
+        .join("\n"),
+    };
   const command = post.content.match(COMMAND)?.[1];
   return command ? { requesterId: command, text: post.content } : null;
 };

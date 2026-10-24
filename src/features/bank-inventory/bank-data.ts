@@ -95,7 +95,7 @@ class BankData {
   // The stock of the given items, in the slots that hold some, as the bank page reads it.
   public async holdingsOf(itemIds: number[]) {
     return await this.prisma.slot.findMany({
-      where: { itemId: { in: itemIds }, count: { gt: 0 } },
+      where: { itemId: { in: itemIds } },
       select: {
         charName: true,
         slot: true,
