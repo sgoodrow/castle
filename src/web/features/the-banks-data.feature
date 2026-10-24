@@ -6,7 +6,7 @@ Feature: The bank's data
   Background:
     Given the site is in dev mode without sign-in
 
-  Scenario: Items are listed under the uploads' spelling, with the item database's stats
+  Scenario: Items use the spelling from the game's export, with the item database's stats
     Given the bankers' uploads hold:
       | banker | spot     | item            | count |
       | mulea  | General1 | Cloak of flames | 1     |
@@ -64,7 +64,7 @@ Feature: The bank's data
     Then the bank describes "Mystery Box" with:
       | wiki | "https://wiki.project1999.com/Mystery_Box" |
 
-  Scenario: An item in many spots is described once, and a missing count is one
+  Scenario: An item in many spots is described once, and a missing count counts as one
     Given the bankers' uploads hold:
       | banker | spot     | item            | count |
       | mulea  | General1 | Cloak of Flames | 1     |
