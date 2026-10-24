@@ -2,7 +2,8 @@ Feature: Filling a bank request
   Requests in #bank-requests come from the bank page, from /bank request, or typed by a member. A
   banker marks one filled with ✅: the bot copies it to #bank-transactions, naming the banker, and
   removes it. The member who asked, or a banker, cancels it with ❌, and the bot removes it. For a
-  typed request, only its author counts as the member who asked. Officers and mods count as
+  typed request, only its author counts as the member who asked. A banker can also fill or cancel
+  any message a member posts in #bank-requests, whatever its format. Officers and mods count as
   bankers here.
 
   Background:
@@ -159,6 +160,60 @@ Feature: Filling a bank request
     When Alice reacts ❌ to Alice's typed message in #bank-requests
     Then Alice's typed message is no longer in #bank-requests
     And nothing is posted in #bank-transactions
+
+  Scenario: A banker fills a message in #bank-requests that isn't in the request format
+    Given Alice typed in #bank-requests:
+      """
+      need some rings soon
+      """
+    When Dana reacts ✅ to Alice's typed message in #bank-requests
+    Then the bot posts in #bank-transactions:
+      | content                                          | pings |
+      | <@Alice>: need some rings soon -- ✅ by <@Dana> | no    |
+    And Alice's typed message is no longer in #bank-requests
+
+  Scenario: A banker cancels a message in #bank-requests that isn't in the request format
+    Given Alice typed in #bank-requests:
+      """
+      need some rings soon
+      """
+    When Dana reacts ❌ to Alice's typed message in #bank-requests
+    Then Alice's typed message is no longer in #bank-requests
+    And nothing is posted in #bank-transactions
+
+  Scenario: A member cancels their own message in #bank-requests that isn't in the request format
+    Given Alice typed in #bank-requests:
+      """
+      need some rings soon
+      """
+    When Alice reacts ❌ to Alice's typed message in #bank-requests
+    Then Alice's typed message is no longer in #bank-requests
+
+  Scenario: A member can't cancel someone else's message in #bank-requests
+    Given Mallory is a Castle member
+    And Mallory typed in #bank-requests:
+      """
+      need some rings soon
+      """
+    When Carol reacts ❌ to Mallory's typed message in #bank-requests
+    Then Mallory's typed message is still in #bank-requests
+
+  Scenario: A jeweler can't fill a message in #bank-requests that isn't in the request format
+    Given Frances is a Castle jeweler
+    And Alice typed in #bank-requests:
+      """
+      need some rings soon
+      """
+    When Frances reacts ✅ to Alice's typed message in #bank-requests
+    Then nothing is posted in #bank-transactions
+    And Alice's typed message is still in #bank-requests
+
+  Scenario: A ✅ or ❌ on the bot's instructions in #bank-requests does nothing
+    Given the bot's instructions are in #bank-requests
+    When Dana reacts ✅ to the bot's instructions in #bank-requests
+    And Dana reacts ❌ to the bot's instructions in #bank-requests
+    Then nothing is posted in #bank-transactions
+    And the bot's instructions are still in #bank-requests
 
   Scenario: A member can't cancel a request someone else typed that names them in #bank-requests
     Given Mallory is a Castle member

@@ -296,9 +296,12 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     }
   );
   // A member's own message, which reads like a request but isn't the bot's.
-  step(/^(\w+) typed in #(\S+):$/, (name: string, channel: string, text: string) => {
-    post(channel, member(name).id, { content: named(text) });
-  });
+  step(
+    /^(\w+) typed in #(\S+):$/,
+    (name: string, channel: string, text: string) => {
+      post(channel, member(name).id, { content: named(text) });
+    }
+  );
   // A member's own message that also carries a bank page's embed, which only the bot's posts should count as.
   step(
     /^(\w+) typed in #(\S+) with a bank page embed:$/,
@@ -324,7 +327,8 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       const message = (world.channels[channel] ?? []).findLast(
         (m) => m.author.id === member(whose).id
       );
-      if (!message) throw new Error(`${whose} has typed no message in #${channel}`);
+      if (!message)
+        throw new Error(`${whose} has typed no message in #${channel}`);
       const user = { id: member(by).id, toString: () => `<@${member(by).id}>` };
       await tryBankRequestComplete(
         { partial: false, emoji: { name: emoji }, message } as never,
@@ -359,6 +363,16 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     post("jewelry-requests", BOT_ID, {
       embeds: [
         { title: "Jewelry requests", description: "How to ask for jewelry" },
+      ],
+    });
+  });
+  step(/^the bot's instructions are in #bank-requests$/, () => {
+    post("bank-requests", BOT_ID, {
+      embeds: [
+        {
+          title: "Castle Bank Inventory",
+          description: "How to ask for a bank request",
+        },
       ],
     });
   });

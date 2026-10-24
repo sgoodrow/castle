@@ -95,7 +95,13 @@ class BankRequestFinishedReactionAction extends ReactionAction {
       content: this.message.content as string,
       embeds: this.message.embeds,
     });
-    if (!requested) return;
+    // Jewelry requests must be in the request format. In #bank-requests a member's message counts in
+    // any format, and the bot's own posts count only when they are requests.
+    if (
+      !requested &&
+      (channelId === jewelryChannelId || this.message.author?.bot)
+    )
+      return;
     const request = parseBankRequest(this.message);
 
     // mark finished
@@ -114,9 +120,9 @@ class BankRequestFinishedReactionAction extends ReactionAction {
 
     // cancel
     if (this.reaction.emoji.name === "❌") {
-      // A member's own typed request is theirs, whoever it names; the bot's names its requester.
+      // A member's own message is theirs, whoever it names; the bot's names its requester.
       const requester = this.message.author?.bot
-        ? requested.requesterId
+        ? requested?.requesterId
         : this.message.author?.id;
       if (
         requester !== this.user.id &&
