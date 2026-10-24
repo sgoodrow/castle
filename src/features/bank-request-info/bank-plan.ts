@@ -3,15 +3,8 @@
 // not from the post. It names characters and spots only, never accounts.
 import { prettyLoc } from "../../shared/bank-location";
 import type { PlanLine } from "../../shared/bank-plan-id";
+import type { Stock } from "../../shared/bank-stock";
 import { loginRoute } from "../../shared/login-route";
-
-// A filled slot in the bank: who holds it, where, which item and how many.
-export interface Stock {
-  char: string;
-  loc: string;
-  id: number;
-  count: number;
-}
 
 export interface Take {
   name: string;
@@ -45,7 +38,8 @@ export function bankPlan(
       return { ...l, slots, held };
     });
   const route = loginRoute(lines);
-  const takes = new Map(route.logins.map((c) => [c, [] as Take[]]));
+  // What's taken from each character, in the order the route reaches the lines.
+  const taken: (Take & { char: string })[] = [];
   const short: Plan["short"] = [];
   for (const l of route.lines) {
     let left = l.qty;
@@ -53,7 +47,7 @@ export function bankPlan(
       for (const s of l.slots) {
         if (s.char !== char || !left) continue;
         const count = Math.min(s.count, left);
-        takes.get(char)?.push({ name: name(l.id), count, loc: s.loc });
+        taken.push({ char, name: name(l.id), count, loc: s.loc });
         left -= count;
       }
     if (left) short.push({ name: name(l.id), has: l.qty - left, needs: l.qty });
@@ -61,8 +55,10 @@ export function bankPlan(
   return {
     // A character the route reaches with nothing left to take is skipped.
     logins: route.logins.flatMap((char) => {
-      const mine = takes.get(char) ?? [];
-      return mine.length ? [{ char, takes: mine }] : [];
+      const takes = taken
+        .filter((t) => t.char === char)
+        .map(({ name, count, loc }) => ({ name, count, loc }));
+      return takes.length ? [{ char, takes }] : [];
     }),
     auctions,
     short,

@@ -12,23 +12,31 @@ export interface PlanLine {
 
 export const PLAN_BUTTON = "bank-plan";
 
-// Discord's limit on a button's id.
-const MAX_ID = 100;
-// Ids and quantities are written in base 36, in at most three digits, so a request of nine lines
-// always fits. Every item id the bank has is below this.
+// A request holds up to nine different items (the bank page's tab limit).
+export const MAX_PLAN_LINES = 9;
+// Ids and quantities are written in base 36, in at most three digits, so nine lines always fit
+// Discord's 100 characters for a button's id: 10 + 9 × 8 + 8 commas = 90. Every item id the bank
+// has is below this.
 export const MAX_PLAN_NUMBER = 36 ** 3 - 1;
 
 const line = (l: PlanLine) =>
   `${l.id.toString(36)}.${l.qty.toString(36)}${l.auction ? "!" : ""}`;
 
-// The button's id for these lines, or null when they can't be written in one.
+// Each item once, as on the tab, so no stock is planned for two lines.
+const distinct = (lines: PlanLine[]) =>
+  new Set(lines.map((l) => l.id)).size === lines.length;
+
+const fits = (n: number) =>
+  Number.isInteger(n) && n > 0 && n <= MAX_PLAN_NUMBER;
+
+// The button's id for these lines, or null when they aren't a request one can carry.
 export function planId(lines: PlanLine[]): string | null {
-  const fits = (n: number) =>
-    Number.isInteger(n) && n > 0 && n <= MAX_PLAN_NUMBER;
-  if (!lines.length || !lines.every((l) => fits(l.id) && fits(l.qty)))
-    return null;
-  const id = `${PLAN_BUTTON}:${lines.map(line).join(",")}`;
-  return id.length <= MAX_ID ? id : null;
+  return lines.length &&
+    lines.length <= MAX_PLAN_LINES &&
+    distinct(lines) &&
+    lines.every((l) => fits(l.id) && fits(l.qty))
+    ? `${PLAN_BUTTON}:${lines.map(line).join(",")}`
+    : null;
 }
 
 const LINE = /^([0-9a-z]{1,3})\.([0-9a-z]{1,3})(!?)$/;
@@ -49,5 +57,5 @@ export function readPlanId(id: string): PlanLine[] | null {
     if (!l.id || !l.qty) return null;
     lines.push(l);
   }
-  return lines;
+  return lines.length <= MAX_PLAN_LINES && distinct(lines) ? lines : null;
 }

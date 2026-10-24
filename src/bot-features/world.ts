@@ -69,6 +69,7 @@ interface World {
   dms: { to: string; text: string }[]; // what the bot sent members, by their name
   told: { to: string; text: string }[]; // what the bot answered a member's button press, only to them
   discordDown: boolean;
+  dmsDown: boolean; // DMs fail for a reason other than the member's settings
   logs: string[];
   restore: (() => unknown)[]; // undone after the scenario, last first
 }
@@ -82,6 +83,7 @@ export async function reset() {
     dms: [],
     told: [],
     discordDown: false,
+    dmsDown: false,
     logs: [],
     restore: [],
   };
@@ -101,6 +103,12 @@ export async function reset() {
 export async function teardown() {
   for (const r of world.restore.splice(0).reverse()) await r();
 }
+
+// What Discord answers a DM to a member who doesn't take them.
+export const closedDms = () =>
+  Object.assign(new Error("Cannot send messages to this user"), {
+    code: 50007,
+  });
 
 let ids = 1000;
 export const newId = () => String(ids++);
@@ -195,8 +203,7 @@ export async function discord() {
       users: {
         send: async (id: string, text: string) => {
           const to = memberById(id);
-          if (!to?.takesDms)
-            throw new Error("Cannot send messages to this user");
+          if (!to?.takesDms) throw closedDms();
           world.dms.push({ to: to.name, text });
         },
       },

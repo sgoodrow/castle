@@ -13,8 +13,13 @@ describe("a plan button's id", () => {
   });
 
   it("fits nine lines of the largest ids and quantities in Discord's 100 characters", () => {
-    const line = { id: MAX_PLAN_NUMBER, qty: MAX_PLAN_NUMBER, auction: true };
-    const id = planId(Array(9).fill(line));
+    const id = planId(
+      Array.from({ length: 9 }, (_, i) => ({
+        id: MAX_PLAN_NUMBER - i,
+        qty: MAX_PLAN_NUMBER,
+        auction: true,
+      }))
+    );
     expect(id?.length).toBeLessThanOrEqual(100);
     expect(readPlanId(id!)).toHaveLength(9);
   });
@@ -26,10 +31,13 @@ describe("a plan button's id", () => {
     expect(planId([{ ...line, qty: 0 }])).toBeNull();
     expect(planId([{ ...line, qty: 1.5 }])).toBeNull();
     expect(
-      planId(
-        Array(12).fill({ ...line, id: MAX_PLAN_NUMBER, qty: MAX_PLAN_NUMBER })
-      )
+      planId(Array.from({ length: 10 }, (_, i) => ({ ...line, id: i + 1 })))
     ).toBeNull();
+  });
+
+  it("can't carry the same item on two lines", () => {
+    const line = { id: 10, qty: 1, auction: false };
+    expect(planId([line, line])).toBeNull();
   });
 
   it.each([
@@ -43,6 +51,8 @@ describe("a plan button's id", () => {
     "bank-plan:1.1,,2.1",
     "bank-plan:1234.1",
     "bank-plan:A.1",
+    "bank-plan:a.1,a.1",
+    "bank-plan:1.1,2.1,3.1,4.1,5.1,6.1,7.1,8.1,9.1,a.1",
   ])("isn't read from %s", (id) => {
     expect(readPlanId(id)).toBeNull();
   });

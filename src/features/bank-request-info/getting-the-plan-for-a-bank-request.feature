@@ -1,8 +1,8 @@
 Feature: Getting the plan for a bank request
-  A bank request from the bank page has a "DM me the plan" button. A banker who presses it is sent
-  a DM that says which characters to log in to, in the order to visit them, and what to take from
-  where on each, from the bank as it is now. The plan names characters and spots, never accounts.
-  Only bankers can press it, and the channel gets nothing new.
+  A banker who presses a bank request's "DM me the plan" button is sent a DM saying which characters
+  to log in to, in order, and what to take from where on each, from the bank as it is right then. The
+  plan names characters and spots, never accounts. Only bankers can press the button, and the
+  channel gets nothing new.
 
   Background:
     Given Alice is a Castle member
@@ -145,7 +145,7 @@ Feature: Getting the plan for a bank request
       • Enchanted Velium Mask: has 0, needs 1
       """
 
-  Scenario: A slot with no count holds one
+  Scenario: The plan takes one from a slot with no count or a count of 0
     Given the bank holds:
       | character | where          | item  | count |
       | Mulea     | pack 1, slot 1 | Pearl |       |
@@ -194,7 +194,7 @@ Feature: Getting the plan for a bank request
       | item  | quantity |
       | Pearl | 1        |
     When Alice presses "DM me the plan" on Alice's request
-    Then Alice is told "Error: Must have <@&banker> role to use this command."
+    Then Alice is told "Error: Must have @Banker role to use this command."
     And no one is sent a DM
 
   Scenario: A banker who doesn't take DMs is told to allow them
@@ -204,3 +204,11 @@ Feature: Getting the plan for a bank request
       | Pearl | 1        |
     When Dana presses "DM me the plan" on Alice's request
     Then Dana is told "I couldn't DM you the plan. Allow DMs from this server's members, then press the button again."
+
+  Scenario: A banker whose DM fails for another reason is told it went wrong
+    Given Alice's bank request has the "DM me the plan" button for:
+      | item  | quantity |
+      | Pearl | 1        |
+    And Discord can't deliver DMs
+    When Dana presses "DM me the plan" on Alice's request
+    Then Dana is told "Error: Discord didn't deliver it"

@@ -5,7 +5,15 @@ import { DAYS } from "../shared/time";
 import { prismaClient } from "..";
 import type { DefineStep } from "../testing/gherkin";
 import type { PrismaPublicAccounts } from "../services/bot/bot-prisma";
-import { BOT_ID, newId, post, world, type Message, type Row } from "./world";
+import {
+  BOT_ID,
+  closedDms,
+  newId,
+  post,
+  world,
+  type Message,
+  type Row,
+} from "./world";
 import { commandOpening } from "../features/bank-request-info/bank-request";
 import { planId } from "../shared/bank-plan-id";
 import itemdb from "../../bank/data/itemdb.json";
@@ -228,6 +236,9 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   // ---------- Discord ----------
   step(/^Discord can't be reached$/, () => {
     world.discordDown = true;
+  });
+  step(/^Discord can't deliver DMs$/, () => {
+    world.dmsDown = true;
   });
   step(/^Discord can be reached again$/, () => {
     world.discordDown = false;
@@ -731,8 +742,8 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         user: {
           id: presser.id,
           send: async (text: string) => {
-            if (!presser.takesDms)
-              throw new Error("Cannot send messages to this user");
+            if (world.dmsDown) throw new Error("Discord didn't deliver it");
+            if (!presser.takesDms) throw closedDms();
             world.dms.push({ to: by, text });
           },
         },
@@ -753,10 +764,18 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       }
     }
   );
+  // A role mention reads as the role's name, as Discord shows it: <@&banker> is "@Banker".
   step(/^(\w+) is told "(.*)"$/, (name: string, text: string) =>
-    expect(world.told.filter((t) => t.to === name).map((t) => t.text)).toEqual([
-      text,
-    ])
+    expect(
+      world.told
+        .filter((t) => t.to === name)
+        .map((t) =>
+          t.text.replace(
+            /<@&(\w)(\w*)>/g,
+            (_, first: string, rest: string) => `@${first.toUpperCase()}${rest}`
+          )
+        )
+    ).toEqual([text])
   );
   step(/^nothing new is posted in #bank-requests$/, () =>
     expect(

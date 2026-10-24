@@ -1,12 +1,13 @@
 import { readFileSync } from "fs";
 import path from "path";
-import { ButtonInteraction, CacheType } from "discord.js";
+import { ButtonInteraction, CacheType, RESTJSONErrorCodes } from "discord.js";
 import { prismaClient } from "../..";
 import { bankerRoleId } from "../../config";
 import { ButtonCommand } from "../../shared/command/button-command";
 import { requireInteractionMemberRole } from "../../shared/command/util";
 import { PLAN_BUTTON, readPlanId } from "../../shared/bank-plan-id";
-import { bankPlan, planMessages, type Stock } from "./bank-plan";
+import { stockIn, type Stock } from "../../shared/bank-stock";
+import { bankPlan, planMessages } from "./bank-plan";
 
 // What the bot needs of the item database the bank page reads: each item's name, and whether it's
 // NO DROP, which can't leave the bank. Read once, the first time a banker asks for a plan.
@@ -29,10 +30,7 @@ const itemFacts = (): ItemFacts => {
   return facts;
 };
 
-const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
-
-// The bank's filled slots of these items, as the bank page reads them: an empty slot is left out,
-// a slot with no count holds one, and NO DROP items are never planned.
+// The bank's filled slots of these items, read as the bank page reads them.
 const liveStock = async (ids: number[]): Promise<Stock[]> => {
   const slots = await prismaClient.slot.findMany({
     where: { itemId: { in: ids } },
@@ -44,21 +42,10 @@ const liveStock = async (ids: number[]): Promise<Stock[]> => {
       item: { select: { name: true } },
     },
   });
-  return slots.flatMap((s) =>
-    s.itemId &&
-    s.item &&
-    s.item.name !== "Empty" &&
-    !itemFacts().get(s.itemId)?.nodrop
-      ? [
-          {
-            char: titleCase(s.charName),
-            loc: s.slot,
-            id: s.itemId,
-            count: s.count || 1,
-          },
-        ]
-      : []
-  );
+  return slots.flatMap((s) => {
+    const stock = stockIn(s, (id) => !!itemFacts().get(id)?.nodrop);
+    return stock ? [stock] : [];
+  });
 };
 
 // The bank's spelling of an item's name, as the bank page shows it.
@@ -84,7 +71,13 @@ class BankPlanButtonCommand extends ButtonCommand {
     const messages = planMessages(bankPlan(lines, stock, name));
     try {
       for (const m of messages) await interaction.user.send(m);
-    } catch {
+    } catch (err) {
+      // Anything but closed DMs is the bot's failure, and is answered as one.
+      if (
+        (err as { code?: unknown }).code !==
+        RESTJSONErrorCodes.CannotSendMessagesToThisUser
+      )
+        throw err;
       await interaction.editReply(
         "I couldn't DM you the plan. Allow DMs from this server's members, then press the button again."
       );

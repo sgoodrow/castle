@@ -43,6 +43,7 @@ export default defineConfig({
         "src/features/bank-request-info/bank-plan-button-command.ts": { lines: 100, branches: 91, functions: 100 },
         "src/shared/bank-location.ts": { lines: 81, branches: 75, functions: 100 },
         "src/shared/bank-plan-id.ts": { lines: 100, branches: 100, functions: 100 },
+        "src/shared/bank-stock.ts": { lines: 100, branches: 100, functions: 100 },
         "src/shared/login-route.ts": { lines: 95, branches: 97, functions: 100 },
         "src/shared/channel-messages.ts": { lines: 92, branches: 80, functions: 100 },
         "src/services/bot/bot-prisma.ts": { lines: 23, branches: 95, functions: 38 },
