@@ -1,8 +1,9 @@
 Feature: Filling a bank request
-  Requests in #bank-requests come from the bank page or from /bank request. A banker marks one
-  filled with ✅: the bot copies it to #bank-transactions, naming the banker, and removes it.
-  The member who asked, or a banker, cancels it with ❌, and the bot removes it. Officers and mods
-  count as bankers here.
+  Requests in #bank-requests come from the bank page, from /bank request, or typed by a member. A
+  banker marks one filled with ✅: the bot copies it to #bank-transactions, naming the banker, and
+  removes it. The member who asked, or a banker, cancels it with ❌, and the bot removes it. For a
+  typed request, only its author counts as the member who asked. Officers and mods count as
+  bankers here.
 
   Background:
     Given Alice is a Castle member
@@ -120,7 +121,6 @@ Feature: Filling a bank request
     Then nothing is posted in #bank-transactions
 
   Scenario: A banker fills a request a member typed in #bank-requests
-    Given Dana is a Castle banker
     And Alice typed in #bank-requests:
       """
       ✍️ <@Alice> requests: 2 rings

@@ -40,7 +40,8 @@ type BankRequest =
 const parseBankRequest = (message: Message | PartialMessage): BankRequest => {
   const embed = message.embeds[0];
   const id = embed && requesterId(embed);
-  return embed && id
+  // Only the bot's posts come from the bank page; a member's typed message can carry an embed too.
+  return embed && id && message.author?.bot
     ? { kind: "site", requesterId: id, embed }
     : { kind: "command", message };
 };
