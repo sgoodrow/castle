@@ -10,13 +10,13 @@ Feature: The bank site
     When Someone visits "/healthz"
     Then the answer is 200 "ok"
 
-  Scenario: Only reading is allowed
+  Scenario: Only read requests are allowed
     Given Alice is a Castle member with the bank role
     And Alice has signed in with Discord
     When Alice sends a PUT to "/api/bank"
     Then the answer is 405 "Method not allowed"
 
-  Scenario: A member gets the page built for the running commit
+  Scenario: A member gets the page for the version that's running
     Given Alice is a Castle member with the bank role
     And Alice has signed in with Discord
     When Alice visits "/"
@@ -24,7 +24,7 @@ Feature: The bank site
     And the answer's content-type is "text/html; charset=utf-8"
     And the answer's content-security-policy includes "frame-ancestors 'none'"
 
-  Scenario: The page is read from disk once
+  Scenario: The page keeps the version it started with, even after a new build is written
     Given Alice is a Castle member with the bank role
     And Alice has signed in with Discord
     And Alice has visited "/"

@@ -70,7 +70,7 @@ Feature: The jewelry sheet
     And Someone asks for the bank
     Then the bank sends no jewelry
 
-  Scenario: The wiki refresh covers jewelry the bank doesn't hold, so each gets its icon
+  Scenario: Jewelry the bank doesn't hold still gets its wiki icon
     Given the jewelry sheet's price table is:
       """
       ,ITEM NAME,SLOT,STATS,BAR COST (pp),GEM COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes
@@ -80,7 +80,7 @@ Feature: The jewelry sheet
     And the site refreshes the wiki
     Then the wiki has been asked for "/Golden_Cat_Eye_Bracelet", "/Black_Sapphire_Velium_Necklace"
 
-  Scenario: Names that are no one item are logged, and the rest still sent
+  Scenario: Names that don't match one item are logged, and the rest still sent
     Given the jewelry sheet's price table is:
       """
       ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,
@@ -202,7 +202,7 @@ Feature: The jewelry sheet
     Then the log says "bank web: jewelry sheet: no such item Initiate Signet Ring"
     And the bank sends no jewelry
 
-  Scenario: A price the sheet shows with a thousands separator is read
+  Scenario: A price with a thousands comma is read as a number
     Given the jewelry sheet's price table is:
       """
       ,ITEM NAME,SLOT,STATS,MATERIAL COST (pp),TRIVIAL,SUCCESS RATE,AVG. COST,COMMISSION,MARKET PRICE,GUILD PRICE (pp),Notes,

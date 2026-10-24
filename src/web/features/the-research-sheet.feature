@@ -79,7 +79,7 @@ Feature: The research sheet
     Then the bank gives away "Words of Odus"
     And the log says "bank web: research sheet: Error: tab 1540745837: HTTP 500"
 
-  Scenario: A tab without its columns keeps the old copy
+  Scenario: A tab missing its columns keeps the old copy
     Given a saved copy of the research sheet lists "Words of Odus"
     And the research sheet's Wizard tab is:
       """

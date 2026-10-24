@@ -92,7 +92,7 @@ Feature: The Sky sheet
       | holder | item | id | count |
     And the log says "bank web: sky sheet: multiquest: no such item Blood Sky Sapphire; multiquest: more than one item called Large Sky Sapphire; multiquest: no holder for Griffon Eye"
 
-  Scenario: A name the sheet means one item by is matched to that item
+  Scenario: A name that means one item on the sheet is matched to that item
     Given the Sky name "Large Sky Sapphire" means item 20778
     And the Sky sheet's Multiquest tab is:
       """
@@ -117,7 +117,7 @@ Feature: The Sky sheet
       | holder | item         | id   | count |
       | Kelra  | Leather Cord | 3656 | 1     |
 
-  Scenario: A name matched to an item the database lacks is logged
+  Scenario: A name whose item the database lacks is logged
     Given the Sky name "Large Sky Sapphire" means item 99999
     And the Sky sheet's Multiquest tab is:
       """

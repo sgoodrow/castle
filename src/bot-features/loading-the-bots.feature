@@ -174,14 +174,14 @@ Feature: Loading the bots
       | name  | level | location | pilot | bind | factioned | faction | checkout |
       | Aleph | 60    |          |       |      | no        |         |          |
 
-  Scenario: A padded name is stored trimmed, the way the bot checks it
+  Scenario: A name with spaces around it is saved without them
     Given the "Bot Info" sheet has a Rogue named with spaces around it: "Gimel"
     When the bot starts
     Then the stored bots are:
       | name  |
       | Gimel |
 
-  Scenario: A class with spaces around it is stored trimmed, so the Wizard check still sees it
+  Scenario: A class with spaces around it is saved as Wizard
     Given the "Bot Info" sheet has a Wizard with spaces around its class: "Gimel"
     When the bot starts
     Then the stored bots are:

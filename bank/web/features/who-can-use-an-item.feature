@@ -41,7 +41,7 @@ Feature: Who can use an item
     When I play a Warrior
     Then the page doesn't say "Your character can't use this."
 
-  Scenario Outline: Only class and race pairs that can be rolled stay picked together
+  Scenario Outline: Only a class and race a character can be made with stay picked together
     Given the bank holds the usual stock
     And I have opened the bank page
     And I have picked the <first> "<first choice>"
