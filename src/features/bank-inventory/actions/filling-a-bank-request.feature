@@ -208,6 +208,26 @@ Feature: Filling a bank request
     Then nothing is posted in #bank-transactions
     And Alice's typed message is still in #bank-requests
 
+  Scenario: A member who isn't a banker can't fill a message in #bank-requests that isn't in the request format
+    Given Alice typed in #bank-requests:
+      """
+      need some rings soon
+      """
+    When Bob reacts ✅ to Alice's typed message in #bank-requests
+    Then nothing is posted in #bank-transactions
+    And Alice's typed message is still in #bank-requests
+
+  Scenario: A ✅ or ❌ on a message in #jewelry-requests that isn't in the request format does nothing
+    Given Frances is a Castle jeweler
+    And Alice typed in #jewelry-requests:
+      """
+      need some rings soon
+      """
+    When Dana reacts ✅ to Alice's typed message in #jewelry-requests
+    And Frances reacts ❌ to Alice's typed message in #jewelry-requests
+    Then nothing is posted in #bank-transactions
+    And Alice's typed message is still in #jewelry-requests
+
   Scenario: A ✅ or ❌ on the bot's instructions in #bank-requests does nothing
     Given the bot's instructions are in #bank-requests
     When Dana reacts ✅ to the bot's instructions in #bank-requests
