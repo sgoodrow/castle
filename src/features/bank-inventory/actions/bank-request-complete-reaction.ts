@@ -23,7 +23,7 @@ import {
 } from "../../../shared/action/reaction-action";
 import { requesterId } from "../../../shared/bank-request-author";
 import { readBankRequest } from "../../bank-request-info/bank-request";
-import { client, getMember, getTextChannel } from "../../..";
+import { getMember, getTextChannel } from "../../..";
 
 export const tryBankRequestComplete = (
   reaction: MessageReaction | PartialMessageReaction,
@@ -40,7 +40,8 @@ type BankRequest =
 const parseBankRequest = (message: Message | PartialMessage): BankRequest => {
   const embed = message.embeds[0];
   const id = embed && requesterId(embed);
-  return embed && id
+  // Only the bot's posts come from the bank page; a member's typed message can carry an embed too.
+  return embed && id && message.author?.bot
     ? { kind: "site", requesterId: id, embed }
     : { kind: "command", message };
 };
@@ -90,13 +91,6 @@ class BankRequestFinishedReactionAction extends ReactionAction {
     if (channelId !== bankRequestsChannelId && channelId !== jewelryChannelId) {
       return;
     }
-    // A bank request is only one the bot posted, so a member's message that reads like one is ignored.
-    // Jewelry requests are typed by members, which is how the jewelers take them.
-    if (
-      channelId === bankRequestsChannelId &&
-      this.message.author?.id !== client.user?.id
-    )
-      return;
     const requested = readBankRequest({
       content: this.message.content as string,
       embeds: this.message.embeds,

@@ -1,8 +1,9 @@
 Feature: Filling a bank request
-  Requests in #bank-requests come from the bank page or from /bank request. A banker marks one
-  filled with ✅: the bot copies it to #bank-transactions, naming the banker, and removes it.
-  The member who asked, or a banker, cancels it with ❌, and the bot removes it. Officers and mods
-  count as bankers here.
+  Requests in #bank-requests come from the bank page, from /bank request, or typed by a member. A
+  banker marks one filled with ✅: the bot copies it to #bank-transactions, naming the banker, and
+  removes it. The member who asked, or a banker, cancels it with ❌, and the bot removes it. For a
+  typed request, only its author counts as the member who asked. Officers and mods count as
+  bankers here.
 
   Background:
     Given Alice is a Castle member
@@ -119,14 +120,54 @@ Feature: Filling a bank request
     When Frances reacts ✅ to Alice's typed message in #bank-requests
     Then nothing is posted in #bank-transactions
 
-  Scenario: A banker can't fill a request a member typed in #bank-requests either
-    Given Dana is a Castle banker
-    And Alice typed in #bank-requests:
+  Scenario: A banker fills a request a member typed in #bank-requests
+    Given Alice typed in #bank-requests:
       """
       ✍️ <@Alice> requests: 2 rings
       """
     When Dana reacts ✅ to Alice's typed message in #bank-requests
-    Then nothing is posted in #bank-transactions
+    Then the bot posts in #bank-transactions:
+      | content                                                | pings |
+      | <@Alice>: ✍️ <@Alice> requests: 2 rings -- ✅ by <@Dana> | no    |
+    And Alice's typed message is no longer in #bank-requests
+
+  Scenario: A typed request is copied as typed even when it carries a bank page embed
+    Given Alice typed in #bank-requests with a bank page embed:
+      """
+      ✍️ <@Alice> requests: Pearl
+      """
+    When Dana reacts ✅ to Alice's typed message in #bank-requests
+    Then the bot posts in #bank-transactions:
+      | content                                          | pings |
+      | <@Alice>: ✍️ <@Alice> requests: Pearl -- ✅ by <@Dana> | no    |
+    And Alice's typed message is no longer in #bank-requests
+
+  Scenario: A banker cancels a request a member typed in #bank-requests
+    Given Alice typed in #bank-requests:
+      """
+      ✍️ <@Alice> requests: 2 rings
+      """
+    When Dana reacts ❌ to Alice's typed message in #bank-requests
+    Then Alice's typed message is no longer in #bank-requests
+    And nothing is posted in #bank-transactions
+
+  Scenario: A member cancels their own request typed in #bank-requests
+    Given Alice typed in #bank-requests:
+      """
+      ✍️ <@Alice> requests: 2 rings
+      """
+    When Alice reacts ❌ to Alice's typed message in #bank-requests
+    Then Alice's typed message is no longer in #bank-requests
+    And nothing is posted in #bank-transactions
+
+  Scenario: A member can't cancel a request someone else typed that names them in #bank-requests
+    Given Mallory is a Castle member
+    And Mallory typed in #bank-requests:
+      """
+      ✍️ <@Carol> requests: 2 rings
+      """
+    When Carol reacts ❌ to Mallory's typed message in #bank-requests
+    Then Mallory's typed message is still in #bank-requests
 
   Scenario: A member can't cancel a request someone else typed that names them
     Given Mallory is a Castle member
