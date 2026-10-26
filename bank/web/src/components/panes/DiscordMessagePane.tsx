@@ -39,8 +39,12 @@ export function DiscordMessagePane({ msg }: { msg: RequestMessage }) {
       <Stack gap={4} p="xs" pl="sm" style={{ background: D.embed, borderLeft: `4px solid ${hex(e.color)}`, borderRadius: 4 }}>
         <Text fw={600} fz="sm" c={D.link}>{requestTitle(ME)}</Text>
         <Text fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(e.description)}</Text>
+        {/* Discord gives each field a name line, even the blank one an item's field has. */}
         {e.fields?.map((f, j) => (
-          <Text key={j} fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(f.value)}</Text>
+          <Stack key={j} gap={0}>
+            <Text fz="xs" fw={600} c={D.name} style={{ minHeight: "1.2em" }}>{f.name}</Text>
+            <Text fz="xs" c={D.text} style={{ overflowWrap: "anywhere" }}>{md(f.value)}</Text>
+          </Stack>
         ))}
       </Stack>
     </Stack>

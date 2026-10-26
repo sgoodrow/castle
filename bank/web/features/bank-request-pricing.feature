@@ -219,6 +219,7 @@ Feature: Bank request pricing
     When I send my tab to Discord
     Then the post reads "@Alice has placed a bank request"
     And the post reads "Cloak of Flames (800pp)"
+    And the post links "Cloak of Flames" to "https://wiki.project1999.com/Cloak_of_Flames"
     And the post reads "3 × Pearl (free)"
     And the post reads "Total: 800pp + 1 unknown cost"
     And the post doesn't read "Mulea"

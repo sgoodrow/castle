@@ -51,7 +51,16 @@ Feature: Jewelry
     And I send my tab to Discord
     Then the post reads "Black Sapphire Velium Necklace"
     And the post doesn't read "Made to order"
-    And the post doesn't read "pack"
+    And the post doesn't read "Cgjewelry"
+
+  Scenario: The post for jewelry the bank holds lists the bank tabs that hold it
+    Given the jewelers also make jewelry to order
+    And I have opened the bank page
+    When I add 1 "Golden Cat Eye Bracelet" to my tab
+    And I open my tab
+    And I send my tab to Discord
+    Then the post reads "Golden Cat Eye Bracelet (13pp)"
+    And the post reads "Cgjewelry (inventory 1)"
 
   Scenario: A post the site refuses keeps its items on my tab, and the one that went through comes off
     Given the jewelers also make jewelry to order

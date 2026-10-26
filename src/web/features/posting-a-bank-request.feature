@@ -23,7 +23,7 @@ Feature: Posting a bank request
        ]}],
        "lines": [{"id": 11621, "qty": 1}, {"id": 19400, "qty": 1}]}
       """
-    Then the answer is 204
+    Then Alice's request is posted
     And the bot posts in #bank-requests:
       | title                            | url                                | description        | items                                                                                                                                      |
       | @Alice has placed a bank request | https://discord.com/users/id-Alice | **Total: 1,600pp** | [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)\n[Spell: Bedlam](https://wiki.project1999.com/Spell:_Bedlam) (800pp) · MQ: Ringolo |
@@ -39,7 +39,7 @@ Feature: Posting a bank request
       | Cloak of Flames | 1        | the bank |
       | Pearl           | 3        | the bank |
 
-  Scenario: A line a banker priced as a DKP auction is marked an auction on the button, whatever the page says
+  Scenario: A line a banker priced as a DKP auction is marked an auction on the button
     Given the bankers' uploads hold:
       | banker | spot     | item          | count | price       |
       | mulea  | General1 | Spell: Bedlam | 1     | DKP auction |
@@ -66,8 +66,18 @@ Feature: Posting a bank request
 
   Scenario: A request with an item the bank's item database doesn't know is posted without the button
     When Alice posts a bank request for item 999999
-    Then the answer is 204
+    Then Alice's request is posted
     And the post has no button
+
+  Scenario: A request is posted without the button when the bank can't be read
+    Given the bank's database is down with "db down"
+    When Alice posts a bank request for:
+      | item  | quantity |
+      | Pearl | 1        |
+    Then Alice's request is posted
+    And the post has no button
+    And an issue is filed titled "[web] db down"
+    And the issue "[web] db down" says "**What they saw:** The request was posted without its"
 
   Scenario: A post from a page opened before the button is posted without it
     When Alice posts the bank request:
@@ -77,7 +87,7 @@ Feature: Posting a bank request
         {"title": "Cloak of Flames", "description": "• mulea (inventory 1)", "color": 0, "item": 11621}
       ]}
       """
-    Then the answer is 204
+    Then Alice's request is posted
     And the bot posts in #bank-requests:
       | title                            | url                                | description               | footer | thumbnail                             |
       | @Alice has placed a bank request | https://discord.com/users/id-Alice | • Cloak of Flames (800pp) | Thanks |                                       |
@@ -91,7 +101,7 @@ Feature: Posting a bank request
        "embeds": [{"description": "• [Golden Cat Eye Bracelet](https://wiki.project1999.com/Golden_Cat_Eye_Bracelet) (13pp)\n-# Cgjewelry (bank 1)\n\n**Total: 13pp**", "color": 5793266}],
        "lines": [{"id": 14618, "qty": 1}]}
       """
-    Then the answer is 204
+    Then Alice's request is posted
     And the bot posts in #jewelry-requests:
       | title                            | url                                | description                                                                                                                       |
       | @Alice has placed a bank request | https://discord.com/users/id-Alice | • [Golden Cat Eye Bracelet](https://wiki.project1999.com/Golden_Cat_Eye_Bracelet) (13pp)\n-# Cgjewelry (bank 1)\n\n**Total: 13pp** |

@@ -243,9 +243,21 @@ async function bankRequest(
         ? "Posting jewelry isn't set up"
         : "Posting isn't set up"
     );
-  // Jewelry is made to order, so its post has no plan to send.
+  // Jewelry is made to order, so its post has no plan to send. If the bank can't be read, the
+  // request still goes up, without the button, and the failure is filed.
   const plan =
-    channel === "jewelry" ? null : await api.planButton(parsed?.lines);
+    channel === "jewelry"
+      ? null
+      : await api.planButton(parsed?.lines).catch((err) => {
+          reportError({
+            source: "web",
+            ...describeError(err),
+            feature: "POST /api/bank-request",
+            outcome:
+              'The request was posted without its "DM me the plan" button.',
+          });
+          return null;
+        });
   if (!(await postRequest(to, me, post, plan)))
     return send(req, res, 502, "text/plain", "Discord didn't take it");
   log(`bank web: ${me.name} (${me.id}) posted a bank request`);

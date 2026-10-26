@@ -612,6 +612,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(/^the answer is (\d+)$/, (status: string) =>
     expect(answer().status).toBe(+status)
   );
+  step(/^(\w+)'s request is posted$/, () => expect(answer().status).toBe(204));
   step(/^the answer is (\d+) "(.*)"$/, (status: string, body: string) => {
     expect(answer().status).toBe(+status);
     expect(text()).toBe(body);
