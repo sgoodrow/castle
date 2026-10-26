@@ -35,6 +35,7 @@ export interface Message {
   createdTimestamp: number;
   content: string;
   embeds: { title?: string; url?: string; description?: string }[];
+  buttons: { label: string; customId: string }[];
   author: { id: string; bot: boolean; toString: () => string };
   mentions: { users: Map<string, unknown> };
   delete: () => Promise<void>;
@@ -47,6 +48,7 @@ type Post =
   | {
       content?: string;
       embeds?: Message["embeds"];
+      buttons?: Message["buttons"];
       attachments?: string[];
       allowedMentions?: { parse?: string[] };
     };
@@ -65,7 +67,9 @@ interface World {
   channels: Record<string, Message[]>;
   members: Record<string, Member>; // by name
   dms: { to: string; text: string }[]; // what the bot sent members, by their name
+  told: { to: string; text: string }[]; // what the bot answered a member's button press, only to them
   discordDown: boolean;
+  dmsDown: boolean; // DMs fail for a reason other than the member's settings
   logs: string[];
   restore: (() => unknown)[]; // undone after the scenario, last first
 }
@@ -77,7 +81,9 @@ export async function reset() {
     channels: {},
     members: {},
     dms: [],
+    told: [],
     discordDown: false,
+    dmsDown: false,
     logs: [],
     restore: [],
   };
@@ -98,6 +104,12 @@ export async function teardown() {
   for (const r of world.restore.splice(0).reverse()) await r();
 }
 
+// What Discord answers a DM to a member who doesn't take them.
+export const closedDms = () =>
+  Object.assign(new Error("Cannot send messages to this user"), {
+    code: 50007,
+  });
+
 let ids = 1000;
 export const newId = () => String(ids++);
 const mentions = (text: string) =>
@@ -110,6 +122,7 @@ export const post = (
   {
     content = "",
     embeds = [],
+    buttons = [],
     attachments = [],
     allowedMentions,
   }: Exclude<Post, string>,
@@ -121,6 +134,7 @@ export const post = (
     createdTimestamp: Date.now() - ageMs,
     content,
     embeds,
+    buttons,
     attachments: new Map(attachments.map((url, i) => [String(i), { url }])),
     author: {
       id: authorId,
@@ -189,8 +203,7 @@ export async function discord() {
       users: {
         send: async (id: string, text: string) => {
           const to = memberById(id);
-          if (!to?.takesDms)
-            throw new Error("Cannot send messages to this user");
+          if (!to?.takesDms) throw closedDms();
           world.dms.push({ to: to.name, text });
         },
       },
