@@ -91,15 +91,15 @@ Feature: Getting the plan for a bank request
 
   Scenario: A multiquest line is listed on its own, with no login
     Given Alice's bank request has the "DM me the plan" button for:
-      | item             | quantity | from       |
-      | Crushed Topaz    | 1        | multiquest |
+      | item          | quantity | from       |
+      | Crushed Topaz | 2        | multiquest |
     When Dana presses "DM me the plan" on Alice's request
     Then Dana is sent a DM:
       """
       **Bank request plan**
 
       **Multiquest, no login**
-      • Crushed Topaz
+      • 2 × Crushed Topaz
       """
 
   Scenario: The plan says when the bank doesn't have enough

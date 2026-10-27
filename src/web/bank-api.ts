@@ -12,6 +12,8 @@ import { SKY_ITEM_IDS, SkySheet, isSkyMule, type Lookup } from "./sky-sheet";
 import { ResearchSheet, isResearchMule, researchKey } from "./research-sheet";
 import { JewelrySheet } from "./jewelry-sheet";
 import { stockIn } from "../shared/bank-stock";
+import { goesToAuction, type AuctionFacts } from "../shared/bank-auction";
+import { planId, type Via } from "../shared/bank-plan-id";
 
 type DbItem = {
   name: string;
@@ -55,6 +57,12 @@ const JEWELRY_STATS = [
   "dr",
   "pr",
 ];
+
+const isWhole = (v: unknown): v is number => Number.isInteger(v);
+
+// An item as the page gets it. What decides a DKP auction is typed, so the site can decide it the
+// same way the page does; the rest is the item database's, passed through.
+type Described = AuctionFacts & Record<string, unknown>;
 
 export class BankApi {
   private prisma = new PrismaClient();
@@ -175,7 +183,7 @@ export class BankApi {
   async bank() {
     let latest = 0;
     const rows: [string, string, number, number][] = [];
-    const items: Record<number, Record<string, unknown>> = {};
+    const items: Record<number, Described> = {};
     const spells: Record<string, unknown> = {};
     const offSky = new Set<number>(); // items some non-Sky mule holds
     const onResearch = new Set<number>(); // items some research mule holds
@@ -227,6 +235,33 @@ export class BankApi {
     };
   }
 
+  // The "DM me the plan" button's id for a bank post's lines, as the page sends them: each an item
+  // the item database knows, and a whole quantity. How each line is filled is decided here, from
+  // the bank as it is now, never taken from the page. Null when the lines aren't a request the
+  // button can carry, and the post goes up without one.
+  async planButton(lines: unknown): Promise<string | null> {
+    if (!Array.isArray(lines)) return null;
+    const read = lines.flatMap((l: unknown) => {
+      const { id, qty } = (l ?? {}) as Record<string, unknown>;
+      return isWhole(id) && isWhole(qty) && this.itemdb[id]
+        ? [{ id, qty }]
+        : [];
+    });
+    if (read.length !== lines.length) return null;
+    const { bank, mq, items } = await this.bank();
+    const inBank = new Set(bank.map(([, , id]) => id));
+    const held = new Set(mq.map(([, id]) => id));
+    // A line goes to DKP auction by the shared rule. Otherwise the bank fills it when it holds
+    // any, and a multiquest holder when only they do.
+    const via = (id: number): Via =>
+      goesToAuction(items[id] ?? { name: this.itemdb[id].name }, inBank.has(id))
+        ? "auction"
+        : !inBank.has(id) && held.has(id)
+          ? "multiquest"
+          : "bank";
+    return planId(read.map((l) => ({ ...l, via: via(l.id) })));
+  }
+
   // An item as the page gets it: the item database's stats, the banker's price, the spell sheet's
   // price and the wiki's link, icon and Green auctions. Its spells go into `spells`.
   private describe(
@@ -234,7 +269,7 @@ export class BankApi {
     name: string,
     price: string | null,
     spells: Record<string, unknown>
-  ): Record<string, unknown> {
+  ): Described {
     const db = this.itemdb[id];
     const w = this.wiki.get(id);
     const sheet = this.sheet.get(name);

@@ -11,10 +11,14 @@ export interface Take {
   count: number;
   loc: string;
 }
+export interface Count {
+  name: string;
+  count: number;
+}
 export interface Plan {
   logins: { char: string; takes: Take[] }[];
-  auctions: string[];
-  multiquests: string[];
+  auctions: Count[];
+  multiquests: Count[];
   short: { name: string; has: number; needs: number }[];
 }
 
@@ -30,7 +34,9 @@ export function bankPlan(
   // A banker starts a DKP auction, and a member sets up a multiquest with the item's holder, so
   // neither is taken from the bank.
   const named = (via: PlanLine["via"]) =>
-    request.filter((l) => l.via === via).map((l) => name(l.id));
+    request
+      .filter((l) => l.via === via)
+      .map((l) => ({ name: name(l.id), count: l.qty }));
   const lines = request
     .filter((l) => l.via === "bank")
     .map((l) => {
@@ -78,6 +84,7 @@ const MAX_DM = 2000;
 // An item's name as Discord shows it: its own markdown characters, such as a backtick, are escaped.
 const shown = (name: string) => name.replace(/[\\`*_~|]/g, "\\$&");
 const quantity = (n: number) => (n > 1 ? `${n} × ` : "");
+const counted = (c: Count) => `• ${quantity(c.count)}${shown(c.name)}`;
 
 // The plan's sections: a heading, then a line for each thing in it.
 const sections = (plan: Plan) => [
@@ -91,7 +98,7 @@ const sections = (plan: Plan) => [
     ? [
         {
           heading: "**DKP auction, no login**",
-          lines: plan.auctions.map((n) => `• ${shown(n)}`),
+          lines: plan.auctions.map(counted),
         },
       ]
     : []),
@@ -99,7 +106,7 @@ const sections = (plan: Plan) => [
     ? [
         {
           heading: "**Multiquest, no login**",
-          lines: plan.multiquests.map((n) => `• ${shown(n)}`),
+          lines: plan.multiquests.map(counted),
         },
       ]
     : []),

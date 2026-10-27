@@ -14,7 +14,7 @@ const levels = (lv: Partial<Record<ClassId, number>>): EqClassLevels => {
 const items: Record<string, RawItem> = {
   // Back slot, everyone, a steady Green market: 5 sales from 3 sellers, one in the last two months.
   1001: {
-    name: "Cloak of Flames", slots: 1 << 8, ac: 10, fr: 10, hp: 5, str: 3, worn: 900,
+    name: "Cloak of Flames", wiki: "https://wiki.project1999.com/Cloak_of_Flames", slots: 1 << 8, ac: 10, fr: 10, hp: 5, str: 3, worn: 900,
     green: [["2026-05-20", "Ayla", 900], ["2026-04-01", "Bo", 1000], ["2026-03-01", "Cy", 1100], ["2026-02-01", "Ayla", 1200], ["2026-01-05", "Bo", 800], ["2024-01-01", "Old", 50]],
   },
   // Weapon for warriors and paladins only, both hands.

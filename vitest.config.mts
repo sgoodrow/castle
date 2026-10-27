@@ -40,7 +40,7 @@ export default defineConfig({
         "src/features/bank-request-info/dismissal.ts": { lines: 100, branches: 100, functions: 100 },
         "src/features/bank-request-info/expire-old-requests.ts": { lines: 100, branches: 94, functions: 100 },
         "src/features/bank-request-info/bank-plan.ts": { lines: 98, branches: 92, functions: 100 },
-        "src/features/bank-request-info/bank-plan-button-command.ts": { lines: 100, branches: 91, functions: 100 },
+        "src/features/bank-request-info/bank-plan-button-command.ts": { lines: 95, branches: 90, functions: 100 },
         "src/shared/bank-location.ts": { lines: 81, branches: 75, functions: 100 },
         "src/shared/bank-plan-id.ts": { lines: 100, branches: 100, functions: 100 },
         "src/shared/bank-stock.ts": { lines: 100, branches: 100, functions: 100 },

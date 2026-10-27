@@ -42,5 +42,15 @@ Feature: Research spells and components
     Then the tab button shows "0pp"
     When I open my tab
     And I send my tab to Discord
-    Then the post reads "• 3 × Words of Odus (0pp)"
+    Then the post reads "Words of Odus ×3 (0pp)"
     And the post doesn't read "Pick up at"
+
+  Scenario: An item whose name has a backtick is posted as the game spells it
+    Given the bank also holds research spells and components
+    And I have opened the bank page
+    When I add "Rune of Ap`Sagor" to my tab
+    And I open my tab
+    And I send my tab to Discord
+    Then the post reads "Rune of Ap`Sagor (5pp)"
+    When I confirm the post
+    Then #bank-requests gets the item line "Rune of Ap\`Sagor (5pp)"

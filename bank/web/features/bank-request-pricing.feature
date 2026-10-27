@@ -99,7 +99,7 @@ Feature: Bank request pricing
     When I open my tab
     And I send my tab to Discord
     And I confirm the post
-    Then #bank-requests gets my request for "Cloak of Flames", "Spell: Lifetap", "Spell: Aegolism", "Bone Chips", "Fine Steel Long Sword", "Pearl", "Scaled Tunic", "Spell: Splurt", "Spell: Bedlam"
+    Then #bank-requests gets my request for "Cloak of Flames", "Fine Steel Long Sword", "Spell: Lifetap", "Spell: Aegolism", "Bone Chips", "Pearl", "Scaled Tunic", "Spell: Splurt", "Spell: Bedlam"
 
   Scenario: A tab saved before the limit keeps its first 9 items
     Given the bank holds the usual stock
@@ -205,7 +205,7 @@ Feature: Bank request pricing
     And my tab says "800pp + 1 DKP auction + 1 unknown cost"
     And my tab says "A banker starts a DKP auction for each auction item."
     When I send my tab to Discord
-    Then the post reads "• Spell: Bedlam (DKP auction)"
+    Then the post reads "Spell: Bedlam (DKP auction)"
     And the post reads "Total: 800pp + 1 DKP auction + 1 unknown cost"
 
   Scenario: Seeing the request as it will look in Discord
@@ -218,33 +218,13 @@ Feature: Bank request pricing
     Then my tab lists "Cloak of Flames", "3 × Pearl" and "Bone Chips"
     When I send my tab to Discord
     Then the post reads "@Alice has placed a bank request"
-    And the post reads "• Cloak of Flames (800pp)"
-    And the post reads "• 3 × Pearl (free)"
+    And the post reads "Cloak of Flames (800pp)"
+    And the post links "Cloak of Flames" to "https://wiki.project1999.com/Cloak_of_Flames"
+    And the post reads "Pearl ×3 (free)"
     And the post reads "Total: 800pp + 1 unknown cost"
-    And the post reads "• Mulea (pack 1, slot 2)"
-    And the post reads "• Muleb (bank 2) ×4"
+    And the post doesn't read "Mulea"
+    And the post doesn't read "pack 1, slot 2"
     And the post doesn't read "✅"
-
-  Scenario: A banker finds each item's spots grouped by character
-    Given the bank holds the usual stock
-    And the bank also holds:
-      | character | spot             | item       | count |
-      | Mulec     | General1         | Bone Chips | 3     |
-      | Muleb     | Bank1-Slot10     | Bone Chips | 1     |
-      | Mulea     | General8-Slot10  | Bone Chips | 2     |
-      | Mulea     | General5-Slot2   | Bone Chips | 1     |
-    And I have opened the bank page
-    And I have added "Bone Chips" to my tab
-    When I open my tab
-    And I send my tab to Discord
-    Then the post reads, in order:
-      | line                           |
-      | • Mulea (pack 5, slot 1) ×20   |
-      | • Mulea (pack 5, slot 2)       |
-      | • Mulea (pack 8, slot 10) ×2   |
-      | • Muleb (bank bag 1, slot 4) ×15 |
-      | • Muleb (bank bag 1, slot 10)  |
-      | • Mulec (inventory 1) ×3       |
 
   Scenario: Sending my tab to #bank-requests
     Given the bank holds the usual stock

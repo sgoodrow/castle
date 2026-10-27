@@ -79,8 +79,16 @@ Feature: Plane of Sky
     And I open my tab
     Then my tab says "A banker will tell you how to set up each multiquest."
     When I send my tab to Discord
-    Then the post reads "• Sky Sapphire (unknown)"
-    And the post reads "• Rabbie (multiquest)"
+    Then the post reads "Sky Sapphire (unknown)"
+    And the post reads "MQ: Rabbie"
+
+  Scenario: A multiquest request names each holder, with how many they hold
+    Given the bank also holds the Plane of Sky items
+    And I have opened the bank page
+    When I add "Griffon Eye" to my tab
+    And I open my tab
+    And I send my tab to Discord
+    Then the post reads "MQ: Kelra, Gmskytwo ×2"
 
   Scenario: The bank's own stock is what a member can put on the tab
     Given the bank also holds the Plane of Sky items
