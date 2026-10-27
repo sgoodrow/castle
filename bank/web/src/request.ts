@@ -4,8 +4,7 @@ import { tabTotal, totalText } from "./tab";
 
 // One post for the whole tab, in the shape Discord's API takes, so the page can preview exactly what
 // the bot will send. The site titles it with the member's name, linked to their Discord profile.
-export interface Field { name: string; value: string }
-export interface Embed { description: string; color: number; fields?: Field[] }
+export interface Embed { description: string; color: number }
 // Where the post goes: the bank requests channel, or the jewelry requests channel for made-to-order
 // jewelry. `lines` are the tab's items and quantities on the post: the site plans a bank post's
 // "DM me the plan" button from them, and a post that goes through takes them off the tab.
@@ -13,9 +12,6 @@ export interface RequestMessage { embeds: [Embed]; channel: "bank" | "jewelry"; 
 export const channelName = (channel: RequestMessage["channel"]) => channel === "jewelry" ? "#jewelry-requests" : "#bank-requests";
 
 const BLURPLE = 0x5865f2;
-// Discord's fields need a name, and a field name can't hold a link, so an item's field has a blank
-// name and its linked name opens the value.
-export const BLANK = "​";
 
 // A tab's bank items and its jewelry each post to their own channel, so a mixed tab gives two posts.
 export function requestMessages(tab: Tab, cls: ClassId | null): RequestMessage[] {
@@ -60,23 +56,19 @@ const tabs = (it: Item) => {
   return holders.length ? [...shown, ...(more > 0 ? [`…and ${more} more`] : [])].join(", ") : null;
 };
 
-// A bank post is one embed: the total, then a field per item, its linked name and price, and its
-// multiquest holders. Where the items are is for the banker's plan, not the post.
-// A jewelry post is one embed of linked bullets, each with the bank tabs that hold it in subtext,
-// and the total last.
+// A post is one embed: a bullet per item, its linked name and price, then the total. A bank item
+// names its multiquest holders; where the bank holds it is for the banker's plan, not the post. A
+// piece of jewelry has the bank tabs that hold it in subtext below its bullet.
 function requestMessage(lines: Line[], total: string, channel: RequestMessage["channel"]): RequestMessage {
-  const ids = lines.map(l => ({ id: l.it.id, qty: l.qty }));
-  if (channel === "jewelry") {
-    const rows = lines.flatMap(l => {
+  const rows = lines.flatMap(l => {
+    if (channel === "jewelry") {
       const where = tabs(l.it);
       return [`• ${priced(l)}`, ...(where ? [`-# ${where}`] : [])];
-    });
-    return { embeds: [{ description: [...rows, "", `**Total: ${total}**`].join("\n"), color: BLURPLE }], channel, lines: ids };
-  }
-  const fields = lines.map(l => {
+    }
     const mq = multiquest(l.it);
-    return { name: BLANK, value: mq ? `${priced(l)} · ${mq}` : priced(l) };
+    return [`• ${priced(l)}${mq ? ` · ${mq}` : ""}`];
   });
-  return { embeds: [{ description: `**Total: ${total}**`, color: BLURPLE, fields }], channel, lines: ids };
+  const description = [...rows, "", `**Total: ${total}**`].join("\n");
+  return { embeds: [{ description, color: BLURPLE }], channel, lines: lines.map(l => ({ id: l.it.id, qty: l.qty })) };
 }
 type Line = { it: Item; qty: number; req: ReturnType<typeof bankRequest> };

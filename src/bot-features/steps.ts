@@ -162,7 +162,6 @@ const shown = (m: Message, columns: string[]) => {
     title: embed?.title ?? "",
     url: embed?.url ?? "",
     description: embed?.description ?? "",
-    items: (embed?.fields ?? []).map((f) => f.value).join("\n"),
     pings: m.pings ? "yes" : "no",
   };
   return Object.fromEntries(columns.map((c) => [c, cells[c]]));
@@ -322,30 +321,6 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
               title: `@${name} has placed a bank request`,
               url: `https://discord.com/users/${id}`,
               description: lines,
-            },
-          ],
-        },
-        daysAgo(days)
-      );
-    }
-  );
-  // A request as the bank page posts it now: a field per item, and the total as the description.
-  step(
-    /^(\w+) placed a bank request on the bank page(?: (\d+) days ago)? totalling "(.*)" for:$/,
-    (name: string, days: string | undefined, total: string, items: string) => {
-      const { id } = member(name);
-      post(
-        "bank-requests",
-        BOT_ID,
-        {
-          embeds: [
-            {
-              title: `@${name} has placed a bank request`,
-              url: `https://discord.com/users/${id}`,
-              description: `**Total: ${total}**`,
-              fields: items
-                .split("\n")
-                .map((value) => ({ name: "\u200b", value })),
             },
           ],
         },
@@ -527,7 +502,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   step(
     /^(\w+)'s \/bank request also has an embed titled "(.*)"$/,
     (name: string, title: string) => {
-      requestOf(name).embeds.push({ title, fields: [] });
+      requestOf(name).embeds.push({ title });
     }
   );
   step(

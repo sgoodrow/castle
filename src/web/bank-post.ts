@@ -15,24 +15,15 @@ const TITLE = 64;
 const MAX_EMBEDS = 10;
 const MAX_TITLE = 256;
 const MAX_DESCRIPTION = 4096;
-const MAX_FIELDS = 25;
-const MAX_FIELD_NAME = 256;
-const MAX_FIELD_VALUE = 1024;
 const MAX_FOOTER = 2048;
 const MAX_TOTAL = 6000 - TITLE;
 
-export interface PostField {
-  name: string;
-  value: string;
-}
-
-// The page posts one embed, with a field per item. A page opened before that change still posts an
-// embed per item, titled and with the item's icon, and still gets through.
+// The page posts one embed, which the server titles. A page opened before that change still posts
+// an embed per item, titled and with the item's icon, and still gets through.
 export interface PostEmbed {
   title?: string;
   description: string;
   color: number;
-  fields?: PostField[];
   item?: number; // whose icon goes in the corner
   footer?: string;
 }
@@ -40,17 +31,9 @@ export interface PostEmbed {
 const isInt = (v: unknown): v is number => Number.isInteger(v);
 const isText = (v: unknown, max: number): v is string =>
   typeof v === "string" && v.length <= max;
-// Discord refuses a field name or value that's only whitespace.
+// Discord refuses an entry whose text is only whitespace.
 const isFilled = (v: unknown, max: number): v is string =>
   isText(v, max) && v.trim().length > 0;
-
-// A field, or null if Discord wouldn't take it.
-const readField = (f: unknown): PostField | null => {
-  const { name, value } = (f ?? {}) as Record<string, unknown>;
-  return isFilled(name, MAX_FIELD_NAME) && isFilled(value, MAX_FIELD_VALUE)
-    ? { name, value }
-    : null;
-};
 
 // The page's post, or null if it isn't one Discord would take.
 export function readPost(body: unknown): PostEmbed[] | null {
@@ -60,32 +43,21 @@ export function readPost(body: unknown): PostEmbed[] | null {
   const out: PostEmbed[] = [];
   let total = 0;
   for (const e of embeds as unknown[]) {
-    const { title, description, color, fields, item, footer } = (e ??
-      {}) as Record<string, unknown>;
+    const { title, description, color, item, footer } = (e ?? {}) as Record<
+      string,
+      unknown
+    >;
     if (title !== undefined && !isText(title, MAX_TITLE)) return null;
     // Every entry the bank page posts has text, and Discord refuses an entry with none.
     if (!isFilled(description, MAX_DESCRIPTION)) return null;
     if (!isInt(color) || color < 0 || color > 0xffffff) return null;
-    if (fields !== undefined && !Array.isArray(fields)) return null;
-    if (fields && fields.length > MAX_FIELDS) return null;
     if (item !== undefined && !(isInt(item) && item > 0)) return null;
     if (footer !== undefined && !isText(footer, MAX_FOOTER)) return null;
-    const read: PostField[] = [];
-    for (const f of (fields ?? []) as unknown[]) {
-      const field = readField(f);
-      if (!field) return null;
-      read.push(field);
-    }
-    total +=
-      (title?.length ?? 0) +
-      description.length +
-      (footer?.length ?? 0) +
-      read.reduce((n, f) => n + f.name.length + f.value.length, 0);
+    total += (title?.length ?? 0) + description.length + (footer?.length ?? 0);
     out.push({
       ...(title ? { title } : {}),
       description,
       color,
-      ...(read.length ? { fields: read } : {}),
       ...(item !== undefined ? { item } : {}),
       ...(footer ? { footer } : {}),
     });
@@ -143,7 +115,6 @@ export async function postRequest(
           url: i === 0 ? requesterUrl(me.id) : undefined,
           description: e.description,
           color: e.color,
-          ...(e.fields ? { fields: e.fields } : {}),
           ...(e.footer ? { footer: { text: e.footer } } : {}),
           ...(icon != null
             ? { thumbnail: { url: `${p.baseUrl}/icons/${icon}.png` } }

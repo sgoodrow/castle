@@ -28,21 +28,13 @@ export type Row = Record<string, string> & { rowIndex: number };
 
 export const BOT_ID = "1";
 
-// An embed as a post is made with it. Discord gives every embed a list of fields, empty or not.
-export interface Embed {
-  title?: string;
-  url?: string;
-  description?: string;
-  fields?: { name: string; value: string }[];
-}
-
 // A Discord message, with what the bot's code reads of it.
 export interface Message {
   id: string;
   channel: { id: string };
   createdTimestamp: number;
   content: string;
-  embeds: (Embed & { fields: { name: string; value: string }[] })[];
+  embeds: { title?: string; url?: string; description?: string }[];
   buttons: { label: string; customId: string }[];
   author: { id: string; bot: boolean; toString: () => string };
   mentions: { users: Map<string, unknown> };
@@ -55,7 +47,7 @@ type Post =
   | string
   | {
       content?: string;
-      embeds?: Embed[];
+      embeds?: Message["embeds"];
       buttons?: Message["buttons"];
       attachments?: string[];
       allowedMentions?: { parse?: string[] };
@@ -141,7 +133,7 @@ export const post = (
     channel: { id: channel },
     createdTimestamp: Date.now() - ageMs,
     content,
-    embeds: embeds.map((e) => ({ ...e, fields: e.fields ?? [] })),
+    embeds,
     buttons,
     attachments: new Map(attachments.map((url, i) => [String(i), { url }])),
     author: {

@@ -141,7 +141,6 @@ interface Post {
     description?: string;
     color: number;
     url?: string;
-    fields?: { name: string; value: string }[];
     footer?: { text: string };
     thumbnail?: { url: string };
   }[];
@@ -1082,15 +1081,19 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         body: embeds(+n, "x".repeat(+len)),
       })
   );
-  // A bank post as the page sends it: one embed, a field per item, and the items' ids for its button.
-  const bankPost = (fields: string[], lines: { id: number; qty: number }[]) =>
+  // A bank post as the page sends it: one embed, a bullet per item, the total, and the items' ids
+  // for its button.
+  const bankPost = (items: string[], lines: { id: number; qty: number }[]) =>
     JSON.stringify({
       channel: "bank",
       embeds: [
         {
-          description: "**Total: 800pp**",
+          description: [
+            ...items.map((i) => `• ${i}`),
+            "",
+            "**Total: 800pp**",
+          ].join("\n"),
           color: 0,
-          fields: fields.map((value) => ({ name: "\u200b", value })),
         },
       ],
       lines,
@@ -1112,22 +1115,6 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       request(who, "/api/bank-request", {
         method: "POST",
         body: bankPost(["Mystery (800pp)"], [{ id: +id, qty: 1 }]),
-      })
-  );
-  step(
-    /^(\w+) posts a bank request of (\d+) items$/,
-    (who: string, n: string) =>
-      request(who, "/api/bank-request", {
-        method: "POST",
-        body: bankPost(Array(+n).fill("Pearl (1pp)"), []),
-      })
-  );
-  step(
-    /^(\w+) posts a bank request with a (\d+)-character item$/,
-    (who: string, n: string) =>
-      request(who, "/api/bank-request", {
-        method: "POST",
-        body: bankPost(["x".repeat(+n)], []),
       })
   );
   step(/^(\w+) posts a bank request that isn't JSON$/, (who: string) =>
@@ -1154,7 +1141,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         body: embeds(1),
       });
   });
-  // A post's embeds, by the columns a scenario's table lists. Items are a post's fields, one per line.
+  // A post's embeds, by the columns a scenario's table lists.
   const embedsShown = (post: Post, rows: Record<string, string>[]) => {
     const columns = Object.keys(rows[0] ?? {});
     return post.embeds.map((e) => {
@@ -1162,7 +1149,6 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         title: e.title ?? "",
         url: e.url ?? "",
         description: e.description ?? "",
-        items: (e.fields ?? []).map((f) => f.value).join("\n"),
         footer: e.footer?.text ?? "",
         thumbnail: e.thumbnail?.url ?? "",
       };

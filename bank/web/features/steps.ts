@@ -9,7 +9,7 @@ import { bankPage } from "../src/app";
 import { ALL_CLASSES, CLASS_BIT, CLASSES, ITEM_LIST, bankRequest, maskText, prettyLoc, type EqClassLevels, type Payload } from "../src/data";
 import { server } from "./support/setup";
 
-interface World { payload: Payload; status: number; user: UserEvent; reports: string[]; posts: { embeds: { description: string; fields?: { name: string; value: string }[] }[]; lines: { id: number; qty: number }[] }[]; postStatus: number; jewelryStatus: number }
+interface World { payload: Payload; status: number; user: UserEvent; reports: string[]; posts: { embeds: { description: string }[]; lines: { id: number; qty: number }[] }[]; postStatus: number; jewelryStatus: number }
 let world: World;
 
 // A fresh page, bank and browser for every scenario.
@@ -226,7 +226,7 @@ step(/^the post links "(.*)" to "(.*)"$/, async (_, name, url) => {
 });
 step(/^#bank-requests gets the item line "(.*)"$/, async (_, line) => {
   await waitFor(() => expect(world.posts).toHaveLength(1));
-  expect(world.posts[0]?.embeds[0]?.fields?.map(f => f.value)).toContain(line);
+  expect(world.posts[0]?.embeds[0]?.description.split("\n")).toContain(`• ${line}`);
 });
 step(/^the post doesn't read "(.*)"$/, async (_, text) => {
   expect(norm((await confirm()).textContent)).not.toContain(text);

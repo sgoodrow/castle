@@ -17,16 +17,13 @@ Feature: Posting a bank request
     When Alice posts the bank request:
       """
       {"channel": "bank",
-       "embeds": [{"description": "**Total: 1,600pp**", "color": 5793266, "fields": [
-         {"name": "\u200b", "value": "[Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)"},
-         {"name": "\u200b", "value": "[Spell: Bedlam](https://wiki.project1999.com/Spell:_Bedlam) (800pp) · MQ: Ringolo"}
-       ]}],
+       "embeds": [{"description": "• [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)\n• [Spell: Bedlam](https://wiki.project1999.com/Spell:_Bedlam) (800pp) · MQ: Ringolo\n\n**Total: 1,600pp**", "color": 5793266}],
        "lines": [{"id": 11621, "qty": 1}, {"id": 19400, "qty": 1}]}
       """
     Then Alice's request is posted
     And the bot posts in #bank-requests:
-      | title                            | url                                | description        | items                                                                                                                                      |
-      | @Alice has placed a bank request | https://discord.com/users/id-Alice | **Total: 1,600pp** | [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)\n[Spell: Bedlam](https://wiki.project1999.com/Spell:_Bedlam) (800pp) · MQ: Ringolo |
+      | title                            | url                                | description                                                                                                                                                         |
+      | @Alice has placed a bank request | https://discord.com/users/id-Alice | • [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)\n• [Spell: Bedlam](https://wiki.project1999.com/Spell:_Bedlam) (800pp) · MQ: Ringolo\n\n**Total: 1,600pp** |
     And the log says "bank web: Alice (id-Alice) posted a bank request"
 
   Scenario: A bank request gets the "DM me the plan" button for its items
@@ -150,15 +147,6 @@ Feature: Posting a bank request
     When Alice posts a bank request with a 4097-character description
     Then the answer is 400 "Bad request"
 
-  Scenario: A post with more items than Discord's 25 is refused
-    When Alice posts a bank request of 26 items
-    Then the answer is 400 "Bad request"
-    And the bot posts nothing
-
-  Scenario: An item line too long for Discord is refused
-    When Alice posts a bank request with a 1025-character item
-    Then the answer is 400 "Bad request"
-
   Scenario: A post too long for Discord overall is refused
     When Alice posts a bank request of 3 embeds with 2000-character descriptions
     Then the answer is 400 "Bad request"
@@ -174,14 +162,10 @@ Feature: Posting a bank request
       | embed                                                                     |
       | null                                                                      |
       | {"title": "", "description": "", "color": 0}                              |
-      | {"description": "", "color": 0, "fields": []}                             |
-      | {"description": "x", "color": 0, "fields": {}}                            |
-      | {"description": "x", "color": 0, "fields": [null]}                        |
-      | {"description": "x", "color": 0, "fields": [{"name": " ", "value": "x"}]} |
-      | {"description": "x", "color": 0, "fields": [{"name": "x", "value": ""}]}  |
       | {"title": "T", "description": 1, "color": 0}                              |
       | {"title": 1, "description": "x", "color": 0}                              |
-      | {"description": " ", "color": 0, "fields": [{"name": "x", "value": "x"}]} |
+      | {"title": "T", "description": "", "color": 0}                             |
+      | {"description": " ", "color": 0}                                          |
       | {"title": "T", "description": "x", "color": 16777216}                     |
       | {"title": "T", "description": "x", "color": -1}                           |
       | {"title": "T", "description": "x", "color": 0.5}                          |
