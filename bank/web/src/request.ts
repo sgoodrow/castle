@@ -35,8 +35,8 @@ const itemLink = (it: Item) => {
   return it.wiki ? `[${name}](${it.wiki.replace(/\(/g, "%28").replace(/\)/g, "%29")})` : name;
 };
 
-// "2 × Cloak of Flames (1,600pp)", with the name linked.
-const priced = (l: Line) => `${l.qty > 1 ? `${l.qty} × ` : ""}${itemLink(l.it)} (${priceText(l.req.price, l.qty)})`;
+// "Cloak of Flames ×2 (1,600pp)", with the name linked: the name first, so items are easy to scan.
+const priced = (l: Line) => `${itemLink(l.it)}${l.qty > 1 ? ` ×${l.qty}` : ""} (${priceText(l.req.price, l.qty)})`;
 
 // Who holds a bank item for multiquesting: "MQ: Ringolo, Mallory ×2". Players set those up with the
 // holder, so they're named on the post.
