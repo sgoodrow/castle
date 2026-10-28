@@ -134,8 +134,16 @@ const MAX_DM = 2000;
 const shown = (name: string) => name.replace(/[\\`*_~|]/g, "\\$&");
 const quantity = (n: number) => (n > 1 ? `${n} × ` : "");
 const counted = (c: Count) => `• ${quantity(c.count)}${shown(c.name)}`;
-// A login as a code span, so Discord shows it exactly as the sheet has it, to copy.
-const code = (s: string) => (s.includes("`") ? `\`\` ${s} \`\`` : `\`${s}\``);
+// A login as a code span, so Discord shows it exactly as the sheet has it, to copy. The fence is one
+// backtick longer than the longest run of backticks in it, so no run in the login can close the span.
+const code = (s: string) => {
+  const longest = Math.max(
+    0,
+    ...(s.match(/`+/g) ?? []).map((run) => run.length)
+  );
+  const fence = "`".repeat(longest + 1);
+  return longest ? `${fence} ${s} ${fence}` : `${fence}${s}${fence}`;
+};
 
 // The plan's sections: a heading, then a line for each thing in it.
 const sections = (plan: Plan) => [

@@ -2,8 +2,9 @@ Feature: Getting the plan for a bank request
   A banker who reacts 👀 to a bank request is sent a DM with the plan: which characters to log in to, in
   order, the account and password for each, and what to take from where on each, from the bank as it is
   right then. Only characters whose account the shared accounts sheet lets bankers use are planned from,
-  so no spot is named that a banker can't log in to. Spots that still hold what the request needs are
-  listed as backups. Anyone else's 👀 does nothing, and the channel gets nothing new.
+  so no spot is named that a banker can't log in to. Any other spot holding a requested item, on a
+  character a banker can log in to, is listed as a backup. Anyone else's 👀 does nothing, and no 👀
+  gets a reply in any channel.
 
   Background:
     Given Alice is a Castle member
@@ -311,7 +312,6 @@ Feature: Getting the plan for a bank request
       | Pearl | 1        |
     When Dana reacts 👍 to Alice's request
     Then no one is sent a DM
-    And Dana is told nothing
     And nothing new is posted in #bank-requests
 
   Scenario: A banker whose DM fails for another reason is sent nothing
@@ -324,7 +324,6 @@ Feature: Getting the plan for a bank request
       | Pearl | 1        |
     When Dana reacts 👀 to Alice's request
     Then no one is sent a DM
-    And Dana is told nothing
     And nothing new is posted in #bank-requests
 
   Scenario: A member who reacts 👀 is sent nothing
@@ -337,7 +336,6 @@ Feature: Getting the plan for a bank request
       | Pearl | 1        |
     When Bob reacts 👀 to Alice's request
     Then no one is sent a DM
-    And Bob is told nothing
     And nothing new is posted in #bank-requests
 
   Scenario: A banker's 👀 outside #bank-requests sends nothing
@@ -349,13 +347,11 @@ Feature: Getting the plan for a bank request
       | Pearl | 1        |
     When Dana reacts 👀 to Alice's request in #general
     Then no one is sent a DM
-    And Dana is told nothing
 
   Scenario: A bank request whose saved plan can't be read sends nothing
     Given Alice's bank request is saved with an unreadable plan
     When Dana reacts 👀 to Alice's request
     Then no one is sent a DM
-    And Dana is told nothing
 
   Scenario: A 👀 on a message Discord sends in part still sends the plan
     Given the bank holds:
@@ -396,6 +392,27 @@ Feature: Getting the plan for a bank request
       • Pearl in pack 1, slot 1
       """
 
+  Scenario: A password with two backticks in a row is shown whole
+    Given the shared accounts sheet has these rows:
+      | row | Characters | Class  | Account | Password | Officers | Knights | Guards | Bankers | Raiders |
+      | 2   | Mulea      | Wizard | mulea1  | ab``cd   | FALSE    | FALSE   | FALSE  | TRUE    | FALSE   |
+    And the bank holds:
+      | character | where          | item  | count |
+      | Mulea     | pack 1, slot 1 | Pearl | 1     |
+    And Alice's bank request is saved with a plan for:
+      | item  | quantity |
+      | Pearl | 1        |
+    When Dana reacts 👀 to Alice's request
+    Then Dana is sent a DM:
+      """
+      **Bank request plan**
+
+      **Log in to Mulea**
+      • Account: `mulea1`
+      • Password: ``` ab``cd ```
+      • Pearl in pack 1, slot 1
+      """
+
   Scenario: A banker whose DMs are closed is sent nothing
     Given Dana doesn't take DMs
     And the bank holds:
@@ -406,7 +423,6 @@ Feature: Getting the plan for a bank request
       | Pearl | 1        |
     When Dana reacts 👀 to Alice's request
     Then no one is sent a DM
-    And Dana is told nothing
     And nothing new is posted in #bank-requests
 
   Scenario: A post from before the 👀 reaction still sends its plan from its button

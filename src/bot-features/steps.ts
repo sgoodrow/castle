@@ -788,6 +788,12 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       ],
     });
   });
+  // Every message in every channel, bot and member alike, so a reply in any channel shows up.
+  const channelPosts = () =>
+    Object.values(world.channels).reduce(
+      (n, messages) => n + messages.length,
+      0
+    );
   // A member as discord.js gives a reaction's user: DMs reach them as Discord delivers them.
   const reactor = (name: string) => {
     const { id, takesDms } = member(name);
@@ -829,7 +835,10 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
               fetch: async () => full,
             }
           : full;
+        const postedBefore = channelPosts();
         await tryBankPlanReaction(reaction as never, reactor(by) as never);
+        // A 👀 never answers in a channel, whichever channel it is in and whatever it sends the banker.
+        expect(channelPosts()).toBe(postedBefore);
         expect(errors.mock.calls.map((c) => String(c[0]))).toEqual(
           world.dmsDown ? [expect.stringContaining("a DM failed")] : []
         );
@@ -837,9 +846,6 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
         errors.mockRestore();
       }
     }
-  );
-  step(/^(\w+) is told nothing$/, (name: string) =>
-    expect(world.told.filter((t) => t.to === name)).toEqual([])
   );
   step(
     /^(\w+) presses "(.+)" on (\w+)'s request$/,
