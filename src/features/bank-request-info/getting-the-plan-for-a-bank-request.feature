@@ -201,7 +201,7 @@ Feature: Getting the plan for a bank request
       • Pearl in pack 1, slot 2
       """
 
-  Scenario: A bag is planned from whichever character holds it, Sky mule or not
+  Scenario: A bag held by a storage character is planned from that character
     Given the bank holds:
       | character  | where  | item              | count |
       | Cgstorageb | bank 1 | Feather Lined Bag | 1     |

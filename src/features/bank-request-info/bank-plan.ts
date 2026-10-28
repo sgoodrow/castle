@@ -136,13 +136,16 @@ const quantity = (n: number) => (n > 1 ? `${n} × ` : "");
 const counted = (c: Count) => `• ${quantity(c.count)}${shown(c.name)}`;
 // A login as a code span, so Discord shows it exactly as the sheet has it, to copy. The fence is one
 // backtick longer than the longest run of backticks in it, so no run in the login can close the span.
+// Discord drops one space from each end of a span, so a login with a backtick or a space at an end is
+// padded with one more space.
 const code = (s: string) => {
   const longest = Math.max(
     0,
     ...(s.match(/`+/g) ?? []).map((run) => run.length)
   );
   const fence = "`".repeat(longest + 1);
-  return longest ? `${fence} ${s} ${fence}` : `${fence}${s}${fence}`;
+  const padded = longest || /^ | $/.test(s) ? ` ${s} ` : s;
+  return `${fence}${padded}${fence}`;
 };
 
 // The plan's sections: a heading, then a line for each thing in it.
