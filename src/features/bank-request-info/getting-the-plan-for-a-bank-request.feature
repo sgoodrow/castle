@@ -302,6 +302,31 @@ Feature: Getting the plan for a bank request
     Then no one is sent a DM
     And nothing new is posted in #bank-requests
 
+  Scenario: A banker's other reactions send nothing
+    Given the bank holds:
+      | character | where          | item  | count |
+      | Mulea     | pack 1, slot 1 | Pearl | 1     |
+    And Alice's bank request is saved with a plan for:
+      | item  | quantity |
+      | Pearl | 1        |
+    When Dana reacts 👍 to Alice's request
+    Then no one is sent a DM
+    And Dana is told nothing
+    And nothing new is posted in #bank-requests
+
+  Scenario: A banker whose DM fails for another reason is sent nothing
+    Given Discord can't deliver DMs
+    And the bank holds:
+      | character | where          | item  | count |
+      | Mulea     | pack 1, slot 1 | Pearl | 1     |
+    And Alice's bank request is saved with a plan for:
+      | item  | quantity |
+      | Pearl | 1        |
+    When Dana reacts 👀 to Alice's request
+    Then no one is sent a DM
+    And Dana is told nothing
+    And nothing new is posted in #bank-requests
+
   Scenario: A member who reacts 👀 is sent nothing
     Given the bank holds:
       | character | where          | item  | count |

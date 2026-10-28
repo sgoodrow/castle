@@ -2,8 +2,8 @@ Feature: Posting a bank request
   Members send their tab from the bank page: bank items to #bank-requests, and made-to-order jewelry
   to #jewelry-requests. The site checks the post fits in a Discord message, titles it with the
   member's name linked to their Discord profile, and posts it as the bot without pinging anyone. A
-  bank post keeps its plan, which a banker's 👀 reaction sends by DM, and the site, not the page,
-  decides how each of its lines is filled.
+  banker's 👀 on a bank post sends the post's plan by DM, and the site, not the page, decides how each
+  of its lines is filled.
 
   Background:
     Given the bank site is set up for Discord sign-in
@@ -76,7 +76,7 @@ Feature: Posting a bank request
     And an issue is filed titled "[web] db down"
     And the issue "[web] db down" says "**What they saw:** The request was posted without its plan"
 
-  Scenario: A request whose plan can't be kept is posted, and the failure is filed
+  Scenario: A request whose plan can't be kept is still posted
     Given keeping a bank request's plan fails with "plan db down"
     When Alice posts a bank request for:
       | item  | quantity |
@@ -85,7 +85,7 @@ Feature: Posting a bank request
     And an issue is filed titled "[web] plan db down"
     And the issue "[web] plan db down" says "**What they saw:** The request was posted, but a banker's"
 
-  Scenario: A post from a page that sends no lines has no plan for a banker's 👀
+  Scenario: A post from an older bank page has no plan for a banker's 👀
     When Alice posts the bank request:
       """
       {"embeds": [
@@ -195,3 +195,4 @@ Feature: Posting a bank request
     When Alice posts a bank request of 1 embed
     Then the answer is 502 "Discord didn't take it"
     And the log says "bank web: Discord refused Alice's bank request 403"
+    And a banker's 👀 on the post plans nothing

@@ -785,20 +785,23 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     };
   };
   step(
-    /^(\w+) reacts 👀 to (\w+)'s request$/,
-    async (by: string, whose: string) => {
+    /^(\w+) reacts (👀|👍) to (\w+)'s request$/,
+    async (by: string, emoji: string, whose: string) => {
       const { tryBankPlanReaction } =
         await import("../features/bank-request-info/bank-plan-reaction");
       const message = requestOf(whose);
       // The handler reports what it can't do with console.error rather than throwing, so a scenario
       // must fail on one, or a negative like "no one is sent a DM" would pass with the handler broken.
+      // The one it logs when a DM can't be delivered is the only error a scenario may expect.
       const errors = vi.spyOn(console, "error").mockImplementation(() => {});
       try {
         await tryBankPlanReaction(
-          { partial: false, emoji: { name: "👀" }, message } as never,
+          { partial: false, emoji: { name: emoji }, message } as never,
           reactor(by) as never
         );
-        expect(errors.mock.calls).toEqual([]);
+        expect(errors.mock.calls.map((c) => String(c[0]))).toEqual(
+          world.dmsDown ? [expect.stringContaining("a DM failed")] : []
+        );
       } finally {
         errors.mockRestore();
       }

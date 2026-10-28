@@ -1199,8 +1199,6 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     auction: "DKP auction",
     multiquest: "multiquest",
   };
-  const buttons = (post: Post) =>
-    (post.components ?? []).flatMap((row) => row.components);
   step(
     /^a banker's 👀 on the post plans these lines:$/,
     (rows: Record<string, string>[]) => {
@@ -1222,11 +1220,6 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   );
   step(/^keeping a bank request's plan fails with "(.*)"$/, (msg: string) => {
     world.planSaveDown = new Error(msg);
-  });
-  step(/^the post has no button$/, () => {
-    const [post] = [...world.posts, ...world.jewelryPosts];
-    expect(post).toBeDefined();
-    expect(buttons(post.body)).toEqual([]);
   });
   step(/^the bot has posted (\d+) bank requests?$/, (n: string) =>
     expect(world.posts).toHaveLength(+n)
