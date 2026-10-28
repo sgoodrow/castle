@@ -361,7 +361,7 @@ export function bankRequest(it: Item, cls: ClassId | null, qty = 1): BankRequest
 // Whether an item only goes to DKP auction. That doesn't depend on the member's class.
 export const auctionOnly = (it: Item) => goesToAuction(it, it.holders.some(h => !h.mq));
 // The most a member can put on their tab: what the bank holds, or one auction at a time.
-// Different items one request can hold: as many as the post's "DM me the plan" button carries.
+// Different items one request can hold: as many as a bank post's plan carries.
 export const MAX_TAB_ITEMS = MAX_PLAN_LINES;
 // Jewelry is made to order, so a member can ask for more than the bank holds.
 export const JEWELRY_TAB_LIMIT = 10;

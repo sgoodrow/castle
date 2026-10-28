@@ -26,28 +26,28 @@ Feature: Posting a bank request
       | @Alice has placed a bank request | https://discord.com/users/id-Alice | • [Cloak of Flames](https://wiki.project1999.com/Cloak_of_Flames) (800pp)\n• [Spell: Bedlam](https://wiki.project1999.com/Spell:_Bedlam) (800pp) · MQ: Ringolo\n\n**Total: 1,600pp** |
     And the log says "bank web: Alice (id-Alice) posted a bank request"
 
-  Scenario: A bank request keeps the plan for its items
+  Scenario: A bank request's items are planned for a banker's 👀
     When Alice posts a bank request for:
       | item            | quantity |
       | Cloak of Flames | 1        |
       | Pearl           | 3        |
-    Then the plan for the post is saved for:
+    Then a banker's 👀 on the post plans these lines:
       | item            | quantity | from     |
       | Cloak of Flames | 1        | the bank |
       | Pearl           | 3        | the bank |
 
-  Scenario: A line a banker priced as a DKP auction is marked an auction in the plan
+  Scenario: A line a banker priced as a DKP auction is planned as an auction
     Given the bankers' uploads hold:
       | banker | spot     | item          | count | price       |
       | mulea  | General1 | Spell: Bedlam | 1     | DKP auction |
     When Alice posts a bank request for:
       | item          | quantity |
       | Spell: Bedlam | 1        |
-    Then the plan for the post is saved for:
+    Then a banker's 👀 on the post plans these lines:
       | item          | quantity | from        |
       | Spell: Bedlam | 1        | DKP auction |
 
-  Scenario: A line only a multiquest holder has is marked a multiquest in the plan
+  Scenario: A line only a multiquest holder has is planned as a multiquest
     Given the Sky sheet's Multiquest tab is:
       """
       ,ITEM,CLASS,,
@@ -57,26 +57,35 @@ Feature: Posting a bank request
     When Alice posts a bank request for:
       | item        | quantity |
       | Wind Tablet | 1        |
-    Then the plan for the post is saved for:
+    Then a banker's 👀 on the post plans these lines:
       | item        | quantity | from       |
       | Wind Tablet | 1        | multiquest |
 
-  Scenario: A request with an item the bank's item database doesn't know is posted without a plan
+  Scenario: A request with an item the bank's item database doesn't know has no plan for a banker's 👀
     When Alice posts a bank request for item 999999
     Then Alice's request is posted
-    And no plan is saved for the post
+    And a banker's 👀 on the post plans nothing
 
-  Scenario: A request is posted without a plan when the bank can't be read
+  Scenario: A request is posted, with no plan for a banker's 👀, when the bank can't be read
     Given the bank's database is down with "db down"
     When Alice posts a bank request for:
       | item  | quantity |
       | Pearl | 1        |
     Then Alice's request is posted
-    And no plan is saved for the post
+    And a banker's 👀 on the post plans nothing
     And an issue is filed titled "[web] db down"
     And the issue "[web] db down" says "**What they saw:** The request was posted without its plan"
 
-  Scenario: A post from a page that sends no lines is posted without a plan
+  Scenario: A request whose plan can't be kept is posted, and the failure is filed
+    Given keeping a bank request's plan fails with "plan db down"
+    When Alice posts a bank request for:
+      | item  | quantity |
+      | Pearl | 1        |
+    Then Alice's request is posted
+    And an issue is filed titled "[web] plan db down"
+    And the issue "[web] plan db down" says "**What they saw:** The request was posted, but a banker's"
+
+  Scenario: A post from a page that sends no lines has no plan for a banker's 👀
     When Alice posts the bank request:
       """
       {"embeds": [
@@ -89,9 +98,9 @@ Feature: Posting a bank request
       | title                            | url                                | description               | footer | thumbnail                             |
       | @Alice has placed a bank request | https://discord.com/users/id-Alice | • Cloak of Flames (800pp) | Thanks |                                       |
       | Cloak of Flames                  |                                    | • mulea (inventory 1)     |        | https://bank.example.com/icons/77.png |
-    And no plan is saved for the post
+    And a banker's 👀 on the post plans nothing
 
-  Scenario: Made-to-order jewelry is posted to the jewelry requests channel, without a plan
+  Scenario: Made-to-order jewelry is posted to the jewelry requests channel, with no plan
     When Alice posts the bank request:
       """
       {"channel": "jewelry",
@@ -102,7 +111,7 @@ Feature: Posting a bank request
     And the bot posts in #jewelry-requests:
       | title                            | url                                | description                                                                                                                       |
       | @Alice has placed a bank request | https://discord.com/users/id-Alice | • [Golden Cat Eye Bracelet](https://wiki.project1999.com/Golden_Cat_Eye_Bracelet) (13pp)\n-# Cgjewelry (bank 1)\n\n**Total: 13pp** |
-    And no plan is saved for the post
+    And a banker's 👀 on the post plans nothing
 
   Scenario: The page shows who's signed in, for its preview
     When Alice asks for the bank

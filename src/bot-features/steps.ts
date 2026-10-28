@@ -742,6 +742,22 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       });
     }
   );
+  step(
+    /^(\w+)'s bank request has an unreadable "DM me the plan" button$/,
+    (name: string) => {
+      const { id } = member(name);
+      post("bank-requests", BOT_ID, {
+        embeds: [
+          {
+            title: `@${name} has placed a bank request`,
+            url: `https://discord.com/users/${id}`,
+            description: "**Total: 800pp**",
+          },
+        ],
+        buttons: [{ label: "DM me the plan", customId: "bank-plan:!!" }],
+      });
+    }
+  );
   step(/^(\w+)'s bank request has no plan$/, (name: string) => {
     const { id } = member(name);
     post("bank-requests", BOT_ID, {

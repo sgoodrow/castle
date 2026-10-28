@@ -118,6 +118,7 @@ interface World {
   jewelryPosts: { auth: string | null; body: Post }[]; // what the bot posted to #jewelry-requests
   postStatus: number;
   plans: { message: string; plan: string }[]; // the plans kept by bank request posts' messages
+  planSaveDown: Error | null; // keeping a plan fails with this
   officePosts: string[]; // what the bot told the bank office, once Discord took it
   officeStatus: number;
   logs: string[];
@@ -375,6 +376,7 @@ export async function reset() {
     jewelryPosts: [],
     postStatus: 200,
     plans: [],
+    planSaveDown: null,
     officePosts: [],
     officeStatus: 200,
     logs: [],
@@ -406,6 +408,7 @@ export const savePlan = async ({
 }: {
   data: { message_id: string; plan: string };
 }) => {
+  if (world.planSaveDown) throw world.planSaveDown;
   world.plans.push({ message: data.message_id, plan: data.plan });
 };
 // Only the crash being tested counts; its backstop timer fires seconds later, into a scenario long gone.
@@ -1199,7 +1202,7 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
   const buttons = (post: Post) =>
     (post.components ?? []).flatMap((row) => row.components);
   step(
-    /^the plan for the post is saved for:$/,
+    /^a banker's 👀 on the post plans these lines:$/,
     (rows: Record<string, string>[]) => {
       const [post] = world.posts;
       const saved = world.plans.filter((p) => p.message === post?.id);
@@ -1214,9 +1217,12 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     }
   );
   // A scenario posts one request, so no plan kept at all is none kept for its post.
-  step(/^no plan is saved for the post$/, () =>
+  step(/^a banker's 👀 on the post plans nothing$/, () =>
     expect(world.plans).toEqual([])
   );
+  step(/^keeping a bank request's plan fails with "(.*)"$/, (msg: string) => {
+    world.planSaveDown = new Error(msg);
+  });
   step(/^the post has no button$/, () => {
     const [post] = [...world.posts, ...world.jewelryPosts];
     expect(post).toBeDefined();

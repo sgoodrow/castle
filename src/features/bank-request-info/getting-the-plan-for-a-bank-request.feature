@@ -62,7 +62,7 @@ Feature: Getting the plan for a bank request
       • Pearl in pack 1, slot 2
 
       **Backups, if a spot is empty**
-      • Cloak of Flames: pack 1, slot 1 on Mulea
+      • Cloak of Flames: pack 1, slot 1 on Mulea, account `mulea1`, password `test-mulea`
       """
 
   Scenario: A line one character can't fill is taken from two
@@ -283,7 +283,7 @@ Feature: Getting the plan for a bank request
       • Pearl in pack 1, slot 1
 
       **Backups, if a spot is empty**
-      • Pearl: pack 4, slot 2 on Muleb
+      • Pearl: pack 4, slot 2 on Muleb, account `muleb1`, password `test-muleb`
       """
 
   Scenario: A long plan comes as several DMs, each within Discord's 2,000 characters
@@ -346,6 +346,12 @@ Feature: Getting the plan for a bank request
       """
     And Dana is told "Sent you the plan by DM."
     And nothing new is posted in #bank-requests
+
+  Scenario: An old button whose plan can't be read tells the banker so
+    Given Alice's bank request has an unreadable "DM me the plan" button
+    When Dana presses "DM me the plan" on Alice's request
+    Then Dana is told "Error: This request's plan can't be read."
+    And no one is sent a DM
 
   Scenario: A member who isn't a banker is told no when pressing an old button
     Given Alice's bank request has the "DM me the plan" button for:

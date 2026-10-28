@@ -32,6 +32,7 @@ export interface Spot {
   name: string;
   char: string;
   loc: string;
+  login: Login;
 }
 export interface Plan {
   logins: { char: string; login: Login; takes: Take[] }[];
@@ -110,7 +111,12 @@ export function bankPlan(
   const backups = route.lines.flatMap((l) =>
     l.slots
       .filter((s) => !taking.has(s))
-      .map((s) => ({ name: name(l.id), char: s.char, loc: s.loc }))
+      .map((s) => ({
+        name: name(l.id),
+        char: s.char,
+        loc: s.loc,
+        login: s.login,
+      }))
   );
   return {
     logins: planned,
@@ -164,7 +170,8 @@ const sections = (plan: Plan) => [
         {
           heading: "**Backups, if a spot is empty**",
           lines: plan.backups.map(
-            (s) => `• ${shown(s.name)}: ${prettyLoc(s.loc)} on ${s.char}`
+            (s) =>
+              `• ${shown(s.name)}: ${prettyLoc(s.loc)} on ${s.char}, account ${code(s.login.account)}, password ${code(s.login.password)}`
           ),
         },
       ]
