@@ -114,9 +114,11 @@ interface World {
   jewelry: string | null; // the jewelry sheet's price table as CSV
   jewelryStatus: number;
   jewelryAsked: number;
-  posts: { auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
+  posts: { id: string; auth: string | null; body: Post }[]; // what the bot posted to #bank-requests
   jewelryPosts: { auth: string | null; body: Post }[]; // what the bot posted to #jewelry-requests
   postStatus: number;
+  plans: { message: string; plan: string }[]; // the plans kept by bank request posts' messages
+  planSaveDown: Error | null; // keeping a plan fails with this
   officePosts: string[]; // what the bot told the bank office, once Discord took it
   officeStatus: number;
   logs: string[];
@@ -166,18 +168,22 @@ const ROUTES: Route[] = [
         auth: req.headers.get("authorization"),
         body: (await req.json()) as Post,
       });
-      return new Response(null, { status: 200 });
+      return Response.json({ id: `jewelry-${world.jewelryPosts.length}` });
     },
   ],
   [
     "POST",
     /^https:\/\/discord\.com\/api\/v10\/channels\/requests-channel\/messages$/,
     async (req) => {
+      const id = `post-${world.posts.length + 1}`;
       world.posts.push({
+        id,
         auth: req.headers.get("authorization"),
         body: (await req.json()) as Post,
       });
-      return new Response(null, { status: world.postStatus });
+      return new Response(JSON.stringify({ id }), {
+        status: world.postStatus,
+      });
     },
   ],
   [
@@ -369,6 +375,8 @@ export async function reset() {
     posts: [],
     jewelryPosts: [],
     postStatus: 200,
+    plans: [],
+    planSaveDown: null,
     officePosts: [],
     officeStatus: 200,
     logs: [],
@@ -394,6 +402,15 @@ export const findMany = () =>
   world.dbDown
     ? Promise.reject(world.dbDown)
     : Promise.resolve(world.slots.filter((s) => s.itemId > 0));
+// A bank request's plan, kept by its post's message.
+export const savePlan = async ({
+  data,
+}: {
+  data: { message_id: string; plan: string };
+}) => {
+  if (world.planSaveDown) throw world.planSaveDown;
+  world.plans.push({ message: data.message_id, plan: data.plan });
+};
 // Only the crash being tested counts; its backstop timer fires seconds later, into a scenario long gone.
 let exits: number[] = [];
 export const exit = (code?: number) => void exits.push(code ?? 0);
@@ -1176,23 +1193,20 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       expect(embedsShown(post.body, rows)).toEqual(rows);
     }
   );
-  // The button a banker presses for the plan, and the request it carries for the bot to plan.
+  // The plan kept for a bank request's post, which a banker's 👀 sends, and the lines it plans from.
   const FROM: Record<Via, string> = {
     bank: "the bank",
     auction: "DKP auction",
     multiquest: "multiquest",
   };
-  const buttons = (post: Post) =>
-    (post.components ?? []).flatMap((row) => row.components);
   step(
-    /^the post has the "DM me the plan" button for:$/,
+    /^a banker's 👀 on the post plans these lines:$/,
     (rows: Record<string, string>[]) => {
-      const [post] = [...world.posts, ...world.jewelryPosts];
-      const [button, ...more] = buttons(post.body);
-      expect(more).toEqual([]);
-      expect(button?.label).toBe("DM me the plan");
+      const [post] = world.posts;
+      const saved = world.plans.filter((p) => p.message === post?.id);
+      expect(saved).toHaveLength(1);
       expect(
-        readPlanId(button?.custom_id ?? "")?.map((l) => ({
+        readPlanId(saved[0]?.plan ?? "")?.map((l) => ({
           item: ITEMDB[l.id]?.name ?? String(l.id),
           quantity: String(l.qty),
           from: FROM[l.via],
@@ -1200,10 +1214,12 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       ).toEqual(rows);
     }
   );
-  step(/^the post has no button$/, () => {
-    const [post] = [...world.posts, ...world.jewelryPosts];
-    expect(post).toBeDefined();
-    expect(buttons(post.body)).toEqual([]);
+  // A scenario posts one request, so no plan kept at all is none kept for its post.
+  step(/^a banker's 👀 on the post plans nothing$/, () =>
+    expect(world.plans).toEqual([])
+  );
+  step(/^keeping a bank request's plan fails with "(.*)"$/, (msg: string) => {
+    world.planSaveDown = new Error(msg);
   });
   step(/^the bot has posted (\d+) bank requests?$/, (n: string) =>
     expect(world.posts).toHaveLength(+n)

@@ -235,11 +235,11 @@ export class BankApi {
     };
   }
 
-  // The "DM me the plan" button's id for a bank post's lines, as the page sends them: each an item
-  // the item database knows, and a whole quantity. How each line is filled is decided here, from
-  // the bank as it is now, never taken from the page. Null when the lines aren't a request the
-  // button can carry, and the post goes up without one.
-  async planButton(lines: unknown): Promise<string | null> {
+  // The plan for a bank post's lines, as the page sends them: each an item the item database knows,
+  // and a whole quantity. How each line is filled is decided here, from the bank as it is now, never
+  // taken from the page. Null when the lines aren't a request the plan can carry, and the post goes
+  // up without one.
+  async planFor(lines: unknown): Promise<string | null> {
     if (!Array.isArray(lines)) return null;
     const read = lines.flatMap((l: unknown) => {
       const { id, qty } = (l ?? {}) as Record<string, unknown>;
@@ -260,6 +260,13 @@ export class BankApi {
           ? "multiquest"
           : "bank";
     return planId(read.map((l) => ({ ...l, via: via(l.id) })));
+  }
+
+  // Keeps a post's plan by the post's message, for the banker's 👀 reaction to send.
+  async savePlan(messageId: string, plan: string) {
+    await this.prisma.bank_request_plan.create({
+      data: { message_id: messageId, plan },
+    });
   }
 
   // An item as the page gets it: the item database's stats, the banker's price, the spell sheet's

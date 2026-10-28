@@ -7,7 +7,7 @@ import { tabTotal, totalText } from "./tab";
 export interface Embed { description: string; color: number }
 // Where the post goes: the bank requests channel, or the jewelry requests channel for made-to-order
 // jewelry. `lines` are the tab's items and quantities on the post: the site plans a bank post's
-// "DM me the plan" button from them, and a post that goes through takes them off the tab.
+// plan from them, and a post that goes through takes them off the tab.
 export interface RequestMessage { embeds: [Embed]; channel: "bank" | "jewelry"; lines: { id: number; qty: number }[] }
 export const channelName = (channel: RequestMessage["channel"]) => channel === "jewelry" ? "#jewelry-requests" : "#bank-requests";
 

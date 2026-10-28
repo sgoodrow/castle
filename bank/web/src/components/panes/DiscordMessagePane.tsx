@@ -26,7 +26,7 @@ const md = (s: string) => s.split("\n").map((line, i) => (
 ));
 
 // A look at the post before it's sent, as the bot will post it: titled with the member's name,
-// linked to their Discord profile. The post's "DM me the plan" button is for bankers, so it isn't shown.
+// linked to their Discord profile. A banker's 👀 sends the plan, so the post shows nothing for it.
 export function DiscordMessagePane({ msg }: { msg: RequestMessage }) {
   const [e] = msg.embeds;
   return (

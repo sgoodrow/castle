@@ -4,10 +4,21 @@
 // each scenario, and a developer's .env never leaks into a run.
 import path from "path";
 import { describeFeature, library } from "../../testing/gherkin";
-import { exit, findMany, outside, reset, steps, teardown } from "./steps";
+import {
+  exit,
+  findMany,
+  outside,
+  reset,
+  savePlan,
+  steps,
+  teardown,
+} from "./steps";
 
 vi.mock("@prisma/client", () => ({
-  PrismaClient: vi.fn(() => ({ slot: { findMany: () => findMany() } })),
+  PrismaClient: vi.fn(() => ({
+    slot: { findMany: () => findMany() },
+    bank_request_plan: { create: savePlan },
+  })),
 }));
 vi.mock("dotenv", () => {
   const config = vi.fn();

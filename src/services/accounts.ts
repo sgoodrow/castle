@@ -64,7 +64,7 @@ interface Role {
   id: string;
 }
 
-interface Account {
+export interface Account {
   characters: string;
   class: string;
   accountName: string;

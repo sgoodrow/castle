@@ -715,6 +715,138 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       });
     }
   );
+  // A bank post as the site posts it, with its plan kept by the post's message for a 👀 to send.
+  const savedWithPlan = async (
+    name: string,
+    channel: string,
+    table: Record<string, string>[],
+    plan?: string
+  ) => {
+    const { id } = member(name);
+    const customId =
+      plan ??
+      planId(
+        table.map((l) => ({
+          id: itemId(l.item ?? ""),
+          qty: Number(l.quantity),
+          via: via(l.from ?? "the bank"),
+        }))
+      );
+    if (!customId) throw new Error("the request's lines don't fit a plan");
+    const message = post(channel, BOT_ID, {
+      embeds: [
+        {
+          title: `@${name} has placed a bank request`,
+          url: `https://discord.com/users/${id}`,
+          description: "**Total: 800pp**",
+        },
+      ],
+    });
+    await prismaClient.bank_request_plan.create({
+      data: { message_id: message.id, plan: customId },
+    });
+  };
+  step(
+    /^(\w+)'s bank request is saved with a plan for:$/,
+    (name: string, table: Record<string, string>[]) =>
+      savedWithPlan(name, "bank-requests", table)
+  );
+  step(
+    /^(\w+)'s bank request is saved with a plan for in #(\S+):$/,
+    (name: string, channel: string, table: Record<string, string>[]) =>
+      savedWithPlan(name, channel, table)
+  );
+  step(
+    /^(\w+)'s bank request is saved with an unreadable plan$/,
+    (name: string) => savedWithPlan(name, "bank-requests", [], "bank-plan:!!")
+  );
+  step(
+    /^(\w+)'s bank request has an unreadable "DM me the plan" button$/,
+    (name: string) => {
+      const { id } = member(name);
+      post("bank-requests", BOT_ID, {
+        embeds: [
+          {
+            title: `@${name} has placed a bank request`,
+            url: `https://discord.com/users/${id}`,
+            description: "**Total: 800pp**",
+          },
+        ],
+        buttons: [{ label: "DM me the plan", customId: "bank-plan:!!" }],
+      });
+    }
+  );
+  step(/^(\w+)'s bank request has no plan$/, (name: string) => {
+    const { id } = member(name);
+    post("bank-requests", BOT_ID, {
+      embeds: [
+        {
+          title: `@${name} has placed a bank request`,
+          url: `https://discord.com/users/${id}`,
+          description: "**Total: 800pp**",
+        },
+      ],
+    });
+  });
+  // Every message in every channel, bot and member alike, so a reply in any channel shows up.
+  const channelPosts = () =>
+    Object.values(world.channels).reduce(
+      (n, messages) => n + messages.length,
+      0
+    );
+  // A member as discord.js gives a reaction's user: DMs reach them as Discord delivers them.
+  const reactor = (name: string) => {
+    const { id, takesDms } = member(name);
+    return {
+      id,
+      partial: false,
+      toString: () => `<@${id}>`,
+      send: async (text: string) => {
+        if (world.dmsDown) throw new Error("Discord didn't deliver it");
+        if (!takesDms) throw closedDms();
+        world.dms.push({ to: name, text });
+      },
+    };
+  };
+  step(
+    /^(\w+) reacts (👀|👍) to (\w+)'s request(, which Discord sends in part)?(?: in #(\S+))?$/,
+    async (
+      by: string,
+      emoji: string,
+      whose: string,
+      inPart: string | undefined,
+      channel?: string
+    ) => {
+      const { tryBankPlanReaction } =
+        await import("../features/bank-request-info/bank-plan-reaction");
+      const message = requestOf(whose, channel);
+      // The handler reports what it can't do with console.error rather than throwing, so a scenario
+      // must fail on one, or a negative like "no one is sent a DM" would pass with the handler broken.
+      // The one it logs when a DM can't be delivered is the only error a scenario may expect.
+      const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+      try {
+        // Discord sends a reaction in part when its message isn't in its cache; the bot fetches it first.
+        const full = { partial: false, emoji: { name: emoji }, message };
+        const reaction = inPart
+          ? {
+              partial: true,
+              emoji: { name: emoji },
+              message,
+              fetch: async () => full,
+            }
+          : full;
+        const postedBefore = channelPosts();
+        await tryBankPlanReaction(reaction as never, reactor(by) as never);
+        // A 👀 never answers in a channel, whichever channel it is in and whatever it sends the banker.
+        expect(channelPosts()).toBe(postedBefore);
+        expect(errors.mock.calls.map((c) => String(c[0]))).toEqual(
+          world.dmsDown ? [expect.stringContaining("a DM failed")] : []
+        );
+      } finally {
+        errors.mockRestore();
+      }
+    }
+  );
   step(
     /^(\w+) presses "(.+)" on (\w+)'s request$/,
     async (by: string, label: string, whose: string) => {

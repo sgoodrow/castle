@@ -8,6 +8,7 @@ import { tryGatehouseReactionAction } from "../features/gatehouse-tags/reaction"
 import { tryAuctionFinishedReactionAction } from "../features/auctions/auction-finished-reaction";
 import { tryRaiderEnlistedReactionAction } from "../features/raider-enlistment/raider-enlisted-reaction";
 import { tryBankRequestComplete } from "../features/bank-inventory/actions/bank-request-complete-reaction";
+import { tryBankPlanReaction } from "../features/bank-request-info/bank-plan-reaction";
 import { tryInviteRequestFinishedReactionAction } from "../features/invite-list/invite-request-finished-reaction";
 import { tryApproveRaidReportRevisionReactionAction } from "../features/dkp-records/request-revision/approve-raid-report-revision-reaction";
 import { tryRaidReportFinishedReactionAction } from "../features/dkp-records/finish/finish-raid-report-reaction";
@@ -17,6 +18,7 @@ const reactionActions = [
   tryGatehouseReactionAction,
   tryAuctionFinishedReactionAction,
   tryBankRequestComplete,
+  tryBankPlanReaction,
   tryInviteRequestFinishedReactionAction,
   tryRaiderEnlistedReactionAction,
   tryApproveRaidReportRevisionReactionAction,
