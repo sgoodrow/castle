@@ -328,16 +328,73 @@ Feature: Getting the plan for a bank request
     And nothing new is posted in #bank-requests
 
   Scenario: A member who reacts 👀 is sent nothing
+    Given Bob is a Castle member
+    And the bank holds:
+      | character | where          | item  | count |
+      | Mulea     | pack 1, slot 1 | Pearl | 1     |
+    And Alice's bank request is saved with a plan for:
+      | item  | quantity |
+      | Pearl | 1        |
+    When Bob reacts 👀 to Alice's request
+    Then no one is sent a DM
+    And Bob is told nothing
+    And nothing new is posted in #bank-requests
+
+  Scenario: A banker's 👀 outside #bank-requests sends nothing
+    Given the bank holds:
+      | character | where          | item  | count |
+      | Mulea     | pack 1, slot 1 | Pearl | 1     |
+    And Alice's bank request is saved with a plan for in #general:
+      | item  | quantity |
+      | Pearl | 1        |
+    When Dana reacts 👀 to Alice's request in #general
+    Then no one is sent a DM
+    And Dana is told nothing
+
+  Scenario: A bank request whose saved plan can't be read sends nothing
+    Given Alice's bank request is saved with an unreadable plan
+    When Dana reacts 👀 to Alice's request
+    Then no one is sent a DM
+    And Dana is told nothing
+
+  Scenario: A 👀 on a message Discord sends in part still sends the plan
     Given the bank holds:
       | character | where          | item  | count |
       | Mulea     | pack 1, slot 1 | Pearl | 1     |
     And Alice's bank request is saved with a plan for:
       | item  | quantity |
       | Pearl | 1        |
-    When Alice reacts 👀 to Alice's request
-    Then no one is sent a DM
-    And Alice is told nothing
-    And nothing new is posted in #bank-requests
+    When Dana reacts 👀 to Alice's request, which Discord sends in part
+    Then Dana is sent a DM:
+      """
+      **Bank request plan**
+
+      **Log in to Mulea**
+      • Account: `mulea1`
+      • Password: `test-mulea`
+      • Pearl in pack 1, slot 1
+      """
+
+  Scenario: A password with a backtick is shown whole
+    Given the shared accounts sheet has these rows:
+      | row | Characters | Class  | Account | Password    | Officers | Knights | Guards | Bankers | Raiders |
+      | 2   | Mulea      | Wizard | mulea1  | test`mulea  | FALSE    | FALSE   | FALSE  | TRUE    | FALSE   |
+    And the bank holds:
+      | character | where          | item  | count |
+      | Mulea     | pack 1, slot 1 | Pearl | 1     |
+    And Alice's bank request is saved with a plan for:
+      | item  | quantity |
+      | Pearl | 1        |
+    When Dana reacts 👀 to Alice's request
+    Then Dana is sent a DM:
+      """
+      **Bank request plan**
+
+      **Log in to Mulea**
+      • Account: `mulea1`
+      • Password: `` test`mulea ``
+      • Pearl in pack 1, slot 1
+      """
 
   Scenario: A banker whose DMs are closed is sent nothing
     Given Dana doesn't take DMs

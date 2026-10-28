@@ -716,31 +716,49 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     }
   );
   // A bank post as the site posts it, with its plan kept by the post's message for a 👀 to send.
-  step(
-    /^(\w+)'s bank request is saved with a plan for:$/,
-    async (name: string, table: Record<string, string>[]) => {
-      const { id } = member(name);
-      const customId = planId(
+  const savedWithPlan = async (
+    name: string,
+    channel: string,
+    table: Record<string, string>[],
+    plan?: string
+  ) => {
+    const { id } = member(name);
+    const customId =
+      plan ??
+      planId(
         table.map((l) => ({
           id: itemId(l.item ?? ""),
           qty: Number(l.quantity),
           via: via(l.from ?? "the bank"),
         }))
       );
-      if (!customId) throw new Error("the request's lines don't fit a plan");
-      const message = post("bank-requests", BOT_ID, {
-        embeds: [
-          {
-            title: `@${name} has placed a bank request`,
-            url: `https://discord.com/users/${id}`,
-            description: "**Total: 800pp**",
-          },
-        ],
-      });
-      await prismaClient.bank_request_plan.create({
-        data: { message_id: message.id, plan: customId },
-      });
-    }
+    if (!customId) throw new Error("the request's lines don't fit a plan");
+    const message = post(channel, BOT_ID, {
+      embeds: [
+        {
+          title: `@${name} has placed a bank request`,
+          url: `https://discord.com/users/${id}`,
+          description: "**Total: 800pp**",
+        },
+      ],
+    });
+    await prismaClient.bank_request_plan.create({
+      data: { message_id: message.id, plan: customId },
+    });
+  };
+  step(
+    /^(\w+)'s bank request is saved with a plan for:$/,
+    (name: string, table: Record<string, string>[]) =>
+      savedWithPlan(name, "bank-requests", table)
+  );
+  step(
+    /^(\w+)'s bank request is saved with a plan for in #(\S+):$/,
+    (name: string, channel: string, table: Record<string, string>[]) =>
+      savedWithPlan(name, channel, table)
+  );
+  step(
+    /^(\w+)'s bank request is saved with an unreadable plan$/,
+    (name: string) => savedWithPlan(name, "bank-requests", [], "bank-plan:!!")
   );
   step(
     /^(\w+)'s bank request has an unreadable "DM me the plan" button$/,
@@ -785,20 +803,33 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
     };
   };
   step(
-    /^(\w+) reacts (👀|👍) to (\w+)'s request$/,
-    async (by: string, emoji: string, whose: string) => {
+    /^(\w+) reacts (👀|👍) to (\w+)'s request(, which Discord sends in part)?(?: in #(\S+))?$/,
+    async (
+      by: string,
+      emoji: string,
+      whose: string,
+      inPart: string | undefined,
+      channel?: string
+    ) => {
       const { tryBankPlanReaction } =
         await import("../features/bank-request-info/bank-plan-reaction");
-      const message = requestOf(whose);
+      const message = requestOf(whose, channel);
       // The handler reports what it can't do with console.error rather than throwing, so a scenario
       // must fail on one, or a negative like "no one is sent a DM" would pass with the handler broken.
       // The one it logs when a DM can't be delivered is the only error a scenario may expect.
       const errors = vi.spyOn(console, "error").mockImplementation(() => {});
       try {
-        await tryBankPlanReaction(
-          { partial: false, emoji: { name: emoji }, message } as never,
-          reactor(by) as never
-        );
+        // Discord sends a reaction in part when its message isn't in its cache; the bot fetches it first.
+        const full = { partial: false, emoji: { name: emoji }, message };
+        const reaction = inPart
+          ? {
+              partial: true,
+              emoji: { name: emoji },
+              message,
+              fetch: async () => full,
+            }
+          : full;
+        await tryBankPlanReaction(reaction as never, reactor(by) as never);
         expect(errors.mock.calls.map((c) => String(c[0]))).toEqual(
           world.dmsDown ? [expect.stringContaining("a DM failed")] : []
         );

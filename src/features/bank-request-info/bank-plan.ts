@@ -74,8 +74,8 @@ export function bankPlan(
   const route = loginRoute(lines);
   // What's taken from each character, in the order the route reaches the lines.
   const taken: (Take & { char: string; login: Login })[] = [];
-  // The spots the plan takes from. A spot it doesn't take from is a backup, and so is no spot it
-  // already takes from, since a banker who finds that one empty finds the rest of it empty too.
+  // The spots the plan takes from, even in part. A spot it takes from is not a backup: a banker who
+  // finds that spot empty finds the rest of it empty too.
   const taking = new Set<Holding>();
   const short: Plan["short"] = [];
   for (const l of route.lines) {
