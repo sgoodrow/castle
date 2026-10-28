@@ -2,9 +2,9 @@ Feature: Getting the plan for a bank request
   A banker who reacts 👀 to a bank request is sent a DM with the plan: which characters to log in to, in
   order, the account and password for each, and what to take from where on each, from the bank as it is
   right then. Only characters whose account the shared accounts sheet lets bankers use are planned from,
-  so no spot is named that a banker can't log in to. Any other spot holding a requested item, on a
-  character a banker can log in to, is listed as a backup. Anyone else's 👀 does nothing, and no 👀
-  gets a reply in any channel.
+  so no spot is named that a banker can't log in to. Any other spot, on a character a banker can log
+  in to, holding an item the request takes from the bank is listed as a backup. Anyone else's 👀 does
+  nothing, and no 👀 gets a reply in any channel.
 
   Background:
     Given Alice is a Castle member
