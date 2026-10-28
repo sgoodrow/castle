@@ -715,6 +715,82 @@ export const steps = ({ defineStep: step }: { defineStep: DefineStep }) => {
       });
     }
   );
+  // A bank post as the site posts it, with its plan kept by the post's message for a 👀 to send.
+  step(
+    /^(\w+)'s bank request is saved with a plan for:$/,
+    async (name: string, table: Record<string, string>[]) => {
+      const { id } = member(name);
+      const customId = planId(
+        table.map((l) => ({
+          id: itemId(l.item ?? ""),
+          qty: Number(l.quantity),
+          via: via(l.from ?? "the bank"),
+        }))
+      );
+      if (!customId) throw new Error("the request's lines don't fit a plan");
+      const message = post("bank-requests", BOT_ID, {
+        embeds: [
+          {
+            title: `@${name} has placed a bank request`,
+            url: `https://discord.com/users/${id}`,
+            description: "**Total: 800pp**",
+          },
+        ],
+      });
+      await prismaClient.bank_request_plan.create({
+        data: { message_id: message.id, plan: customId },
+      });
+    }
+  );
+  step(/^(\w+)'s bank request has no plan$/, (name: string) => {
+    const { id } = member(name);
+    post("bank-requests", BOT_ID, {
+      embeds: [
+        {
+          title: `@${name} has placed a bank request`,
+          url: `https://discord.com/users/${id}`,
+          description: "**Total: 800pp**",
+        },
+      ],
+    });
+  });
+  // A member as discord.js gives a reaction's user: DMs reach them as Discord delivers them.
+  const reactor = (name: string) => {
+    const { id, takesDms } = member(name);
+    return {
+      id,
+      partial: false,
+      toString: () => `<@${id}>`,
+      send: async (text: string) => {
+        if (world.dmsDown) throw new Error("Discord didn't deliver it");
+        if (!takesDms) throw closedDms();
+        world.dms.push({ to: name, text });
+      },
+    };
+  };
+  step(
+    /^(\w+) reacts 👀 to (\w+)'s request$/,
+    async (by: string, whose: string) => {
+      const { tryBankPlanReaction } =
+        await import("../features/bank-request-info/bank-plan-reaction");
+      const message = requestOf(whose);
+      // The handler reports what it can't do with console.error rather than throwing, so a scenario
+      // must fail on one, or a negative like "no one is sent a DM" would pass with the handler broken.
+      const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+      try {
+        await tryBankPlanReaction(
+          { partial: false, emoji: { name: "👀" }, message } as never,
+          reactor(by) as never
+        );
+        expect(errors.mock.calls).toEqual([]);
+      } finally {
+        errors.mockRestore();
+      }
+    }
+  );
+  step(/^(\w+) is told nothing$/, (name: string) =>
+    expect(world.told.filter((t) => t.to === name)).toEqual([])
+  );
   step(
     /^(\w+) presses "(.+)" on (\w+)'s request$/,
     async (by: string, label: string, whose: string) => {

@@ -1,6 +1,6 @@
-// A bank post's "DM me the plan" button carries the request's lines in its id, so the bot can plan
-// it from the live bank when a banker presses it. The site writes the id from the lines it checked,
-// never from what the page sent, and a button id can't be changed once it's posted.
+// A bank post's plan is a code of the request's lines, so the bot can plan it from the live bank when
+// a banker reacts 👀. The site writes the code from the lines it checked, never from what the page
+// sent, and keeps it by the post's message. Posts from before that carry it in their button's id.
 
 // How a line is filled: from the bank, by a DKP auction a banker starts, or by a multiquest the
 // member sets up with the item's holder. Only the bank's lines need a login.
@@ -15,7 +15,6 @@ export interface PlanLine {
 const MARK: Record<Via, string> = { bank: "", auction: "!", multiquest: "~" };
 
 export const PLAN_BUTTON = "bank-plan";
-export const PLAN_LABEL = "DM me the plan";
 
 // A request holds up to nine different items (the bank page's tab limit).
 export const MAX_PLAN_LINES = 9;

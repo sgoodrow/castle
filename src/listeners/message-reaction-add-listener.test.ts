@@ -1,5 +1,5 @@
 const actions = vi.hoisted(() =>
-  Array.from({ length: 8 }, () => vi.fn())
+  Array.from({ length: 9 }, () => vi.fn())
 );
 
 vi.mock("../features/gatehouse-tags/reaction", () => ({ tryGatehouseReactionAction: actions[0] }));
@@ -10,6 +10,7 @@ vi.mock("../features/raider-enlistment/raider-enlisted-reaction", () => ({ tryRa
 vi.mock("../features/dkp-records/request-revision/approve-raid-report-revision-reaction", () => ({ tryApproveRaidReportRevisionReactionAction: actions[5] }));
 vi.mock("../features/dkp-records/request-bonus/approve-raid-bonus-request-reaction", () => ({ tryApproveRaidBonusRequestReactionAction: actions[6] }));
 vi.mock("../features/dkp-records/finish/finish-raid-report-reaction", () => ({ tryRaidReportFinishedReactionAction: actions[7] }));
+vi.mock("../features/bank-request-info/bank-plan-reaction", () => ({ tryBankPlanReaction: actions[8] }));
 
 import { messageReactionAddListener } from "./message-reaction-add-listener";
 

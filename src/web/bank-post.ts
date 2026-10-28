@@ -1,11 +1,10 @@
 // Members post their tab to #bank-requests from the bank page. The page builds the post, since it
-// has the pricing rules; the server checks it fits Discord, titles it with the member's name, adds
-// the "DM me the plan" button to a bank post, and posts it as the bot with every ping turned off.
+// has the pricing rules; the server checks it fits Discord, titles it with the member's name, and
+// posts it as the bot with every ping turned off.
 // Prices are the member's claim, as they are with /bank request, and a banker checks them before
 // handing anything over.
 import { log } from "../shared/logger";
 import { requestTitle, requesterUrl } from "../shared/bank-request-author";
-import { PLAN_LABEL } from "../shared/bank-plan-id";
 
 const DISCORD = "https://discord.com/api/v10";
 
@@ -90,14 +89,13 @@ export async function postToChannel(
   if (!res.ok) throw new Error(`Discord answered ${res.status}`);
 }
 
-// Posts it as the bot. False if Discord didn't take it. The first embed is titled with the member's
-// name, linked to their Discord profile. With a plan, the post has the "DM me the plan" button.
+// Posts it as the bot, and gives back the message's id, or null if Discord didn't take it. The first
+// embed is titled with the member's name, linked to their Discord profile.
 export async function postRequest(
   p: Poster,
   me: { id: string; name: string },
-  embeds: PostEmbed[],
-  plan: string | null
-) {
+  embeds: PostEmbed[]
+): Promise<string | null> {
   const res = await fetch(`${DISCORD}/channels/${p.channelId}/messages`, {
     method: "POST",
     headers: {
@@ -121,26 +119,12 @@ export async function postRequest(
             : {}),
         };
       }),
-      ...(plan
-        ? {
-            components: [
-              {
-                type: 1, // a row
-                components: [
-                  {
-                    type: 2, // a button
-                    style: 2, // grey
-                    label: PLAN_LABEL,
-                    custom_id: plan,
-                  },
-                ],
-              },
-            ],
-          }
-        : {}),
     }),
   });
-  if (!res.ok)
+  if (!res.ok) {
     log(`bank web: Discord refused ${me.name}'s bank request ${res.status}`);
-  return res.ok;
+    return null;
+  }
+  const { id } = (await res.json()) as { id: string };
+  return id;
 }

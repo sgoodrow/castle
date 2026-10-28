@@ -81,6 +81,13 @@ model bot {
   faction       String   @default("")
 }
 
+// A bank post's plan, by the post's message id: the lines a banker's 👀 reaction plans from. The
+// plan is the button id a post used to carry, so the plan reads the same way.
+model bank_request_plan {
+  message_id String @id
+  plan       String
+}
+
 model batphone {
   key      String @unique
   location String
