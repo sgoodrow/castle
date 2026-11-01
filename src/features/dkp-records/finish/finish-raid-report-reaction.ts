@@ -13,7 +13,13 @@ import {
   ReactionAction,
   reactionActionExecutor,
 } from "../../../shared/action/reaction-action";
-import { getRaidReport, isRaidInstructionsMessage } from "../raid-report";
+import {
+  getRaidReport,
+  isRaidInstructionsMessage,
+  loadRaidReport,
+  withRaidReportLock,
+} from "../raid-report";
+import { threadUrl } from "../uploaded-raid";
 import { getMember } from "../../..";
 
 export const tryRaidReportFinishedReactionAction = (
@@ -73,8 +79,18 @@ class RaidReportFinishedReactionAction extends ReactionAction {
 
     // create remaining raids
     const { created, failed } = await report.uploadRemainingRaidTicks(
-      `https://discord.com/channels/${this.message.guildId}/${this.message.channelId}`
+      threadUrl(this.message.guildId ?? "", this.message.channelId)
     );
+
+    // remember the raid, so edits approved after this update it too
+    const raidId = report.uploadedRaidId;
+    if (raidId !== undefined) {
+      await withRaidReportLock(this.message.channelId, async () => {
+        const saved = await loadRaidReport(this.message.channelId);
+        saved.markUploaded(raidId);
+        await saved.save(this.message.channelId);
+      });
+    }
 
     // provide receipt
     await this.message.reply({

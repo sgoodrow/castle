@@ -5,10 +5,19 @@ const redis = vi.hoisted(() => ({
   publish: vi.fn(),
 }));
 
+const odkp = vi.hoisted(() => ({
+  getCharacter: vi.fn(async () => undefined),
+  getCharacters: vi.fn(),
+  getRaid: vi.fn(),
+  getRaids: vi.fn(),
+  updateRaid: vi.fn(),
+}));
+
 vi.mock("../../../config", () => ({
   dkpDeputyRoleId: "deputy",
   officerRoleId: "officer",
   dkpRecordsChannelId: "dkp-records",
+  openDkpSiteClientId: "castle",
 }));
 vi.mock("../../../redis/client", () => ({
   redisChannels: { raidReportChange: (id: string) => `raid.${id}` },
@@ -16,7 +25,7 @@ vi.mock("../../../redis/client", () => ({
 }));
 vi.mock("../../../services/openDkpService", () => ({
   odkpCharacterCache: new Map(),
-  openDkpService: { getCharacter: vi.fn(async () => undefined) },
+  openDkpService: odkp,
 }));
 
 import { CreditData } from "../create/credit-parser";
@@ -44,13 +53,22 @@ const saved = () => new RaidReport(JSON.parse(store.get(THREAD) ?? ""));
 const savedTicks = (): RaidTickData[] =>
   JSON.parse(store.get(THREAD) ?? "").ticks;
 
-// a !command in the raid thread that a deputy has just ✅'d, with no `channel`: approving
-// must not touch Discord beyond the bot adding its own ✅ to the same reaction
-const request = (id: string) => {
+// a !command in the raid thread that a deputy has just ✅'d: approving must not touch Discord
+// beyond the bot adding its own ✅ to the same reaction, and reopening an archived thread
+const request = (id: string, thread: { name?: string; archived?: boolean } = {}) => {
   const reactions = [{ emoji: { name: "✅" }, me: false }];
   return {
     id,
     channelId: THREAD,
+    channel: {
+      id: THREAD,
+      guildId: "guild",
+      name: "❕ 10-20 Quake",
+      archived: false,
+      ...thread,
+      isThread: () => true,
+      setArchived: vi.fn(),
+    },
     reactions: { cache: reactions },
     react: vi.fn(async (name: string) => {
       const reaction = reactions.find((r) => r.emoji.name === name);
@@ -73,6 +91,8 @@ const approve = (content: string, message = request(content), actor = deputy) =>
 
 beforeEach(() => {
   store.clear();
+  Object.values(odkp).forEach((f) => f.mockReset());
+  odkp.getCharacter.mockImplementation(async () => undefined);
   redis.get.mockReset().mockImplementation(async (k: string) => store.get(k) ?? null);
   redis.set.mockReset().mockImplementation(async (k: string, v: string) => {
     store.set(k, v);
@@ -127,6 +147,13 @@ describe("approving a raid report request", () => {
       approve("!adj Someone 5 kill", message, deputy),
     ]);
     expect(savedTicks()[0].adjustments).toHaveLength(1);
+  });
+
+  it("rejects a request missing its player", async () => {
+    await save([tickData(1, ["Someone"])]);
+    await expect(approve("!add", request("1"))).rejects.toThrow(
+      'Invalid "AddPlayerRevision" format, missing player name'
+    );
   });
 
   it("reports an edit that can't apply with ⚠️ and saves nothing", async () => {
@@ -193,5 +220,150 @@ describe("reading a request's content", () => {
       inThread({ partial: true, fetch })
     );
     expect(content).toBe("!add Someone");
+  });
+});
+
+describe("approving after the raid is uploaded", () => {
+  const RAID = 42;
+  const raid = (ticks: string[][]) => ({
+    RaidId: RAID,
+    ClientId: "castle",
+    Version: 3,
+    Attendance: 1,
+    Items: [{ ItemName: "Cloak of Flames" }],
+    Name: `Quake 1, Quake 2 https://discord.com/channels/guild/${THREAD}`,
+    Pool: { Name: "SoV" },
+    Timestamp: "2026-10-20T12:00:00.000Z",
+    Ticks: ticks.map((names, i) => ({
+      Description: `Quake ${i + 1}`,
+      Value: 3,
+      Characters: names.map((Name) => ({ Name })),
+    })),
+  });
+  const characters = (...names: string[]) =>
+    odkp.getCharacters.mockResolvedValue(names.map((Name) => ({ Name })));
+  const sentTicks = () =>
+    odkp.updateRaid.mock.calls[0][1].Ticks.map((t: any) =>
+      t.Characters.map((c: any) => c.Name)
+    );
+
+  const uploaded = async (ticks: RaidTickData[]) => {
+    const report = new RaidReport({ filename: "raid", ticks });
+    report.markUploaded(RAID);
+    await report.save(THREAD);
+  };
+
+  it("updates the OpenDKP raid's attendance to match", async () => {
+    await uploaded([tickData(1, ["Pumped", "Someone"]), tickData(2, ["Pumped"])]);
+    characters("Pumped", "Someone", "Iceburgh");
+    // an admin already added Latecomer on the site
+    odkp.getRaid.mockResolvedValue(raid([["Pumped", "Someone", "Latecomer"], ["Pumped"]]));
+    const message = request("1");
+
+    await approve("!rep Pumped with Iceburgh 1", message);
+
+    expect(odkp.getRaid).toHaveBeenCalledWith(RAID);
+    expect(odkp.updateRaid).toHaveBeenCalledWith(
+      `${RAID}`,
+      expect.objectContaining({ RaidId: `${RAID}`, Version: 3, Items: [{ ItemName: "Cloak of Flames" }] })
+    );
+    expect(sentTicks()).toEqual([["Someone", "Latecomer", "Iceburgh"], ["Pumped"]]);
+    expect(message.react).toHaveBeenCalledWith("✅");
+  });
+
+  it("reopens the archived thread to react", async () => {
+    await uploaded([tickData(1, ["Someone"])]);
+    characters("Someone", "Iceburgh");
+    odkp.getRaid.mockResolvedValue(raid([["Someone"]]));
+    const message = request("1", { name: "✅ 10-20 Quake", archived: true });
+
+    await approve("!add Iceburgh 1", message);
+
+    expect(message.channel.setArchived).toHaveBeenCalledWith(false);
+    expect(sentTicks()).toEqual([["Someone", "Iceburgh"]]);
+    expect(message.react).toHaveBeenCalledWith("✅");
+  });
+
+  it("says who isn't an OpenDKP character, and leaves them off the raid", async () => {
+    await uploaded([tickData(1, ["Someone"])]);
+    characters("Someone");
+    const message = request("1");
+
+    await approve("!add Newguy 1", message);
+
+    expect(savedTicks()[0].attendees).toEqual(["Newguy", "Someone"]);
+    expect(odkp.updateRaid).not.toHaveBeenCalled();
+    expect(message.react).toHaveBeenCalledWith("✅");
+    expect(message.reply).toHaveBeenCalledWith(
+      "⚠️ Newguy isn't an OpenDKP character, so the uploaded raid leaves them off."
+    );
+  });
+
+  it("says so when OpenDKP can't be updated, keeping the report's edit", async () => {
+    await uploaded([tickData(1, ["Someone"])]);
+    characters("Someone", "Iceburgh");
+    odkp.getRaid.mockRejectedValue(new Error("Request failed with status code 500"));
+    const message = request("1");
+
+    await approve("!add Iceburgh 1", message);
+
+    expect(savedTicks()[0].attendees).toEqual(["Iceburgh", "Someone"]);
+    expect(message.react).toHaveBeenCalledWith("⚠️");
+    expect(message.react).not.toHaveBeenCalledWith("✅");
+    expect(message.reply.mock.calls[0][0]).toContain("couldn't be, so please change it on OpenDKP");
+  });
+
+  it("finds a thread uploaded before reports kept their raid, by its link", async () => {
+    await save([tickData(1, ["Someone"])]);
+    characters("Someone", "Iceburgh");
+    odkp.getRaids.mockResolvedValue([
+      { RaidId: 7, Name: "Other https://discord.com/channels/guild/other" },
+      raid([]),
+    ]);
+    odkp.getRaid.mockResolvedValue(raid([["Someone"]]));
+
+    await approve("!add Iceburgh 1", request("1", { name: "✅ 10-20 Quake" }));
+
+    expect(odkp.getRaid).toHaveBeenCalledWith(RAID);
+    expect(sentTicks()).toEqual([["Someone", "Iceburgh"]]);
+    expect(saved().uploadedRaidId).toBe(RAID);
+  });
+
+  it("names every player who isn't an OpenDKP character", async () => {
+    await uploaded([tickData(1, ["Pumped"])]);
+    characters();
+    const message = request("1");
+
+    await approve("!rep Pumped with Iceburgh 1", message);
+
+    expect(message.reply).toHaveBeenCalledWith(
+      "⚠️ Iceburgh, Pumped aren't OpenDKP characters, so the uploaded raid leaves them off."
+    );
+  });
+
+  it("says so when a thread uploaded before reports kept their raid has no raid to find", async () => {
+    await save([tickData(1, ["Someone"])]);
+    odkp.getRaids.mockResolvedValue([]);
+    const message = request("1", { name: "✅ 10-20 Quake" });
+
+    await approve("!add Iceburgh 1", message);
+
+    expect(message.react).toHaveBeenCalledWith("⚠️");
+    expect(message.reply.mock.calls[0][0]).toContain(
+      "Could not find the OpenDKP raid this thread was uploaded as"
+    );
+  });
+
+  it("leaves OpenDKP alone before the raid is uploaded", async () => {
+    await save([tickData(1, ["Someone"])]);
+    await approve("!add Iceburgh 1", request("1"));
+    expect(odkp.getCharacters).not.toHaveBeenCalled();
+    expect(odkp.getRaids).not.toHaveBeenCalled();
+  });
+
+  it("leaves the uploaded raid alone for an adjustment, which isn't attendance", async () => {
+    await uploaded([tickData(1, ["Someone"])]);
+    await approve("!adj Someone 5 kill", request("1"));
+    expect(odkp.getRaid).not.toHaveBeenCalled();
   });
 });

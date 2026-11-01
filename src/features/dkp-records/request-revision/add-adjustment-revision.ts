@@ -9,6 +9,11 @@ export class AddAdjustmentRevision extends RaidReportRevision<AdjustmentData> {
     raid.addAdjustment(adjustment);
   }
 
+  // an adjustment isn't attendance; it's added to OpenDKP on its own when the raid is uploaded
+  protected attendees() {
+    return [];
+  }
+
   protected async validateArgs() {
     const [playerRaw, valueString, ...reasonWords] = this.args;
     if (!playerRaw) {

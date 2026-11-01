@@ -19,6 +19,10 @@ export class ReplacePlayerRevision extends RaidReportRevision<ReplaceArgs> {
     raid.replacePlayer(replacer, replaced, tickNumbers);
   }
 
+  protected attendees({ replacer, replaced }: ReplaceArgs) {
+    return [replacer, replaced];
+  }
+
   protected async validateArgs() {
     const [replacedRaw, verb, replacerRaw, ...ticks] = this.args;
     if (!replacerRaw) {

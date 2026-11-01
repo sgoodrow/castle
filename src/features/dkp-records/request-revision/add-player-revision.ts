@@ -8,6 +8,10 @@ export class AddPlayerRevision extends RaidReportRevision<PlayerArgs> {
     raid.addPlayer(player, tickNumbers);
   }
 
+  protected attendees({ player }: PlayerArgs) {
+    return [player];
+  }
+
   protected async validateArgs() {
     const [playerRaw, ...ticks] = this.args;
     if (!playerRaw) {
