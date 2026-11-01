@@ -149,6 +149,13 @@ describe("approving a raid report request", () => {
     expect(savedTicks()[0].adjustments).toHaveLength(1);
   });
 
+  it("rejects a request missing its player", async () => {
+    await save([tickData(1, ["Someone"])]);
+    await expect(approve("!add", request("1"))).rejects.toThrow(
+      'Invalid "AddPlayerRevision" format, missing player name'
+    );
+  });
+
   it("reports an edit that can't apply with ⚠️ and saves nothing", async () => {
     await save([tickData(1, ["Someone"])]);
     const message = request("1");
@@ -320,6 +327,31 @@ describe("approving after the raid is uploaded", () => {
     expect(odkp.getRaid).toHaveBeenCalledWith(RAID);
     expect(sentTicks()).toEqual([["Someone", "Iceburgh"]]);
     expect(saved().uploadedRaidId).toBe(RAID);
+  });
+
+  it("names every player who isn't an OpenDKP character", async () => {
+    await uploaded([tickData(1, ["Pumped"])]);
+    characters();
+    const message = request("1");
+
+    await approve("!rep Pumped with Iceburgh 1", message);
+
+    expect(message.reply).toHaveBeenCalledWith(
+      "⚠️ Iceburgh, Pumped aren't OpenDKP characters, so the uploaded raid leaves them off."
+    );
+  });
+
+  it("says so when a thread uploaded before reports kept their raid has no raid to find", async () => {
+    await save([tickData(1, ["Someone"])]);
+    odkp.getRaids.mockResolvedValue([]);
+    const message = request("1", { name: "✅ 10-20 Quake" });
+
+    await approve("!add Iceburgh 1", message);
+
+    expect(message.react).toHaveBeenCalledWith("⚠️");
+    expect(message.reply.mock.calls[0][0]).toContain(
+      "Could not find the OpenDKP raid this thread was uploaded as"
+    );
   });
 
   it("leaves OpenDKP alone before the raid is uploaded", async () => {
