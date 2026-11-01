@@ -8,6 +8,10 @@ export class RemovePlayerRevision extends RaidReportRevision<PlayerArgs> {
     raid.removePlayer(player, tickNumbers);
   }
 
+  protected attendees({ player }: PlayerArgs) {
+    return [player];
+  }
+
   protected async validateArgs() {
     const [playerRaw, ...ticks] = this.args;
     if (!playerRaw) {

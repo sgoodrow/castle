@@ -38,6 +38,8 @@ export interface LootData {
 interface RaidData {
   filename: string;
   ticks: RaidTickData[];
+  // the OpenDKP raid the report was uploaded as
+  raidId?: number;
 }
 
 const RAID_REPORT_TITLE = "Raid Report";
@@ -207,10 +209,12 @@ export class RaidReport {
   private readonly firstColumnLength: number;
   private readonly filename: string;
   private readonly ticks: RaidTick[];
+  private raidId?: number;
 
   public constructor(data: RaidData) {
     this.filename = data.filename;
     this.ticks = data.ticks.map((t) => new RaidTick(t));
+    this.raidId = data.raidId;
 
     this.firstColumnLength =
       max(
@@ -297,7 +301,23 @@ export class RaidReport {
     return {
       filename: this.filename,
       ticks: this.ticks.map((t) => t.data),
+      raidId: this.raidId,
     };
+  }
+
+  /** The OpenDKP raid the report was uploaded as, if it has been. */
+  public get uploadedRaidId(): number | undefined {
+    return this.raidId;
+  }
+
+  public markUploaded(raidId: number) {
+    this.ticks.forEach((t) => (t.data.finished = true));
+    this.raidId = raidId;
+  }
+
+  /** Whether each tick, in order, has the player. */
+  public attendanceOf(name: string): boolean[] {
+    return this.ticks.map((t) => t.hasPlayer(name));
   }
 
   public async save(threadId: string) {
@@ -444,6 +464,7 @@ ${this.attendance}`.split("\n");
         invalidNames: [],
       });
       this.ticks.forEach((t) => (t.data.finished = true));
+      this.raidId = response.RaidId;
       failed.push(...errors);
     } catch (err: unknown) {
       failed.push((err as Error).toString());
