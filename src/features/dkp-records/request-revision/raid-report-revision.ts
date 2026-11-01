@@ -8,6 +8,7 @@ import {
 } from "../raid-report";
 import {
   describeChanges,
+  findReceiptRaidId,
   findUploadedRaidId,
   reportOfRaid,
   threadUrl,
@@ -224,7 +225,10 @@ export abstract class RaidReportRevision<Args> {
     return raidId;
   }
 
-  /** An uploaded thread is named with a ✅, and its raid's name ends with the thread's link. */
+  /**
+   * An uploaded thread is named with a ✅. Its raid is the one the bot's upload receipt in the
+   * thread links to, or else the one whose name ends with the thread's link.
+   */
   private async findUploadedRaid(
     message: PartialMessage | Message
   ): Promise<number | undefined> {
@@ -232,9 +236,9 @@ export abstract class RaidReportRevision<Args> {
     if (!channel.isThread() || !channel.name.startsWith("✅")) {
       return undefined;
     }
-    const raidId = await findUploadedRaidId(
-      threadUrl(channel.guildId, channel.id)
-    );
+    const raidId =
+      (await findReceiptRaidId(channel, message.client.user.id)) ??
+      (await findUploadedRaidId(threadUrl(channel.guildId, channel.id)));
     if (raidId === undefined) {
       throw new Error("Could not find the OpenDKP raid this thread was uploaded as");
     }

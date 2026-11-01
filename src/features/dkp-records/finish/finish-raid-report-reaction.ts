@@ -19,7 +19,7 @@ import {
   loadRaidReport,
   withRaidReportLock,
 } from "../raid-report";
-import { threadUrl } from "../uploaded-raid";
+import { threadUrl, UPLOAD_RECEIPT } from "../uploaded-raid";
 import { getMember } from "../../..";
 
 export const tryRaidReportFinishedReactionAction = (
@@ -94,7 +94,7 @@ class RaidReportFinishedReactionAction extends ReactionAction {
 
     // provide receipt
     await this.message.reply({
-      content: `Raids uploaded by ${reactor}`,
+      content: `${UPLOAD_RECEIPT} ${reactor}`,
       embeds: report.getReceiptEmbeds(created, failed),
     });
 

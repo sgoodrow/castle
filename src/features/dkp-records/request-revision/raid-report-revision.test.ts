@@ -29,6 +29,7 @@ vi.mock("../../../services/openDkpService", () => ({
   openDkpService: odkp,
 }));
 
+import { Collection } from "discord.js";
 import { CreditData } from "../create/credit-parser";
 import { RaidReport } from "../raid-report";
 import { RaidTick, RaidTickData } from "../raid-tick";
@@ -56,7 +57,20 @@ const savedTicks = (): RaidTickData[] =>
 
 // a !command in the raid thread that a deputy has just ✅'d: approving must not touch Discord
 // beyond the bot adding its own ✅ to the same reaction, and reopening an archived thread
-const request = (id: string, thread: { name?: string; archived?: boolean } = {}) => {
+// the thread's messages, oldest first
+interface Posted {
+  id: string;
+  author: { id: string };
+  content: string;
+  embeds: { url?: string }[];
+}
+
+const BOT = "bot";
+
+const request = (
+  id: string,
+  thread: { name?: string; archived?: boolean; messages?: Posted[] } = {}
+) => {
   const reactions = [{ emoji: { name: "✅" }, me: false }];
   return {
     id,
@@ -69,7 +83,15 @@ const request = (id: string, thread: { name?: string; archived?: boolean } = {})
       ...thread,
       isThread: () => true,
       setArchived: vi.fn(),
+      // newest first, as Discord gives them
+      messages: {
+        fetch: async () =>
+          new Collection(
+            [...(thread.messages ?? [])].reverse().map((m) => [m.id, m] as const)
+          ),
+      },
     },
+    client: { user: { id: BOT } },
     reactions: { cache: reactions },
     react: vi.fn(async (name: string) => {
       const reaction = reactions.find((r) => r.emoji.name === name);
@@ -401,6 +423,46 @@ describe("approving after the raid is uploaded", () => {
         `Updated the [OpenDKP raid](<https://castle.opendkp.com/#/raids/${RAID}>): added Iceburgh to tick 2.\nThis thread's raid report has expired, so it isn't redrawn.`
       );
       expect(store.has(THREAD)).toBe(false);
+    });
+
+    it("uses the raid the bot's upload receipt in the thread links to", async () => {
+      characters("Someone", "Iceburgh");
+      odkp.getRaid.mockResolvedValue(raid([["Someone"]]));
+      const message = request("1", {
+        name: "✅ 10-19 Dain",
+        messages: [
+          { id: "10", author: { id: BOT }, content: "Raids uploaded by <@9>", embeds: [{ url: "http://castle.opendkp.com/#/raids/103789" }] },
+          { id: "11", author: { id: "9" }, content: "!add Iceburgh 1", embeds: [] },
+        ],
+      });
+
+      await approve("!add Iceburgh 1", message);
+
+      expect(odkp.getRaids).not.toHaveBeenCalled();
+      expect(odkp.getRaid).toHaveBeenCalledWith(103789);
+      expect(odkp.updateRaid.mock.calls[0][0]).toBe("103789");
+      expect(message.react).toHaveBeenCalledWith("✅");
+    });
+
+    it("trusts only the bot's own receipt, and its latest", async () => {
+      characters("Someone", "Iceburgh");
+      odkp.getRaid.mockResolvedValue(raid([["Someone"]]));
+      const receipt = (id: string, author: string, raidId: number) => ({
+        id,
+        author: { id: author },
+        content: "Raids uploaded by <@9>",
+        embeds: [{ url: `http://castle.opendkp.com/#/raids/${raidId}` }],
+      });
+
+      await approve(
+        "!add Iceburgh 1",
+        request("1", {
+          name: "✅ 10-19 Dain",
+          messages: [receipt("10", BOT, 1), receipt("11", BOT, 2), receipt("12", "9", 3)],
+        })
+      );
+
+      expect(odkp.getRaid).toHaveBeenCalledWith(2);
     });
 
     it("replaces a bot only on the ticks it's on", async () => {
