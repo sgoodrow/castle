@@ -1,9 +1,15 @@
 import { GuildMember, Message, PartialMessage } from "discord.js";
 import { dkpDeputyRoleId, officerRoleId } from "../../../config";
-import { loadRaidReport, RaidReport, withRaidReportLock } from "../raid-report";
+import {
+  findRaidReport,
+  loadRaidReport,
+  RaidReport,
+  withRaidReportLock,
+} from "../raid-report";
 import {
   describeChanges,
   findUploadedRaidId,
+  reportOfRaid,
   threadUrl,
   updateUploadedRaid,
 } from "../uploaded-raid";
@@ -72,7 +78,10 @@ export abstract class RaidReportRevision<Args> {
   private async apply(message: PartialMessage | Message, args: Args) {
     // get, edit and save the raid report without interleaving other edits
     const edited = await withRaidReportLock(message.channelId, async () => {
-      const report = await loadRaidReport(message.channelId);
+      const report = await findRaidReport(message.channelId);
+      if (!report) {
+        return undefined;
+      }
       try {
         this.execute(report, args);
       } catch (err) {
@@ -86,6 +95,10 @@ export abstract class RaidReportRevision<Args> {
     const channel = message.channel;
     if (channel.isThread() && channel.archived) {
       await channel.setArchived(false);
+    }
+
+    if (edited === undefined) {
+      return await this.applyWithoutReport(message, args);
     }
 
     if (edited instanceof Error) {
@@ -115,6 +128,44 @@ export abstract class RaidReportRevision<Args> {
     }
   }
 
+  /**
+   * The thread's report has expired. If the thread was uploaded, the edit goes straight to its
+   * OpenDKP raid, applied to the raid's ticks as they are there, and the reply says what changed,
+   * since there's no report to redraw.
+   */
+  private async applyWithoutReport(
+    message: PartialMessage | Message,
+    args: Args
+  ) {
+    const raidId = await this.findUploadedRaid(message);
+    if (raidId === undefined) {
+      throw new Error("Could not find raid report in database.");
+    }
+    const names = this.attendees(args);
+    let uploaded: string;
+    try {
+      if (names.length === 0) {
+        throw new Error(
+          "This thread's raid report has expired, so please make this change on OpenDKP"
+        );
+      }
+      const result = await updateUploadedRaid(raidId, names, (raid) => {
+        const report = reportOfRaid(raid);
+        this.execute(report, args);
+        return report;
+      });
+      uploaded = this.describeUploaded(raidId, result);
+    } catch (err) {
+      await message.react("⚠️");
+      await message.reply(`⚠️ ${(err as Error).message ?? err}`);
+      return false;
+    }
+    await message.react("✅");
+    await message.reply(
+      `${uploaded}\nThis thread's raid report has expired, so it isn't redrawn.`
+    );
+  }
+
   /** Updates the OpenDKP raid if the report was uploaded. Returns what to tell the deputies. */
   private async updateUploadedRaid(
     message: PartialMessage | Message,
@@ -130,11 +181,16 @@ export abstract class RaidReportRevision<Args> {
     if (raidId === undefined) {
       return undefined;
     }
-    const { changes, unregistered } = await updateUploadedRaid(
+    return this.describeUploaded(
       raidId,
-      report,
-      names
+      await updateUploadedRaid(raidId, names, () => report)
     );
+  }
+
+  private describeUploaded(
+    raidId: number,
+    { changes, unregistered }: Awaited<ReturnType<typeof updateUploadedRaid>>
+  ): string {
     return [
       ...(changes.length > 0 ? [describeChanges(raidId, changes)] : []),
       ...(unregistered.length > 0
@@ -150,10 +206,26 @@ export abstract class RaidReportRevision<Args> {
   }
 
   /**
-   * A thread uploaded before reports kept their raid id is named with a ✅. Finds its raid by the
-   * thread's link and remembers it.
+   * A thread uploaded before reports kept their raid id is named with a ✅. Finds its raid and
+   * remembers it.
    */
   private async findOlderUpload(
+    message: PartialMessage | Message
+  ): Promise<number | undefined> {
+    const raidId = await this.findUploadedRaid(message);
+    if (raidId === undefined) {
+      return undefined;
+    }
+    await withRaidReportLock(message.channelId, async () => {
+      const saved = await loadRaidReport(message.channelId);
+      saved.markUploaded(raidId);
+      await saved.save(message.channelId);
+    });
+    return raidId;
+  }
+
+  /** An uploaded thread is named with a ✅, and its raid's name ends with the thread's link. */
+  private async findUploadedRaid(
     message: PartialMessage | Message
   ): Promise<number | undefined> {
     const channel = message.channel;
@@ -166,11 +238,6 @@ export abstract class RaidReportRevision<Args> {
     if (raidId === undefined) {
       throw new Error("Could not find the OpenDKP raid this thread was uploaded as");
     }
-    await withRaidReportLock(message.channelId, async () => {
-      const saved = await loadRaidReport(message.channelId);
-      saved.markUploaded(raidId);
-      await saved.save(message.channelId);
-    });
     return raidId;
   }
 }

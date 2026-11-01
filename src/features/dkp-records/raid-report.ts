@@ -209,11 +209,19 @@ export const withRaidReportLock = async <T>(
  * withRaidReportLock, which runs one at a time, so a slow call here delays every queued ✅.
  */
 export const loadRaidReport = async (threadId: string) => {
-  const serialized = await redisClient.get(threadId);
-  if (!serialized) {
+  const report = await findRaidReport(threadId);
+  if (!report) {
     throw new Error("Could not find raid report in database.");
   }
-  return new RaidReport(JSON.parse(serialized));
+  return report;
+};
+
+/** The saved report, if it hasn't expired. */
+export const findRaidReport = async (
+  threadId: string
+): Promise<RaidReport | undefined> => {
+  const serialized = await redisClient.get(threadId);
+  return serialized ? new RaidReport(JSON.parse(serialized)) : undefined;
 };
 
 /** The saved report plus its messages, for callers that render it themselves. */
