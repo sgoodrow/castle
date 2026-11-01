@@ -381,6 +381,68 @@ describe("approving after the raid is uploaded", () => {
     );
   });
 
+  describe("once the thread's report has expired", () => {
+    const expiredUpload = (ticks: string[][]) => {
+      odkp.getRaids.mockResolvedValue([raid(ticks)]);
+      odkp.getRaid.mockResolvedValue(raid(ticks));
+    };
+    const uploadedThread = () => request("1", { name: "✅ 10-20 Quake" });
+
+    it("adds the player to the raid's tick, and says so", async () => {
+      characters("Someone", "Iceburgh");
+      expiredUpload([["Someone"], ["Someone"]]);
+      const message = uploadedThread();
+
+      await approve("!add Iceburgh 2", message);
+
+      expect(sentTicks()).toEqual([["Someone"], ["Someone", "Iceburgh"]]);
+      expect(message.react).toHaveBeenCalledWith("✅");
+      expect(message.reply).toHaveBeenCalledWith(
+        `Updated the [OpenDKP raid](<https://castle.opendkp.com/#/raids/${RAID}>): added Iceburgh to tick 2.\nThis thread's raid report has expired, so it isn't redrawn.`
+      );
+      expect(store.has(THREAD)).toBe(false);
+    });
+
+    it("replaces a bot only on the ticks it's on", async () => {
+      characters("Pumped", "Someone", "Iceburgh");
+      expiredUpload([["Pumped"], ["Someone"]]);
+
+      await approve("!rep Pumped with Iceburgh", uploadedThread());
+
+      expect(sentTicks()).toEqual([["Iceburgh"], ["Someone"]]);
+    });
+
+    it("says so when the player isn't on the raid, and changes nothing", async () => {
+      characters("Someone", "Nobody");
+      expiredUpload([["Someone"]]);
+      const message = uploadedThread();
+
+      await approve("!rem Nobody 1", message);
+
+      expect(odkp.updateRaid).not.toHaveBeenCalled();
+      expect(message.react).toHaveBeenCalledWith("⚠️");
+      expect(message.reply).toHaveBeenCalledWith("⚠️ Nobody is not in attendance on tick 1");
+    });
+
+    it("asks for an adjustment to be made on OpenDKP", async () => {
+      expiredUpload([["Someone"]]);
+      const message = uploadedThread();
+
+      await approve("!adj Someone 5 kill", message);
+
+      expect(odkp.getRaid).not.toHaveBeenCalled();
+      expect(message.reply).toHaveBeenCalledWith(
+        "⚠️ This thread's raid report has expired, so please make this change on OpenDKP"
+      );
+    });
+
+    it("still can't find a report for a thread that wasn't uploaded", async () => {
+      await expect(approve("!add Iceburgh 1", request("1"))).rejects.toThrow(
+        "Could not find raid report in database."
+      );
+    });
+  });
+
   it("leaves OpenDKP alone before the raid is uploaded", async () => {
     await save([tickData(1, ["Someone"])]);
     await approve("!add Iceburgh 1", request("1"));

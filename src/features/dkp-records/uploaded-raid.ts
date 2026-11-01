@@ -1,5 +1,6 @@
 import { openDkpSiteClientId } from "../../config";
 import {
+  ODKPRaidData,
   ODKPRaidTick,
   ODKPUpdateRaidData,
   openDkpService,
@@ -65,24 +66,38 @@ export const attendanceChanges = (
     };
   });
 
+/** A report of the uploaded raid's ticks as OpenDKP has them, for when the thread's has expired. */
+export const reportOfRaid = (raid: ODKPRaidData): RaidReport =>
+  new RaidReport({
+    filename: raid.Name,
+    raidId: raid.RaidId,
+    ticks: raid.Ticks.map((t, i) => ({
+      finished: true,
+      tickNumber: i + 1,
+      sheetName: t.Description,
+      value: t.Value,
+      loot: [],
+      attendees: t.Characters.map((c) => c.Name),
+      date: raid.Timestamp,
+      credits: [],
+    })),
+  });
+
 /**
  * Sets the players' attendance on the OpenDKP raid the report was uploaded as to match the
- * report. Returns what changed, and the players who aren't OpenDKP characters, who are left off
- * it, as at upload.
+ * report `attending` gives for it: the thread's report, or one made from the raid. Returns what
+ * changed, and the players who aren't OpenDKP characters, who are left off it, as at upload.
  */
 export const updateUploadedRaid = async (
   raidId: number,
-  report: RaidReport,
-  names: string[]
+  names: string[],
+  attending: (raid: ODKPRaidData) => RaidReport
 ): Promise<{ changes: AttendanceChange[]; unregistered: string[] }> => {
   const characters = await openDkpService.getCharacters();
   const registered = (name: string) =>
     characters.some((c) => sameName(c.Name, name));
   const unregistered = names.filter((n) => !registered(n));
-  const attendance = names
-    .filter(registered)
-    .map((name) => ({ name, ticks: report.attendanceOf(name) }));
-  if (attendance.length === 0) {
+  if (unregistered.length === names.length) {
     return { changes: [], unregistered };
   }
 
@@ -92,6 +107,10 @@ export const updateUploadedRaid = async (
     if (raid.Version === undefined) {
       throw new Error(`OpenDKP raid ${raidId} has no version to update`);
     }
+    const report = attending(raid);
+    const attendance = names
+      .filter(registered)
+      .map((name) => ({ name, ticks: report.attendanceOf(name) }));
     const ticks = withAttendance(raid.Ticks, attendance);
     const changes = attendanceChanges(raid.Ticks, attendance);
     if (changes.every((c) => c.added.length + c.removed.length === 0)) {
