@@ -7,6 +7,7 @@ import {
 } from "../../services/openDkpService";
 import { RaidReport, withRaidReportLock } from "./raid-report";
 import { getRaidUrl } from "./raid-tick";
+import { channelMessages, MessageSource } from "../../shared/channel-messages";
 
 interface Attendance {
   name: string;
@@ -149,6 +150,37 @@ export const describeChanges = (
   return parts.length > 0
     ? `Updated the ${raid}: ${parts.join("; ")}.`
     : `The ${raid} already had this.`;
+};
+
+/** How the bot's receipt in the thread starts, once it uploads the raid. Its embeds link the raid. */
+export const UPLOAD_RECEIPT = "Raids uploaded by";
+
+const RAID_LINK = /\/#\/raids\/(\d+)/;
+
+interface ThreadMessage {
+  id: string;
+  author: { id: string };
+  content: string;
+  embeds: { url?: string | null }[];
+}
+
+/** The raid the bot's latest upload receipt in the thread links to. */
+export const findReceiptRaidId = async (
+  thread: MessageSource<ThreadMessage>,
+  botId: string
+): Promise<number | undefined> => {
+  for await (const m of channelMessages(thread)) {
+    if (m.author.id !== botId || !m.content.startsWith(UPLOAD_RECEIPT)) {
+      continue;
+    }
+    const id = m.embeds
+      .map((e) => e.url?.match(RAID_LINK)?.[1])
+      .find((match) => match !== undefined);
+    if (id !== undefined) {
+      return Number(id);
+    }
+  }
+  return undefined;
 };
 
 /** The thread's link, which the raid's name ends with when it's uploaded. */
