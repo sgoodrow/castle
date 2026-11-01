@@ -104,11 +104,10 @@ class RaidReportFinishedReactionAction extends ReactionAction {
     // update thread title
     await report.tryUpdateThreadName(this.message.channel);
 
-    // cleanup redis
+    // archive the thread; its report stays in Redis, since edits approved later update the raid
     if (report.finished) {
       await this.message.channel.setAutoArchiveDuration(4320);
       await this.message.channel.setArchived(true);
-      await report.tryDelete(this.message.channelId);
     }
   }
 }

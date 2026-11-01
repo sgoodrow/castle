@@ -2,6 +2,7 @@ import { GuildMember, Message, PartialMessage } from "discord.js";
 import { dkpDeputyRoleId, officerRoleId } from "../../../config";
 import { loadRaidReport, RaidReport, withRaidReportLock } from "../raid-report";
 import {
+  describeChanges,
   findUploadedRaidId,
   threadUrl,
   updateUploadedRaid,
@@ -94,9 +95,9 @@ export abstract class RaidReportRevision<Args> {
     }
 
     // once the raid is uploaded, the edit goes to OpenDKP too
-    let unregistered: string[];
+    let uploaded: string | undefined;
     try {
-      unregistered = await this.updateUploadedRaid(message, edited, args);
+      uploaded = await this.updateUploadedRaid(message, edited, args);
     } catch (err) {
       await message.react("⚠️");
       await message.reply(
@@ -107,32 +108,45 @@ export abstract class RaidReportRevision<Args> {
       return false;
     }
 
-    // show success
+    // show success, and what changed on the uploaded raid
     await message.react("✅");
-    if (unregistered.length > 0) {
-      await message.reply(
-        `⚠️ ${unregistered.join(", ")} ${
-          unregistered.length > 1 ? "aren't OpenDKP characters" : "isn't an OpenDKP character"
-        }, so the uploaded raid leaves them off.`
-      );
+    if (uploaded) {
+      await message.reply(uploaded);
     }
   }
 
-  /** Updates the OpenDKP raid if the report was uploaded. Returns the players it had to leave off. */
+  /** Updates the OpenDKP raid if the report was uploaded. Returns what to tell the deputies. */
   private async updateUploadedRaid(
     message: PartialMessage | Message,
     report: RaidReport,
     args: Args
-  ): Promise<string[]> {
+  ): Promise<string | undefined> {
     const names = this.attendees(args);
     if (names.length === 0) {
-      return [];
+      return undefined;
     }
     const raidId =
       report.uploadedRaidId ?? (await this.findOlderUpload(message));
-    return raidId === undefined
-      ? []
-      : await updateUploadedRaid(raidId, report, names);
+    if (raidId === undefined) {
+      return undefined;
+    }
+    const { changes, unregistered } = await updateUploadedRaid(
+      raidId,
+      report,
+      names
+    );
+    return [
+      ...(changes.length > 0 ? [describeChanges(raidId, changes)] : []),
+      ...(unregistered.length > 0
+        ? [
+            `⚠️ ${unregistered.join(", ")} ${
+              unregistered.length > 1
+                ? "aren't OpenDKP characters"
+                : "isn't an OpenDKP character"
+            }, so the uploaded raid leaves them off.`,
+          ]
+        : []),
+    ].join("\n");
   }
 
   /**

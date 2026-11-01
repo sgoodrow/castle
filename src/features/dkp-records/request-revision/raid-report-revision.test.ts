@@ -18,6 +18,7 @@ vi.mock("../../../config", () => ({
   officerRoleId: "officer",
   dkpRecordsChannelId: "dkp-records",
   openDkpSiteClientId: "castle",
+  openDkpClientName: "castle",
 }));
 vi.mock("../../../redis/client", () => ({
   redisChannels: { raidReportChange: (id: string) => `raid.${id}` },
@@ -119,6 +120,13 @@ describe("approving a raid report request", () => {
     await approve("!adj Someone 5 kill", message);
     expect(savedTicks()[0].adjustments).toHaveLength(1);
     expect(message.react).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps the saved report for 90 days", async () => {
+    await save([tickData(1, ["Someone"])]);
+    expect(redis.set).toHaveBeenCalledWith(THREAD, expect.any(String), {
+      EX: 90 * 24 * 60 * 60,
+    });
   });
 
   it("does nothing once the bot's ✅ is on the message", async () => {
@@ -269,6 +277,24 @@ describe("approving after the raid is uploaded", () => {
     );
     expect(sentTicks()).toEqual([["Someone", "Latecomer", "Iceburgh"], ["Pumped"]]);
     expect(message.react).toHaveBeenCalledWith("✅");
+    expect(message.reply).toHaveBeenCalledWith(
+      `Updated the [OpenDKP raid](<https://castle.opendkp.com/#/raids/${RAID}>): added Iceburgh to tick 1; removed Pumped from tick 1.`
+    );
+  });
+
+  it("says so when the raid already has the change, and leaves it alone", async () => {
+    await uploaded([tickData(1, ["Someone"]), tickData(2, ["Someone"])]);
+    characters("Someone", "Iceburgh");
+    odkp.getRaid.mockResolvedValue(raid([["Someone", "Iceburgh"], ["Someone", "Iceburgh"]]));
+    const message = request("1");
+
+    await approve("!add Iceburgh", message);
+
+    expect(odkp.updateRaid).not.toHaveBeenCalled();
+    expect(message.react).toHaveBeenCalledWith("✅");
+    expect(message.reply).toHaveBeenCalledWith(
+      `The [OpenDKP raid](<https://castle.opendkp.com/#/raids/${RAID}>) already had this.`
+    );
   });
 
   it("reopens the archived thread to react", async () => {
@@ -282,6 +308,7 @@ describe("approving after the raid is uploaded", () => {
     expect(message.channel.setArchived).toHaveBeenCalledWith(false);
     expect(sentTicks()).toEqual([["Someone", "Iceburgh"]]);
     expect(message.react).toHaveBeenCalledWith("✅");
+    expect(message.reply.mock.calls[0][0]).toContain("added Iceburgh to tick 1.");
   });
 
   it("says who isn't an OpenDKP character, and leaves them off the raid", async () => {
