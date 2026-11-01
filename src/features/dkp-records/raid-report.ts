@@ -18,7 +18,7 @@ import {
 import { raiderRoleId } from "../../config";
 import { redisChannels, redisClient } from "../../redis/client";
 import { CreateRaidResponse, RaidEventData } from "../../services/castledkp";
-import { DAYS } from "../../shared/time";
+import { DAYS, SECONDS } from "../../shared/time";
 import { code, isEqDkpPlusEnabled } from "../../shared/util";
 import { AdjustmentData, EVERYONE, RaidTick, RaidTickData } from "./raid-tick";
 import {
@@ -337,17 +337,11 @@ export class RaidReport {
   public async save(threadId: string) {
     const serialized = JSON.stringify(this.data);
     const channel = redisChannels.raidReportChange(threadId);
+    // kept 90 days from its last edit, uploaded or not, since edits can come after upload; Redis counts seconds
     await redisClient.set(threadId, serialized, {
-      EX: 90 * DAYS,
+      EX: (90 * DAYS) / SECONDS,
     });
     await redisClient.publish(channel, serialized);
-  }
-
-  public async tryDelete(threadId: string) {
-    if (this.finished) {
-      //await redisClient.del(threadId);
-      await redisClient.expire(threadId, 604800);
-    }
   }
 
   /** The instructions as their own message, posted after the report; it never changes. */

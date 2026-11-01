@@ -5,6 +5,7 @@ import {
   openDkpService,
 } from "../../services/openDkpService";
 import { RaidReport, withRaidReportLock } from "./raid-report";
+import { getRaidUrl } from "./raid-tick";
 
 interface Attendance {
   name: string;
@@ -41,15 +42,39 @@ export const withAttendance = (
     return { ...tick, Characters: characters };
   });
 
+export interface AttendanceChange {
+  name: string;
+  // tick numbers, from 1
+  added: number[];
+  removed: number[];
+}
+
+/** What setting the players' attendance changes on the raid's ticks. */
+export const attendanceChanges = (
+  ticks: ODKPRaidTick[],
+  attendance: Attendance[]
+): AttendanceChange[] =>
+  attendance.map(({ name, ticks: attending }) => {
+    const has = ticks.map((t) => t.Characters.some((c) => sameName(c.Name, name)));
+    const numbers = (pick: (i: number) => boolean) =>
+      ticks.flatMap((_, i) => (pick(i) ? [i + 1] : []));
+    return {
+      name,
+      added: numbers((i) => !!attending[i] && !has[i]),
+      removed: numbers((i) => !attending[i] && has[i]),
+    };
+  });
+
 /**
  * Sets the players' attendance on the OpenDKP raid the report was uploaded as to match the
- * report. Returns the players who aren't OpenDKP characters, who are left off it, as at upload.
+ * report. Returns what changed, and the players who aren't OpenDKP characters, who are left off
+ * it, as at upload.
  */
 export const updateUploadedRaid = async (
   raidId: number,
   report: RaidReport,
   names: string[]
-): Promise<string[]> => {
+): Promise<{ changes: AttendanceChange[]; unregistered: string[] }> => {
   const characters = await openDkpService.getCharacters();
   const registered = (name: string) =>
     characters.some((c) => sameName(c.Name, name));
@@ -58,14 +83,19 @@ export const updateUploadedRaid = async (
     .filter(registered)
     .map((name) => ({ name, ticks: report.attendanceOf(name) }));
   if (attendance.length === 0) {
-    return unregistered;
+    return { changes: [], unregistered };
   }
 
   // one update to a raid at a time, since each must send the version it read
-  await withRaidReportLock(`opendkp:${raidId}`, async () => {
+  const changes = await withRaidReportLock(`opendkp:${raidId}`, async () => {
     const raid = await openDkpService.getRaid(raidId);
     if (raid.Version === undefined) {
       throw new Error(`OpenDKP raid ${raidId} has no version to update`);
+    }
+    const ticks = withAttendance(raid.Ticks, attendance);
+    const changes = attendanceChanges(raid.Ticks, attendance);
+    if (changes.every((c) => c.added.length + c.removed.length === 0)) {
+      return changes;
     }
     const payload: ODKPUpdateRaidData = {
       ClientId: raid.ClientId ?? openDkpSiteClientId ?? "",
@@ -74,13 +104,32 @@ export const updateUploadedRaid = async (
       Items: raid.Items,
       Name: raid.Name,
       Pool: raid.Pool,
-      Ticks: withAttendance(raid.Ticks, attendance),
+      Ticks: ticks,
       Timestamp: raid.Timestamp,
       Version: raid.Version,
     };
     await openDkpService.updateRaid(payload.RaidId, payload);
+    return changes;
   });
-  return unregistered;
+  return { changes, unregistered };
+};
+
+const ticksText = (ticks: number[]) =>
+  `${ticks.length > 1 ? "ticks" : "tick"} ${ticks.join(", ")}`;
+
+/** The reply after an approval reaches the uploaded raid, e.g. "Updated the OpenDKP raid: added Iceburgh to ticks 1, 2." */
+export const describeChanges = (
+  raidId: number,
+  changes: AttendanceChange[]
+): string => {
+  const raid = `[OpenDKP raid](<${getRaidUrl("", raidId)}>)`;
+  const parts = changes.flatMap(({ name, added, removed }) => [
+    ...(added.length > 0 ? [`added ${name} to ${ticksText(added)}`] : []),
+    ...(removed.length > 0 ? [`removed ${name} from ${ticksText(removed)}`] : []),
+  ]);
+  return parts.length > 0
+    ? `Updated the ${raid}: ${parts.join("; ")}.`
+    : `The ${raid} already had this.`;
 };
 
 /** The thread's link, which the raid's name ends with when it's uploaded. */
